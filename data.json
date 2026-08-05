@@ -1,0 +1,69 @@
+{
+  "date": "2026-08-06",
+  "banner": "今日最值得关注的是 DataSpace（可验证的数据分析 Agent 基准）与 BAP-SQL（预算感知的 Agentic Text-to-SQL），前者把数据 Agent 评测推进到异构工作区，后者聚焦 agent 在真实成本约束下的 SQL 生成。GitHub 侧 XERJ 的 autoindex 思路值得关注。",
+  "items": [
+    {
+      "tag": "paper",
+      "title": "DataSpace: Benchmarking Data Agents for Verifiable Analytics over Heterogeneous Workspaces",
+      "date": "2026-08-04",
+      "source": "arXiv 2608.03451",
+      "link": "http://arxiv.org/abs/2608.03451",
+      "summary": "提出了 DataSpace 基准，用于在异构工作区（多数据源、多格式）上评测数据 Agent 的可验证分析能力。它强调分析结果需要可验证（verifiable），覆盖数据混洗、多源 join、格式转换等真实场景。",
+      "insight": "对做数据分析 Agent 的团队是很好的评测参考：'可验证'是当前数据 Agent 商业化落地最欠缺的一环，这个基准能帮你检验自己的 Agent 在复杂异构数据上是否真的可信，而不只是跑通 demo。"
+    },
+    {
+      "tag": "paper",
+      "title": "BAP-SQL: Budget-Aware Observation Planning for Agentic Text-to-SQL",
+      "date": "2026-08-03",
+      "source": "arXiv 2608.02876",
+      "link": "http://arxiv.org/abs/2608.02876",
+      "summary": "针对 Agentic Text-to-SQL 中 token/成本消耗过高的问题，提出预算感知的观察规划（BAP）策略，让 agent 在有限的调用预算内规划观察步骤，在保证准确率的同时显著降低开销。",
+      "insight": "很贴合生产环境痛点：多步 agent 的推理成本常被忽略。如果你在做 SQL Agent 上线，这类'预算约束下的规划'是控制运行成本的关键思路，值得读全文了解其规划策略。"
+    },
+    {
+      "tag": "paper",
+      "title": "DataClawEval: A Benchmark for Data Engineering Agents in Real Industrial Harness",
+      "date": "2026-07-30",
+      "source": "arXiv 2607.28033",
+      "link": "http://arxiv.org/abs/2607.28033",
+      "summary": "面向真实工业场景的数据工程 Agent 基准，评测 agent 在数据清洗、特征工程、管线搭建等工业级任务上的表现，强调贴近真实生产 harness 而非玩具数据集。",
+      "insight": "数据工程 Agent 与纯数据分析不同，更贴近你团队可能实际要做的 pipeline 工作。这个基准能帮你对照自家 Agent 在工业任务上的真实水平。"
+    },
+    {
+      "tag": "github",
+      "title": "xerj-org/xerj",
+      "date": "2026-08-05",
+      "source": "GitHub ⭐1161 / Rust",
+      "link": "https://github.com/xerj-org/xerj",
+      "summary": "宣称'AI 搜索数据的新方式'，通过 autoindex 能力让 AI Agent 无需大量 token 消耗就能感知数据。Rust 实现，性能导向。",
+      "insight": "autoindex 的价值在于降低 agent 访问数据的 token 成本——和 BAP-SQL 的成本控制主题呼应。Rust 栈也说明性能是关键考量。建议关注其索引机制实现。"
+    },
+    {
+      "tag": "github",
+      "title": "datagallery-lab/datafoundry",
+      "date": "2026-08-04",
+      "source": "GitHub ⭐611 / TypeScript",
+      "link": "https://github.com/datagallery-lab/datafoundry",
+      "summary": "开源的 AI 数据分析工作台（workbench），统一数据源、知识、工具和 agent 运行时，一站式支撑数据分析场景。",
+      "insight": "如果你在评估'自建数据分析 Agent 平台'的可行方案，这个项目的前端 + agent 运行时架构值得研究，可以帮助你设计统一接入层。"
+    },
+    {
+      "tag": "github",
+      "title": "eddyzzl/marvis-risk-agent",
+      "date": "2026-08-03",
+      "source": "GitHub ⭐516 / Python",
+      "link": "https://github.com/eddyzzl/marvis-risk-agent",
+      "summary": "通用信贷风险 Agent，覆盖模型开发、验证、数据处理、特征工程等完整风控建模流程。",
+      "insight": "是'业务型 Agent'在垂直领域（金融风控）的完整落地样例。对你想了解的'业务 Agent 如何在具体领域跑通全流程'很有参考价值，尤其是特征工程这一步。"
+    },
+    {
+      "tag": "github",
+      "title": "About-Intelligence/soku-cli",
+      "date": "2026-08-05",
+      "source": "GitHub ⭐307 / TypeScript",
+      "link": "https://github.com/About-Intelligence/soku-cli",
+      "summary": "Soku CLI — 让任何 AI Agent 或 shell 调用 Soku 广告/GA4/PostHog 数据能力，本质是给 agent 提供营销/业务数据接入层。",
+      "insight": "这类'把业务数据能力封装给 Agent'的 CLI/MCP 模式，正是业务 Agent 数据接入的典型架构。可作为你设计数据服务与 agent 交互接口的参考。"
+    }
+  ]
+}

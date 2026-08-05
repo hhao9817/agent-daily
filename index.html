@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agent 领域每日晨报</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --card: #1a1d27;
+      --border: #2a2e3d;
+      --text: #e6e8ef;
+      --muted: #9aa0b0;
+      --accent: #6c8cff;
+      --accent2: #4ad1a0;
+      --warn: #ffb454;
+      --red: #ff6b6b;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+      padding: 20px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    header {
+      text-align: center;
+      padding: 30px 0 10px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    header h1 {
+      font-size: 1.8em;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header .date {
+      color: var(--muted);
+      margin-top: 8px;
+      font-size: 0.95em;
+    }
+    .banner {
+      background: linear-gradient(135deg, rgba(108,140,255,0.12), rgba(74,209,160,0.12));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+    }
+    .banner h2 { font-size: 1.05em; color: var(--accent2); margin-bottom: 6px; }
+    .banner p { color: var(--text); font-size: 0.95em; }
+    .item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 16px;
+    }
+    .item .tag {
+      display: inline-block;
+      font-size: 0.72em;
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+    .tag-paper { background: rgba(108,140,255,0.15); color: var(--accent); }
+    .tag-github { background: rgba(74,209,160,0.15); color: var(--accent2); }
+    .tag-product { background: rgba(255,180,84,0.15); color: var(--warn); }
+    .tag-blog { background: rgba(255,107,107,0.15); color: var(--red); }
+    .item h3 { font-size: 1.1em; margin-bottom: 8px; }
+    .item h3 a { color: var(--text); text-decoration: none; }
+    .item h3 a:hover { color: var(--accent); }
+    .item .meta { color: var(--muted); font-size: 0.82em; margin-bottom: 10px; }
+    .item .summary { font-size: 0.95em; margin-bottom: 10px; }
+    .item .insight {
+      background: rgba(108,140,255,0.06);
+      border-left: 3px solid var(--accent);
+      padding: 8px 12px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.92em;
+      color: var(--muted);
+    }
+    .item .insight strong { color: var(--accent2); }
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8em;
+      padding: 30px 0 10px;
+      border-top: 1px solid var(--border);
+      margin-top: 30px;
+    }
+    .empty { color: var(--muted); text-align: center; padding: 40px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🤖 Agent 领域每日晨报</h1>
+    <div class="date">数据分析 Agent · 业务 Agent · 智能体生态 | 2026-08-06</div>
+  </header>
+
+  <div class="banner"><h2>📌 今日速览</h2><p>今日最值得关注的是 DataSpace（可验证的数据分析 Agent 基准）与 BAP-SQL（预算感知的 Agentic Text-to-SQL），前者把数据 Agent 评测推进到异构工作区，后者聚焦 agent 在真实成本约束下的 SQL 生成。GitHub 侧 XERJ 的 autoindex 思路值得关注。</p></div>
+
+  <div class="item"><span class="tag tag-paper">📄 论文</span><h3><a href="http://arxiv.org/abs/2608.03451" target="_blank" rel="noopener">DataSpace: Benchmarking Data Agents for Verifiable Analytics over Heterogeneous Workspaces</a></h3><div class="meta">2026-08-04 · arXiv 2608.03451</div><div class="summary">提出了 DataSpace 基准，用于在异构工作区（多数据源、多格式）上评测数据 Agent 的可验证分析能力。它强调分析结果需要可验证（verifiable），覆盖数据混洗、多源 join、格式转换等真实场景。</div><div class="insight"><strong>🔍 技术视角：</strong>对做数据分析 Agent 的团队是很好的评测参考：'可验证'是当前数据 Agent 商业化落地最欠缺的一环，这个基准能帮你检验自己的 Agent 在复杂异构数据上是否真的可信，而不只是跑通 demo。</div></div>
+<div class="item"><span class="tag tag-paper">📄 论文</span><h3><a href="http://arxiv.org/abs/2608.02876" target="_blank" rel="noopener">BAP-SQL: Budget-Aware Observation Planning for Agentic Text-to-SQL</a></h3><div class="meta">2026-08-03 · arXiv 2608.02876</div><div class="summary">针对 Agentic Text-to-SQL 中 token/成本消耗过高的问题，提出预算感知的观察规划（BAP）策略，让 agent 在有限的调用预算内规划观察步骤，在保证准确率的同时显著降低开销。</div><div class="insight"><strong>🔍 技术视角：</strong>很贴合生产环境痛点：多步 agent 的推理成本常被忽略。如果你在做 SQL Agent 上线，这类'预算约束下的规划'是控制运行成本的关键思路，值得读全文了解其规划策略。</div></div>
+<div class="item"><span class="tag tag-paper">📄 论文</span><h3><a href="http://arxiv.org/abs/2607.28033" target="_blank" rel="noopener">DataClawEval: A Benchmark for Data Engineering Agents in Real Industrial Harness</a></h3><div class="meta">2026-07-30 · arXiv 2607.28033</div><div class="summary">面向真实工业场景的数据工程 Agent 基准，评测 agent 在数据清洗、特征工程、管线搭建等工业级任务上的表现，强调贴近真实生产 harness 而非玩具数据集。</div><div class="insight"><strong>🔍 技术视角：</strong>数据工程 Agent 与纯数据分析不同，更贴近你团队可能实际要做的 pipeline 工作。这个基准能帮你对照自家 Agent 在工业任务上的真实水平。</div></div>
+<div class="item"><span class="tag tag-github">🐙 GitHub</span><h3><a href="https://github.com/xerj-org/xerj" target="_blank" rel="noopener">xerj-org/xerj</a></h3><div class="meta">2026-08-05 · GitHub ⭐1161 / Rust</div><div class="summary">宣称'AI 搜索数据的新方式'，通过 autoindex 能力让 AI Agent 无需大量 token 消耗就能感知数据。Rust 实现，性能导向。</div><div class="insight"><strong>🔍 技术视角：</strong>autoindex 的价值在于降低 agent 访问数据的 token 成本——和 BAP-SQL 的成本控制主题呼应。Rust 栈也说明性能是关键考量。建议关注其索引机制实现。</div></div>
+<div class="item"><span class="tag tag-github">🐙 GitHub</span><h3><a href="https://github.com/datagallery-lab/datafoundry" target="_blank" rel="noopener">datagallery-lab/datafoundry</a></h3><div class="meta">2026-08-04 · GitHub ⭐611 / TypeScript</div><div class="summary">开源的 AI 数据分析工作台（workbench），统一数据源、知识、工具和 agent 运行时，一站式支撑数据分析场景。</div><div class="insight"><strong>🔍 技术视角：</strong>如果你在评估'自建数据分析 Agent 平台'的可行方案，这个项目的前端 + agent 运行时架构值得研究，可以帮助你设计统一接入层。</div></div>
+<div class="item"><span class="tag tag-github">🐙 GitHub</span><h3><a href="https://github.com/eddyzzl/marvis-risk-agent" target="_blank" rel="noopener">eddyzzl/marvis-risk-agent</a></h3><div class="meta">2026-08-03 · GitHub ⭐516 / Python</div><div class="summary">通用信贷风险 Agent，覆盖模型开发、验证、数据处理、特征工程等完整风控建模流程。</div><div class="insight"><strong>🔍 技术视角：</strong>是'业务型 Agent'在垂直领域（金融风控）的完整落地样例。对你想了解的'业务 Agent 如何在具体领域跑通全流程'很有参考价值，尤其是特征工程这一步。</div></div>
+<div class="item"><span class="tag tag-github">🐙 GitHub</span><h3><a href="https://github.com/About-Intelligence/soku-cli" target="_blank" rel="noopener">About-Intelligence/soku-cli</a></h3><div class="meta">2026-08-05 · GitHub ⭐307 / TypeScript</div><div class="summary">Soku CLI — 让任何 AI Agent 或 shell 调用 Soku 广告/GA4/PostHog 数据能力，本质是给 agent 提供营销/业务数据接入层。</div><div class="insight"><strong>🔍 技术视角：</strong>这类'把业务数据能力封装给 Agent'的 CLI/MCP 模式，正是业务 Agent 数据接入的典型架构。可作为你设计数据服务与 agent 交互接口的参考。</div></div>
+
+  <footer>
+    由 Hermes Agent 自动生成 · 关注数据分析型 Agent 与业务型 Agent · 2026-08-06
+  </footer>
+</body>
+</html>
