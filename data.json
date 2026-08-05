@@ -1,6 +1,6 @@
 {
   "date": "2026-08-06",
-  "banner": "今日聚焦'AI for 业务'：最值得关注的是 SCAIR（面向企业知识图谱的 Agent 推理，直击'AI 懂业务关系'）与 WrenAI（基于开放语义 context layer 的可治理 text-to-SQL）。两者分别对应你课题中的'业务知识库'与'精确查询'两环。GitHub 侧 WrenAI / vanna / SQLBot 构成完整的 ChatBI 落地参考。",
+  "banner": "今日聚焦'AI for 业务'：SCAIR（企业知识图谱 Agent 推理）与 WrenAI（语义 context layer + 可治理 text-to-SQL）分别对应你课题的'业务知识库'与'精确查询'两环。结合你不直连数据库、通过高业务含义 API（含上百字段宽表 API）查数的约束：语义层是核心载体，知识图谱做关系推理补充。",
   "items": [
     {
       "tag": "paper",
@@ -8,8 +8,59 @@
       "date": "2026-06-02",
       "source": "arXiv 2607.22571",
       "link": "http://arxiv.org/abs/2607.22571",
-      "summary": "面向企业知识图谱的 Schema 条件化 Agent 迭代推理框架。它让 agent 先理解图 schema，再在 KG 上做迭代推理，以回答问题。核心是解决企业图谱中'语义稠密但结构复杂'的查询问题。",
-      "insight": "这正是你课题第 1、2 环的结合点：把业务对象关系（schema）作为 agent 的推理前提，而不是让 agent 盲目检索。对做业务知识库的团队，'schema 条件化'是让 AI 真正懂业务关系的关键设计，强烈建议精读。"
+      "summary": "面向企业知识图谱的 Schema 条件化 Agent 迭代推理框架。让 agent 先理解图 schema，再在 KG 上迭代推理回答复杂业务问题，解决企业图谱'语义稠密、结构复杂'的查询难题。",
+      "insight": "这正是你课题第 1、2 环的结合点：把业务对象关系（schema）作为 agent 推理前提，而非盲目检索。'schema 条件化'是让 AI 真正懂业务关系的关键设计。",
+      "detail": {
+        "why": "你的核心诉求是'让 AI 懂业务关系'。SCAIR 给出一个可落地的范式：不靠 agent 猜测业务对象怎么关联，而是把企业知识图谱的 schema（实体类型、关系类型）显式喂给 agent 作为推理约束。对照你'通过业务 API 查数'的场景——每个 API 的入参/出参、字段之间的业务关联，本质上就是一张 schema，SCAIR 的思路可以直接迁移。",
+        "mechanism": "核心分三步：① Schema 条件化——把 KG 的 schema（类、属性、关系）编码进 prompt，让 agent 一开始就知道'业务里有哪些对象、它们怎么连'；② 迭代推理——agent 在图上逐步探索（从概念到实例），每步基于当前子图决定下一步查询；③ 确定性落点——最终把推理链映射到具体查询，保证结果可回溯。它对'先行理解结构再执行查询'的强调，跟你'先让 AI 懂 API 语义再精准调用'完全同构。",
+        "deep": "从架构师视角，SCAIR 最重要的启发是'把结构知识前置'。很多业务 Agent 失败，是因为让 LLM 在几百上千个字段里'盲猜'哪个是订单号、哪个是金额。SCAIR 反其道而行：先建立业务结构的显式心智模型，再让推理发生在约束之内。这正好回应你宽表 API 上百字段的痛点——与其让 AI 猜，不如先构建字段语义层。一个关键设计取舍：schema 是'全部注入'还是'按需检索'？SCAIR 用迭代的方式按需探索，避免了超长上下文的性能衰减，这对宽表场景尤其重要。",
+        "apply": "落地建议：① 把你们的业务 API 参数/返回值整理成统一的 schema 描述（类似 OpenAPI 但补足业务语义注释）；② 参考 SCAIR 的'按需 schema 探索'，避免把上百个字段一次性塞进上下文；③ 先把 schema 条件化作为 agent 的 system prompt 固定层，再谈精确调用。",
+        "caveats": "局限：SCAIR 依赖已建好的企业知识图谱，图谱本身的构建与维护成本高；若业务 API 之间关系稀疏，schema 条件化的收益会打折。另外论文聚焦推理框架，对'如何从 API 自动生成 schema'着墨较少，这块需要你们自己补。",
+        "diagram": {
+          "title": "SCAIR：schema 条件化推理（迁移到业务 API 场景）",
+          "flow": [
+            {"label": "业务问题", "sub": "自然语言", "type": "frontend"},
+            {"label": "Schema 条件化", "sub": "业务对象/关系", "type": "backend"},
+            {"label": "迭代推理", "sub": "按需探索", "type": "cloud"},
+            {"label": "精确查询", "sub": "业务 API", "type": "database"}
+          ],
+          "notes": [
+            {"label": "核心", "text": "结构知识前置，让 AI 先懂业务关系再查询"},
+            {"label": "适配", "text": "schema = 业务 API 参数/返回值的语义化描述"},
+            {"label": "关键", "text": "按需探索避免宽表上百字段塞爆上下文"}
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "Canner/WrenAI",
+      "date": "2026-08-05",
+      "source": "GitHub ⭐16926 / Python",
+      "link": "https://github.com/Canner/WrenAI",
+      "summary": "GenBI（生成式 BI），开源的基于'开放 context layer'的可治理 text-to-SQL。把业务语义（指标、维度、关系）建模成 context，让 agent 在受控业务上下文中生成精确 SQL。",
+      "insight": "几乎是你课题的完整落地参考：语义层（context layer）+ 精确查询（text-to-SQL）+ 可治理。强烈建议研究它的语义建模方式。",
+      "detail": {
+        "why": "WrenAI 直接解决'如何让 AI 在受控业务语义下做精确查询'。它把'业务指标怎么定义、维度怎么关联'抽成一层 context，AI 只在这层语义之上生成查询，而不是直接啃原始表结构。这跟你'不直连数据库、通过业务含义 API 查数'的场景高度契合——context layer 恰好可以承载 API 的字段语义。",
+        "mechanism": "核心是'三层分离'：① 数据源层（可对接数据库，但你们可替换为业务 API）；② context 层——人工/半自动建模的业务语义（指标定义、维度、关系、注释）；③ 生成层——LLM 基于 context 层生成 SQL/查询，而非基于原始 schema。关键在 context 层的'治理'属性：业务语义可审查、可版本化，避免 AI 乱猜字段含义。",
+        "deep": "架构师视角，WrenAI 的可贵在于把'语义层'产品化、开源化了。对你的价值有两点：一是'语义层' 这个架构决策被验证可行且有现成实现；二是它暴露的 context 建模方式（把宽表上百字段标注成业务指标/维度）正是你需要的。一个值得注意的设计：它把'可治理'（governance）作为一等公民——业务语义需要人来确认，而不是全自动——这跟你团队'研发知识库已建成'的治理经验可以衔接。",
+        "apply": "落地建议：① 下载 WrenAI 研究其 context layer 的数据模型（models/manifests 定义）；② 评估能否把你们业务 API 的字段语义映射成 WrenAI 的 context 概念；③ 若你们不直连 SQL，可借鉴其'语义层 + 生成器'分层，把生成目标从 SQL 换成 API 调用。",
+        "caveats": "局限：WrenAI 面向 SQL/关系库设计，对'API 型数据源'（尤其上百字段宽表 JSON）需要二次适配；context 建模仍需较多人工投入，'全自动语义抽取'不是它的强项。",
+        "diagram": {
+          "title": "WrenAI：开放 context layer 的语义查询架构",
+          "flow": [
+            {"label": "业务提问", "sub": "自然语言", "type": "frontend"},
+            {"label": "Context Layer", "sub": "指标/维度/语义", "type": "cloud"},
+            {"label": "查询生成", "sub": "LLM", "type": "backend"},
+            {"label": "数据源", "sub": "SQL/API", "type": "database"}
+          ],
+          "notes": [
+            {"label": "核心", "text": "语义层承载业务字段含义，AI 不直接碰原始结构"},
+            {"label": "治理", "text": "业务语义可审查、可版本化"},
+            {"label": "适配", "text": "你们可把数据源层换成业务 API"}
+          ]
+        }
+      }
     },
     {
       "tag": "paper",
@@ -18,34 +69,28 @@
       "source": "arXiv 2607.22319",
       "link": "http://arxiv.org/abs/2607.22319",
       "summary": "讨论从朴素 RAG 走向 Agentic RAG 的数据集成路线，强调在保证结果可信（trustworthy）的同时控制成本（cost-efficient），覆盖多源业务数据接入与整合。",
-      "insight": "业务数据查询最大的痛点就是'多源异构 + 可信度'。这篇文章的 Agentic RAG 思路（把检索变成由 agent 主导的规划执行）比你现在的朴素方法更能应对复杂业务查询，值得对照你的知识库架构评估。"
-    },
-    {
-      "tag": "paper",
-      "title": "FAIR GraphRAG: A Retrieval-Augmented Generation Approach for Semantic Data Analysis",
-      "date": "2026-07-13",
-      "source": "arXiv 2607.11464",
-      "link": "http://arxiv.org/abs/2607.11464",
-      "summary": "基于 GraphRAG 的语义数据分析方法，把业务数据的语义关系组织成语义图，再用 RAG 支撑分析问答。强调语义层面的可解释分析。",
-      "insight": "GraphRAG 是构建业务知识库的热门路线。它把'业务对象之间的语义关系'显式建模成图，比纯向量检索更能支撑'懂业务上下文'的分析。可作为你知识库技术选型的候选。"
-    },
-    {
-      "tag": "paper",
-      "title": "AttnLink: Turning Attention into Schema Links for Text-to-SQL",
-      "date": "2026-08-01",
-      "source": "arXiv 2608.00693",
-      "link": "http://arxiv.org/abs/2608.00693",
-      "summary": "把 LLM 的注意力机制转化为 text-to-SQL 的 schema linking 信号，提升复杂业务表结构下 SQL 生成时对 schema 的准确对齐。",
-      "insight": "schema linking 是企业级 text-to-SQL 准确率的最大瓶颈（业务库 schema 往往几百上千张表）。这篇的角度（用注意力做关联）值得了解，属于'精确查询'环节的前沿技术。"
-    },
-    {
-      "tag": "github",
-      "title": "Canner/WrenAI",
-      "date": "2026-08-05",
-      "source": "GitHub ⭐16926 / Python",
-      "link": "https://github.com/Canner/WrenAI",
-      "summary": "GenBI（生成式 BI），开源的基于'开放 context layer'的可治理 text-to-SQL。核心思想是把业务语义（指标、维度、关系）建模成 context，让 agent 在受控上下文中生成精确 SQL。",
-      "insight": "这几乎是你课题的完整落地参考：语义层（context layer）+ 精确查询（text-to-SQL）+ 可治理。强烈建议研究它的语义建模方式，很可能就是你想要的业务知识库形态。"
+      "insight": "业务数据查询最大痛点是'多源异构 + 可信度'。Agentic RAG 把检索变成 agent 主导的规划执行，比朴素方法更能应对复杂业务查询。",
+      "detail": {
+        "why": "你通过多个高业务含义 API 查数，本质是多源数据集成。朴素 RAG 的问题是：检索一步到位，遇到'需要先查客户、再查订单、再汇总'的多步业务问题就失效。Agentic RAG 让 agent 自己规划多步检索，正对你的场景。",
+        "mechanism": "对比两条路线：Naive RAG = 一次 embedding 检索 + 生成；Agentic RAG = agent 将问题分解，规划检索步骤、调用工具（如多个 API）、聚合中间结果、自我校验，最终生成可信答案。核心改进在'规划-执行-校验'而非'一步到位'。",
+        "deep": "架构师视角，这篇的价值是给了'何时该升级到 Agentic'的判断框架。当业务查询涉及多源、多步、需要中间结果时，朴素 RAG 的精度天花板很低，Agentic RAG 是必然升级。但代价是成本与延迟上升——这正是'cost-efficient'强调的点。对你而言，关键是设计'触发分诊'：简单查询走朴素路径，复杂业务问题才走 Agentic，避免所有请求都付多步推理的代价。",
+        "apply": "落地建议：① 建立查询复杂度分诊机制（简单/复杂分流）；② 复杂查询用 Agentic 编排，把你们多个业务 API 封装成可调用的 tools；③ 每一跳都做结果校验与可信度标注，呼应你'精确查询'的要求。",
+        "caveats": "局限：论文偏概念框架，工程细节（如失败重试、中间结果缓存）需自行实现；Agentic 多步推理的成本控制仍依赖具体编排，不能照搬。",
+        "diagram": {
+          "title": "Naive RAG vs Agentic RAG（对照你的多 API 查询）",
+          "flow": [
+            {"label": "业务问题", "sub": "自然语言", "type": "frontend"},
+            {"label": "Agent 规划", "sub": "分解多步", "type": "backend"},
+            {"label": "多 API 调用", "sub": "客户/订单/退款", "type": "cloud"},
+            {"label": "聚合校验", "sub": "可信答案", "type": "database"}
+          ],
+          "notes": [
+            {"label": "升级", "text": "多源多步查询时朴素 RAG 精度天花板低"},
+            {"label": "代价", "text": "Agentic 成本与延迟上升，需复杂度分诊"},
+            {"label": "关键", "text": "每跳校验 + 可信度标注"}
+          ]
+        }
+      }
     },
     {
       "tag": "github",
@@ -54,7 +99,88 @@
       "source": "GitHub ⭐23820 / Python",
       "link": "https://github.com/vanna-ai/vanna",
       "summary": "通过 Agentic Retrieval 实现精确的 Text-to-SQL，让模型用自然语言与 SQL 数据库对话。核心是训练/检索针对你 schema 的问答记忆。",
-      "insight": "vanna 的思路是'把业务问答沉淀成可检索记忆'——每次问答后存储 schema 相关信息供后续复用。对私有化业务知识库的持续积累有参考价值，架构简单易落地。"
+      "insight": "vanna 的思路是'把业务问答沉淀成可检索记忆'——每次问答后存储 schema 相关信息供后续复用。对知识库的持续积累有参考价值，架构简单易落地。",
+      "detail": {
+        "why": "vanna 提供了一种'低成本起步'的精确查询方案：无需复杂语义层，用'问答记忆 + 检索'就能逐步提升业务查询准确率，适合你团队从零开始验证'AI 查业务数据'的可行性。",
+        "mechanism": "核心是 Two-Stage Retrieval：① 训练阶段——把历史问答对、schema 信息、业务术语向量化存储；② 提问阶段——先用 embedding 检索最相关的历史问答/schema 片段，再让 LLM 基于检索到的上下文生成 SQL，而非仅凭模型记忆。",
+        "deep": "架构师视角，vanna 的'记忆复用'思想很务实：它把'每次成功的业务问答'变成资产的增长飞轮——问得越多，检索到的参考越准。这跟你'业务知识库'的构建逻辑一致，只是粒度更轻。局限在于它强绑定 SQL 数据库，对'API 查数'需要改造（把生成目标从 SQL 换成 API 参数）。但它的'检索增强生成'机制本身可复用。",
+        "apply": "落地建议：① 用 vanna 作为快速原型，验证'检索增强'能否显著提升你们业务查询准确率；② 把它的 DDL 信息注入机制，替换成你们 API 的 schema 描述；③ 积累真实问答对作为训练语料，形成知识库飞轮。",
+        "caveats": "局限：强绑定 SQL；对宽表上百字段的 schema，直接注入会超上下文，需要配合字段筛选/分层检索；对 'API 型数据源'需自行封装适配层。",
+        "diagram": {
+          "title": "vanna：检索增强的业务问答飞轮",
+          "flow": [
+            {"label": "业务提问", "sub": "自然语言", "type": "frontend"},
+            {"label": "检索记忆", "sub": "历史问答/schema", "type": "cloud"},
+            {"label": "LLM 生成", "sub": "查询/参数", "type": "backend"},
+            {"label": "执行返回", "sub": "SQL/API", "type": "database"}
+          ],
+          "notes": [
+            {"label": "飞轮", "text": "每次成功问答沉淀为可复用记忆"},
+            {"label": "轻量", "text": "无需复杂语义层即可起步"},
+            {"label": "适配", "text": "生成目标可从 SQL 换为 API 参数"}
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "FAIR GraphRAG: A Retrieval-Augmented Generation Approach for Semantic Data Analysis",
+      "date": "2026-07-13",
+      "source": "arXiv 2607.11464",
+      "link": "http://arxiv.org/abs/2607.11464",
+      "summary": "基于 GraphRAG 的语义数据分析方法，把业务数据的语义关系组织成语义图，再用 RAG 支撑分析问答。强调语义层面的可解释分析。",
+      "insight": "GraphRAG 是构建业务知识库的热门路线。它把'业务对象之间的语义关系'显式建模成图，比纯向量检索更能支撑'懂业务上下文'的分析。",
+      "detail": {
+        "why": "如果你走'企业知识图谱'路线，GraphRAG 是当前最主流的技术栈。它把业务对象（客户、订单、产品）及其关系显式建图，再基于图做检索增强，能回答'跨对象、关系型'的业务问题，弥补纯向量检索对关系理解的不足。",
+        "mechanism": "分两步：① 构建——从业务文档/数据抽取实体与关系，构建语义图（节点=业务对象，边=业务关系）；② 检索增强——问答时先在图上做图遍历/社区检索，把相关子图作为上下文注入 LLM，生成语义分析答案。",
+        "deep": "架构师视角，GraphRAG 与语义层的本质区别：语义层是'为查询服务的规范化 schema'，GraphRAG 是'为关系推理服务的语义图'。对你的价值在于：GraphRAG 擅长'哪类客户经常退单'这类跨对象关系问题，而这往往超出纯字段语义能回答的范畴。但代价是图谱构建与维护成本高，且对'精确数值查询'（如'上季度销售额'）不如语义层直接。所以它更适合作为语义层的补充，而非替代。",
+        "apply": "落地建议：① 若业务普遍存在跨对象关系查询，评估 GraphRAG；② 从你们已有业务文档/API 返回中自动抽实体关系，降低建图成本；③ 把它定位为'关系推理增强层'，与语义层并存。",
+        "caveats": "局限：图谱构建维护成本高；对精确数值/聚合查询不擅长；图检索的召回质量依赖图谱质量，初始投入大。",
+        "diagram": {
+          "title": "GraphRAG：语义图 + 关系推理",
+          "flow": [
+            {"label": "业务文档/API", "sub": "源数据", "type": "external"},
+            {"label": "实体关系抽取", "sub": "建图", "type": "backend"},
+            {"label": "语义图", "sub": "业务对象网状", "type": "database"},
+            {"label": "图检索+LLM", "sub": "关系型问答", "type": "cloud"}
+          ],
+          "notes": [
+            {"label": "擅长", "text": "跨对象关系型问题（哪些客户常退单）"},
+            {"label": "不擅长", "text": "精确数值/聚合查询"},
+            {"label": "定位", "text": "语义层的补充，而非替代"}
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "AttnLink: Turning Attention into Schema Links for Text-to-SQL",
+      "date": "2026-08-01",
+      "source": "arXiv 2608.00693",
+      "link": "http://arxiv.org/abs/2608.00693",
+      "summary": "把 LLM 的注意力机制转化为 text-to-SQL 的 schema linking 信号，提升复杂业务表结构下 SQL 生成时对 schema 的准确对齐。",
+      "insight": "schema linking 是企业级 text-to-SQL 准确率的最大瓶颈（业务库 schema 往往几百上千张表）。这篇用注意力做关联，属于'精确查询'环节的前沿技术。",
+      "detail": {
+        "why": "你面对上百字段的宽表 API，最大难题就是'问题里的业务词，对应哪个字段'——这正是 schema linking 解决的。AttnLink 从模型内部注意力提取关联信号，比传统方法更精准。",
+        "mechanism": "核心洞察：LLM 在生成 SQL/查询时，注意力权重里已经隐含'哪个文本片段对应哪个 schema 元素'。AttnLink 显式提取这些注意力分布，作为 schema linking 的候选信号，再结合外部方法精排，得到更准的字段对齐。",
+        "deep": "架构师视角，schema linking（字段对齐）是你宽表 API 场景的'第一公里'——问题到字段的映射错了，后面全错。AttnLink 的价值在于'白盒化'：把模型内部已经算好的注意力拿出来用，几乎零额外成本提升对齐精度。对你们而言，这提示一个可行的工程路径：在封装业务 API 时，先做一层'字段语义对齐'增强，把宽表的字段名/注释变成可检索、可对齐的元数据，而不是靠 LLM 硬猜。",
+        "apply": "落地建议：① 为你们宽表 API 的每个字段建立带业务语义的元数据（别名、注释、示例值）；② 评估用注意力/相似度做自动字段对齐；③ 把对齐结果作为业务知识库的一部分沉淀。",
+        "caveats": "局限：针对 SQL 场景，API 型数据源需适配；注意力信号对长上下文/宽表可能不稳定，需与规则方法结合。",
+        "diagram": {
+          "title": "AttnLink：字段对齐（schema linking）",
+          "flow": [
+            {"label": "业务问题", "sub": "含业务词", "type": "frontend"},
+            {"label": "注意力提取", "sub": "内部信号", "type": "backend"},
+            {"label": "字段对齐", "sub": "问题→字段", "type": "cloud"},
+            {"label": "精确查询", "sub": "宽表 API", "type": "database"}
+          ],
+          "notes": [
+            {"label": "第一公里", "text": "问题到字段的对齐错则全错"},
+            {"label": "白盒", "text": "复用模型注意力，零额外成本"},
+            {"label": "工程", "text": "为宽表字段建语义元数据"}
+          ]
+        }
+      }
     },
     {
       "tag": "github",
@@ -63,7 +189,28 @@
       "source": "GitHub ⭐6550 / JavaScript",
       "link": "https://github.com/dataease/SQLBot",
       "summary": "基于大模型和 RAG 的智能问数系统，对话式数据分析。Text-to-SQL generation via LLMs using RAG，面向业务人员直接提问。",
-      "insight": "这是'让业务人员直接问业务数据'的产品形态参考。可以对照研究它如何用 RAG 注入业务上下文来提升问数准确率，适合作为你团队产品化的对标。"
+      "insight": "'让业务人员直接问业务数据'的产品形态参考。可对照研究它如何用 RAG 注入业务上下文提升问数准确率，适合作为产品化对标。",
+      "detail": {
+        "why": "SQLBot 代表'业务人员自然语言直接问数'的成熟产品形态。研究它能帮你理解：如何把'业务知识库 + 精确查询'包装成业务人员愿意用的产品，而非仅技术验证。",
+        "mechanism": "整体是'RAG 驱动的 text-to-SQL'：先把业务 schema、术语、常用查询做向量化检索，用户提问时注入相关业务上下文，再让 LLM 生成 SQL。配合对话式交互、结果可视化。",
+        "deep": "架构师视角，SQLBot 对你是'产品层'的参考——它展示了业务 Agent 的完整交互闭环（提问→注入业务上下文→生成→可视化→追问）。你可以借鉴它的'业务上下文注入'与'对话管理'设计，与你自研的 API 查数能力结合，形成完整产品。它的弱项是同样强绑定 SQL，且对复杂业务语义的治理较弱。",
+        "apply": "落地建议：① 研究其对话式问数的交互设计；② 把'业务上下文注入'改造为你们 API 的字段语义；③ 关注其可视化与追问机制，作为产品化蓝图。",
+        "caveats": "局限：SQL 绑定；业务语义治理弱；对上百字段宽表需额外做字段筛选。",
+        "diagram": {
+          "title": "SQLBot：对话式智能问数闭环",
+          "flow": [
+            {"label": "业务提问", "sub": "对话式", "type": "frontend"},
+            {"label": "业务上下文注入", "sub": "RAG", "type": "cloud"},
+            {"label": "生成查询", "sub": "LLM", "type": "backend"},
+            {"label": "结果可视化", "sub": "图表/追问", "type": "database"}
+          ],
+          "notes": [
+            {"label": "产品", "text": "业务人员自然语言直接问数"},
+            {"label": "闭环", "text": "提问→注入→生成→可视化→追问"},
+            {"label": "借鉴", "text": "产品化交互设计可对标"}
+          ]
+        }
+      }
     },
     {
       "tag": "product",
@@ -71,8 +218,29 @@
       "date": "2026-08",
       "source": "开源产品生态",
       "link": "https://github.com/Canner/WrenAI",
-      "summary": "业界正在把'业务指标/语义'从 BI 工具中抽离成独立层。WrenAI 的 context layer、dbt Semantic Layer、Cube 的指标 API、MetricsFlow 等，都在解决同一个问题：让 AI/下游消费方用统一的业务语义访问数据。",
-      "insight": "这是你'业务知识库构建'的关键业界趋势：语义层先行，AI 站在语义层之上访问数据，而不是直接啃原始表。建议把语义层作为你团队 AI for 业务架构的核心设计决策。"
+      "summary": "业界正把'业务指标/语义'从 BI 工具中抽离成独立层。WrenAI 的 context layer、dbt Semantic Layer、Cube 指标 API、MetricsFlow 都在解决：让 AI/下游消费方用统一业务语义访问数据。",
+      "insight": "这是你'业务知识库构建'的关键业界趋势：语义层先行，AI 站在语义层之上访问数据，而不是直接啃原始表/原始 API。建议把语义层作为团队 AI for 业务架构的核心设计决策。",
+      "detail": {
+        "why": "这条业界动态印证了你的方向：真正落地'AI 懂业务并在业务系统精确查询'的团队，几乎都走向'先建语义层'。它把'业务指标怎么定义、维度怎么关联'从实现里抽离，让 AI 消费的是稳定的业务语义，而非易变的物理结构。",
+        "mechanism": "共同模式：① 语义建模——用声明式语言（YAML/DSL）定义指标、维度、关系、计算逻辑；② 语义服务——把这层语义暴露成统一 API（如 metric API），供 AI/BI 消费；③ 生成层——LLM 面向语义层生成查询，而非面向物理库/API。",
+        "deep": "架构师视角，语义层是'AI for 业务'的地基。它带来的关键收益是'解耦'：业务语义变化（指标口径调整）只需改语义层，AI 查询逻辑无需跟着变；同时它是'治理'的载体——业务口径可审查、可版本化。对你'上百字段宽表 API'的场景，语义层的作用是'把宽表压扁成语义对象'：AI 不需要理解 100 个字段，只需要知道'销售额、订单量、客户等级'这些业务概念及其背后的计算。",
+        "apply": "落地建议：① 把'语义层'作为架构第一决策，纳入团队技术规划；② 从你们高业务含义 API 中提炼核心指标/维度，用声明式文档建模；③ 评估 WrenAI 的 context layer 作为起点，或自研适配 API 型数据源。",
+        "caveats": "局限：语义层建设需人工投入，'全自动语义抽取'尚未成熟；不同厂商实现互通性差；对快速变化的业务口径，维护成本会上升。",
+        "diagram": {
+          "title": "语义层：业务语义与物理结构解耦",
+          "flow": [
+            {"label": "业务概念", "sub": "指标/维度/口径", "type": "backend"},
+            {"label": "语义层", "sub": "声明式建模", "type": "cloud"},
+            {"label": "统一 API", "sub": "metric API", "type": "database"},
+            {"label": "AI/BI 消费", "sub": "查询/分析", "type": "frontend"}
+          ],
+          "notes": [
+            {"label": "解耦", "text": "业务口径变化只改语义层，AI 查询不变"},
+            {"label": "治理", "text": "业务语义可审查、可版本化"},
+            {"label": "核心", "text": "把宽表压扁成语义对象（销售额/订单量）"}
+          ]
+        }
+      }
     }
   ]
 }
