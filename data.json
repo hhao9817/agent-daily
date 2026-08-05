@@ -1,69 +1,78 @@
 {
   "date": "2026-08-06",
-  "banner": "今日最值得关注的是 DataSpace（可验证的数据分析 Agent 基准）与 BAP-SQL（预算感知的 Agentic Text-to-SQL），前者把数据 Agent 评测推进到异构工作区，后者聚焦 agent 在真实成本约束下的 SQL 生成。GitHub 侧 XERJ 的 autoindex 思路值得关注。",
+  "banner": "今日聚焦'AI for 业务'：最值得关注的是 SCAIR（面向企业知识图谱的 Agent 推理，直击'AI 懂业务关系'）与 WrenAI（基于开放语义 context layer 的可治理 text-to-SQL）。两者分别对应你课题中的'业务知识库'与'精确查询'两环。GitHub 侧 WrenAI / vanna / SQLBot 构成完整的 ChatBI 落地参考。",
   "items": [
     {
       "tag": "paper",
-      "title": "DataSpace: Benchmarking Data Agents for Verifiable Analytics over Heterogeneous Workspaces",
-      "date": "2026-08-04",
-      "source": "arXiv 2608.03451",
-      "link": "http://arxiv.org/abs/2608.03451",
-      "summary": "提出了 DataSpace 基准，用于在异构工作区（多数据源、多格式）上评测数据 Agent 的可验证分析能力。它强调分析结果需要可验证（verifiable），覆盖数据混洗、多源 join、格式转换等真实场景。",
-      "insight": "对做数据分析 Agent 的团队是很好的评测参考：'可验证'是当前数据 Agent 商业化落地最欠缺的一环，这个基准能帮你检验自己的 Agent 在复杂异构数据上是否真的可信，而不只是跑通 demo。"
+      "title": "SCAIR: Schema-Conditioned Agentic Iterative Reasoning for Enterprise Knowledge Graphs",
+      "date": "2026-06-02",
+      "source": "arXiv 2607.22571",
+      "link": "http://arxiv.org/abs/2607.22571",
+      "summary": "面向企业知识图谱的 Schema 条件化 Agent 迭代推理框架。它让 agent 先理解图 schema，再在 KG 上做迭代推理，以回答问题。核心是解决企业图谱中'语义稠密但结构复杂'的查询问题。",
+      "insight": "这正是你课题第 1、2 环的结合点：把业务对象关系（schema）作为 agent 的推理前提，而不是让 agent 盲目检索。对做业务知识库的团队，'schema 条件化'是让 AI 真正懂业务关系的关键设计，强烈建议精读。"
     },
     {
       "tag": "paper",
-      "title": "BAP-SQL: Budget-Aware Observation Planning for Agentic Text-to-SQL",
-      "date": "2026-08-03",
-      "source": "arXiv 2608.02876",
-      "link": "http://arxiv.org/abs/2608.02876",
-      "summary": "针对 Agentic Text-to-SQL 中 token/成本消耗过高的问题，提出预算感知的观察规划（BAP）策略，让 agent 在有限的调用预算内规划观察步骤，在保证准确率的同时显著降低开销。",
-      "insight": "很贴合生产环境痛点：多步 agent 的推理成本常被忽略。如果你在做 SQL Agent 上线，这类'预算约束下的规划'是控制运行成本的关键思路，值得读全文了解其规划策略。"
+      "title": "Towards Trustworthy and Cost-Efficient Data Integration: From Naive RAG to Agentic RAG",
+      "date": "2026-07-24",
+      "source": "arXiv 2607.22319",
+      "link": "http://arxiv.org/abs/2607.22319",
+      "summary": "讨论从朴素 RAG 走向 Agentic RAG 的数据集成路线，强调在保证结果可信（trustworthy）的同时控制成本（cost-efficient），覆盖多源业务数据接入与整合。",
+      "insight": "业务数据查询最大的痛点就是'多源异构 + 可信度'。这篇文章的 Agentic RAG 思路（把检索变成由 agent 主导的规划执行）比你现在的朴素方法更能应对复杂业务查询，值得对照你的知识库架构评估。"
     },
     {
       "tag": "paper",
-      "title": "DataClawEval: A Benchmark for Data Engineering Agents in Real Industrial Harness",
-      "date": "2026-07-30",
-      "source": "arXiv 2607.28033",
-      "link": "http://arxiv.org/abs/2607.28033",
-      "summary": "面向真实工业场景的数据工程 Agent 基准，评测 agent 在数据清洗、特征工程、管线搭建等工业级任务上的表现，强调贴近真实生产 harness 而非玩具数据集。",
-      "insight": "数据工程 Agent 与纯数据分析不同，更贴近你团队可能实际要做的 pipeline 工作。这个基准能帮你对照自家 Agent 在工业任务上的真实水平。"
+      "title": "FAIR GraphRAG: A Retrieval-Augmented Generation Approach for Semantic Data Analysis",
+      "date": "2026-07-13",
+      "source": "arXiv 2607.11464",
+      "link": "http://arxiv.org/abs/2607.11464",
+      "summary": "基于 GraphRAG 的语义数据分析方法，把业务数据的语义关系组织成语义图，再用 RAG 支撑分析问答。强调语义层面的可解释分析。",
+      "insight": "GraphRAG 是构建业务知识库的热门路线。它把'业务对象之间的语义关系'显式建模成图，比纯向量检索更能支撑'懂业务上下文'的分析。可作为你知识库技术选型的候选。"
+    },
+    {
+      "tag": "paper",
+      "title": "AttnLink: Turning Attention into Schema Links for Text-to-SQL",
+      "date": "2026-08-01",
+      "source": "arXiv 2608.00693",
+      "link": "http://arxiv.org/abs/2608.00693",
+      "summary": "把 LLM 的注意力机制转化为 text-to-SQL 的 schema linking 信号，提升复杂业务表结构下 SQL 生成时对 schema 的准确对齐。",
+      "insight": "schema linking 是企业级 text-to-SQL 准确率的最大瓶颈（业务库 schema 往往几百上千张表）。这篇的角度（用注意力做关联）值得了解，属于'精确查询'环节的前沿技术。"
     },
     {
       "tag": "github",
-      "title": "xerj-org/xerj",
+      "title": "Canner/WrenAI",
       "date": "2026-08-05",
-      "source": "GitHub ⭐1161 / Rust",
-      "link": "https://github.com/xerj-org/xerj",
-      "summary": "宣称'AI 搜索数据的新方式'，通过 autoindex 能力让 AI Agent 无需大量 token 消耗就能感知数据。Rust 实现，性能导向。",
-      "insight": "autoindex 的价值在于降低 agent 访问数据的 token 成本——和 BAP-SQL 的成本控制主题呼应。Rust 栈也说明性能是关键考量。建议关注其索引机制实现。"
+      "source": "GitHub ⭐16926 / Python",
+      "link": "https://github.com/Canner/WrenAI",
+      "summary": "GenBI（生成式 BI），开源的基于'开放 context layer'的可治理 text-to-SQL。核心思想是把业务语义（指标、维度、关系）建模成 context，让 agent 在受控上下文中生成精确 SQL。",
+      "insight": "这几乎是你课题的完整落地参考：语义层（context layer）+ 精确查询（text-to-SQL）+ 可治理。强烈建议研究它的语义建模方式，很可能就是你想要的业务知识库形态。"
     },
     {
       "tag": "github",
-      "title": "datagallery-lab/datafoundry",
-      "date": "2026-08-04",
-      "source": "GitHub ⭐611 / TypeScript",
-      "link": "https://github.com/datagallery-lab/datafoundry",
-      "summary": "开源的 AI 数据分析工作台（workbench），统一数据源、知识、工具和 agent 运行时，一站式支撑数据分析场景。",
-      "insight": "如果你在评估'自建数据分析 Agent 平台'的可行方案，这个项目的前端 + agent 运行时架构值得研究，可以帮助你设计统一接入层。"
+      "title": "vanna-ai/vanna",
+      "date": "2026-02-02",
+      "source": "GitHub ⭐23820 / Python",
+      "link": "https://github.com/vanna-ai/vanna",
+      "summary": "通过 Agentic Retrieval 实现精确的 Text-to-SQL，让模型用自然语言与 SQL 数据库对话。核心是训练/检索针对你 schema 的问答记忆。",
+      "insight": "vanna 的思路是'把业务问答沉淀成可检索记忆'——每次问答后存储 schema 相关信息供后续复用。对私有化业务知识库的持续积累有参考价值，架构简单易落地。"
     },
     {
       "tag": "github",
-      "title": "eddyzzl/marvis-risk-agent",
-      "date": "2026-08-03",
-      "source": "GitHub ⭐516 / Python",
-      "link": "https://github.com/eddyzzl/marvis-risk-agent",
-      "summary": "通用信贷风险 Agent，覆盖模型开发、验证、数据处理、特征工程等完整风控建模流程。",
-      "insight": "是'业务型 Agent'在垂直领域（金融风控）的完整落地样例。对你想了解的'业务 Agent 如何在具体领域跑通全流程'很有参考价值，尤其是特征工程这一步。"
-    },
-    {
-      "tag": "github",
-      "title": "About-Intelligence/soku-cli",
+      "title": "dataease/SQLBot",
       "date": "2026-08-05",
-      "source": "GitHub ⭐307 / TypeScript",
-      "link": "https://github.com/About-Intelligence/soku-cli",
-      "summary": "Soku CLI — 让任何 AI Agent 或 shell 调用 Soku 广告/GA4/PostHog 数据能力，本质是给 agent 提供营销/业务数据接入层。",
-      "insight": "这类'把业务数据能力封装给 Agent'的 CLI/MCP 模式，正是业务 Agent 数据接入的典型架构。可作为你设计数据服务与 agent 交互接口的参考。"
+      "source": "GitHub ⭐6550 / JavaScript",
+      "link": "https://github.com/dataease/SQLBot",
+      "summary": "基于大模型和 RAG 的智能问数系统，对话式数据分析。Text-to-SQL generation via LLMs using RAG，面向业务人员直接提问。",
+      "insight": "这是'让业务人员直接问业务数据'的产品形态参考。可以对照研究它如何用 RAG 注入业务上下文来提升问数准确率，适合作为你团队产品化的对标。"
+    },
+    {
+      "tag": "product",
+      "title": "语义层 / 指标平台生态（WrenAI、dbt Semantic Layer、Cube、MetricsFlow）",
+      "date": "2026-08",
+      "source": "开源产品生态",
+      "link": "https://github.com/Canner/WrenAI",
+      "summary": "业界正在把'业务指标/语义'从 BI 工具中抽离成独立层。WrenAI 的 context layer、dbt Semantic Layer、Cube 的指标 API、MetricsFlow 等，都在解决同一个问题：让 AI/下游消费方用统一的业务语义访问数据。",
+      "insight": "这是你'业务知识库构建'的关键业界趋势：语义层先行，AI 站在语义层之上访问数据，而不是直接啃原始表。建议把语义层作为你团队 AI for 业务架构的核心设计决策。"
     }
   ]
 }
