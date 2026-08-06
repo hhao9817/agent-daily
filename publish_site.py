@@ -65,7 +65,7 @@ def archive_index(current_date):
         tpl = f.read()
 
     items = []
-    for fn in sorted(os.listdir(ARCHIVE_DIR)):
+    for fn in sorted(os.listdir(ARCHIVE_DIR), reverse=True):
         m = re.match(r"^(\d{4}-\d{2}-\d{2})\.json$", fn)
         if not m:
             continue
