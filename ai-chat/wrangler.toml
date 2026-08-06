@@ -1,8 +1,0 @@
-name = "agent-daily-chat"
-main = "worker.js"
-compatibility_date = "2024-01-01"
-
-# 可选：在这里设置非敏感配置（API key 请用 wrangler secret put 设置，不要写死）
-# [vars]
-# MODEL = "deepseek-v4-flash-0731"
-# BRIEF_URL = "https://raw.githubusercontent.com/hhao9817/agent-daily/main/data.json"
