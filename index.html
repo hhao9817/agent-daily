@@ -39,6 +39,8 @@
       -webkit-text-fill-color: transparent;
     }
     header .date { color: var(--muted); margin-top: 8px; font-size: 0.95em; }
+    .archive-link { display: inline-block; margin-top: 10px; color: var(--accent); text-decoration: none; font-size: 0.85em; border: 1px solid var(--border); padding: 4px 12px; border-radius: 20px; }
+    .archive-link:hover { border-color: var(--accent); background: rgba(108,140,255,0.08); }
     .banner {
       background: linear-gradient(135deg, rgba(108,140,255,0.12), rgba(74,209,160,0.12));
       border: 1px solid var(--border);
@@ -175,6 +177,7 @@
   <header>
     <h1>🤖 AI for Business 每日晨报</h1>
     <div class="date">业务知识库 · 业务语义理解 · API 精确查询 | 2026-08-06</div>
+    <a class="archive-link" href="archive/index.html">📚 历史晨报归档</a>
   </header>
 
   <div class="banner"><h2>📌 今日速览</h2><p>今日聚焦'业务语义理解+精确查询'的工程化落地：BAP-SQL 提出 budget-aware observation planning，把 Agentic Text-to-SQL 的成本/上下文控制前置到'观察形成阶段'；SAFAARI 用多 Agent 专门解决'企业数据没有预定义 API 端点'时的 schema linking 瓶颈——两者正好对应你'通过高业务含义 API 查数'场景下的'精确调用+成本可控'。同时 ACE-GraphRAG 与 triple-robustness 分析为你的'语义层 vs 知识图谱'路线选择提供了新证据：GraphRAG 的收益高度依赖 corpus/检索器/评判器的组合，不能一概而论。</p></div>
