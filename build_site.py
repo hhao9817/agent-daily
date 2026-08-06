@@ -49,7 +49,7 @@ def esc(s):
 
 
 def build_detail_blocks(detail):
-    """把 detail 渲染成详情区块 HTML（供弹层和完整页复用）。"""
+    """把 detail 渲染成详情区块 HTML（供弹层和完整页复用）。增补来源溯源区块。"""
     d_blocks = []
     if detail.get("diagram"):
         d_blocks.append(
@@ -62,10 +62,28 @@ def build_detail_blocks(detail):
         d_blocks.append(f'<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>{esc(detail["mechanism"])}</p></div>')
     if detail.get("deep"):
         d_blocks.append(f'<div class="modal-sec"><h4>🧠 深度解读</h4><p>{esc(detail["deep"])}</p></div>')
+    if detail.get("business"):
+        d_blocks.append(f'<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>{esc(detail["business"])}</p></div>')
     if detail.get("apply"):
         d_blocks.append(f'<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>{esc(detail["apply"])}</p></div>')
     if detail.get("caveats"):
         d_blocks.append(f'<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>{esc(detail["caveats"])}</p></div>')
+    # 来源溯源区块（grounded-citations 风格）
+    srcs = detail.get("sources")
+    if srcs:
+        src_list = []
+        for i, src in enumerate(srcs, 1):
+            url = src.get("url", "")
+            title = src.get("title", url)
+            if url:
+                src_list.append(f'<li><span class="src-id">[{i}]</span> '
+                                f'<a href="{esc(url)}" target="_blank" rel="noopener" class="src-link">{esc(title)}</a></li>')
+            else:
+                src_list.append(f'<li><span class="src-id">[{i}]</span> {esc(title)}</li>')
+        d_blocks.append(
+            f'<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4>'
+            f'<ol class="sources-list">{"".join(src_list)}</ol></div>'
+        )
     return d_blocks
 
 
