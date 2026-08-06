@@ -96,9 +96,14 @@ def build_detail_blocks(detail):
     """把 detail 渲染成详情区块 HTML（供弹层和完整页复用）。增补来源溯源区块。"""
     d_blocks = []
     if detail.get("diagram"):
+        svg = gen_flow_svg(detail["diagram"])
         d_blocks.append(
             f'<div class="modal-sec"><h4>📊 架构示意</h4>'
-            f'<div class="diagram-box">{gen_flow_svg(detail["diagram"])}</div></div>'
+            f'<div class="diagram-box" data-diagram>'
+            f'<div class="diagram-svg">{svg}</div>'
+            f'<button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" '
+            f'title="点击放大架构图">⛶ 放大</button>'
+            f'</div></div>'
         )
     if detail.get("why"):
         d_blocks.append(f'<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>{esc(detail["why"])}</p></div>')

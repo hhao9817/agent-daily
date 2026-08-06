@@ -241,7 +241,81 @@
       border-radius: 10px;
       padding: 12px;
       overflow-x: auto;
+      position: relative;
     }
+    .diagram-svg svg { display: block; }
+    .diagram-zoom {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.82em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      z-index: 5;
+    }
+    .diagram-zoom:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ===== 架构图放大 lightbox ===== */
+    .diagram-lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.85);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      overflow: auto;
+      padding: 30px;
+    }
+    .diagram-lightbox.show { display: block; }
+    .diagram-lightbox-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .diagram-lightbox-inner .lb-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px;
+    }
+    .diagram-lightbox-inner .lb-head h3 { font-size: 1.1em; color: var(--text); }
+    .diagram-lightbox-inner .lb-tools { display: flex; align-items: center; gap: 8px; }
+    .lb-btn {
+      background: var(--accent-soft); color: var(--accent);
+      border: 1px solid var(--border-strong); border-radius: 8px;
+      padding: 5px 12px; font-size: 0.85em; font-weight: 600; cursor: pointer;
+      transition: all .15s;
+    }
+    .lb-btn:hover { background: var(--accent); color: #fff; }
+    .lb-close {
+      background: none; border: none; color: var(--muted);
+      font-size: 26px; line-height: 1; cursor: pointer; padding: 4px 8px; border-radius: 8px;
+    }
+    .lb-close:hover { color: var(--text); background: var(--bg); }
+    .diagram-lightbox-inner .lb-svg {
+      overflow: auto;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .diagram-lightbox-inner .lb-svg svg {
+      max-width: 100%;
+      height: auto;
+      transition: transform .15s ease;
+      transform-origin: center center;
+    }
+    .diagram-lightbox-inner .lb-svg svg.zoomed { transform: scale(1.6); cursor: grab; }
+    .diagram-lightbox-inner .lb-svg svg.zoomed:active { cursor: grabbing; }
+    .diagram-lightbox-inner .lb-tip { text-align: center; color: var(--muted); font-size: 0.8em; margin-top: 10px; }
     .modal-foot {
       margin-top: 18px;
       padding-top: 14px;
@@ -326,6 +400,21 @@
     </div>
   </div>
 
+  <!-- ===== 架构图放大 lightbox ===== -->
+  <div class="diagram-lightbox" id="diagram-lightbox" onclick="if(event.target===this)closeDiagramZoom()">
+    <div class="diagram-lightbox-inner">
+      <div class="lb-head">
+        <h3 id="lb-title">📊 架构图</h3>
+        <div class="lb-tools">
+          <button type="button" class="lb-btn" onclick="diagramToggleZoom()">🔍 放大/缩小</button>
+          <button type="button" class="lb-close" onclick="closeDiagramZoom()" aria-label="关闭">×</button>
+        </div>
+      </div>
+      <div class="lb-svg" id="lb-svg"></div>
+      <div class="lb-tip">提示：点击「放大/缩小」切换缩放，缩放后可在图内拖动查看细节 · 按 Esc 关闭</div>
+    </div>
+  </div>
+
   <script>
     function openDetail(i) {
       const m = document.getElementById('modal-' + i);
@@ -355,9 +444,33 @@
       window.open(url, '_blank');
       closeFeedback();
     }
+    /* ===== 架构图放大 ===== */
+    function openDiagramZoom(btn) {
+      const box = btn.closest('.diagram-box');
+      const svg = box.querySelector('.diagram-svg svg') || box.querySelector('svg');
+      if (!svg) return;
+      const title = box.querySelector('h4') ? box.querySelector('h4').textContent : '📊 架构图';
+      document.getElementById('lb-title').textContent = title;
+      const holder = document.getElementById('lb-svg');
+      holder.innerHTML = '';
+      holder.appendChild(svg.cloneNode(true));
+      const lb = document.getElementById('diagram-lightbox');
+      lb.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeDiagramZoom() {
+      document.getElementById('diagram-lightbox').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function diagramToggleZoom() {
+      const svg = document.querySelector('#lb-svg svg');
+      if (!svg) return;
+      svg.classList.toggle('zoomed');
+    }
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         document.querySelectorAll('.modal.show').forEach(function(m) { m.classList.remove('show'); });
+        document.getElementById('diagram-lightbox').classList.remove('show');
         document.body.style.overflow = '';
       }
     });
