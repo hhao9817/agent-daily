@@ -451,5 +451,21 @@
         }
       }
     }
-  ]
+  ],
+  "snapshot": {
+    "summary": "今日三大看点点：学术端 GDPevo 首个企业业务工作流自进化基准登场（CRM/ERP/Finance 全覆盖，天花板 91.6%）；商业端 dbt Core v2.0 发布（Fusion 引擎、Rust 重写、解析提速 10x）+ Fivetran 合并完成，正式提出为可信 AI Agent 打造数据基础设施；SQLBot 新增 MCP 支持。共同指向：为可信 AI Agent 打造数据基础设施。",
+    "groups": {
+      "paper": [
+        "GDPevo 基准：企业业务工作流 Agent 自进化天花板仅 91.6%，揭示'归因可分离'是评测自进化是否真实的关键",
+        "DBLifeBench + Progressive-Text2SQL：text-to-SQL 从单点翻译升级为数据库全生命周期智能评测",
+        "MCTS-Report：用蒙特卡洛树搜索把'表→多模态报告'做成渐进式搜索，数值准确靠 SQL 兜底"
+      ],
+      "blog": [
+        "dbt Core v2.0（Fusion 引擎/Rust 重写）+ Fivetran 合并完成，正式提出'为可信 AI Agent 打造数据基础设施'"
+      ],
+      "github": [
+        "SQLBot v1.10.0：RAG 版 text-to-SQL 问数系统，新增 MCP (Model Context Protocol) 支持"
+      ]
+    }
+  }
 }

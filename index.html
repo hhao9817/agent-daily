@@ -58,18 +58,65 @@
     }
     .archive-link:hover { border-color: var(--accent); background: var(--accent-soft); }
 
-    /* 今日速览 */
-    .banner {
+    /* 今日速览（结构化，按来源分类） */
+    .snapshot {
       background: linear-gradient(135deg, var(--accent-soft), var(--accent2-soft));
       border: 1px solid var(--border);
-      border-left: 5px solid var(--accent);
-      border-radius: 12px;
-      padding: 18px 22px;
+      border-radius: 14px;
+      padding: 20px 22px;
       margin-bottom: 28px;
       box-shadow: var(--shadow);
     }
-    .banner h2 { font-size: 1.05em; color: var(--accent); margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-    .banner p { color: var(--text); font-size: 0.95em; }
+    .snapshot-summary {
+      font-size: 0.98em;
+      color: var(--text);
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px dashed var(--border-strong);
+    }
+    .snapshot-summary strong { color: var(--accent); }
+    .snapshot-groups { display: flex; flex-direction: column; gap: 10px; }
+    .snap-group {
+      display: flex;
+      gap: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      box-shadow: var(--shadow);
+    }
+    .snap-bar { width: 5px; border-radius: 3px; flex-shrink: 0; }
+    .snap-bar-paper { background: var(--accent); }
+    .snap-bar-github { background: var(--accent2); }
+    .snap-bar-product { background: var(--warn); }
+    .snap-bar-blog { background: var(--red); }
+    .snap-body { flex: 1; }
+    .snap-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.85em; font-weight: 700; color: var(--text);
+      margin-bottom: 6px;
+    }
+    .snap-title .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-paper { background: var(--accent); }
+    .dot-github { background: var(--accent2); }
+    .dot-product { background: var(--warn); }
+    .dot-blog { background: var(--red); }
+    .snap-title .badge {
+      font-size: 0.7em; font-weight: 600;
+      background: var(--bg); border: 1px solid var(--border);
+      color: var(--muted); padding: 1px 8px; border-radius: 20px;
+    }
+    .snap-points { list-style: none; padding: 0; margin: 0; }
+    .snap-points li {
+      font-size: 0.9em; color: var(--text);
+      padding: 3px 0 3px 18px;
+      position: relative;
+    }
+    .snap-points li::before {
+      content: "▸";
+      position: absolute; left: 2px;
+      color: var(--accent);
+    }
 
     /* 分类区块 */
     .section { margin-bottom: 30px; }
@@ -241,7 +288,7 @@
     <a class="archive-link" href="archive/index.html">📚 历史晨报归档</a>
   </header>
 
-  <div class="banner"><h2>📌 今日速览</h2><p>今日速览：① 学术端，GDPevo 首个"企业业务工作流自进化"基准登场，CRM/ERP/Finance 全覆盖，揭示当前 Agent 自进化天花板仅 91.6%；② 商业端，dbt Core v2.0 发布（Fusion 引擎，Rust 重写，SQL 原生理解，解析提速 10x）+ Fivetran 合并完成，正式提出"为可信 AI Agent 打造数据基础设施"。两条线索都指向同一个命题：AI 要真正懂业务，先得把业务知识固化成机器可消费的治理化语义资产。</p></div>
+  <div class="snapshot"><div class="snapshot-summary"><strong>📌 今日速览</strong><br>今日三大看点点：学术端 GDPevo 首个企业业务工作流自进化基准登场（CRM/ERP/Finance 全覆盖，天花板 91.6%）；商业端 dbt Core v2.0 发布（Fusion 引擎、Rust 重写、解析提速 10x）+ Fivetran 合并完成，正式提出为可信 AI Agent 打造数据基础设施；SQLBot 新增 MCP 支持。共同指向：为可信 AI Agent 打造数据基础设施。</div><div class="snapshot-groups"><div class="snap-group"><span class="snap-bar snap-bar-paper"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-paper"></span>📄 学术论文<span class="badge">3 项</span></div><ul class="snap-points"><li>GDPevo 基准：企业业务工作流 Agent 自进化天花板仅 91.6%，揭示'归因可分离'是评测自进化是否真实的关键</li><li>DBLifeBench + Progressive-Text2SQL：text-to-SQL 从单点翻译升级为数据库全生命周期智能评测</li><li>MCTS-Report：用蒙特卡洛树搜索把'表→多模态报告'做成渐进式搜索，数值准确靠 SQL 兜底</li></ul></div></div><div class="snap-group"><span class="snap-bar snap-bar-github"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-github"></span>🐙 开源项目<span class="badge">1 项</span></div><ul class="snap-points"><li>SQLBot v1.10.0：RAG 版 text-to-SQL 问数系统，新增 MCP (Model Context Protocol) 支持</li></ul></div></div><div class="snap-group"><span class="snap-bar snap-bar-blog"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-blog"></span>📝 技术博客<span class="badge">1 项</span></div><ul class="snap-points"><li>dbt Core v2.0（Fusion 引擎/Rust 重写）+ Fivetran 合并完成，正式提出'为可信 AI Agent 打造数据基础设施'</li></ul></div></div></div></div>
 
   <div class="section"><div class="section-head"><span class="bar bar-paper"></span><h2>📄 学术论文</h2><span class="count">4 条</span></div><div class="item" onclick="openDetail(0)" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')openDetail(0)"><div class="item-top"><span class="tag tag-paper">📄 论文</span><span class="detail-hint">点击查看详情 →</span></div><h3><a href="https://arxiv.org/abs/2608.03764" target="_blank" rel="noopener">GDPevo：首个聚焦真实企业业务工作流的 Agent 自进化基准（CRM/ERP/Finance/Healthcare/Legal 全覆盖）</a></h3><div class="meta">2026-08-04 · arXiv 2608.03764</div><div class="summary">来自国内团队（Zhejiang Univ./Ant 等）的 GDPevo 提出"进化原生(evolution-native)"基准，核心机制 rule hybridization（规则杂交）：把每个企业工作流拆成原子业务规则，训练任务只暴露部分规则，测试任务重组剩余规则，从而让测试时的提升可归因于训练经验而非数据污染。覆盖 CRM、ERP、财务、医疗、法律、数据流六大领域，V1 含 120 任务/12 组，V2 可两天内扩到 240 任务。评测 4 个 Agent×4 种监督方式：自进化稳定提升留出集准确率最高 16.44 个百分点，但最强进化 Agent 仍远低于 91.6% 的全知 oracle 上限——说明当前 Agent 自进化能力远未兑现。Semantic Scholar 引用数因 429 限流未能核实，属 2026 新论文，预期为 0。</div><div class="insight"><strong>🔍 技术视角：</strong>架构师点评：这是少有地把"业务规则"作为一等公民的 Agent 基准。用户团队正从"AI for 研发"转向"AI for 业务"，GDPevo 的 rule hybridization 思路与用户的"业务知识库构建"方向高度同构——把业务流程拆成可重组的原子规则，本质就是业务知识图谱的运营化。"进化天花板 91.6% 但实测远未达标"这一结论，对用户是清醒剂：别指望一次 prompt 调优就让 Agent 懂全业务，需建立持久化状态 + 归因式评估。建议把 GDPevo 的评估范式（训练/测试规则隔离）移植到内部业务 API 评测上。</div></div><div class="item" onclick="openDetail(1)" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')openDetail(1)"><div class="item-top"><span class="tag tag-paper">📄 论文</span><span class="detail-hint">点击查看详情 →</span></div><h3><a href="https://arxiv.org/abs/2608.03794" target="_blank" rel="noopener">DBLifeBench + Progressive-Text2SQL：把 text-to-SQL 从"单点翻译"升级为"数据库全生命周期智能"基准</a></h3><div class="meta">2026-08-04 · arXiv 2608.03794</div><div class="summary">DBLifeBench 是首个覆盖数据库全生命周期五阶段（Design/Implementation/Operation/Debugging/Maintenance）的 LLM 评测基准。团队指出当前基准过度聚焦 Text-to-SQL，忽视了 schema 设计、运维、调试、维护等真实 DBA 工作。配套提出 Progressive-Text2SQL 任务：用结构化推理图模仿人类迭代式问题求解，缓解自然语言歧义与复杂 SQL 逻辑间的认知错配。关键发现：通用模型表现均衡，而专精 Text-to-SQL 的模型在非编码阶段（设计/维护）出现"灾难性遗忘"。Semantic Scholar 引用数因 429 限流未核实，2026 新论文预期 0。</div><div class="insight"><strong>🔍 技术视角：</strong>架构师点评：这条对用户"语义层 vs 直连数据库"路线选择有直接启示。用户不直连 DB，但 DBLifeBench 揭示的"专精模型在非编码阶段灾难性遗忘"恰是警示——如果只把 LLM 当 text-to-SQL 翻译器，它在 schema 理解、数据治理、维护上会短板明显。Progressive-Text2SQL 的"推理图"思路与用户"业务语义层"方向一致：都试图把模糊自然语言锚定到结构化语义骨架。建议把 Progressive-Text2SQL 的推理图作为语义层的中间表示来研究。</div></div><div class="item" onclick="openDetail(2)" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')openDetail(2)"><div class="item-top"><span class="tag tag-paper">📄 论文</span><span class="detail-hint">点击查看详情 →</span></div><h3><a href="https://arxiv.org/abs/2608.04071" target="_blank" rel="noopener">MCTS-Report：用蒙特卡洛树搜索把"表→多模态报告"做成渐进式搜索，数值准确性靠 SQL 兜底</a></h3><div class="meta">2026-08-04 · arXiv 2608.04071</div><div class="summary">MCTS-Report 用蒙特卡洛树搜索（MCTS）把"表格数据→文字+图表多模态报告"建模为结构化搜索空间内的渐进构造：原子动作含章节规划、可视化任务识别、图表生成、洞察组织、叙述精修，每步由 LLM 基于当前报告状态动态推理执行。奖励函数多维度联合评估数值事实一致性（通过 SQL 校验）、图表质量、图表-文本对齐、结构完整性，并加多样性惩罚抑制重复图表、前置条件检查剪枝无效动作。配套 MMRBench（六领域真实表+专家参考结构）。实验显示 MCTS-Report 在结构完整性、数值准确性、图文对齐、洞察新颖性上显著超越基线，总分 77.9。Semantic Scholar 引用数因 429 限流未核实，预期 0。</div><div class="insight"><strong>🔍 技术视角：</strong>架构师点评：这条对用户的"业务系统精确查询分析"方向极有价值。MCTS-Report 的精髓在于用 SQL 做数值事实校验——把 LLM 生成的洞察回写到 SQL 验证，这正契合用户"业务数据可信度验证"诉求。把报告生成拆成原子动作 + MCTS 搜索，也示范了"Agent 不是一次性生成，而是搜索+验证"的范式，可直接迁移到"业务 API 查数→分析→报告"链路。</div></div><div class="item" onclick="openDetail(3)" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')openDetail(3)"><div class="item-top"><span class="tag tag-paper">📄 论文</span><span class="detail-hint">点击查看详情 →</span></div><h3><a href="https://arxiv.org/abs/2608.04968" target="_blank" rel="noopener">EvolveNet：联邦式 Agent harness 进化——各业务部署本地进化、只共享学到的程序改编</a></h3><div class="meta">2026-08-05 · arXiv 2608.04968</div><div class="summary">EvolveNet 提出"协作式 harness 进化"范式：一个共享 harness 广播给数据本地的 Agent 部署，各自在自己的工作负载上进化，只把学到的程序改编（program adaptations）回传组合成新的共享 harness 再分发——原始工作负载不离开本地。关键解决"experience 最有价值的地方恰好是无法集中的"难题（用户/组织/环境隔离的 experience 流）。引入 scope-typed、evidence-guided 程序聚合解决独立修改的程序无法像模型参数那样平均、组合时可能冲突的问题。在 text-to-SQL、数据科学编程、竞赛编程、软件工程、agentic workflows 五场景均提升共享 harness，异构工作负载下增益最大。消融证明增益来自多 Agent 改编的组合而非单纯选择。</div><div class="insight"><strong>🔍 技术视角：</strong>架构师点评：这条对用户"多业务线、多团队"场景极有启发。用户团队若在不同业务域（如多业务线的 API 查数 Agent）各自部署，原始业务数据因合规不能集中，但各团队学到的"如何更好地调该业务的 API"改编却可共享。EvolveNet 正是这种联邦式进化的范式。其 text-to-SQL 场景的增益也直接对应用户"业务精确查询"方向。</div></div></div>
 <div class="section"><div class="section-head"><span class="bar bar-github"></span><h2>🐙 开源项目</h2><span class="count">1 条</span></div><div class="item" onclick="openDetail(4)" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')openDetail(4)"><div class="item-top"><span class="tag tag-github">🐙 GitHub</span><span class="detail-hint">点击查看详情 →</span></div><h3><a href="https://github.com/dataease/SQLBot" target="_blank" rel="noopener">SQLBot v1.10.0（dataease）：RAG 版 text-to-SQL 问数系统，新增 MCP 支持 + 修复 SQL/提示注入安全漏洞</a></h3><div class="meta">2026-07-16 · GitHub dataease/SQLBot</div><div class="summary">SQLBot（飞致云 dataease 团队，⭐6554）发布 v1.10.0（2026-07-16），定位"基于大模型和 RAG 的智能问数系统，对话式数据分析神器，Text-to-SQL via LLMs using RAG"。本次更新重点：① 安全——修复 SQL 注入(CWE-89)、LLM 提示注入导致的未授权查询、权限提升、行权限过滤器转义等多个漏洞；② 新增 MCP（Model Context Protocol）调用日志、自定义提示词、隐藏思考块配置；③ 兼容旧版 MSSQL、扩展数据库表字段备注（alembic 迁移）。项目活跃（pushed 2026-08-05），是国内开源 ChatBI 代表之一。</div><div class="insight"><strong>🔍 技术视角：</strong>架构师点评：这条对用户"业务系统精确查询"方向是直接可参考的开源实现。SQLBot 的 RAG+text-to-SQL 思路与用户"业务语义理解+精确查询"同向，v1.10.0 的 MCP 支持值得重点关注——MCP 正成为 Agent 调用外部数据源/工具的协议标准，SQLBot 接入 MCP 意味着它正从"问数工具"向"可被 Agent 调用的数据能力"演进。安全修复（SQL 注入/提示注入）也提醒：LLM 驱动的查询系统是攻击面，必须做行权限转义+注入防护。</div></div></div>
