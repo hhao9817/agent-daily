@@ -59,5 +59,53 @@
   {{ARCHIVE_ITEMS}}
 
   <footer>由 Hermes Agent 自动生成 · 历史归档</footer>
+
+  <button class="feedback-fab" onclick="openFeedback()" title="提交反馈">💬</button>
+  <div class="modal" id="feedback-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeFeedback()" aria-label="关闭">×</button>
+      <span class="tag tag-product">💬 读者反馈</span>
+      <h2>提交意见 / 反馈</h2>
+      <div class="modal-body">
+        <p style="color:var(--muted);font-size:0.9em;margin-bottom:12px;">你的反馈会帮我改进晨报内容。提交后打开 GitHub Issue 页面，确认后每天 17:00 处理。</p>
+        <select id="fb-type" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:#1a1e2b;color:var(--text);margin-bottom:12px;">
+          <option value="内容建议">内容建议（选题/深度/方向）</option>
+          <option value="错误报告">错误报告（链接失效/信息有误）</option>
+          <option value="格式反馈">格式/排版反馈</option>
+          <option value="其他">其他</option>
+        </select>
+        <textarea id="fb-body" rows="5" placeholder="请描述你的意见、建议或发现的问题…" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:#1a1e2b;color:var(--text);resize:vertical;margin-bottom:12px;"></textarea>
+        <button class="modal-submit" onclick="submitFeedback()">提交反馈 →</button>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .feedback-fab {
+      position: fixed; bottom: 24px; right: 24px; width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, #6c8cff, #4ad1a0); border: none; color: #fff; font-size: 24px;
+      cursor: pointer; box-shadow: 0 4px 16px rgba(108,140,255,0.4); z-index: 9000;
+    }
+    .feedback-fab:hover { transform: scale(1.1); }
+    .modal-submit {
+      width: 100%; padding: 12px; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, #6c8cff, #4ad1a0); color: #fff; font-size: 1em; font-weight: 600; cursor: pointer;
+    }
+  </style>
+
+  <script>
+    function openFeedback() { document.getElementById('feedback-modal').classList.add('show'); document.body.style.overflow = 'hidden'; }
+    function closeFeedback() { document.getElementById('feedback-modal').classList.remove('show'); document.body.style.overflow = ''; }
+    function submitFeedback() {
+      const type = document.getElementById('fb-type').value;
+      const body = document.getElementById('fb-body').value.trim();
+      if (!body) { alert('请填写反馈内容'); return; }
+      const title = '[网页反馈/' + type + '] ' + new Date().toISOString().slice(0,10);
+      const full = '反馈类型: ' + type + '\n\n' + body;
+      const url = 'https://github.com/hhao9817/agent-daily/issues/new?title=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(full);
+      window.open(url, '_blank');
+      closeFeedback();
+    }
+  </script>
 </body>
 </html>
