@@ -39,6 +39,25 @@ def build_index(data_file):
     return run(f'{sys.executable} "{BUILD}" "{data_file}" --out {os.path.join(REPO_DIR, "index.html")} --mode interactive')
 
 
+def preserve_old_version(date):
+    """覆盖前保留旧版：把 archive/{date}.json 改名为 {date}-{HHMMSS}.json。
+    旧版 html 由 archive() 对改名后的 json 重新生成。
+    时间戳冲突时追加序号，保证同日多版本不互相覆盖。"""
+    base_json = os.path.join(ARCHIVE_DIR, f"{date}.json")
+    if not os.path.exists(base_json):
+        return False
+    ts = datetime.now().strftime("%H%M%S")
+    new_json = os.path.join(ARCHIVE_DIR, f"{date}-{ts}.json")
+    # 时间戳冲突（同秒多次发布）：追加 -N 序号
+    n = 1
+    while os.path.exists(new_json):
+        new_json = os.path.join(ARCHIVE_DIR, f"{date}-{ts}-{n}.json")
+        n += 1
+    os.replace(base_json, new_json)
+    print(f"📦 保留旧版: {os.path.basename(new_json)}")
+    return True
+
+
 def archive(data):
     """归档本期：生成 archive/YYYY-MM-DD.html（full 模式）+ 复制 data.json + 重建 archive/index.html。"""
     date = data.get("date") or datetime.now().strftime("%Y-%m-%d")
@@ -53,12 +72,12 @@ def archive(data):
         return False
 
     # 2. 归档索引
-    archive_index(data["date"])
+    archive_index(date)
     return True
 
 
 def archive_index(current_date):
-    """重建 archive/index.html，列出所有历史期（按日期倒序）。"""
+    """重建 archive/index.html，列出所有历史期（含同日多版本，按名称倒序）。"""
     if not os.path.exists(ARCHIVE_DIR):
         os.makedirs(ARCHIVE_DIR)
     with open(ARCHIVE_TPL, "r", encoding="utf-8") as f:
@@ -66,10 +85,12 @@ def archive_index(current_date):
 
     items = []
     for fn in sorted(os.listdir(ARCHIVE_DIR), reverse=True):
-        m = re.match(r"^(\d{4}-\d{2}-\d{2})\.json$", fn)
+        # 匹配 YYYY-MM-DD.json 或 YYYY-MM-DD-HHMMSS.json 或 YYYY-MM-DD-HHMMSS-N.json
+        m = re.match(r"^(\d{4}-\d{2}-\d{2})(?:-(\d{6})(?:-\d+)?)?\.json$", fn)
         if not m:
             continue
         d = m.group(1)
+        ver = m.group(2)
         # 读取该期的速览/条数作为元信息
         try:
             with open(os.path.join(ARCHIVE_DIR, fn), "r", encoding="utf-8") as f:
@@ -80,8 +101,11 @@ def archive_index(current_date):
             count = 0
             summary = ""
         meta = f"{count} 条资讯" + (f" · {summary}…" if summary else "")
+        # 页面文件名：带版本号的用完整名，最新版用日期
+        page_name = f"{d}-{ver}" if ver else d
+        label = f"{d} 晨报" + (f" (第{ver}版)" if ver else "")
         items.append(f'<div class="arch-item">'
-                     f'<a href="{d}.html">{d} 晨报</a>'
+                     f'<a href="{page_name}.html">{label}</a>'
                      f'<span class="meta">{meta}</span>'
                      f'</div>')
 
@@ -104,9 +128,20 @@ def main():
     with open(data_file, "r", encoding="utf-8") as f:
         data = json.load(f)
 
-    # 1. 先把本期 data.json 复制到 archive/
     date = data.get("date") or datetime.now().strftime("%Y-%m-%d")
     os.makedirs(ARCHIVE_DIR, exist_ok=True)
+
+    # 0. 覆盖前保留旧版（若存在），并为其生成独立 html
+    if preserve_old_version(date):
+        old_json = [f for f in os.listdir(ARCHIVE_DIR)
+                    if re.match(rf"^{re.escape(date)}-\d{{6}}\.json$", f)]
+        if old_json:
+            old_path = os.path.join(ARCHIVE_DIR, sorted(old_json)[-1])
+            old_html = old_path.replace(".json", ".html")
+            run(f'{sys.executable} "{BUILD}" "{old_path}" --out "{old_html}" --mode full')
+            print(f"📄 旧版页面已生成: {os.path.basename(old_html)}")
+
+    # 1. 把本期 data.json 复制到 archive/
     arch_json = os.path.join(ARCHIVE_DIR, f"{date}.json")
     with open(arch_json, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
