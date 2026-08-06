@@ -1,23 +1,130 @@
 {
   "date": "2026-08-06",
-  "banner": "今日聚焦'业务语义理解+精确查询'的工程化落地：BAP-SQL 提出 budget-aware observation planning，把 Agentic Text-to-SQL 的成本/上下文控制前置到'观察形成阶段'；SAFAARI 用多 Agent 专门解决'企业数据没有预定义 API 端点'时的 schema linking 瓶颈——两者正好对应你'通过高业务含义 API 查数'场景下的'精确调用+成本可控'。同时 ACE-GraphRAG 与 triple-robustness 分析为你的'语义层 vs 知识图谱'路线选择提供了新证据：GraphRAG 的收益高度依赖 corpus/检索器/评判器的组合，不能一概而论。",
+  "banner": "今日最值得关注：arXiv 新文 OADD 提出\"operationalization-aware data discovery\"——给定一个抽象业务概念，自动找出数据库中哪些列能度量它，直击\"业务语义→字段映射\"痛点；同时 WrenAI 把 semantic layer 升级为\"open context engine\"，与 microsoft/graphrag v3.1.1 同期更新，恰好对应你关注的\"语义层 vs 企业知识图谱\"两条路线的最新锚点。",
   "items": [
     {
       "tag": "paper",
-      "title": "BAP-SQL: Budget-Aware Observation Planning for Agentic Text-to-SQL",
-      "date": "2026-08-03",
-      "source": "arXiv 2608.02876",
-      "link": "https://arxiv.org/abs/2608.02876",
-      "summary": "提出把'观察形成（observation formation）'当作一个预算控制阶段的 Agentic Text-to-SQL 框架。它评估查询风险、按需改写 SQL、并把硬性上限委托给独立的 runtime shield，避免宽查询在有用证据出现前就耗尽 context 和数据库工作量。在 BIRD 衍生设定上，4B/7B 主干在 token 减少 4.5-5.0% 的同时 tight-budget 成功率提升 3.4-3.6 个百分点。",
-      "insight": "直击你'精确查询'的隐性成本维度：agent 调业务 API 查数时，一次宽表查询可能返回上百字段、几千行，瞬间打爆上下文。BAP-SQL 的'预算前置+独立 shield'思路可直接迁移到 API 调用层——把'查前先估风险、必要时改写/限制、由独立守卫兜底'做成工程护栏。",
+      "title": "OADD：从研究问题到列的操作化感知数据发现",
+      "date": "2026-08-05",
+      "source": "arXiv 2608.04536",
+      "link": "https://arxiv.org/abs/2608.04536",
+      "summary": "论文定义了一个比 schema linking 更靠前的问题：operationalization-aware data discovery（OADD）——给定一个宽泛的业务/研究概念和一个数据库，判断哪些列能\"度量\"该概念，必要时还需组合多个互补指标。作者用论文作为\"schema-in-use 的记录\"自动构造 OADD-Bench（160 个问题、4682 条问题-列标注），并评测了词法/神经检索、schema-linking 系统与 LLM。结果揭示：现有方法在\"概念→列\"这种弱显式匹配上普遍吃力，是 NL analytics 的真正瓶颈。",
+      "insight": "这正中你们\"不直连库、靠业务含义 API 查数\"的核心：宽表 API 上百字段里，用户问的是\"客户活跃度\"这类概念，而不是字段名。OADD 把\"概念→可用列\"的映射显式建模为一等公民，值得作为业务语义层设计的理论框架。",
       "detail": {
-        "why": "你的场景是'通过高业务含义 API（含上百字段宽表 API）查数'，最大风险不是查错，而是一次调用就把上下文/成本/延迟打爆。现有 Agentic text-to-SQL/工具调用大多假设'观察是免费的'，BAP-SQL 正面挑战这个假设，给出了一套可量化的预算治理范式，对任何'agent 调宽表 API'的场景都适用。",
-        "mechanism": "三段式：① 风险估计——对将要执行的查询/调用评估'会不会爆预算'（如返回行数/字段数预估）；② 预算感知改写——在有用证据出现前主动收窄查询（限制字段、加过滤、改 projection），而非事后压缩已经捞回来的数据；③ 独立 runtime shield——硬性上限（token/行数）由独立组件兜底，生成层不负责。关键贡献是把'policy-visible planning'与'budget-sensitive 执行'解耦。",
-        "deep": "架构师视角，BAP-SQL 最大的启发是'观察形成是一等公民'。多数业务 Agent 把 API 返回值当被动输入，但实际 agent 的动作决定了下一跳拿到什么——宽表 API 尤其如此：不加投影/过滤地调一次，几百字段 JSON 直接塞满 context，后续推理必然劣化。它提出的'budget-aware planning'与'独立 shield'是把'成本治理'从 prompt 提示升级成架构层约束。落地时要注意：风险估计器本身需要 schema 语义支撑（你得知道哪些字段是高基数、哪些是大文本），这又回到你'业务语义层'的建设——预算治理和语义层是同一地基的两面。",
-        "apply": "落地建议：① 在业务 API 调用编排层引入'预算前置'：调用前预估返回体量，超阈值则先做字段裁剪/分页/加过滤；② 设一个独立于 LLM 的 runtime shield 做硬兜底（token/行数/字段数上限），不依赖模型自觉；③ 复杂查询走'先窄探再宽取'的两阶段模式，呼应 BAP-SQL 的'有用证据出现前不花大预算'。",
-        "caveats": "局限：论文面向 SQL 场景，对'API 型宽表 JSON 数据源'需要自行映射预算信号（如字段基数、返回大小预估）；风险估计器依赖 schema 语义标注质量，语义层没建好时预算判断会不准；论文增益（3-4pp）虽稳定但绝对值不算大，工程收益需在你们真实 API 上验证。",
+        "why": "现有 schema linking / column retrieval 都假设需求相对显式、奖励直接相关；而真实业务提问是抽象概念，需要\"操作化\"（operationalization）——决定概念怎么测、哪些列支撑。OADD 把这一步独立评测，暴露了当前最大短板。",
+        "mechanism": "OADD-Bench 构造：从经验论文中用 question miner 抽取并改写论文支持的问题，用 paper-conditioned column miner 重建其测量并 ground 到库标识符，只保留同时有论文与文档支撑的映射。评测对象：词法检索、神经检索、改造的 schema-linking 系统、大语言模型。",
+        "deep": "关键洞察是\"有用列不一定像查询\"——它们可能只是某个可辩护度量的互补指标。这打破了\"top-k 相似列\"的 retrieval 直觉，要求系统能做概念分解与组合推理。对宽表 API 场景，意味着字段语义标注不能只靠\"名字相似\"，要标注\"该字段可度量哪些业务概念\"。",
+        "apply": "在你们的业务 API 字段语义标注里，增加一个\"可度量概念\"维度：每个字段不只标业务含义，还标\"能支撑哪些业务概念/指标的定义\"，并记录组合关系。这能让 Agent 在面对\"客户活跃度\"时检索到多字段组合而非单字段。",
+        "caveats": "OADD-Bench 规模有限（160 题/4682 标注），依赖论文作为 ground truth 来源有领域偏向；\"可辩护度量\"的判定本身带主观性，迁移到企业内部知识库需重新构造标注来源。",
         "diagram": {
-          "title": "BAP-SQL：观察形成即预算控制（迁移到业务 API 调用）",
+          "title": "OADD：概念→列的操作化发现",
+          "flow": [
+            {
+              "label": "业务概念/研究问题",
+              "sub": "e.g. 客户活跃度",
+              "type": "frontend"
+            },
+            {
+              "label": "概念分解与组合推理",
+              "sub": "operationalization",
+              "type": "backend"
+            },
+            {
+              "label": "可用列发现",
+              "sub": "多列组合度量",
+              "type": "database"
+            },
+            {
+              "label": "可辩护性校验",
+              "sub": "论文/文档先例",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "区别于 schema linking",
+              "text": "linking 从显式需求出发奖励直接相关；OADD 从抽象概念出发，有用列可能完全不相似。"
+            },
+            {
+              "label": "宽表 API 启示",
+              "text": "上百字段里按\"名字相似\"检索会漏掉组合度量列，需标注\"可度量概念\"。"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "AttnLink：把 LLM 内部注意力转为 schema 链接分数",
+      "date": "2026-08-01",
+      "source": "arXiv 2608.00693",
+      "link": "https://arxiv.org/abs/2608.00693",
+      "summary": "AttnLink 把 LLM 生成起始位置对候选 schema span 的注意力，转成连续相关性分数，在一次 prefill 内完成全部候选排序，无需自回归解码。提供两变体：AttnLink-U 直接探测预训练注意力（不更新参数），AttnLink-S 用 set-mass 目标+自适应概率下界正则做监督对齐。在 Spider/BIRD/Spider2-SQLite 上 mAP 达 99.22%/95.95%/83.29%，毫秒级延迟，并在 9 个生成器-数据集组合中 7 个拿到最佳执行准确率。",
+      "insight": "宽表 API 字段越多，schema linking 的精度与速度越关键。AttnLink 用模型自身注意力做\"免费\"打分，避免了外挂 retriever 的双重维护，是把 schema 理解做\"轻\"的代表性思路，适合嵌入你们的 API 字段选择环节。",
+      "detail": {
+        "why": "Schema linking 是 text-to-SQL/API 调用的前置瓶颈：宽表几百字段塞不进上下文，选错列后面全错。现有方法在\"上下文建模能力、分数可控性、推理效率\"三者间权衡，AttnLink 试图同时拿下。",
+        "mechanism": "提取生成起始位置→候选 schema span 的 attention 作为 relevance；AttnLink-S 用 set-mass 目标（覆盖多个相关项）+ adaptive probability-floor regularizer 监督对齐；输出分数支持温度缩放与累积质量选择的精度/召回后调控。",
+        "deep": "核心发现是\"注意力即链接信号\"——省去了独立 retriever 的训练与索引维护。但它是\"模型内\"信号，对模型家族敏感，且依赖生成起始位置这一特定探针，泛化到非该架构的模型需验证。",
+        "apply": "对你们的宽表 API，可在 function-calling 前用类似注意力探针做字段预筛，把上百字段压到 Top-K 再交给 LLM 精确构造调用参数；并用精度/召回后调控满足不同业务可信度要求。",
+        "caveats": "需要能访问模型内部注意力（开源权重模型友好，闭源 API 难）；预训练注意力分布对 prompt 措辞敏感；监督版需 gold schema 标注，企业场景标注成本不低。",
+        "diagram": {
+          "title": "AttnLink：注意力即 schema 链接",
+          "flow": [
+            {
+              "label": "用户问题",
+              "sub": "自然语言",
+              "type": "frontend"
+            },
+            {
+              "label": "LLM prefill",
+              "sub": "生成起始位置",
+              "type": "backend"
+            },
+            {
+              "label": "注意力探针",
+              "sub": "→候选 schema span",
+              "type": "backend"
+            },
+            {
+              "label": "宽表字段排序",
+              "sub": "Top-K 选择",
+              "type": "database"
+            },
+            {
+              "label": "下游 SQL/调用生成",
+              "sub": "精度/召回可调",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "一次 prefill",
+              "text": "全部候选拼一次 prefill 排序，毫秒级，无自回归解码。"
+            },
+            {
+              "label": "可控性",
+              "text": "温度缩放+累积质量选择支持后置精度/召回调节。"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "Schema-First Retrieval：把目录元数据嵌入做检索，而非查仓里数据",
+      "date": "2026-06-23",
+      "source": "arXiv 2606.28387",
+      "link": "https://arxiv.org/abs/2606.28387",
+      "summary": "针对\"企业 text-to-SQL 在生成 SQL 之前就选错 schema 上下文\"的顽疾，论文提出 Schema-First Retrieval：索引 5 类 catalog 对象（表、列、指标、关系、查询历史），用对象专属文本模板向量化；查询时组合并行向量检索、血缘扩展、cross-encoder 重排、workload 记忆与确定性访问控制门，再交给 SQL 生成。在 CRUSH4SQL 上表 recall@20 达 96.4%，重排为列 recall@10 加 11.1 点；SEDE 上查询历史把表 recall@5 从 52.1% 提到 92.3%；BIRD 上把 SQL 执行错误从 15.6% 降到 6.2%。",
+      "insight": "这把\"元数据管理\"做成了\"一等检索问题\"而非 prompt 格式细节——与你们\"业务知识库构建\"高度同构：把 API 的字段/指标/关系/历史调用沉淀成可检索 catalog，是比直接喂 schema 给 LLM 更稳的工程路径。",
+      "detail": {
+        "why": "现代数仓有上千表、缩写列、非正式指标、隐式 join 约定、权限边界，原始表名根本承载不了这些语义。论文论证：在 SQL 生成之前，catalog 选择本身就是个 first-class retrieval 问题。",
+        "mechanism": "五类 catalog 对象各自用专属文本模板向量化；查询时并行向量检索→血缘扩展（沿关系/依赖找相关）→cross-encoder 重排→workload memory（历史查询复用）→确定性访问控制门→SQL 生成。",
+        "deep": "三个数字最有说服力：语义检索比 BM25 基线在表 recall@5 高 32.8 点；查询历史对\"低频但有过\"的表提升巨大（52.1→92.3）；schema-first 上下文让执行错误降 2.5 倍。说明\"上下文质量\"比\"模型更强\"更值钱。",
+        "apply": "把你们宽表 API 的字段、指标定义、字段间关系、历史成功调用案例建成可检索 catalog（指标/关系/历史这三类尤其重要），查询时先检索再调用，而不是把整张宽表 schema 灌给 LLM。",
+        "caveats": "血缘扩展与 workload memory 依赖较好的元数据治理与调用日志积累，冷启动期收益有限；cross-encoder 重排增加延迟；访问控制门需与业务权限体系打通。",
+        "diagram": {
+          "title": "Schema-First Retrieval：catalog 即检索层",
           "flow": [
             {
               "label": "业务提问",
@@ -25,38 +132,44 @@
               "type": "frontend"
             },
             {
-              "label": "风险估计",
-              "sub": "预算预估",
+              "label": "并行向量检索",
+              "sub": "表/列/指标/关系/历史",
+              "type": "database"
+            },
+            {
+              "label": "血缘扩展",
+              "sub": "沿关系找相关",
               "type": "backend"
             },
             {
-              "label": "预算感知改写",
-              "sub": "收窄查询",
-              "type": "cloud"
+              "label": "cross-encoder 重排",
+              "sub": "列级精度",
+              "type": "backend"
             },
             {
-              "label": "Runtime Shield",
-              "sub": "硬兜底",
+              "label": "workload memory",
+              "sub": "历史调用复用",
+              "type": "database"
+            },
+            {
+              "label": "访问控制门",
+              "sub": "确定性权限",
               "type": "security"
             },
             {
-              "label": "业务 API",
-              "sub": "宽表/多字段",
-              "type": "database"
+              "label": "SQL/API 生成",
+              "sub": "正确上下文",
+              "type": "cloud"
             }
           ],
           "notes": [
             {
-              "label": "核心",
-              "text": "观察形成是一等公民：查前先估风险，而非事后压缩"
+              "label": "5 类对象",
+              "text": "tables/columns/metrics/relationships/query history 各自模板向量化。"
             },
             {
-              "label": "解耦",
-              "text": "policy-visible 规划 与 budget-sensitive 执行分离"
-            },
-            {
-              "label": "兜底",
-              "text": "独立 shield 不依赖 LLM 自觉，硬性 token/行数上限"
+              "label": "历史复用",
+              "text": "查询历史把表 recall@5 从 52.1% 提到 92.3%。"
             }
           ]
         }
@@ -64,419 +177,284 @@
     },
     {
       "tag": "paper",
-      "title": "SAFAARI: Schema-Aware Framework for Accelerated Advertiser Response Intelligence",
-      "date": "2026-07-27",
-      "source": "arXiv 2607.25042",
-      "link": "https://arxiv.org/abs/2607.25042",
-      "summary": "多 Agent 框架，专门解决'在没有预定义 API 端点的情况下访问企业数据'的 schema linking 瓶颈。包含 content agent、metadata agent、orchestration agent，并提出 SEAL 复合指标评估 schema 评估与 NL-to-SQL 的准确性，面向客服/广告主响应场景。",
-      "insight": "几乎直接命中你的约束：'不直连数据库、通过业务 API 查数'，而 SAFAARI 处理的是更难的'连预定义 API 端点都没有'时的 schema 感知。它的多 Agent 分工（内容/元数据/编排）是应对宽表/复杂企业 schema 的可借鉴范式。",
+      "title": "CoeusBI（百度）：面向宽表与 JOIN 的工业级交互式 BI 系统",
+      "date": "2026-06-13",
+      "source": "arXiv 2606.15384",
+      "link": "https://arxiv.org/abs/2606.15384",
+      "summary": "百度 CoeusBI 直击真实部署三大痛点：频繁 JOIN 拉低 SQL 生成准确率、宽表加剧 schema linking 难度、方言查询与多轮对话算力高且精度低。其 Dual-Agent 架构含离线 View Generation Agent（用错误反馈自主把复杂 JOIN 转成单视图查询）与在线交互 Agent；配 Hierarchical Schema Linking 模块。系统强调\"语义层配 NL 接口\"仍主要靠人工配指标/维度，CoeusBI 试图自动化这一层。",
+      "insight": "宽表 + JOIN 正是你们上百字段宽表 API 的写照。CoeusBI 的\"离线把复杂 JOIN 物化成单视图\"思路，可直接迁移为\"离线把宽表 API 调用预计算成业务视图 API\"，让在线 Agent 只面对精简单视图。",
       "detail": {
-        "why": "你的核心痛点之一是'让 AI 理解上百字段宽表 API 的业务语义'。SAFAARI 把 schema linking 拆给多个专职 agent，而不是指望单个 LLM 一次吃下全部 schema——这正是你面对宽表时应该采用的策略。它还提出了 SEAL 评估指标，补上了'语义对齐质量怎么量化'的空白。",
-        "mechanism": "多 Agent 分工：① content agent——理解用户自然语言意图与上下文；② metadata agent——专门处理 schema/字段元数据的检索与匹配（哪些表/字段/端点与问题相关）；③ orchestration agent——编排 content 与 metadata 的结果，生成最终查询/响应。SEAL 指标复合评估 schema 选择准确率与 NL-to-SQL 正确性，强调'选对结构'是'生成对查询'的前提。",
-        "deep": "架构师视角，SAFAARI 的价值在于把'schema 理解'独立成专职 agent 而非塞进通用 prompt。对你'上百字段宽表 API'的场景，这意味着：不要让生成 agent 同时猜字段含义，而是先有一个'metadata agent'做字段语义对齐（这恰好是你'业务语义层'的运行时化身）。它的 SEAL 指标也提示——评估业务查询质量不能只看最终结果对不对，要看'有没有选对 API/字段'这个前置环节。一个可借鉴的设计取舍：metadata agent 用检索（向量+结构）而非全量注入，避免宽表字段全塞进上下文。",
-        "apply": "落地建议：① 把'schema/字段语义对齐'抽成独立 agent/服务，与'查询生成'解耦；② metadata agent 走检索式（语义索引你们的 API schema），而非全量注入上百字段；③ 引入类似 SEAL 的前置评估指标，跟踪'字段选择准确率'，而非只看最终结果。",
-        "caveats": "局限：SAFAARI 面向广告主客服这一较窄场景，其 schema 感知策略在更通用的业务域需验证；论文未开源 SEAL 的完整实现；'没有预定义 API 端点'是它的特殊设定，对你们'有 API 但字段语义复杂'的场景需调整 metadata agent 的检索粒度。",
+        "why": "商业 BI 虽越来越多用 semantic layer + NL，但指标/维度仍靠人工定义；真实场景 JOIN 频繁、schema 宽、方言与多轮代价高，工业落地远未解决。",
+        "mechanism": "Dual-Agent：离线 View Generation Agent 用 error-feedback 自主把复杂 JOIN 查询转成简单单视图查询（消除 JOIN）；Hierarchical Schema Linking 分层处理宽表；在线交互 Agent 处理多轮与方言。",
+        "deep": "\"把复杂 JOIN 离线物化成单视图\"是降低在线难度的关键工程权衡——用离线算力换在线准确率与速度。这与你们\"不直连库、走 API\"的约束天然契合：可把多 API 字段拼装的复杂逻辑离线固化为业务视图 API。",
+        "apply": "对宽表 API：离线识别高频多字段组合/计算，预生成\"业务视图 API\"（单次调用即得），在线 Agent 只选视图 + 简单参数；对低频复杂查询才回退到原生宽表调用。可借鉴其 error-feedback 自动化视图生成。",
+        "caveats": "离线视图生成需持续维护与刷新（数据/需求漂移）；单视图化可能掩盖底层数据血缘，影响可信度审计；论文为 extended version，完整效果数据需看正文。",
         "diagram": {
-          "title": "SAFAARI：多 Agent 分工的 schema 感知查询",
+          "title": "CoeusBI：Dual-Agent + 分层 schema linking",
           "flow": [
             {
-              "label": "用户提问",
-              "sub": "自然语言",
+              "label": "业务多轮提问",
+              "sub": "NL",
               "type": "frontend"
             },
             {
-              "label": "Content Agent",
-              "sub": "意图理解",
+              "label": "在线交互 Agent",
+              "sub": "方言/多轮",
               "type": "backend"
             },
             {
-              "label": "Metadata Agent",
-              "sub": "schema 对齐",
-              "type": "cloud"
-            },
-            {
-              "label": "Orchestration",
-              "sub": "编排生成",
-              "type": "security"
-            },
-            {
-              "label": "企业数据",
-              "sub": "API/Schema",
-              "type": "database"
-            }
-          ],
-          "notes": [
-            {
-              "label": "核心",
-              "text": "schema 理解独立成专职 agent，不塞进通用 prompt"
-            },
-            {
-              "label": "评估",
-              "text": "SEAL：选对结构是生成对查询的前提"
-            },
-            {
-              "label": "适配",
-              "text": "metadata agent 检索式而非全量注入，适配宽表"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "tag": "paper",
-      "title": "ACE-GraphRAG: Agentic Context Engineering for Hierarchical GraphRAG",
-      "date": "2026-08-02",
-      "source": "arXiv 2608.01269",
-      "link": "https://arxiv.org/abs/2608.01269",
-      "summary": "针对分层 GraphRAG 提出'representation-inference gap'问题：固定 context 构建无法把多粒度图表示适配到当前 query。提出 ACE-GraphRAG，在推理时加一层'context 策略层'，基于 gap-aware refinement 补充/调整初始 context，让生成拿到的上下文与问题真正匹配。",
-      "insight": "回应你'语义层 vs 知识图谱'路线的深层关切：GraphRAG 不是'建好图就赢'，固定检索的 context 与具体 query 之间存在系统性失配。ACE 的'推理时 context 策略'思路可迁移到你'按需探索 API schema'的按需检索设计。",
-      "detail": {
-        "why": "你在评估 GraphRAG 路线时一定会遇到这个问题：企业知识图谱建好了，但不同业务问题需要的上下文粒度不同（有的要看全局指标定义，有的要查某个客户的具体订单关系）。固定的一次性检索很难适配，ACE-GraphRAG 给出了'让 context 适配 query'的显式方法，对判断 GraphRAG 路线的真实收益很关键。",
-        "mechanism": "在分层 GraphRAG 之上加一层推理时策略：① 初始 context 由图检索构建（多粒度）；② gap-aware refinement——识别当前 context 与 query 的失配（缺什么、多什么）；③ 用策略动作（补充子图、剪枝、切换粒度）调整 context；④ 生成基于调整后的 context。核心是把 context 构建从'一次性'变成'策略驱动的动态适配'。",
-        "deep": "架构师视角，ACE 揭示了 GraphRAG 的一个真实陷阱：图的'多粒度表示'和推理实际需要的 context 之间存在系统性 gap，固定检索会让生成层拿到'看起来全但不对'的上下文。这对你'业务知识库+语义层'同样适用——语义层/知识图谱提供的上下文也需要按 query 动态裁剪，否则宽表 API 的上百字段语义又会反向塞爆推理。它支持一个判断：GraphRAG 路线要跑赢语义层，必须配上类似 ACE 的动态 context 策略，否则多粒度图本身会变成新的噪音源。",
-        "apply": "落地建议：① 不管走语义层还是知识图谱，都把'context 适配 query'作为独立环节，而非依赖一次性检索；② 评估 GraphRAG 时重点测'不同问题类型下的 context 失配率'，而非只看平均精度；③ 把 ACE 的 gap-aware 思路迁移到 API schema 按需检索：先探再按需扩展，避免宽表全量注入。",
-        "caveats": "局限：ACE 是推理时策略层，本身带来额外延迟与调用成本；gap 检测依赖一个能判断'缺什么'的模型/规则，这又需要 schema 语义支撑；论文为分层 GraphRAG 设计，对纯语义层路线需调整。",
-        "diagram": {
-          "title": "ACE-GraphRAG：推理时 context 策略层（动态适配 query）",
-          "flow": [
-            {
-              "label": "业务问题",
-              "sub": "query",
-              "type": "frontend"
-            },
-            {
-              "label": "初始图检索",
-              "sub": "多粒度子图",
+              "label": "Hierarchical Schema Linking",
+              "sub": "宽表分层",
               "type": "database"
             },
             {
-              "label": "Gap 检测",
-              "sub": "失配识别",
+              "label": "离线 View Generation Agent",
+              "sub": "error-feedback",
               "type": "backend"
             },
             {
-              "label": "Context 策略",
-              "sub": "补充/剪枝",
-              "type": "cloud"
-            },
-            {
-              "label": "生成",
-              "sub": "适配后 context",
-              "type": "security"
-            }
-          ],
-          "notes": [
-            {
-              "label": "核心",
-              "text": "context 构建从一次性变成策略驱动的动态适配"
-            },
-            {
-              "label": "陷阱",
-              "text": "多粒度图本身可能成为新的噪音源"
-            },
-            {
-              "label": "判断",
-              "text": "GraphRAG 要跑赢语义层，须配动态 context 策略"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "tag": "paper",
-      "title": "HyperAgent: Planning and Acting over Tool-Schema Hypergraphs for Tool-Use LLM Agents",
-      "date": "2026-07-31",
-      "source": "arXiv 2608.02650",
-      "link": "https://arxiv.org/abs/2608.02650",
-      "summary": "把工具间关系建模在 schema 层面，构建有向 Tool-Schema Hypergraph，让 LLM agent 在超图上做规划与执行，而非仅靠文本描述推断工具组合。解决现有 tool-use agent 在复杂任务中探索低效、执行不可靠的问题。",
-      "insight": "直接关联你的'业务 API 语义理解与精准调用'：当业务 API 之间存在依赖/组合关系（A 的输出是 B 的入参），用超图显式建模这些 schema 关系，比让 LLM 从文本描述里猜组合要可靠得多。这是'让 AI 懂 API 之间怎么协作'的结构化路线。",
-      "detail": {
-        "why": "你的业务系统里有多个高业务含义 API，它们往往不是孤立的——一个查询可能需要'先调客户 API 拿 ID，再调订单 API 查明细，最后汇总'。现有 function calling 大多让 LLM 从每个工具的文本描述自行推断组合关系，这在 API 多、字段宽时极易出错。HyperAgent 给出了'把工具关系建模成显式图结构'的范式。",
-        "mechanism": "① 在 schema 层提取工具间关系（数据依赖、组合约束、前置/后置），构建有向 Tool-Schema Hypergraph（超图能表达多工具共享一个依赖，普通图不行）；② agent 在超图上做规划（找到从初始状态到目标的工具路径）；③ 执行时基于超图边约束做工具调用，避免无效组合。核心是把'工具怎么协作'从隐式推理变成显式图导航。",
-        "deep": "架构师视角，HyperAgent 的关键贡献是把'tool composition'从 prompt 级推理提升到结构级规划。对你'上百字段宽表 API'的场景，超图可以表达'API A 的客户字段是 API B 订单查询的入参'这类业务关系——这正是你'业务语义层'应该沉淀的关系。一个值得注意的点：超图 vs 普通图的选择，反映了'多工具共享同一业务对象'的现实，比二元关系更贴业务。但它依赖 schema 关系被正确抽取，这又回到你'业务知识库构建'的根基工作。",
-        "apply": "落地建议：① 把业务 API 间的依赖/组合关系建模成图（先普通图，复杂场景再上超图），作为 agent 规划的显式约束；② tool 描述除了字段语义，补充'与哪些 API 有关联、什么类型的关联'；③ 规划与执行分离：先在图上规划路径，再按路径调用，降低无效调用。",
-        "caveats": "局限：超图构建依赖准确的工具 schema 关系抽取，业务 API 文档不全时关系图会缺边；超图规划本身的复杂度在工具数量大时上升；论文偏方法论，工程化（如关系自动发现）需自行补足。",
-        "diagram": {
-          "title": "HyperAgent：工具关系建模成超图，规划先于执行",
-          "flow": [
-            {
-              "label": "业务问题",
-              "sub": "目标",
-              "type": "frontend"
-            },
-            {
-              "label": "Tool-Schema 超图",
-              "sub": "API 关系",
+              "label": "单视图查询",
+              "sub": "JOIN→单视图",
               "type": "database"
-            },
-            {
-              "label": "超图规划",
-              "sub": "路径搜索",
-              "type": "cloud"
-            },
-            {
-              "label": "按路径执行",
-              "sub": "工具调用",
-              "type": "backend"
-            },
-            {
-              "label": "业务 API 集",
-              "sub": "多 API 协作",
-              "type": "security"
-            }
-          ],
-          "notes": [
-            {
-              "label": "核心",
-              "text": "工具组合从 prompt 推理提升到结构级规划"
-            },
-            {
-              "label": "超图",
-              "text": "多工具共享同一业务对象，比二元关系更贴业务"
-            },
-            {
-              "label": "根基",
-              "text": "依赖准确的 schema 关系抽取，回到业务知识库构建"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "tag": "paper",
-      "title": "Getting the Parameters Right: A Difficulty-Graded Benchmark and Probe-Guided Training for LLM Tool Calls",
-      "date": "2026-08-04",
-      "source": "arXiv 2608.03071",
-      "link": "https://arxiv.org/abs/2608.03071",
-      "summary": "聚焦 tool call 的'参数正确填充'这一被忽视环节，提出难度分级 benchmark 与 probe-guided 训练。发现即便前沿模型在云网络等场景下参数完全正确的工具调用不足一半，并利用模型生成时的 hidden states 做探针引导训练以提升参数填充准确率。",
-      "insight": "精准对应你'业务 API 精准调用'的最后一公里：选对 API 只是开始，把上百字段宽表 API 的参数填对才是真正决定查询成败的环节。这篇把'参数填充'单独拿出来评估与训练，正是你落地 function calling 时最该盯的指标。",
-      "detail": {
-        "why": "你的业务 API 多为高业务含义、字段众多（部分上百字段）。function calling 的成败不在'选哪个 API'，而在'入参填得对不对'——填错一个过滤条件，宽表返回的就是错误数据集。这篇首次系统地把参数填充难度分级并给出训练方法，填补了你落地时最缺的评估与改进抓手。",
-        "mechanism": "① 难度分级——按参数数量、类型复杂度、依赖关系给 tool call 样本分难度档；② benchmark——评估各模型在不同难度下的参数完全正确率（发现前沿模型在复杂场景 <50%）；③ probe-guided 训练——利用 LLM 生成时 hidden states 编码的信息，用探针识别'参数是否填对'的信号，引导训练提升填充准确率。核心是把'参数填充'从隐式能力变成可度量、可训练的显式目标。",
-        "deep": "架构师视角，这篇最大的价值是'把参数填充从被忽视变成一等评估对象'。业界普遍只盯 tool selection 和调用顺序，但真实业务查询里参数填错（如把'日期范围'填成单点、把'客户等级'枚举填错）才是静默错误的高发源——尤其宽表 API 字段多，填错一个不影响调用成功但结果全错。它的 probe-guided 思路（用模型内部状态探针判断填充质量）也提示：可以在运行时做'参数填充置信度'检测，低置信度的调用前先校验/人工确认。",
-        "apply": "落地建议：① 建立你的业务 API 参数填充难度分级与评估集，持续跟踪完全正确率；② 复杂/高业务影响参数（如过滤条件、聚合维度）加运行时校验，而非全信 LLM 输出；③ 评估是否用 probe/置信度信号触发'低置信度先校验'的护栏，呼应你'数据可信度与验证'的要求。",
-        "caveats": "局限：论文聚焦云网络场景的 tool schema，业务 API 的参数语义复杂度（业务术语、隐含口径）更高，需自建评估集；probe-guided 训练需要可访问 hidden states 的模型，闭源 API 模型难以应用训练侧方法，只能借鉴运行时探针思路。",
-        "diagram": {
-          "title": "参数填充：被忽视的 tool call 决胜环节",
-          "flow": [
-            {
-              "label": "选 API",
-              "sub": "tool selection",
-              "type": "frontend"
-            },
-            {
-              "label": "参数填充",
-              "sub": "宽表入参",
-              "type": "backend"
-            },
-            {
-              "label": "难度分级",
-              "sub": "评估",
-              "type": "cloud"
-            },
-            {
-              "label": "Probe 探针",
-              "sub": "置信度",
-              "type": "security"
-            },
-            {
-              "label": "校验/执行",
-              "sub": "业务 API",
-              "type": "database"
-            }
-          ],
-          "notes": [
-            {
-              "label": "核心",
-              "text": "参数填充从隐式能力变成可度量可训练的显式目标"
-            },
-            {
-              "label": "风险",
-              "text": "宽表填错一个字段不影响调用成功但结果全错"
-            },
-            {
-              "label": "护栏",
-              "text": "低置信度参数先校验再执行，呼应数据可信度"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "tag": "paper",
-      "title": "KG2Cypher: Data-Centric Pipeline for Building Enterprise Text-to-Cypher Systems",
-      "date": "2026-06-26",
-      "source": "arXiv 2606.27742",
-      "link": "https://arxiv.org/abs/2606.27742",
-      "summary": "面向企业知识图谱的自然语言查询构建 pipeline：先用观测到的图事实构造可执行 Cypher，再由 LLM 生成对应自然语言问题，经 LLM judge + 人工验证转成 candidate-aware SFT 数据，配合 class-conditioned schema prompting、entity 检索等服务。数据驱动降低企业图谱 NL 接口构建成本。",
-      "insight": "你'业务知识库构建'路线（企业知识图谱方向）的工程化参考：它不靠合成数据，而是从真实图事实反向构造高质量问答对，解决了企业知识图谱'没有现成 NL 查询训练集'的根本难题。class-conditioned schema prompting 正好呼应'schema 条件化'范式。",
-      "detail": {
-        "why": "若你走企业知识图谱路线，最大障碍是'没有训练数据'——企业图谱的 NL 查询样本稀缺，合成数据又不够真实。KG2Cypher 给出'从图事实反推问答'的数据生成范式，让你能基于真实业务图谱低成本构建 NL 接口，是落地企业知识图谱的关键一环。",
-        "mechanism": "① 反向数据生成——从图谱观测到的真实事实构造可执行 Cypher，再让 LLM 生成对应 NL 问题（保证问题可被该 Cypher 回答）；② 质量校验——LLM judge + 人工验证双重过滤；③ candidate-aware SFT——把验证后的 Cypher-NL 对转成带候选提示的微调数据；④ 服务层——class-conditioned schema prompting（按图谱类型条件化）、entity 检索增强生成。核心是'数据驱动而非模型驱动'降本。",
-        "deep": "架构师视角，KG2Cypher 的巧思在'反向构造'：不纠结于'用户会怎么问'，而是从'图谱里有什么可查的事实'出发反推问题，天然保证问题可答。这对企业图谱尤其重要——业务图谱的结构复杂度让正向合成（先问题再 Cypher）很容易生成查不了的废样本。class-conditioned schema prompting 也是'schema 条件化'范式的又一次验证（与 SCAIR 同源思路）：让生成器一开始就知道面对的是哪类图谱结构。一个迁移点：你们业务 API 的'事实'（典型查询模式、常见入参组合）也可以反向构造问答对来训练 API 调用 agent。",
-        "apply": "落地建议：① 若走知识图谱路线，参考 KG2Cypher 从真实业务图谱事实反推 NL 问答对，低成本构建训练集；② class-conditioned schema prompting 思路用到 API schema——按 API 类型条件化生成；③ 把'反向构造'迁移到业务 API：从已知可执行的 API 调用组合反推 NL 问题，构建 API 调用训练数据。",
-        "caveats": "局限：面向 Cypher/图数据库，你的'API 型数据源'需重新设计反向构造的'事实'定义；LLM judge 的过滤质量决定训练集上限；class-conditioned prompting 在图谱类型多时 prompt 管理复杂度上升。",
-        "diagram": {
-          "title": "KG2Cypher：从图事实反推问答，数据驱动建 NL 接口",
-          "flow": [
-            {
-              "label": "图事实",
-              "sub": "真实观测",
-              "type": "database"
-            },
-            {
-              "label": "反向构造",
-              "sub": "Cypher→NL",
-              "type": "backend"
-            },
-            {
-              "label": "双重校验",
-              "sub": "judge+人工",
-              "type": "security"
-            },
-            {
-              "label": "Schema 条件化",
-              "sub": "class prompt",
-              "type": "cloud"
-            },
-            {
-              "label": "NL 查询接口",
-              "sub": "企业图谱",
-              "type": "frontend"
-            }
-          ],
-          "notes": [
-            {
-              "label": "核心",
-              "text": "反向构造：从可查事实反推问题，天然保证可答"
-            },
-            {
-              "label": "验证",
-              "text": "schema 条件化范式再次被验证（同 SCAIR）"
-            },
-            {
-              "label": "迁移",
-              "text": "业务 API 也可从已知调用组合反推训练数据"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "tag": "github",
-      "title": "tencentmusic/supersonic：统一 Chat BI（LLM）与 Headless BI（语义层）的新一代 AI+BI 平台",
-      "date": "2026-08-05",
-      "source": "GitHub ⭐4984 / Java",
-      "link": "https://github.com/tencentmusic/supersonic",
-      "summary": "腾讯音乐开源的新一代 AI+BI 平台，把 Chat BI（LLM 驱动的对话式查询）和 Headless BI（语义层驱动）统一在一个平台。近期持续活跃：模型级联删除、按组织 ID 授权、默认 measure 聚合调整等，显示其在语义建模治理上的工程化推进。",
-      "insight": "直接对应你'语义层 vs 知识图谱'路线中'语义层'一侧的产品级落地参考：SuperSonic 把'语义层'与'对话查询'统一，验证了'headless BI（语义层先行）+ Chat BI（LLM 消费）'是可工程化的组合，可作为你评估语义层路线的真实样本。",
-      "detail": {
-        "why": "你在评估语义层路线时需要现成的大型产品参考，而非只有概念。SuperSonic 是国内大厂（腾讯音乐）开源、Java 栈、把语义层做成一等公民的 AI+BI 平台，其'headless BI + chat BI 统一'正是你'业务语义层+AI 精确查询'架构的产品化镜像，参考价值高。",
-        "mechanism": "① Headless BI 侧——语义层建模（模型/维度/度量），把业务口径从查询逻辑抽离，统一管理；② Chat BI 侧——LLM 基于语义层生成查询，而非直接面对物理表；③ 统一治理——模型级联删除、按组织授权、默认聚合策略等工程化能力，保证语义层在企业级可维护。近期 commit 显示它在'语义建模治理'上持续推进。",
-        "deep": "架构师视角，SuperSonic 验证了一个关键判断：'语义层'要真正在企业可用，不能只是 DSL，必须有配套治理（级联删除保一致性、组织授权保安全、默认聚合防误用）。这与 WrenAI 的'governed context layer'理念一致，但 SuperSonic 是 Java 栈、国内大厂实践，对你们的技术栈对接可能更顺。一个观察：它把 Chat BI 建在 Headless BI 之上，意味着'先有语义层再有对话查询'是业界共识顺序——这也应该是你们的落地顺序。",
-        "apply": "落地建议：① 部署/克隆 SuperSonic 研究其语义层数据模型（model/dimension/measure 定义方式）；② 重点看它的治理能力（级联、授权、聚合默认值）如何支撑企业级语义层；③ 评估其 Chat BI 如何基于语义层生成查询，对照你们'通过 API 查数'如何把数据源层换成业务 API。",
-        "caveats": "局限：Java 栈，若你们以 Python 为主需评估集成成本；面向 SQL/数仓为主，'API 型宽表数据源'需二次适配；语义建模仍需人工投入，'全自动语义抽取'非其强项；国内项目，国际社区与生态较 WrenAI/Cube 小。",
-        "diagram": {
-          "title": "SuperSonic：Headless BI（语义层）+ Chat BI（LLM）统一",
-          "flow": [
-            {
-              "label": "业务建模",
-              "sub": "模型/维度/度量",
-              "type": "backend"
             },
             {
               "label": "语义层",
-              "sub": "Headless BI",
+              "sub": "指标/维度",
               "type": "cloud"
-            },
-            {
-              "label": "治理",
-              "sub": "级联/授权/聚合",
-              "type": "security"
-            },
-            {
-              "label": "Chat BI",
-              "sub": "LLM 查询",
-              "type": "frontend"
-            },
-            {
-              "label": "数据源",
-              "sub": "SQL/数仓",
-              "type": "database"
             }
           ],
           "notes": [
             {
-              "label": "核心",
-              "text": "先有语义层再有对话查询，是业界共识顺序"
+              "label": "宽表痛点",
+              "text": "宽 schema 加剧 schema linking 难度，与你们上百字段 API 同构。"
             },
             {
-              "label": "治理",
-              "text": "级联删除/组织授权/默认聚合支撑企业级可用"
-            },
-            {
-              "label": "适配",
-              "text": "数据源层可替换为业务 API"
+              "label": "离线换在线",
+              "text": "用离线算力把复杂 JOIN 物化成单视图，降低在线难度。"
             }
           ]
         }
       }
     },
     {
-      "tag": "github",
-      "title": "zhongyu09/openchatbi：LangGraph 驱动、带置信度评估的 ChatBI 数据 Agent",
-      "date": "2026-08-04",
-      "source": "GitHub ⭐614 / Python",
-      "link": "https://github.com/zhongyu09/openchatbi",
-      "summary": "基于 LangGraph 的智能 ChatBI，支持自然语言查询、分析、可视化，含下钻、根因分析、异常检测。近期活跃：Langfuse v4 集成、text2sql 置信度评估失败处理、CI 加固，显示其在'查询可信度'工程化上的推进。",
-      "insight": "命中你'业务数据可信度与验证'要求：它把 text2sql 的置信度评估做成独立环节并处理失败，呼应你'精确查询需要可信度标注与校验'。LangGraph 栈 + 置信度护栏，是轻量级 ChatBI Agent 的可借鉴实现。",
+      "tag": "paper",
+      "title": "TACO：任务感知的列描述自动生成（字段语义标注）",
+      "date": "2026-06-19",
+      "source": "arXiv 2606.21685",
+      "link": "https://arxiv.org/abs/2606.21685",
+      "summary": "列描述（如把列名 cust_mem 标注为\"客户会员状态\"）对 NL2SQL、table QA、entity linking 至关重要，但真实数据集普遍缺文档、列名缩写、含领域行话。TACO 提出三步管线：(1) 缩写展开规范化列名；(2) 生成带同义词与检索关键词的语义描述；(3) 用模拟下游任务做描述修订。还研究 human-in-the-loop 扩展并发布 entity linking 与 schema enrichment 评测集。",
+      "insight": "这几乎是\"宽表 API 字段语义标注\"的现成方法论：三步管线（缩写展开→语义生成→下游任务驱动修订）可直接用于给你们的上百字段宽表 API 补语义，且支持人在环校验。",
       "detail": {
-        "why": "你的'业务系统精确查询与分析'不仅要查得对，还要'知道查得对不对'。openchatbi 把 text2sql 置信度评估独立出来并专门处理失败，这正是你需要的'可信度护栏'。LangGraph 栈也与你可能的 Agent 编排选型契合，作为中小规模参考实现很合适。",
-        "mechanism": "① LangGraph 编排——多节点工作流（理解→生成 SQL→执行→可视化→下钻/根因）；② 置信度评估——对生成的 SQL 做置信度打分，低置信度走失败处理而非直接执行；③ 可观测——Langfuse 集成做 trace；④ 扩展能力——下钻、根因分析、异常检测，覆盖业务分析常见链路。近期 commit 显示在置信度失败处理与可观测上持续加固。",
-        "deep": "架构师视角，openchatbi 的价值在'轻量但完整'：它把'生成-评估-失败处理-可观测'串成一条链，而不是只做 text2sql 生成。置信度评估独立化是关键设计——与你'数据可信度与验证'要求同构。可借鉴的是它的'失败处理'思路：低置信度查询不直接抛给用户，而是走降级/澄清/校验路径，这对业务场景（错查比慢查危害更大）尤其重要。规模上它是中型项目，适合作为你们 ChatBI Agent 的起点骨架，而非直接生产级。",
-        "apply": "落地建议：① 借鉴其'生成-置信度评估-失败处理'链路，在你们 API 查询 agent 里加置信度护栏；② Langfuse 可观测集成做 trace，跟踪查询质量；③ 把'低置信度走澄清/校验'作为业务查询的默认降级策略，而非直接返回结果。",
-        "caveats": "局限：中型项目（⭐614），生产级稳定性需自行验证；面向 SQL，'API 型数据源'需改造生成目标；置信度评估方法（基于什么信号）需深入看源码，可能较朴素；异常检测/根因分析能力深度有限。",
+        "why": "企业数据集普遍缺/差列文档，单 prompt LLM 生成有三大问题：缩写处理不一致、描述幻觉/不全、冗余模糊拖累下游。TACO 把它当\"任务感知\"问题而非单次生成。",
+        "mechanism": "Step1 缩写展开标准化列名；Step2 生成含同义词+检索关键词的初始语义描述；Step3 用模拟下游任务（NL2SQL/table QA/entity linking）做修订，让描述对下游真正有用。支持 human-in-the-loop。",
+        "deep": "关键创新是\"下游任务驱动修订\"——描述好不好由下游任务表现反推，而非人盯。这把字段标注从\"写文档\"变成\"优化检索/生成质量\"的闭环，可与你们的 query 历史结合做自演化。",
+        "apply": "对宽表 API 字段：先跑缩写展开（你们一定有大量缩写字段），再批量生成语义+同义词+检索关键词，最后用历史成功调用做模拟下游任务驱动修订；建人在环校验入口沉淀人工修正。",
+        "caveats": "缩写展开依赖领域缩写词典/规则，跨业务线需各自维护；模拟下游任务质量依赖有代表性 query 集；LLM 生成仍有幻觉风险，关键字段需人工复核。",
         "diagram": {
-          "title": "openchatbi：生成-评估-失败处理的可信查询链路",
+          "title": "TACO：三步任务感知列描述生成",
           "flow": [
             {
-              "label": "NL 查询",
-              "sub": "用户",
+              "label": "原始列名",
+              "sub": "缩写/行话",
+              "type": "database"
+            },
+            {
+              "label": "①缩写展开",
+              "sub": "标准化",
+              "type": "backend"
+            },
+            {
+              "label": "②语义生成",
+              "sub": "同义词+关键词",
+              "type": "backend"
+            },
+            {
+              "label": "③下游任务修订",
+              "sub": "模拟 NL2SQL/QA",
+              "type": "backend"
+            },
+            {
+              "label": "人在环校验",
+              "sub": "人工修正",
+              "type": "security"
+            },
+            {
+              "label": "高质量列描述",
+              "sub": "供检索/生成",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "下游驱动",
+              "text": "描述质量由模拟下游任务表现反推，形成闭环。"
+            },
+            {
+              "label": "宽表适用",
+              "text": "三步管线可直接给上百字段宽表 API 补语义。"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "TSCG：确定性 tool-schema 编译，让小模型也能用好宽 tool schema",
+      "date": "2026-05-04",
+      "source": "arXiv 2605.04107",
+      "link": "https://arxiv.org/abs/2605.04107",
+      "summary": "生产级 agent（OpenAI Function Calling、Anthropic Tool Use、MCP）把 tool schema 当 JSON 传，但 JSON 是为机器解析设计、非为 LLM 解释设计。在 4B-14B 小模型、生产级 tool 目录规模下，这种协议错配是 tool-use 失败主因。TSCG 是确定性 tool-schema 编译器，在 API 边界把 JSON schema 转成 token 高效的结构化文本，无需模型访问/微调/运行时搜索，组合 8 个算子并给出 ≥51% 压缩下界。在 TSCG-Agentic-Bench（约 1.9 万次调用、12 模型、5 场景）上把 Phi-4 14B 从 0% 恢复到 84.4%（20 tools）。",
+      "insight": "你们走\"业务 API function calling\"，宽表 API 的 schema 往往上百字段——这正是 TSCG 说的\"协议错配\"重灾区。把 JSON schema 确定性编译成 token 友好的结构化文本，是低成本提升小模型调用准确率的利器。",
+      "detail": {
+        "why": "JSON schema 对 LLM 是噪声密集、token 浪费的格式；tool 目录一大，小模型直接失效。这是个被低估的\"表示层\"问题，而非模型能力问题。",
+        "mechanism": "8 个可组合算子在 API 边界把 JSON schema 编译为结构化文本；形式化压缩下界 ≥51%（well-formed schemas）；完全确定性、无模型访问/微调/运行时搜索；R² 分解证明\"表示变化\"是主导机制（0.88→0.03）。",
+        "deep": "最有说服力的是\"表示变化主导\"的因果分解——不是模型变强了，是喂给它的 schema 变得 LLM 友好了。这对你们选型意味着：与其堆大模型，不如先把宽表 API 的 schema 表示优化掉，性价比高得多。",
+        "apply": "在 function calling 前加一层 TSCG 式 schema 编译，把上百字段宽表 API 的 JSON schema 压成结构化文本再喂模型；对自研/开源小模型部署尤其实用，能显著降低 token 成本与失败率。",
+        "caveats": "确定性编译对 schema 质量有要求（需 well-formed）；不同模型家族对结构化文本格式偏好不同，需按家族调参；论文自建 benchmark，需在你们真实 API 上复现验证。",
+        "diagram": {
+          "title": "TSCG：在 API 边界编译 tool schema",
+          "flow": [
+            {
+              "label": "宽表 API JSON schema",
+              "sub": "上百字段",
+              "type": "external"
+            },
+            {
+              "label": "TSCG 编译器",
+              "sub": "8 算子·确定性",
+              "type": "backend"
+            },
+            {
+              "label": "结构化文本 schema",
+              "sub": "token 高效·≥51%压缩",
+              "type": "backend"
+            },
+            {
+              "label": "LLM function calling",
+              "sub": "小模型也可用",
+              "type": "cloud"
+            },
+            {
+              "label": "业务 API 调用",
+              "sub": "精准参数",
+              "type": "external"
+            }
+          ],
+          "notes": [
+            {
+              "label": "协议错配",
+              "text": "JSON 为机器解析设计，非为 LLM 解释设计，宽 schema 尤甚。"
+            },
+            {
+              "label": "因果分解",
+              "text": "R² 0.88→0.03 证明表示变化是主导机制，而非模型能力。"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "数据驱动的 function calling 改进：在线金融 QA 实战",
+      "date": "2026-04-07",
+      "source": "arXiv 2604.05387",
+      "link": "https://arxiv.org/abs/2604.05387",
+      "summary": "金融领域 API 资产分散在各类函数中，在线金融 QA 需让 LLM 调用定制化金融 API。通用 LLM 难适配金融场景，且在线 query 多样、含与所需函数入参分布外的参数。论文提出数据驱动管线：构造数据集（基于既有研究+周期更新）、用名为 AugFC 的增强方法探索可能参数值提升多样性、两步训练法让 LLM 用金融工具集。展示了一条\"让通用 LLM 精准调用业务 API\"的工程闭环。",
+      "insight": "这是\"API 语义理解与精准调用\"方向少有的工业落地实证：用数据驱动（AugFC 参数探索+两步训练）把通用模型调教成业务 API 调用器，思路可复用到你们的业务 API 工具集。",
+      "detail": {
+        "why": "通用 LLM 不懂你们的业务 API 语义与参数约束，在线 query 又常\"分布外\"，直接 function calling 失败率高。需要一个让通用模型精准调业务 API 的工程方法。",
+        "mechanism": "数据集周期更新（含真实 query）→AugFC 参数值增强（探索 OOD 参数提升多样性）→两步训练法让 LLM 掌握金融工具集调用。数据驱动地\"开发\"金融工具集使用能力。",
+        "deep": "AugFC 的\"参数值探索\"是亮点——不是只造 query 多样性，而是造\"入参值\"多样性，针对的是\"用户给的参数不在函数期望范围\"这一真实失败模式。这对宽表 API 字段取值空间大的场景尤其有用。",
+        "apply": "为你们的业务 API 工具集构造训练数据：收集真实 query + 用 AugFC 式方法枚举字段合法取值组合做增强；两步训练（先学工具语义再学调用）微调一个调用专用小模型，降低对大模型 API 的依赖与成本。",
+        "caveats": "需持续标注/更新数据集，工程成本不低；AugFC 参数探索需字段取值域知识以防生成非法值；金融场景强合规，迁移到你们场景需补权限与可信校验。",
+        "diagram": {
+          "title": "数据驱动 function calling 改进闭环",
+          "flow": [
+            {
+              "label": "真实在线 query",
+              "sub": "金融场景",
               "type": "frontend"
             },
             {
-              "label": "LangGraph",
-              "sub": "编排",
+              "label": "数据集构造+周期更新",
+              "sub": "含 AugFC 参数探索",
+              "type": "backend"
+            },
+            {
+              "label": "两步训练",
+              "sub": "工具语义→调用",
+              "type": "backend"
+            },
+            {
+              "label": "金融 API 工具集",
+              "sub": "定制化",
+              "type": "external"
+            },
+            {
+              "label": "在线金融 QA",
+              "sub": "精准调用",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "AugFC",
+              "text": "探索可能参数值提升多样性，针对 OOD 入参失败。"
+            },
+            {
+              "label": "两步训练",
+              "text": "先学工具语义再学调用，逐步适配业务 API。"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "EntSQL：企业 text-to-SQL 在长上下文业务知识上的基准（仅 15.9%）",
+      "date": "2026-06-02",
+      "source": "arXiv 2606.03363",
+      "link": "https://arxiv.org/abs/2606.03363",
+      "summary": "现有 text-to-SQL 基准（Spider/BIRD/Spider2.0）评 schema 泛化、大规模库、真实工作流，却忽略企业场景：SQL 生成依赖私有业务知识（内部指标、报表约定、组织规则）。EntSQL 含 1066 条中英双语语义样例、跨 5 个业务域，多数样例需问题与 schema 之外的领域知识且含复杂 SQL 结构。英文输入下最佳系统在提供长文档时仅 15.9%，凸显企业知识 grounding 之难。",
+      "insight": "这是\"业务知识库构建\"必要性的硬证据：不把业务规则/指标约定/组织上下文沉淀成可检索知识，LLM 直接生成 SQL/API 调用准确率会非常低。它量化了\"懂业务\"这一步的价值。",
+      "detail": {
+        "why": "企业 SQL 生成不是纯 schema + query 问题，而是\"私有业务知识 grounding\"问题。EntSQL 把这个被现有基准忽视的维度独立出来评测，结果触目惊心。",
+        "mechanism": "1066 条中英双语语义样例、5 业务域、多数需问题与 schema 之外的领域知识、含复杂 SQL；评测长上下文 grounding，最佳系统仅 15.9%。",
+        "deep": "15.9% 是个\"现实校准\"数字：把业务文档直接塞长上下文，模型 grounding 能力远不够。说明\"业务知识库\"不能只靠\"长上下文塞文档\"，必须做结构化检索/语义层/知识图谱才能达标。",
+        "apply": "用它作为内部立项论据：量化\"不建业务知识库\"的代价；参考其构造方法（跨域、需外部知识、复杂结构）自建内部 benchmark 评估你们的 API 调用准确率，倒逼知识库建设。",
+        "caveats": "数据规模有限（1066）且部分为构造；\"业务知识\"边界难界定；中文场景与英文 grounding 能力可能有差异，需结合自身语料验证。",
+        "diagram": {
+          "title": "EntSQL：企业知识 grounding 的现实校准",
+          "flow": [
+            {
+              "label": "业务提问",
+              "sub": "需私有知识",
+              "type": "frontend"
+            },
+            {
+              "label": "长上下文业务文档",
+              "sub": "塞给 LLM",
               "type": "backend"
             },
             {
               "label": "SQL 生成",
-              "sub": "text2sql",
+              "sub": "仅 15.9% 准确",
               "type": "cloud"
             },
             {
-              "label": "置信度评估",
-              "sub": "可信度",
+              "label": "差距来源",
+              "sub": "缺结构化知识库",
               "type": "security"
-            },
-            {
-              "label": "执行/降级",
-              "sub": "失败处理",
-              "type": "database"
             }
           ],
           "notes": [
             {
-              "label": "核心",
-              "text": "置信度评估独立化，低置信度走降级而非直接返回"
+              "label": "现实校准",
+              "text": "15.9% 证明靠长上下文塞文档远不够，必须结构化知识库。"
             },
             {
-              "label": "可信",
-              "text": "生成-评估-失败处理-可观测一条链"
-            },
-            {
-              "label": "适用",
-              "text": "中型参考实现，作 ChatBI Agent 起点骨架"
+              "label": "立项论据",
+              "text": "可作\"不建业务知识库代价\"的量化证据。"
             }
           ]
         }
@@ -484,59 +462,228 @@
     },
     {
       "tag": "paper",
-      "title": "A Triple-Robustness Analysis of Retrieval-Augmented Generation: GraphRAG vs Vector RAG 的可信评判",
-      "date": "2026-08-01",
-      "source": "arXiv 2608.00705",
-      "link": "https://arxiv.org/abs/2608.00705",
-      "summary": "针对'GraphRAG 与 vector RAG 谁更好'的分歧结论，做 triple-robustness 分析：固定五流水线架构矩阵，变化 embedder、corpus、judge，跑了 2×4440 主矩阵 + 600 跨语料 + 5000+ 忠实度评判。结论：胜负高度依赖三者组合，且与'引用质量在哪测'有关，不能一概而论。",
-      "insight": "直接服务于你'语义层 vs 知识图谱'的路线决策：它指出 GraphRAG 的相对收益不是固有属性，而是 corpus/检索器/评判器的函数。这提示你路线选择必须基于你们真实业务语料做评测，而非照搬论文结论。",
+      "title": "多 Agent 系统把关系数据语义映射到知识图谱（Schema.org）",
+      "date": "2025-11-09",
+      "source": "arXiv 2511.06455",
+      "link": "https://arxiv.org/abs/2511.06455",
+      "summary": "企业常把关键业务数据存于多个孤立关系库，数据互通性差。论文提出用知识图谱整合多库：引入表之上的 semantic layer，用多个 LLM agent 把表与列映射到 Schema.org 术语，复用既有词汇表。在多域上达 90%+ 映射准确率。这是一条\"关系数据→领域本体/KG\"的自动化路径。",
+      "insight": "直接对应你们\"业务知识图谱/领域本体\"路线：用多 agent 把现有关系库/宽表 API 字段自动对齐到标准本体（Schema.org），90%+ 准确率说明这条路可行且可复用标准词汇。",
       "detail": {
-        "why": "你在语义层与知识图谱两条路线间权衡，一定会遇到'到底谁更好'的争论。这篇用严格的多变量分析证明：现有 GraphRAG vs vector RAG 的胜负结论大多绑定单一 corpus/embedder/judge，换一组就翻盘。这是你做路线决策前必须知道的'评判陷阱'。",
-        "mechanism": "① 固定架构矩阵——五条 RAG 流水线（含 GraphRAG 与 vector RAG 变体）保持不变；② 变量控制——分别变化 embedder（local e5-small vs Azure text-embedding-3-small）、corpus（DO-178C 类型边需求文档 vs Wikipedia 段落链 MuSiQue）、judge（GPT-5.4 × GPT-4.1）；③ 大规模评测——2×4440 主矩阵 + 600 跨语料 + 5000+ 忠实度判断；④ 关键发现——胜负随三变量组合翻转，且与引用质量测量位置相关。",
-        "deep": "架构师视角，这篇的结论是'没有普适最优路线'，但这恰恰是最有用的结论：它告诉你，照搬任何论文的 GraphRAG/vector RAG 胜负都不可信，必须用你们真实业务语料、真实 embedder、真实评判标准做评测。对你'业务知识库+API 语义'场景的实操含义是：① 建一个小规模但真实的评测集（覆盖你们典型业务问题类型）；② 同时跑语义层检索与图谱检索两条 pipeline；③ 用业务侧认可的评判标准（而非模型自评）定胜负。这也间接支持你'两条路线都研究'的稳妥策略——在评测出来前不下注。",
-        "apply": "落地建议：① 建立你们业务语料的 RAG 评测集（含多跳业务问题）；② 对照跑语义层检索 vs 图谱检索，固定架构只变关键组件；③ 评判标准用业务可验证的（结果是否正确/可追溯），而非模型自评；④ 路线决策基于自评结果，而非论文结论。",
-        "caveats": "局限：论文 RAG 场景为通用文档 QA，你的'业务 API 语义/宽表字段'场景结构化程度更高，结论可参考但需重测；triple-robustness 方法本身成本高（5000+ 评判），小团队需简化变量；GraphRAG 的工程成本（图谱构建维护）未纳入评判，而这是你路线决策的重要成本项。",
+        "why": "孤立关系库整合是老难题；KG 整合是公认解法但映射成本高。用 LLM agent 自动映射到标准词汇表，是降低本体构建门槛的关键。",
+        "mechanism": "表之上的 semantic layer + 多 LLM agent 把 tables/columns 映射到 Schema.org 术语；复用既有词汇表；多域 90%+ 映射准确率。",
+        "deep": "\"映射到标准本体\"而非自造本体，是降低维护成本的核心——Schema.org 提供共享语义基线，agent 只需对齐而非发明。对你们：宽表 API 字段先对齐到 Schema.org，再叠加企业私有术语层。",
+        "apply": "用多 agent 把宽表 API 字段批量映射到 Schema.org 术语建第一层本体；再在之上叠加企业私有业务术语/规则；映射结果作为 GraphRAG 检索与字段语义检索的共同基础。",
+        "caveats": "Schema.org 覆盖通用实体，企业特有业务对象可能无对应术语需扩展本体；90% 是映射准确率非下游任务准确率；多 agent 协同的稳定性与成本需评估。",
         "diagram": {
-          "title": "Triple-Robustness：GraphRAG 胜负是 corpus/检索器/评判器的函数",
+          "title": "多 Agent 关系数据→Schema.org 本体映射",
           "flow": [
             {
-              "label": "固定架构",
-              "sub": "5 流水线",
-              "type": "backend"
-            },
-            {
-              "label": "变 corpus",
-              "sub": "语料",
+              "label": "孤立关系库/宽表",
+              "sub": "多源",
               "type": "database"
             },
             {
-              "label": "变 embedder",
-              "sub": "检索器",
+              "label": "多 LLM agent",
+              "sub": "映射",
+              "type": "backend"
+            },
+            {
+              "label": "Schema.org 术语",
+              "sub": "标准本体",
               "type": "cloud"
             },
             {
-              "label": "变 judge",
-              "sub": "评判器",
+              "label": "企业私有术语层",
+              "sub": "叠加",
               "type": "security"
             },
             {
-              "label": "胜负矩阵",
-              "sub": "组合依赖",
-              "type": "frontend"
+              "label": "知识图谱",
+              "sub": "整合视图",
+              "type": "database"
             }
           ],
           "notes": [
             {
-              "label": "核心",
-              "text": "没有普适最优路线，胜负随三变量组合翻转"
+              "label": "复用标准本体",
+              "text": "映射到 Schema.org 而非自造，降低维护成本。"
             },
             {
-              "label": "陷阱",
-              "text": "照搬论文 GraphRAG/vector RAG 胜负不可信"
+              "label": "两层结构",
+              "text": "标准本体 + 企业私有术语层叠加。"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "HEAR：基于分层超图本体的企业 Agent 推理器",
+      "date": "2026-05-14",
+      "source": "arXiv 2605.14259",
+      "link": "https://arxiv.org/abs/2605.14259",
+      "summary": "把 LLM 用于异构企业系统受幻觉与多跳/n 元推理失败困扰；现有 GraphRAG、NL2SQL 缺语义 grounding 与可审计执行。HEAR 基于 Stratified Hypergraph Ontology：base Graph Layer 虚拟化溯源数据接口，Hyperedge Layer 编码 n 元业务规则与流程协议；运行证据驱动推理循环，动态编排本体工具做结构化多跳分析，无需重训 LLM。在供应链订单履约阻塞根因分析上达 94.7%，并用开源权重匹配闭源性能。",
+      "insight": "这是\"企业知识图谱\"路线的高阶形态：用超图（n 元关系）+ 分层本体 + 证据驱动推理循环，比普通 GraphRAG 更适合复杂业务规则与可审计性要求——给你们的 GraphRAG 路线一个更强的参考架构。",
+      "detail": {
+        "why": "普通 GraphRAG 用二元边难以表达业务规则（常是 n 元：订单+库存+物流三方约束）；NL2SQL 缺可审计性。企业级需要语义 grounding + 可审计执行。",
+        "mechanism": "Stratified Hypergraph Ontology：base Graph Layer 虚拟化溯源数据接口；Hyperedge Layer 编码 n 元业务规则/流程协议；证据驱动推理循环动态编排本体工具；无需重训 LLM。",
+        "deep": "\"超边表达 n 元业务规则\"是关键升级——业务规则很少是两两关系。\"证据驱动推理循环\"提供可审计性，每跳有据可查。用开源权重匹配闭源性能，说明结构化知识比堆模型更值钱。",
+        "apply": "对你们复杂业务规则（如订单履约涉及多系统约束），考虑用超图本体而非简单 GraphRAG；把业务规则编码为超边，推理走证据驱动循环以保可审计；可作为 GraphRAG 路线的进阶目标架构。",
+        "caveats": "超图本体构建与维护复杂度高于普通 KG；需把多业务系统接口虚拟化进 base layer，工程量大；论文聚焦供应链场景，泛化到其他域需验证。",
+        "diagram": {
+          "title": "HEAR：分层超图本体 + 证据驱动推理",
+          "flow": [
+            {
+              "label": "异构业务系统",
+              "sub": "多源",
+              "type": "external"
             },
             {
-              "label": "决策",
-              "text": "用真实业务语料+业务评判标准自测路线"
+              "label": "base Graph Layer",
+              "sub": "溯源数据接口",
+              "type": "database"
+            },
+            {
+              "label": "Hyperedge Layer",
+              "sub": "n 元业务规则",
+              "type": "backend"
+            },
+            {
+              "label": "证据驱动推理循环",
+              "sub": "可审计",
+              "type": "backend"
+            },
+            {
+              "label": "根因/多跳分析",
+              "sub": "94.7%",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "超边= n 元规则",
+              "text": "业务规则常是多方约束，超图比二元图更合适。"
+            },
+            {
+              "label": "可审计",
+              "text": "证据驱动推理循环每跳有据，满足企业合规。"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "WrenAI：从 semantic layer 到 open context engine 的演进",
+      "date": "2026-07-28",
+      "source": "GitHub Canner/WrenAI · PyPI v0.13.2",
+      "link": "https://github.com/Canner/WrenAI",
+      "summary": "WrenAI（Canner 出品，⭐16.9k）定位开源 GenBI for AI agents：让 agent 生成、部署、治理 dashboards，底层是可信任的 open context layer。近期把\"context layer\"重构为\"open context engine\"（基于 Rust + Apache DataFusion，MCP-native，支持 15+ 数据源），覆盖业务语义、批准定义、示例、记忆、治理与非结构化公司知识。PyPI 最新 v0.13.2（2026-07-28），8 月持续活跃。官方博客明确：传统 semantic layer（如 LookML）是 context layer 的子集。",
+      "insight": "这是\"语义层路线\"的产品级锚点，且博客明确把传统 semantic layer 定位为\"context layer 子集\"——对你们\"语义层 vs 知识图谱\"两路线之争，WrenAI 给了\"语义层需扩成 context engine（含记忆/治理/非结构化知识）\"的产业判断。",
+      "detail": {
+        "why": "WrenAI 是把\"semantic layer\"产品化并明确升级方向的开源代表，且与你们\"业务知识库+业务语义\"课题同构：它要给 agent schema 给不了的上下文。",
+        "mechanism": "open context engine（Rust + Apache DataFusion）+ schema-aware retrieval + MDL planning + dry-plan validation + structured errors + 治理；sits on top of 现有 warehouse/transformation/既有 semantic layer；MCP-native。",
+        "deep": "博客金句：\"pre-AI 时代坏语义造成摩擦，AI 时代坏语义造成幻觉\"。WrenAI 判断 context layer 是 semantic layer 超集（加 canonical entities/identity resolution/tribal knowledge/governance）。这与你们\"不直连库走 API\"约束契合：context layer 可建在 API 之上。",
+        "apply": "可借鉴其\"context layer 超 semantic layer\"判断，在你们业务 API 之上建 context layer（字段语义+批准定义+示例+调用记忆+治理+非结构化文档）；评估 WrenAI 作为 GenBI 引擎底座或参考其 MDL/validation 设计。",
+        "caveats": "开源但生产级部署需工程投入；与既有 semantic layer/dbt 的集成边界需厘清；MCP-native 依赖你们 agent 栈兼容 MCP。",
+        "diagram": {
+          "title": "WrenAI：open context engine 架构",
+          "flow": [
+            {
+              "label": "AI agent",
+              "sub": "提问",
+              "type": "frontend"
+            },
+            {
+              "label": "open context engine",
+              "sub": "Rust+DataFusion",
+              "type": "backend"
+            },
+            {
+              "label": "context layer",
+              "sub": "语义/定义/示例/记忆/治理",
+              "type": "database"
+            },
+            {
+              "label": "既有 stack",
+              "sub": "warehouse/dbt/SL",
+              "type": "cloud"
+            },
+            {
+              "label": "governed SQL/dashboards",
+              "sub": "可信任",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "SL 是子集",
+              "text": "传统 semantic layer 是 context layer 子集，需扩记忆/治理/非结构化知识。"
+            },
+            {
+              "label": "坏语义=幻觉",
+              "text": "AI 时代坏语义造成幻觉而非摩擦，context layer 是信任底座。"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "microsoft/graphrag v3.1.1：GraphRAG 路线的参考实现更新",
+      "date": "2026-07-18",
+      "source": "GitHub microsoft/graphrag · v3.1.1",
+      "link": "https://github.com/microsoft/graphrag",
+      "summary": "微软 GraphRAG（⭐35.3k）是模块化 graph-based RAG 系统，近期发布 v3.1.1（2026-07-18），v3.1.0（2026-05-28）。作为 GraphRAG 路线最权威参考实现，它定义了\"实体抽取→社区聚类→分层摘要→图检索\"的标准范式。同期学术界也在推进可落地版本：Practical GraphRAG（arXiv 2507.03226）用 dependency parsing 做高效 KG 构造（达 LLM 抽取 94% 性能但成本大降）+ 向量/图遍历 RRF 融合检索。",
+      "insight": "对你们\"企业知识图谱(GraphRAG)\"路线，这是起手参考实现。建议两条腿走：用 microsoft/graphrag 做标准范式基线，用 Practical GraphRAG 的低成本 KG 构造（dependency parsing + RRF）做企业可落地优化。",
+      "detail": {
+        "why": "GraphRAG 是你们明确要研究的两路线之一，microsoft/graphrag 是该路线事实标准，且 v3.1.1 刚更新；学界同期在解决其落地成本痛点。",
+        "mechanism": "microsoft/graphrag：实体抽取→社区聚类→分层摘要→图检索。Practical GraphRAG：dependency parsing 做 KG 构造（61.87% vs LLM 抽取 65.83%，即 94% 性能）+ 向量/实体/关系分粒度 embedding + RRF 融合检索。",
+        "deep": "GraphRAG 落地两大痛点是\"LLM 抽取贵\"和\"遍历复杂\"。Practical GraphRAG 的 dependency parsing 替代 LLM 抽取是降本关键，RRF 融合让多粒度匹配可调。两者组合是企业可落地的 GraphRAG 形态。",
+        "apply": "用 microsoft/graphrag 建标准基线跑通业务文档→KG→检索；引入 Practical GraphRAG 的 dependency parsing 降低 KG 构造成本，RRF 融合多粒度检索；与语义层路线对比 ROI 决定投入比例。",
+        "caveats": "microsoft/graphrag 默认 LLM 抽取成本高，企业规模需换 dependency parsing；社区聚类质量影响分层摘要效果；GraphRAG 对多跳推理强但单点事实查询可能不如向量 RAG，需按 query 类型路由。",
+        "diagram": {
+          "title": "GraphRAG 路线：标准范式 + 落地优化",
+          "flow": [
+            {
+              "label": "业务文档/手册",
+              "sub": "非结构化",
+              "type": "database"
+            },
+            {
+              "label": "实体抽取",
+              "sub": "LLM 或 dependency parsing",
+              "type": "backend"
+            },
+            {
+              "label": "知识图谱",
+              "sub": "实体/关系",
+              "type": "database"
+            },
+            {
+              "label": "社区聚类+分层摘要",
+              "sub": "microsoft/graphrag",
+              "type": "backend"
+            },
+            {
+              "label": "多粒度检索",
+              "sub": "向量+图遍历 RRF",
+              "type": "backend"
+            },
+            {
+              "label": "多跳问答",
+              "sub": "GraphRAG",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "降本关键",
+              "text": "dependency parsing 替代 LLM 抽取，达 94% 性能但成本大降。"
+            },
+            {
+              "label": "两腿走",
+              "text": "microsoft/graphrag 做基线，Practical GraphRAG 做落地优化。"
             }
           ]
         }
