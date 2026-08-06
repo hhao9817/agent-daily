@@ -33,3 +33,10 @@
 - dbt 博客源工作正常，抓取到 3 篇高相关文章正文：语义债危机 / 数据平台→智能平台 / AI 数据管道（含 2026 State of Analytics Engineering 数据：72% 团队用 AI 写代码但仅 24% 用 AI 管管道）。
 - 为与第二次运行不重复，本次精选 6 条全新情报，覆盖三来源：学术 4 篇（ISEE 字段语义富集/Metadata Reasoner 元数据推理/HyperAgent 工具超图规划/GPTKB2.0 知识库消歧）+ dbt 博客 1 篇（语义债危机）+ GitHub 1 篇（WrenAI v0.29.2 深读）。
 - 关键发现：本次 6 条恰好串成完整技术栈——ISEE（字段语义富集）→ Metadata Reasoner（数据源/API 选择）→ HyperAgent（API 调用链规划）三篇层层递进，从"字段懂业务"到"选对 API"到"串对 API"；GPTKB2.0 与 WrenAI 分别代表知识图谱/语义层双路线最新进展；dbt 语义债文章为全套提供商业立项论据。
+
+## 2026-08-06 第四次运行记录（本次）
+- arXiv API 恢复可用，多关键词检索（semantic layer/text-to-SQL/enterprise RAG/metadata schema/agent harness）成功。Semantic Scholar 仍 429 限流，所有 6 篇引用数未核实，均标注"信息待复核"。
+- 本次精选 6 条情报，覆盖三来源且与二/三次运行不重复：学术 4 篇（GDPevo 企业业务自进化基准/DBLifeBench 数据库全生命周期+Progressive-Text2SQL/MCTS-Report 表→多模态报告+SQL 回验/EvolveNet 联邦式 harness 进化）+ dbt 博客 1 篇（dbt Core v2.0 Fusion 引擎+Fivetran 合并=为可信 AI Agent 打造数据基础设施）+ GitHub 1 篇（SQLBot v1.10.0 RAG 问数+MCP 接入+安全加固）。
+- GitHub 检索顺利：Chat2DB 27.7k⭐、Cube 20.6k⭐、WrenAI 17.0k⭐、jimureport 8.2k⭐、SQLBot 6.6k⭐、SuperSonic 5.0k⭐、Awesome-Text2SQL 3.7k⭐ 均核实。SQLBot v1.10.0（2026-07-16）经 releases API 核实，含 SQL 注入/提示注入修复 + MCP 支持。GitHub API 后续因速率限制未能取 WrenAI/SuperSonic 最新 release。
+- dbt 博客源工作正常，抓取 2 篇正文：Fivetran+dbt 合并完成（2026-06-01）、Snowflake Summit（dbt Core v2.0/Fusion Rust 重写/10x 解析）。
+- 关键发现：本次 6 条串联成"业务 Agent 从评估到落地"完整链路——GDPevo（怎么评估业务 Agent 自进化）→ DBLifeBench（怎么评估全栈 DB 智能，警示专精模型灾难性遗忘）→ MCTS-Report（怎么生成可信业务报告，SQL 回验数值）→ EvolveNet（多业务线怎么联邦进化而不碰数据合规）→ dbt v2.0+Fivetran（数据基础设施怎么为 Agent 就绪）→ SQLBot（开源 ChatBI 怎么接 MCP 成为 Agent 可调用的数据技能）。dbt 合并+v2.0 是本日最强商业信号，为用户"语义层路线"提供行业级背书。

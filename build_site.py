@@ -48,6 +48,50 @@ def esc(s):
     return html.escape(str(s), quote=False)
 
 
+SNAP_META = {
+    "paper": ("📄 学术论文", "snap-bar-paper", "dot-paper"),
+    "github": ("🐙 开源项目", "snap-bar-github", "dot-github"),
+    "product": ("🏢 业界动态", "snap-bar-product", "dot-product"),
+    "blog": ("📝 技术博客", "snap-bar-blog", "dot-blog"),
+}
+
+
+def render_snapshot(data):
+    """渲染结构化今日速览。支持两种输入：
+    1) data.snapshot = {"summary": "...", "groups": {"paper": [要点...], "blog": [...]}}
+    2) 兼容旧版：data.banner 为纯文本字符串。
+    """
+    snap = data.get("snapshot")
+    if isinstance(snap, dict) and snap.get("groups"):
+        summary = snap.get("summary", "")
+        groups = snap.get("groups", {})
+        groups_html = []
+        # 按固定顺序输出有内容的来源
+        for tag, (label, bar_cls, dot_cls) in SNAP_META.items():
+            points = groups.get(tag)
+            if not points or not isinstance(points, list) or not points:
+                continue
+            lis = "".join(f"<li>{esc(p)}</li>" for p in points)
+            groups_html.append(
+                f'<div class="snap-group">'
+                f'<span class="snap-bar {bar_cls}"></span>'
+                f'<div class="snap-body">'
+                f'<div class="snap-title"><span class="dot {dot_cls}"></span>{label}'
+                f'<span class="badge">{len(points)} 项</span></div>'
+                f'<ul class="snap-points">{lis}</ul>'
+                f'</div></div>'
+            )
+        summary_html = f'<div class="snapshot-summary"><strong>📌 今日速览</strong><br>{esc(summary)}</div>' if summary else ""
+        return (f'<div class="snapshot">{summary_html}'
+                f'<div class="snapshot-groups">{"".join(groups_html)}</div></div>')
+
+    # 兼容旧版纯文本 banner
+    banner = data.get("banner", "")
+    if banner:
+        return f'<div class="snapshot"><div class="snapshot-summary"><strong>📌 今日速览</strong><br>{esc(banner)}</div></div>'
+    return ""
+
+
 def build_detail_blocks(detail):
     """把 detail 渲染成详情区块 HTML（供弹层和完整页复用）。增补来源溯源区块。"""
     d_blocks = []
@@ -93,94 +137,116 @@ def render(data, mode="interactive"):
         tpl = f.read()
 
     date = esc(data.get("date", ""))
-    banner = data.get("banner", "")
-    if banner:
-        b = f'<div class="banner"><h2>📌 今日速览</h2><p>{esc(banner)}</p></div>'
-    else:
-        b = ""
+    snap_html = render_snapshot(data)
 
-    items_html = []
+    # 分类区块元信息（顺序即展示顺序）
+    SECTION_META = [
+        ("paper", "📄 学术论文", "bar-paper"),
+        ("product", "🏢 业界动态", "bar-product"),
+        ("github", "🐙 开源项目", "bar-github"),
+        ("blog", "📝 技术博客", "bar-blog"),
+    ]
+
     modals_html = []
     items = data.get("items", [])
-    if not items:
-        items_html.append('<div class="empty">今日暂无值得关注的更新。</div>')
-
-    for idx, it in enumerate(items):
+    grouped = {tag: [] for tag, _, _ in SECTION_META}
+    for it in items:
         tag = it.get("tag", "blog")
-        tag_label = TAG_LABEL.get(tag, "📝")
-        tag_class = TAG_CLASS.get(tag, "tag-blog")
-        title = esc(it.get("title", "未命名"))
-        link = it.get("link", "")
-        title_html = f'<a href="{esc(link)}" target="_blank" rel="noopener">{title}</a>' if link else title
+        grouped.setdefault(tag, []).append(it)
 
-        meta_parts = []
-        if it.get("date"):
-            meta_parts.append(esc(it["date"]))
-        if it.get("source"):
-            meta_parts.append(esc(it["source"]))
-        meta = " · ".join(meta_parts)
-        summary = esc(it.get("summary", ""))
-        insight = esc(it.get("insight", ""))
+    sections_html = []
+    global_idx = 0
+    for tag, section_label, bar_class in SECTION_META:
+        group = grouped.get(tag, [])
+        if not group:
+            continue
+        cards = []
+        for it in group:
+            idx = global_idx
+            global_idx += 1
+            tag_label = TAG_LABEL.get(tag, "📝")
+            tag_class = TAG_CLASS.get(tag, "tag-blog")
+            title = esc(it.get("title", "未命名"))
+            link = it.get("link", "")
+            title_html = f'<a href="{esc(link)}" target="_blank" rel="noopener">{title}</a>' if link else title
 
-        if mode == "full":
-            # ===== 完整展开模式（归档页）：直接渲染所有详情，无需 JS =====
-            detail = it.get("detail", {})
-            d_blocks = build_detail_blocks(detail)
-            d_html = "\n".join(d_blocks) if d_blocks else ""
-            source_link = (f'<div class="modal-foot"><a href="{esc(link)}" target="_blank" rel="noopener" '
-                           f'class="modal-link">🔗 原文链接：{esc(link)}</a></div>' if link else "")
-            items_html.append(
-                f'<div class="item item-full">'
-                f'<div class="item-top"><span class="tag {tag_class}">{tag_label}</span></div>'
+            meta_parts = []
+            if it.get("date"):
+                meta_parts.append(esc(it["date"]))
+            if it.get("source"):
+                meta_parts.append(esc(it["source"]))
+            meta = " · ".join(meta_parts)
+            summary = esc(it.get("summary", ""))
+            insight = esc(it.get("insight", ""))
+
+            if mode == "full":
+                detail = it.get("detail", {})
+                d_blocks = build_detail_blocks(detail)
+                d_html = "\n".join(d_blocks) if d_blocks else ""
+                source_link = (f'<div class="modal-foot"><a href="{esc(link)}" target="_blank" rel="noopener" '
+                               f'class="modal-link">🔗 原文链接：{esc(link)}</a></div>' if link else "")
+                cards.append(
+                    f'<div class="item item-full">'
+                    f'<div class="item-top"><span class="tag {tag_class}">{tag_label}</span></div>'
+                    f'<h3>{title_html}</h3>'
+                    f'<div class="meta">{meta}</div>'
+                    f'<div class="summary">{summary}</div>'
+                    f'<div class="insight"><strong>🔍 技术视角：</strong>{insight}</div>'
+                    f'{d_html}{source_link}'
+                    f'</div>'
+                )
+                continue
+
+            # interactive 列表卡片
+            cards.append(
+                f'<div class="item" onclick="openDetail({idx})" role="button" tabindex="0" '
+                f'onkeydown="if(event.key===\'Enter\'||event.key===\' \')openDetail({idx})">'
+                f'<div class="item-top">'
+                f'<span class="tag {tag_class}">{tag_label}</span>'
+                f'<span class="detail-hint">点击查看详情 →</span>'
+                f'</div>'
                 f'<h3>{title_html}</h3>'
                 f'<div class="meta">{meta}</div>'
                 f'<div class="summary">{summary}</div>'
                 f'<div class="insight"><strong>🔍 技术视角：</strong>{insight}</div>'
-                f'{d_html}{source_link}'
                 f'</div>'
             )
-            continue
 
-        # ===== 列表卡片（interactive 模式） =====
-        items_html.append(
-            f'<div class="item" onclick="openDetail({idx})" role="button" tabindex="0" '
-            f'onkeydown="if(event.key===\'Enter\'||event.key===\' \')openDetail({idx})">'
-            f'<div class="item-top">'
-            f'<span class="tag {tag_class}">{tag_label}</span>'
-            f'<span class="detail-hint">点击查看详情 →</span>'
-            f'</div>'
-            f'<h3>{title_html}</h3>'
-            f'<div class="meta">{meta}</div>'
-            f'<div class="summary">{summary}</div>'
-            f'<div class="insight"><strong>🔍 技术视角：</strong>{insight}</div>'
+            # 详情弹层
+            detail = it.get("detail", {})
+            d_blocks = build_detail_blocks(detail)
+            source_link = (f'<a href="{esc(link)}" target="_blank" rel="noopener" '
+                           f'class="modal-link">🔗 原文链接：{esc(link)}</a>' if link else "")
+            modals_html.append(
+                f'<div class="modal" id="modal-{idx}" onclick="if(event.target===this)closeDetail({idx})">'
+                f'<div class="modal-content">'
+                f'<button class="modal-close" onclick="closeDetail({idx})" aria-label="关闭">×</button>'
+                f'<span class="tag {tag_class}">{tag_label}</span>'
+                f'<h2>{title}</h2>'
+                f'<div class="meta">{meta}</div>'
+                f'<div class="modal-body">' + "\n".join(d_blocks) + '</div>'
+                f'<div class="modal-foot">{source_link}</div>'
+                f'</div></div>'
+            )
+
+        sections_html.append(
+            f'<div class="section">'
+            f'<div class="section-head"><span class="bar {bar_class}"></span>'
+            f'<h2>{section_label}</h2><span class="count">{len(group)} 条</span></div>'
+            f'{"".join(cards)}'
             f'</div>'
         )
 
-        # ===== 详情弹层（interactive 模式） =====
-        detail = it.get("detail", {})
-        d_blocks = build_detail_blocks(detail)
-        source_link = (f'<a href="{esc(link)}" target="_blank" rel="noopener" '
-                       f'class="modal-link">🔗 原文链接：{esc(link)}</a>' if link else "")
+    if not items:
+        sections_html.append('<div class="empty">今日暂无值得关注的更新。</div>')
 
-        modals_html.append(
-            f'<div class="modal" id="modal-{idx}" onclick="if(event.target===this)closeDetail({idx})">'
-            f'<div class="modal-content">'
-            f'<button class="modal-close" onclick="closeDetail({idx})" aria-label="关闭">×</button>'
-            f'<span class="tag {tag_class}">{tag_label}</span>'
-            f'<h2>{title}</h2>'
-            f'<div class="meta">{meta}</div>'
-            f'<div class="modal-body">' + "\n".join(d_blocks) + '</div>'
-            f'<div class="modal-foot">{source_link}</div>'
-            f'</div></div>'
-        )
-
-    items_block = "\n".join(items_html)
+    sections_block = "\n".join(sections_html)
     modals_block = "\n".join(modals_html)
 
     page = (tpl
             .replace("{{DATE}}", date)
-            .replace("{{BANNER}}", b)
-            .replace("{{ITEMS}}", items_block)
+            .replace("{{SNAPSHOT}}", snap_html)
+            .replace("{{SECTIONS}}", sections_block)
             .replace("{{MODALS}}", modals_block))
     return page
 
