@@ -494,7 +494,7 @@
       "title": "双路线对照更新：语义层工业活跃、知识图谱开源放缓（Cube+dbt+TYTAN vs OpenSPG+LeanRAG）",
       "date": "2026-08-08",
       "source": "综合 GitHub releases API + arXiv（多源核实）",
-      "link": "https://github.com/OpenSPG/openspg",
+      "link": "https://github.com/cube-js/cube",
       "summary": "用户关注\"语义层 vs 企业知识图谱\"双路线，今日情报形成对照：语义层路线工业进展活跃——Cube 今日发 v1.7.17（周级迭代，lastRefreshTime 可信修复）、dbt 发知识层治理长文、TYTAN 给语义层自动构建学术方法（100% 覆盖）；知识图谱路线学术继续产出（LeanRAG 为 AAAI 2026 知识图谱语义聚合与层次检索），但开源工业落地节奏放缓——OpenSPG/KAG 仍停 v0.8（2025-06，近一年无新发布，last push 2025-07-05）。",
       "insight": "架构师点评：若用户近期需选路线优先级，语义层路线的工业成熟度与生态活跃度明显占优（周级发布、官方治理论述、自动化学术供给）。知识图谱路线更适合长线沉淀与复杂推理场景，但短期工程支撑与迭代节奏弱于语义层。",
       "detail": {
