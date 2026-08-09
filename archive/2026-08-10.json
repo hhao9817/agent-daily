@@ -1,0 +1,756 @@
+{
+  "date": "2026-08-10",
+  "banner": "MERIT 用因果情景记忆把 Text-to-SQL 修复准确率从 66.3%→69.8%；NeSy-RAG 把检索块合成可归因 Prolog 模块实现可解释 QA；Cube v1.7.18 今日发布增 timezone 支持——让 AI 在业务系统中精确查数并可信执行。",
+  "snapshot": {
+    "summary": "今日情报围绕「让 AI 在业务系统中精确查数、可信解释、可控输出」三条主线展开。学术线四篇层层递进：MERIT 用因果情景记忆把 Text-to-SQL 的修复从「无状态重试」升级为「带记忆的修复」，Spider 准确率 66.34%→69.79%、BIRD 47.35%→48.44%（0 引用，2026 新文）；NeSy-RAG 把检索块合成可归因的 Prolog 谓词模块，并引入符号化知识缺口检测，让 RAG 推理链可验证可追溯（0 引用）；Schema-Guided IE 用 schema 作信息模型实现单次零样分层信息抽取 + 基于路径的语义匹配评估，为业务术语表/字段语义标注提供 schema 先行范式（0 引用）；Beyond Top-K 论证「对财务报表这类表格密集文档，top-k 嵌入检索结构性失效」（chunk 边界把数字与单位分离，误差达两个数量级），提出 READ 可解释 Agent 化检索替换黑盒 top-k（0 引用）。商业线两篇 TDS 博客形成呼应：Loading Data 论证「数据加载≠数据可用」，analysis-ready 数据需要建模/测试/文档化的语义层（dbt source vs model + 测试断言 + lineage）；Structured Output 论证本地 LLM 经 Pydantic schema 约束可生成可解析结构化对象，为业务 API 参数精准填充提供低成本本地化路径。开源线：Cube v1.7.18 今日发布（20,575⭐，timezone 选项支持 cubeSql/cubeSqlStream，语义层时区对齐）；SocratiCode（3,237⭐，MCP Server，代码库+DB/API 知识的混合语义搜索与符号级影响分析）作为知识图谱路线参考。整体串联：Schema-Guided（schema 先行建术语表）→ MERIT（带记忆的可信查询修复）→ NeSy-RAG（查询结果可归因验证）→ Beyond Top-K（表格密集文档要换检索范式）→ TDS Loading Data（语义层是可用性根基）→ TDS Structured Output（schema 约束输出）→ Cube v1.7.18（语义层工业迭代）→ SocratiCode（知识图谱+MCP 编排）。",
+    "groups": {
+      "paper": [
+        "MERIT（arXiv:2608.05906，0引用/2026-08-06）：Causal Episodic Memory for Feedback-Driven Agent Repair。提出训练免费的 Text-to-SQL 修复 Agent，维护「双极性在线记忆」——oracle 验证的修正存为正例、失败方向存为负例；确定性分类器分配粗粒度失败类型，条件化混合词法-密集检索器，再用冻结模型生成修订。Spider 66.34%→69.79%、BIRD 47.35%→48.44%——直击用户「业务查询可信度验证」需求：不靠重训，靠记忆积累让 Agent 越用越准。",
+        "NeSy-RAG（arXiv:2608.06292，0引用/2026-08-06）：Neuro-Symbolic RAG for Explainable Question Answering。把检索到的文本块合成为编码布尔声明的 Prolog 谓词模块，用自然语言-代码联合嵌入检索并组合成 Prolog 查询；引入符号化知识缺口检测机制，系统识别缺失的用户上下文而非默认臆测——为业务数据查询提供「可归因、可验证、可发现数据缺口」的 RAG 范式，解决黑盒 RAG 推理不可追溯问题。",
+        "Schema-Guided Hierarchical IE（arXiv:2608.06167，0引用/2026-08-06）：用 schema 作为信息模型编码领域知识，单次零样调用实现分层嵌套、变基数属性的信息抽取；评估阶段引入基于路径的语义匹配算法对齐嵌套属性，再用生成式 AI 做语义比较。schema 先行 + 语义评估的范式直接对应业务术语表/字段语义标注——先定义业务语义结构，再驱动抽取与验证。",
+        "Beyond Top-K（arXiv:2608.06305，0引用/2026-08-06）：论证对财务报表/审计报告/监管报表这类表格密集文档，top-k 嵌入检索结构性失效——780 页政府财报 86.8% 行是表格行，数字继承自上方 13 行外的表头，chunk 边界把数字与单位（lakh vs crore）分离致两个数量级误差。提出 READ（Reliable Embedding-free...）用可解释 Agent 化操作替换黑盒 top-k——警示用户宽表 API 场景不能照搬 chunk+embed 范式。"
+      ],
+      "blog": [
+        "TDS《I Thought Loading Data Was the Finish Line. It Was the Starting Point.》（2026-08-09，Ibrahim Salami）：核心论点「数据加载≠数据可用」。作者反思建了两条 pipeline 却跳过了让数据有用的部分——没有 transformation、modeling、结构。用 dbt 区分 source（外部已存在表）与 model（dbt 构建），staging model 清洗、加测试断言（非空/唯一）、ref() 依赖追踪生成 lineage graph。结论：「数据已加载」与「数据可用」是完全不同的两个命题——为用户业务知识库建设提供语义层立项的一线实践论据。",
+        "TDS《How to Implement Structured Output with Local LLMs》（2026-08-09，Shuai Guo）：用 Pydantic 定义嵌套 schema（如 SchedulingContext 含共享事实 + DeviceToSchedule 列表），经 model_json_schema() 转 schema 传入 Ollama 的 format 参数约束 Gemma 4 本地生成，model_validate_json() 解析为 Python 对象。论点：本地 LLM 保敏感数据、降云 API 依赖，但自由文本难用，需 schema 约束为可解析结构——为用户业务 API 参数精准填充提供本地化、低成本、可验证的工程路径。"
+      ],
+      "github": [
+        "cube-js/cube v1.7.18（2026-08-09 今日发布，20,575⭐）：语义层开源标杆持续周级迭代。v1.7.18 新增 client-core 的 cubeSql() 与 cubeSqlStream() 支持 timezone 选项（PR #11507）——业务查询的时区对齐在语义层解决，Agent 调用语义层 API 时不再需要手动换算时区。仓库定位「open-source semantic layer for AI, BI and embedded analytics」，topics 含 agentic-analytics/agents/ai。",
+        "giancarloerra/SocratiCode（3,237⭐，2026-08-05 push，v1.11.0，TypeScript/MCP）：企业级代码库知识引擎，零配置本地私有。混合语义搜索 + 多语言依赖图 + 符号级影响分析与调用流 + 交互式 HTML viewer + 跨项目/分支感知搜索，明确标注「DB/API/infra knowledge」（61% token 减少、84% 调用减少、37x 更快）。以 MCP Server 形式接入 Claude Code/Cursor/VS Code——作为「知识图谱路线」在代码/基础设施领域的参考实现，其 DB/API 知识建模思路可迁移到业务 API 语义标注。"
+      ],
+      "product": [
+        "语义层 vs 知识图谱双路线本周态势：语义层工业侧 Cube 周级迭代（v1.7.18 timezone 支持），方法论侧 TDS 两篇博客从实践（analysis-ready 需建模测试文档）与工程（schema 约束输出）双重背书语义层价值；知识图谱侧 SocratiCode 以 MCP 形态把代码库+DB/API 知识结构化为可检索图谱（3,237⭐，增长中），OpenSPG 仍近一年无新发布。结论：语义层短期在工业落地与社区活跃度上持续占优，知识图谱路线在「结构化领域知识+MCP 编排」细分场景有差异化价值——用户双路线策略应侧重语义层主路径 + 知识图谱补特定场景。"
+      ]
+    }
+  },
+  "items": [
+    {
+      "tag": "paper",
+      "title": "MERIT：因果情景记忆驱动的 Text-to-SQL 修复 Agent",
+      "date": "2026-08-06",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2608.05906",
+      "summary": "LLM Agent 修复失败时常丢弃成功修正，迫使后续 episode 重新发现类似解。MERIT 提出训练免费的 Text-to-SQL 修复 Agent，维护「双极性在线记忆」：oracle 验证的修正存为正例（可检索复用）、观察到的失败方向存为负例（避免重蹈）。确定性分类器分配粗粒度失败类型，条件化混合词法-密集检索器，再用冻结模型生成修订。仅允许早期已终结 episode 的记忆被检索。用 Qwen2.5-7B-Instruct 在相同初始预测与修复预算下，Spider 执行准确率从无状态迭代修复的 66.34% 提升至 69.79%，BIRD 从 47.35% 提升至 48.44%。",
+      "insight": "MERIT 的核心贡献在于把「修复」从无状态重试升级为带记忆的增量学习——不靠参数更新，靠经验积累。这与用户「业务查询可信度验证」需求高度契合：业务系统查询失败时，Agent 应记住「上次这个 API 参数组合为何失败、怎么修对的」，形成组织级查询知识库。双极性记忆（正例+负例）的设计尤其值得借鉴——不仅要记成功路径，更要记失败方向避免重复踩坑。",
+      "detail": {
+        "why": "用户核心课题之一是「业务系统精确查询分析」，必然面临查询失败与修复。MERIT 提供了不重训模型、靠情景记忆让 Agent 越用越准的范式，且在 Spider/BIRD 两大基准上有可量化提升，是业务查询可信度验证的直接技术抓手。",
+        "mechanism": "①双极性在线记忆：oracle-verified corrections（正例）+ observed unsuccessful directions（负例）。②确定性失败类型分类器：粗粒度分类条件化检索策略。③混合词法-密集检索器：兼顾精确匹配与语义相似。④冻结模型生成修订：不更新参数，靠 in-context 记忆。⑤仅允许早期已终结 episode 记忆被检索，避免信息泄漏。",
+        "deep": "MERIT 的深层洞察是「修复经验的可复用性」。传统 Text-to-SQL 修复是 episode 级的——每次失败独立处理，成功经验随 episode 结束而丢弃。MERIT 引入跨 episode 的记忆持久化，把组织级的查询修复经验沉淀为可检索资产。这对企业场景意义重大：业务团队的查询失败模式是有限的（schema 理解错误、字段语义混淆、聚合逻辑错误等），记忆这些模式比反复让 LLM 从零推理更高效可靠。双极性设计的精妙处在于负例记忆——传统 RAG 只存正例，但「知道什么不能做」在业务查询中同样重要。",
+        "apply": "①在业务 API 查询失败时，记录失败类型（如字段语义混淆、参数组合无效）与修正方案到记忆库。②按失败类型条件化检索，让 Agent 优先参考同类历史修正。③负例记忆用于前置过滤——生成查询前先排除已知失败方向。④记忆库定期审计，淘汰过时条目（schema 变更后）。",
+        "caveats": "①依赖 oracle-assisted benchmark feedback，实际业务中 oracle（正确答案）可能不可得，需用执行结果验证或人工审核替代。②记忆库质量依赖失败分类器的准确性，分类错误会污染检索。③Spider/BIRD 提升幅度有限（3.45%/1.09%），企业级复杂查询的收益待验证。④引用数 0（2026-08-06 新文，符合预期，信息经 Semantic Scholar 核实）。",
+        "business": "MERIT 对业务的启示是「AI Agent 的可信度可以随使用积累而提升，而非一锤定音」。企业部署业务查询 Agent 时，应把查询失败与修复经验视为组织资产而非临时数据——记忆库即查询知识库。这降低了 Agent 的初始准确率门槛（不必一次到位），改为关注「是否有有效的记忆与修复回路」。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.05906",
+            "title": "Causal Episodic Memory for Feedback-Driven Agent Repair (MERIT)"
+          },
+          {
+            "url": "https://api.semanticscholar.org/graph/v1/paper/arXiv:2608.05906",
+            "title": "Semantic Scholar: citationCount=0, influentialCitationCount=0（2026-08-10 核实）"
+          }
+        ],
+        "diagram": {
+          "title": "MERIT 双极性记忆修复回路",
+          "flow": [
+            {
+              "label": "查询失败",
+              "sub": "Text-to-SQL episode",
+              "type": "external"
+            },
+            {
+              "label": "失败分类器",
+              "sub": "确定性粗粒度分类",
+              "type": "backend"
+            },
+            {
+              "label": "双极性记忆库",
+              "sub": "正例(修正)+负例(失败方向)",
+              "type": "database"
+            },
+            {
+              "label": "混合检索",
+              "sub": "词法+密集 条件化",
+              "type": "backend"
+            },
+            {
+              "label": "冻结模型生成修订",
+              "sub": "Qwen2.5-7B in-context",
+              "type": "cloud"
+            },
+            {
+              "label": "执行验证",
+              "sub": "oracle/执行结果",
+              "type": "security"
+            },
+            {
+              "label": "记忆更新",
+              "sub": "修正入库/失败入库",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "跨 episode 记忆",
+              "text": "仅早期已终结 episode 的记忆可被检索，避免信息泄漏"
+            },
+            {
+              "label": "双极性",
+              "text": "正例记成功路径，负例记失败方向，生成前先排除已知失败"
+            },
+            {
+              "label": "训练免费",
+              "text": "不更新参数，靠 in-context 记忆，降低部署门槛"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "NeSy-RAG：神经符号 RAG 实现可归因可验证的问答",
+      "date": "2026-08-06",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2608.06292",
+      "summary": "NeSy-RAG 提出模块化神经符号 RAG 框架，把检索到的文本块合成为编码布尔声明的 Prolog 谓词模块。对每个 chunk，系统生成语义谓词（可能依赖用户事实），用自然语言-代码联合嵌入检索并组合成 Prolog 查询执行推理。针对用户上下文缺失问题，引入符号化知识缺口检测机制——系统主动识别缺失信息而非默认臆测输出。推理链每步可归因到具体证据 chunk，实现可验证、可追溯的问答。",
+      "insight": "NeSy-RAG 把 RAG 的「检索-生成」黑盒拆解为「检索-符号化-推理」可审计链路。对用户业务场景的价值在于：业务数据查询不能只给答案，还要给「答案从哪来、依据哪个证据、缺了什么信息」——这正是业务可信度的核心。Prolog 谓词化让推理逻辑可执行、可验证，知识缺口检测避免 LLM 在信息不足时「幻觉补全」。",
+      "detail": {
+        "why": "用户要求业务数据可信度验证，而传统 RAG 推理不可追溯、无法归因、不检测上下文缺失——NeSy-RAG 直接解决这三个痛点，是业务级 RAG 可信化的范式参考。",
+        "mechanism": "①chunk→Prolog 谓词模块：每个检索块合成为编码布尔声明的谓词。②联合嵌入：自然语言-代码联合嵌入检索谓词。③Prolog 查询组合：谓词组合成可执行逻辑查询。④符号化知识缺口检测：识别缺失用户上下文，主动提示而非默认输出。⑤证据归因：推理链每步可追溯到具体 chunk。",
+        "deep": "NeSy-RAG 的核心突破在于把「语义检索」与「符号推理」分层——检索层负责找到相关知识块，符号层负责把知识块转化为可执行逻辑并推理。这种分层让每一步都可审计：检索是否找对了块？谓词是否正确编码了声明？推理是否逻辑自洽？是否遗漏了必要前提？对于业务数据查询，这意味着 Agent 不仅能回答「这个指标是多少」，还能回答「这个数字基于哪些数据源、用了什么计算逻辑、是否有缺失字段需要补充」——这是从「能答」到「可信答」的跃迁。",
+        "apply": "①业务术语表/指标定义可编码为 Prolog 谓词，查询时组合推理。②宽表 API 字段语义标注后符号化，支持跨字段逻辑验证。③知识缺口检测用于前置校验——查询前检查是否具备所有必需上下文，缺失则提示补充而非生成错误结果。④证据归因链用于审计报告，每条业务结论可追溯到源数据。",
+        "caveats": "①Prolog 合成依赖 LLM 代码生成质量，错误谓词会导致推理失败。②Prolog 推理对非布尔/连续值场景需扩展（业务指标多为数值聚合）。③知识缺口检测的完备性依赖谓词覆盖度。④引用数 0（2026-08-06 新文，Semantic Scholar 核实）。",
+        "business": "NeSy-RAG 对业务的启示是「可信 AI 不是给对答案，而是能证明答案怎么来的」。在业务决策场景，管理层不只关心结果，更关心「这个数据基于什么、逻辑是什么、是否有遗漏」——可归因可验证的推理链是 AI 进入核心业务决策的前提。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.06292",
+            "title": "NeSy-RAG: Neuro-Symbolic RAG for Explainable Question Answering"
+          },
+          {
+            "url": "https://api.semanticscholar.org/graph/v1/paper/arXiv:2608.06292",
+            "title": "Semantic Scholar: citationCount=0, influentialCitationCount=0（2026-08-10 核实）"
+          }
+        ],
+        "diagram": {
+          "title": "NeSy-RAG 可归因推理链",
+          "flow": [
+            {
+              "label": "用户查询",
+              "sub": "自然语言问题",
+              "type": "external"
+            },
+            {
+              "label": "语义检索",
+              "sub": "chunk 检索",
+              "type": "backend"
+            },
+            {
+              "label": "谓词合成",
+              "sub": "chunk→Prolog 谓词",
+              "type": "backend"
+            },
+            {
+              "label": "联合嵌入检索",
+              "sub": "NL-代码联合",
+              "type": "backend"
+            },
+            {
+              "label": "Prolog 推理",
+              "sub": "可执行逻辑查询",
+              "type": "database"
+            },
+            {
+              "label": "知识缺口检测",
+              "sub": "符号化识别缺失",
+              "type": "security"
+            },
+            {
+              "label": "可归因答案",
+              "sub": "每步→证据chunk",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "分层可审计",
+              "text": "检索/符号化/推理三层分离，每层独立验证"
+            },
+            {
+              "label": "缺口检测",
+              "text": "信息不足时主动提示而非幻觉补全，避免错误输出"
+            },
+            {
+              "label": "证据归因",
+              "text": "业务结论可追溯到源数据，满足审计需求"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "Schema-Guided 分层信息抽取：schema 先行的业务术语表构建范式",
+      "date": "2026-08-06",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2608.06167",
+      "summary": "提出基于 schema 的框架，用生成式 AI 从非结构化文本中抽取复杂分层结构信息，并进行自动化语义评估。schema 作为信息模型编码领域知识，提供统一系统一致的框架，处理分层嵌套、变基数属性的信息抽取——单次零样调用完成。评估阶段引入基于路径的语义匹配算法对齐嵌套属性，再用生成式 AI 对属性值做语义比较。",
+      "insight": "Schema-Guided IE 的核心主张是「schema 先行」——先定义业务语义结构（哪些字段、如何嵌套、基数如何），再驱动抽取与评估。这与用户「业务知识库构建」方向高度契合：业务术语表/字段语义标注本质上就是先建 schema（业务信息模型），再让 AI 按此 schema 从文档/API 描述中抽取并验证字段语义。单次零样调用降低了工程成本。",
+      "detail": {
+        "why": "用户三大方向之首是「业务知识库构建」，核心是 schema 建模与元数据管理。Schema-Guided IE 提供了「schema 驱动抽取+语义评估」的完整范式，可直接迁移到业务术语表自动构建。",
+        "mechanism": "①schema 作信息模型：编码领域知识，定义分层嵌套结构。②单次零样抽取：一次调用完成复杂结构信息抽取。③基于路径的语义匹配：对齐嵌套变基数属性。④生成式 AI 语义比较：属性值级别语义评估而非精确匹配。",
+        "deep": "传统信息抽取是「先抽取后结构化」，Schema-Guided IE 反转为「先定义结构后抽取评估」。这种反转的意义在于：业务语义不是从文档中「发现」的，而是预先在 schema 中「定义」的——文档只是填充 schema 的数据源。对用户宽表 API 场景，这意味着先定义「这个业务实体的语义结构（哪些是度量、哪些是标识、如何关联）」，再让 AI 从 API 文档/字段描述中按此结构抽取并标注，最后用语义匹配评估抽取质量——形成「定义-抽取-验证」闭环。",
+        "apply": "①为每个宽表 API 定义业务 schema（度量/标识/维度/关联），作为字段语义标注模板。②用 AI 从 API 文档按 schema 零样抽取字段语义。③基于路径的语义匹配自动评估标注质量。④schema 与抽取结果共同构成可查询的业务术语表。",
+        "caveats": "①schema 设计质量决定抽取上限，领域专家需参与 schema 定义。②单次零样调用对复杂嵌套可能遗漏，需分层分批。③语义比较评估自身依赖 LLM，评估偏差会传递。④引用数 0（2026-08-06 新文，Semantic Scholar 核实）。",
+        "business": "Schema 先行范式的商业价值在于「把领域知识从专家脑中结构化为可复用的数字资产」。业务术语表不再是文档，而是可驱动 AI 抽取、验证、查询的结构化 schema——这降低了业务知识库的构建门槛与维护成本。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.06167",
+            "title": "Schema-Guided Hierarchical Information Extraction and Semantic Evaluation Using Generative AI"
+          },
+          {
+            "url": "https://api.semanticscholar.org/graph/v1/paper/arXiv:2608.06167",
+            "title": "Semantic Scholar: citationCount=0, influentialCitationCount=0（2026-08-10 核实）"
+          }
+        ],
+        "diagram": {
+          "title": "Schema-Guided 抽取-评估闭环",
+          "flow": [
+            {
+              "label": "业务 schema",
+              "sub": "领域知识信息模型",
+              "type": "database"
+            },
+            {
+              "label": "非结构化文档",
+              "sub": "API文档/字段描述",
+              "type": "external"
+            },
+            {
+              "label": "零样抽取",
+              "sub": "单次调用按schema",
+              "type": "backend"
+            },
+            {
+              "label": "嵌套结构结果",
+              "sub": "分层变基数属性",
+              "type": "database"
+            },
+            {
+              "label": "路径语义匹配",
+              "sub": "对齐gold standard",
+              "type": "security"
+            },
+            {
+              "label": "AI语义比较",
+              "sub": "属性值级评估",
+              "type": "cloud"
+            },
+            {
+              "label": "业务术语表",
+              "sub": "可查询schema+标注",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "schema先行",
+              "text": "先定义业务语义结构，再驱动抽取，领域知识显式编码"
+            },
+            {
+              "label": "单次零样",
+              "text": "一次调用完成复杂嵌套抽取，降低工程成本"
+            },
+            {
+              "label": "语义评估",
+              "text": "路径匹配+AI比较，自动验证抽取质量"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "Beyond Top-K：表格密集文档中黑盒检索的结构性失效与可解释 Agent 化替代",
+      "date": "2026-08-06",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2608.06305",
+      "summary": "论证对财务报表、审计报告、监管报表等表格密集文档，主流 top-k 嵌入检索设计结构性失效。780 页政府财报中 86.8% 内容行是表格行，数千个近乎相同的数字在一个嵌入空间竞争，且数字继承自上方中位数 13 行外的表头——chunk 边界把数字与单位（lakh vs crore）分离，导致两个数量级误差。table-aware chunker 作为 steelman 修复单位问题，但仍有 27-30% 数值 chunk 在所有 chunk 大小下缺失财年表头。提出 READ（Reliable Embedding-free...）用可解释 Agent 化操作替换黑盒 top-k 检索。",
+      "insight": "Beyond Top-K 对用户场景有直接警示意义：用户的宽表 API 返回上百字段的结构化数据，若用 chunk+embed 范式做 RAG，会遭遇与财报相同的结构性失效——字段值与其语义标注（单位、口径、维度）被 chunk 边界分离。这论证了「业务 API 查询不能照搬文档 RAG 范式」，需用 Agent 化的可解释操作替代黑盒检索。",
+      "detail": {
+        "why": "用户宽表 API 场景与论文的财务报表场景同构——都是表格密集、字段值与语义上下文紧耦合的结构化数据。论文量化证明了 top-k 检索在此类数据上的失效机制，为用户选择查询范式提供了硬数据支撑。",
+        "mechanism": "①失效量化：86.8% 行为表格行、数字-表头中位距离 13 行、chunk 边界致两个数量级误差。②steelman 修复：table-aware chunker 修复单位但 27-30% chunk 仍缺财年表头。③READ 替代：可解释 Agent 化操作替换黑盒 top-k，操作可审计可干预。",
+        "deep": "论文最深刻的贡献是用硬数据揭示了「嵌入空间的语义粒度与结构化数据的语义依赖不匹配」。数字的语义不在线性嵌入空间中，而在结构关系（哪个表头、哪一行、什么单位）中——chunk 切割结构关系，嵌入无法重建。对用户宽表 API，这意味着：API 返回的字段值语义依赖字段名、字段描述、表头层级、与其他字段的关联——这些结构关系不能被 chunk+embed 保留。正确做法是把结构化数据保持结构化，用 Agent 操作（定位字段、理解关联、验证口径）替代嵌入检索。",
+        "apply": "①宽表 API 查询禁用 chunk+embed 范式，保持结构化数据原貌。②用 Agent 化操作：先定位目标字段（schema understanding），再理解字段间关联，最后验证口径/单位。③字段语义标注应与字段值保持结构绑定，不可分离入不同 chunk。④对必须 RAG 的文档，评估表格密度，高密度场景启用 READ 式可解释操作。",
+        "caveats": "①论文聚焦政府财报，企业宽表 API 的失效程度需实测验证。②READ 的具体机制（Reliable Embedding-free...）摘要截断，完整设计待读全文。③可解释 Agent 操作比 top-k 慢，延迟-准确度权衡需评估。④引用数 0（2026-08-06 新文，Semantic Scholar 核实）。",
+        "business": "Beyond Top-K 的商业启示是「别用错工具」——在表格密集的业务数据上用文档 RAG 范式是结构性错误，不仅不准还会产生两个数量级的误差。企业选型时应先评估数据形态，结构化数据走 Agent 化操作路径而非嵌入检索。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.06305",
+            "title": "Beyond Top-K: Replacing Black-Box Retrieval with Interpretable Agentic Operations"
+          },
+          {
+            "url": "https://api.semanticscholar.org/graph/v1/paper/arXiv:2608.06305",
+            "title": "Semantic Scholar: citationCount=0, influentialCitationCount=0（2026-08-10 核实）"
+          }
+        ],
+        "diagram": {
+          "title": "Top-K 失效 vs Agent 化替代",
+          "flow": [
+            {
+              "label": "宽表/财报数据",
+              "sub": "86.8%表格行",
+              "type": "database"
+            },
+            {
+              "label": "Top-K检索(失效)",
+              "sub": "chunk切结构关系",
+              "type": "backend"
+            },
+            {
+              "label": "失效点1",
+              "sub": "数字-表头分离",
+              "type": "security"
+            },
+            {
+              "label": "失效点2",
+              "sub": "单位丢失(2数量级误差)",
+              "type": "security"
+            },
+            {
+              "label": "失效点3",
+              "sub": "27-30%缺财年头",
+              "type": "security"
+            },
+            {
+              "label": "READ替代",
+              "sub": "可解释Agent操作",
+              "type": "cloud"
+            },
+            {
+              "label": "结构化保持",
+              "sub": "字段-语义绑定",
+              "type": "database"
+            },
+            {
+              "label": "可审计结果",
+              "sub": "操作可追溯",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "结构性失效",
+              "text": "嵌入空间粒度与结构化数据语义依赖不匹配，chunk切割结构关系"
+            },
+            {
+              "label": "硬数据证明",
+              "text": "780页财报量化失效机制，非主观论断"
+            },
+            {
+              "label": "范式警示",
+              "text": "宽表API禁用chunk+embed，保持结构化走Agent操作"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "TDS：数据加载不是终点而是起点——analysis-ready 需语义层建模",
+      "date": "2026-08-09",
+      "source": "Towards Data Science",
+      "link": "https://towardsdatascience.com/i-thought-loading-data-was-the-finish-line-it-was-the-starting-point/",
+      "summary": "作者反思建了两条数据 pipeline 却跳过了让数据有用的部分——没有 transformation、modeling、结构。用 dbt 区分 source（外部已存在表）与 model（dbt 构建）：staging model 清洗原始数据，加测试断言（列非空、ID 唯一），用 ref() 而非 source() 建立模型间依赖，自动生成 lineage graph。结论：数据加载与数据可用是两个完全不同的命题——「analysis-ready」数据需要建模、测试、文档化的语义层。",
+      "insight": "这篇文章用一线实践印证了用户「业务语义层」方向的必要性。source vs model 的区分、测试断言、lineage 追踪——这些 dbt 语义层要素正是让 AI Agent 能可信查询的基础设施。没有语义层，AI 面对的是裸表；有语义层，AI 面对的是有定义、有测试、有依赖关系的业务模型。",
+      "detail": {
+        "why": "用户从「AI for 研发」转型「AI for 业务」，核心论据之一就是业务数据需要语义层才能被 AI 理解。这篇 TDS 博客用新手视角证明：即使对人类分析师，裸表也不可用——AI 更需要语义层。",
+        "mechanism": "①source vs model：source 是外部已存在表，model 是 dbt 构建的转换。②staging model：清洗不改语义。③测试断言：schema 文件中声明非空/唯一，假设破裂立即告警。④ref() 依赖追踪：模型间引用生成 lineage graph。⑤version controlled + tested + documented：转换可版本控制、测试、文档化。",
+        "deep": "文章的核心洞察是「数据的可用性不在数据本身，而在围绕数据建立的语义与治理结构」。作者两次 pipeline 失败的根因不是数据问题，而是缺少 transformation 与 modeling——数据进了表但没有结构、没有测试、没有依赖追踪。这对 AI for 业务的直接启示是：AI Agent 查询的可信度上限由语义层的成熟度决定。语义层把「裸数据」转化为「有定义、有测试、有 lineage 的业务模型」，AI 查询这种模型时才能理解字段含义、验证结果合理性、追溯数据来源。",
+        "apply": "①业务知识库建设以 dbt 语义层为基础设施，先建 model 再让 AI 查。②每个宽表 API 对应一组 dbt model，字段语义标注写入 schema 文件。③测试断言作为业务规则编码——AI 查询结果可跑测试验证。④lineage graph 暴露给 AI Agent，支持数据溯源。",
+        "caveats": "①文章为新手入门视角，深度有限，主要价值在论据而非技术。②dbt 语义层针对数据库表，用户不直连数据库——需把语义层适配到 API 层（API 字段映射到 model）。③正文经 curl 抓取核实，TDS 偶有 JS 渲染问题但本篇可读。",
+        "business": "这篇文章是向业务团队论证「为什么要投入建语义层」的最佳通俗材料——用「建了 pipeline 却数据不可用」的失败故事说明：数据基础设施的终点不是加载，而是让数据可用、可信、可查。语义层不是成本，是让 AI 能用数据的入场券。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/i-thought-loading-data-was-the-finish-line-it-was-the-starting-point/",
+            "title": "I Thought Loading Data Was the Finish Line. It Was the Starting Point. (TDS, 2026-08-09, Ibrahim Salami)"
+          }
+        ],
+        "diagram": {
+          "title": "数据加载→语义层→可用性",
+          "flow": [
+            {
+              "label": "裸数据(不可用)",
+              "sub": "加载了无结构",
+              "type": "database"
+            },
+            {
+              "label": "source定义",
+              "sub": "声明外部表存在",
+              "type": "backend"
+            },
+            {
+              "label": "staging model",
+              "sub": "清洗不改语义",
+              "type": "backend"
+            },
+            {
+              "label": "测试断言",
+              "sub": "非空/唯一告警",
+              "type": "security"
+            },
+            {
+              "label": "ref()依赖",
+              "sub": "模型间引用",
+              "type": "database"
+            },
+            {
+              "label": "lineage graph",
+              "sub": "数据血缘",
+              "type": "frontend"
+            },
+            {
+              "label": "analysis-ready",
+              "sub": "AI可查可信",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "source vs model",
+              "text": "区分外部表与dbt构建，依赖关系显式化"
+            },
+            {
+              "label": "测试即业务规则",
+              "text": "断言编码业务约束，破裂即告警"
+            },
+            {
+              "label": "lineage可溯源",
+              "text": "AI查询结果可追溯数据来源"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "TDS：本地 LLM 结构化输出——Pydantic schema 约束生成可解析对象",
+      "date": "2026-08-09",
+      "source": "Towards Data Science",
+      "link": "https://towardsdatascience.com/structured-output-with-local-llms/",
+      "summary": "介绍用 Pydantic 定义嵌套 schema（如 SchedulingContext 含共享事实 + DeviceToSchedule 列表），经 model_json_schema() 转为 JSON schema 传入 Ollama 的 format 参数约束 Gemma 4 本地生成，再用 model_validate_json() 解析为 Python 对象。论点：本地 LLM 保敏感数据、降云 API 依赖，但自由文本难用于下游，需 schema 约束为可解析结构化对象——schema 先定义形状，运行时约束生成，输出即对象。",
+      "insight": "Structured Output 是用户「业务 API 精准调用」的底层工程抓手。宽表 API 有上百字段，Agent 需从中选择正确字段并填充正确参数——用 Pydantic schema 约束 LLM 输出，可确保生成的 API 调用参数符合 schema（字段名对、类型对、嵌套结构对），避免自由文本生成导致的参数错误。本地 LLM 还解决业务数据不出域的合规问题。",
+      "detail": {
+        "why": "用户核心约束是通过业务 API 查数，API 调用参数必须精准——Structured Output 提供了用 schema 约束 LLM 生成可解析参数的工程方法，且本地化解决合规。",
+        "mechanism": "①Pydantic schema 定义：嵌套结构（SchedulingContext + DeviceToSchedule 列表）。②model_json_schema() 转换：Pydantic model → JSON schema。③Ollama format 参数：schema 约束生成。④model_validate_json() 解析：响应 → Python 对象。⑤本地 Gemma 4：数据不出域。",
+        "deep": "Structured Output 的深层价值在于「把 schema 从文档变为运行时约束」。传统做法是 LLM 自由生成再解析校验，错误率高且需大量重试；schema 约束让生成在合法结构空间内进行，从源头消除格式错误。对宽表 API 调用，这意味着：定义 API 请求的 Pydantic schema（字段名、类型、必填/可选、嵌套关系），LLM 生成即合法请求体，下游可直接调用 API 无需额外解析校验。这与 Cube 语义层、NeSy-RAG 的 schema 先行思想一脉相承——schema 是 AI 与业务系统之间的契约。",
+        "apply": "①为每个业务 API 定义 Pydantic 请求 schema（字段/类型/嵌套）。②本地 LLM + schema 约束生成 API 调用参数。③model_validate_json() 解析后直接构造 API 请求。④敏感业务数据用本地 LLM 保证不出域。⑤schema 与 API 文档同步维护，变更时更新。",
+        "caveats": "①schema 约束生成不保证语义正确（格式对但值可能错），需配合字段语义标注。②本地 LLM 能力弱于云端，复杂参数选择可能不准。③嵌套深 schema 的约束生成成功率下降。④正文经 curl 抓取核实（TDS 本篇可读），具体代码细节建议看原文。",
+        "business": "Structured Output 的商业价值是「让 AI 输出从文本变为可执行对象」——这把 AI 从「生成文本需人工处理」变为「生成结构化数据可直接接入系统」，是 AI 进入业务流程的关键工程台阶。本地化还降低了合规成本与云 API 费用。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/structured-output-with-local-llms/",
+            "title": "How to Implement Structured Output with Local LLMs (TDS, 2026-08-09, Shuai Guo)"
+          }
+        ],
+        "diagram": {
+          "title": "Schema 约束的本地 LLM 结构化输出",
+          "flow": [
+            {
+              "label": "Pydantic schema",
+              "sub": "嵌套结构定义",
+              "type": "database"
+            },
+            {
+              "label": "model_json_schema()",
+              "sub": "转JSON schema",
+              "type": "backend"
+            },
+            {
+              "label": "Ollama format",
+              "sub": "约束Gemma4生成",
+              "type": "cloud"
+            },
+            {
+              "label": "本地LLM",
+              "sub": "数据不出域",
+              "type": "security"
+            },
+            {
+              "label": "model_validate_json()",
+              "sub": "解析为对象",
+              "type": "backend"
+            },
+            {
+              "label": "API请求体",
+              "sub": "可直接调用",
+              "type": "external"
+            },
+            {
+              "label": "业务API",
+              "sub": "精准调用",
+              "type": "external"
+            }
+          ],
+          "notes": [
+            {
+              "label": "schema即契约",
+              "text": "AI与业务系统间的格式契约，从源头消除格式错误"
+            },
+            {
+              "label": "本地合规",
+              "text": "敏感数据不出域，降云依赖与费用"
+            },
+            {
+              "label": "生成即合法",
+              "text": "约束生成空间，输出可直接接入系统"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "Cube v1.7.18：语义层今日发布，timezone 选项支持业务时区对齐",
+      "date": "2026-08-09",
+      "source": "GitHub",
+      "link": "https://github.com/cube-js/cube/releases/tag/v1.7.18",
+      "summary": "Cube v1.7.18 于 2026-08-09 发布，client-core 新增 cubeSql() 与 cubeSqlStream() 的 timezone 选项支持（PR #11507）。仓库定位「open-source semantic layer for AI, BI and embedded analytics」，20,575⭐，topics 含 agentic-analytics/agents/ai——语义层正面向 AI Agent 原生设计。timezone 支持意味着业务查询的时区对齐在语义层解决，Agent 调用语义层 API 时不再需要手动换算时区。",
+      "insight": "Cube 持续周级迭代（v1.7.17→v1.7.18），timezone 支持看似小更新实则有业务深意——跨时区业务查询（如全球报表、跨区域指标对比）的时区处理是常见痛点，语义层内置 timezone 选项让 Agent 调用时一步到位，避免时区错误导致的数据误解。这印证了语义层作为「业务语义中间件」的价值：把业务规则（时区、口径、度量）封装在语义层，Agent 只需调用。",
+      "detail": {
+        "why": "用户关注语义层路线，Cube 是该路线开源标杆。timezone 支持是业务查询的基础能力，其纳入语义层印证了「业务规则应在语义层封装而非暴露给 Agent」的架构原则。",
+        "mechanism": "①cubeSql()/cubeSqlStream() 新增 timezone 选项。②语义层统一时区处理，Agent 调用传入时区参数。③20,575⭐ + agentic-analytics topic：面向 AI Agent 设计定位明确。④周级迭代节奏：工业活跃度高。",
+        "deep": "timezone 支持的深层意义不在功能本身，而在架构原则的印证——时区是业务规则，应在语义层（业务语义中间件）封装，而非让每个 AI Agent 各自实现时区换算。这延伸到一个通用原则：业务规则（时区、货币转换、口径定义、度量计算）应集中在语义层，AI Agent 只负责理解意图与调用语义层 API。这种分层让 Agent 轻量（不需懂业务规则细节），同时保证业务规则的一致性与可维护性——规则变更只改语义层，所有 Agent 自动继承。",
+        "apply": "①跨时区业务查询通过 Cube timezone 选项统一处理。②业务规则（时区/货币/口径）集中封装在语义层。③AI Agent 调用 Cube 语义层 API 时传入时区，无需自行换算。④利用 Cube agentic-analytics 定位，探索 Agent 原生集成路径。",
+        "caveats": "①timezone 为 client-core 功能，需确认与 Agent 集成路径是否完整支持。②v1.7.18 为小版本增量，核心架构无大变。③经 gh CLI releases API 核实（2026-08-09T18:27:56Z 发布）。",
+        "business": "Cube 的商业启示是「语义层是业务规则的集中治理点」。把时区/口径/度量等业务规则从分散的 Agent 实现中收敛到语义层，降低了一致性风险与维护成本——这是企业级 AI for 业务的基础设施级投入理由。",
+        "sources": [
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.7.18",
+            "title": "Cube v1.7.18 Release Notes (2026-08-09, PR #11507 timezone support)"
+          },
+          {
+            "url": "https://github.com/cube-js/cube",
+            "title": "cube-js/cube: open-source semantic layer for AI, BI and embedded analytics (20,575⭐)"
+          }
+        ],
+        "diagram": {
+          "title": "Cube 语义层业务规则封装",
+          "flow": [
+            {
+              "label": "AI Agent",
+              "sub": "理解意图",
+              "type": "frontend"
+            },
+            {
+              "label": "Cube语义层API",
+              "sub": "cubeSql(timezone=...)",
+              "type": "backend"
+            },
+            {
+              "label": "业务规则层",
+              "sub": "时区/口径/度量",
+              "type": "database"
+            },
+            {
+              "label": "数据源",
+              "sub": "多时区数据",
+              "type": "database"
+            },
+            {
+              "label": "统一结果",
+              "sub": "时区已对齐",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "规则集中封装",
+              "text": "业务规则在语义层统一，Agent不需各自实现"
+            },
+            {
+              "label": "Agent轻量",
+              "text": "Agent只管意图理解与调用，规则变更自动继承"
+            },
+            {
+              "label": "周级迭代",
+              "text": "工业活跃度高，语义层路线持续进化"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "SocratiCode：代码库+DB/API 知识图谱的 MCP 上下文引擎",
+      "date": "2026-08-05",
+      "source": "GitHub",
+      "link": "https://github.com/giancarloerra/SocratiCode",
+      "summary": "SocratiCode 是企业级代码库上下文引擎（3,237⭐，TypeScript，v1.11.0，2026-08-05 push），零配置本地私有。核心能力：混合语义搜索 + 多语言依赖图 + 符号级影响分析与调用流 + 交互式 HTML viewer + 跨项目/分支感知搜索，明确标注「DB/API/infra knowledge」。以 MCP Server 形式接入 Claude Code/Cursor/VS Code。性能：61% token 减少、84% 调用减少、37x 更快。云版本 beta 中。",
+      "insight": "SocratiCode 对用户有双重参考价值：①它从「AI for 研发」（用户已完成）视角示范了知识图谱+MCP 的工程落地——代码库结构化为可检索图谱；②其「DB/API/infra knowledge」建模思路可迁移到「AI for 业务」——把业务 API、宽表字段、基础设施知识结构化为知识图谱供 Agent 检索。它代表知识图谱路线在细分场景的差异化价值。",
+      "detail": {
+        "why": "用户双路线策略中知识图谱路线需参考实现，SocratiCode 是 MCP 原生、活跃维护（2026-08 push）、有明确 DB/API 知识建模的新项目，且与用户已完成研发知识库背景衔接。",
+        "mechanism": "①混合语义搜索：向量+符号搜索结合。②多语言依赖图：跨语言代码依赖。③符号级影响分析：变更影响追踪。④调用流：API 调用链可视化。⑤MCP Server：标准化 Agent 接入。⑥跨项目/分支感知：多仓库搜索。⑦DB/API/infra knowledge：基础设施知识结构化。",
+        "deep": "SocratiCode 的深层价值在于「把非结构化的代码/基础设施知识结构化为可检索图谱」。代码本就是半结构化的（有 AST、有类型、有依赖），SocratiCode 把这种结构提取为知识图谱（依赖图、调用流、符号关系），让 AI 不再线性读代码而是图检索。这对用户的迁移启示是：业务 API 也有结构——字段定义、字段间关联、API 间调用链、API 与底层表的映射——把这些结构提取为业务知识图谱，AI 查询时图检索而非线性读 API 文档。61% token 减少证明结构化检索比线性阅读高效得多。",
+        "apply": "①参考 SocratiCode 的混合语义搜索+符号级分析架构，构建业务 API 知识图谱。②把宽表 API 字段间关联、API 间调用链结构化为图谱节点与边。③以 MCP Server 形式暴露业务知识图谱给 Agent。④符号级影响分析迁移为「字段变更影响分析」（改一个字段影响哪些查询/API）。",
+        "caveats": "①SocratiCode 针对代码库，业务 API 的结构化程度不同，迁移需适配。③AGPL-3.0 许可证，商用需注意。④3,237⭐增长快但生态尚在早期。⑤经 gh API 核实（描述/topics/pushed_at 均核实）。",
+        "business": "SocratiCode 的商业启示是「知识图谱路线的价值在结构化领域知识+MCP 编排的细分场景」。它不与语义层正面竞争，而是在「需要关系推理、影响分析、跨实体追溯」的场景补充——用户双路线策略应据此定位：语义层主路径处理度量/口径，知识图谱补足关系/影响/追溯。",
+        "sources": [
+          {
+            "url": "https://github.com/giancarloerra/SocratiCode",
+            "title": "SocratiCode: Enterprise-grade codebase context engine (3,237⭐, MCP, v1.11.0)"
+          },
+          {
+            "url": "https://github.com/giancarloerra/SocratiCode/releases/tag/v1.11.0",
+            "title": "SocratiCode v1.11.0 Release (2026-08-05)"
+          }
+        ],
+        "diagram": {
+          "title": "SocratiCode 知识图谱+MCP 架构",
+          "flow": [
+            {
+              "label": "代码库/API文档",
+              "sub": "多源输入",
+              "type": "external"
+            },
+            {
+              "label": "AST解析",
+              "sub": "结构提取",
+              "type": "backend"
+            },
+            {
+              "label": "知识图谱",
+              "sub": "依赖图/调用流/符号",
+              "type": "database"
+            },
+            {
+              "label": "DB/API/infra知识",
+              "sub": "基础设施标注",
+              "type": "database"
+            },
+            {
+              "label": "混合语义搜索",
+              "sub": "向量+符号",
+              "type": "backend"
+            },
+            {
+              "label": "MCP Server",
+              "sub": "标准化Agent接入",
+              "type": "cloud"
+            },
+            {
+              "label": "Claude/Cursor/VSCode",
+              "sub": "Agent消费",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "结构化检索",
+              "text": "图检索替代线性阅读，token减61%调用减84%"
+            },
+            {
+              "label": "MCP原生",
+              "text": "标准化接入多Agent生态，非绑定单一平台"
+            },
+            {
+              "label": "迁移启示",
+              "text": "业务API字段关联/调用链可结构化为业务知识图谱"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "product",
+      "title": "语义层 vs 知识图谱双路线本周态势：语义层工业持续占优，知识图谱补特定场景",
+      "date": "2026-08-10",
+      "source": "综合",
+      "link": "https://hhao9817.github.io/agent-daily/",
+      "summary": "综合本周情报对用户关注的「语义层 vs 企业知识图谱」双路线做态势研判。语义层路线：工业侧 Cube 周级迭代（v1.7.18 timezone 支持，20,575⭐），方法论侧 TDS 两篇博客从实践（analysis-ready 需建模测试文档化）与工程（schema 约束本地 LLM 输出）双重背书语义层价值，学术侧 Schema-Guided IE 提供 schema 先行抽取范式。知识图谱路线：SocratiCode 以 MCP 形态把代码库+DB/API 知识结构化为可检索图谱（3,237⭐增长中），OpenSPG 近一年无新发布。结论：语义层在工业落地与社区活跃度上持续占优，应作主路径；知识图谱在「关系推理/影响分析/跨实体追溯」细分场景有差异化价值，作补充。",
+      "insight": "双路线研判的核心判断标准是「工业活跃度 + 场景适配度」。语义层在两点都强：Cube 周级迭代证明工业活跃，其度量/口径/时区封装天然适配用户「业务精确查询」核心需求。知识图谱工业活跃度弱（OpenSPG 停滞），但 SocratiCode 在 MCP+结构化检索方向有新活力——其价值在「需要关系推理与影响分析」的场景，而非替代语义层做度量查询。建议用户：语义层主路径建设指标/口径/时区治理，知识图谱补足 API 关联/字段影响/血缘追溯。",
+      "detail": {
+        "why": "用户明确要求「语义层 vs 企业知识图谱」两条路线都要研究，需定期研判态势以指导资源分配。本周情报提供了两条路线的最新工业信号与场景适配证据。",
+        "mechanism": "①语义层工业信号：Cube v1.7.18 周级迭代 + timezone 业务规则封装。②语义层方法论信号：TDS Loading Data（建模测试文档化）+ Structured Output（schema 约束输出）。③语义层学术信号：Schema-Guided IE（schema 先行抽取）。④知识图谱信号：SocratiCode（MCP+结构化检索，3,237⭐）+ OpenSPG（停滞）。⑤研判维度：工业活跃度 + 场景适配度。",
+        "deep": "双路线的本质区别在于「知识表达的形态」：语义层把业务语义表达为「度量+口径+维度」的声明式定义，Agent 调用即得结果——适合「查询这个指标是多少」类需求。知识图谱把业务语义表达为「实体+关系+属性」的图结构，Agent 需图遍历推理——适合「这个字段变更影响哪些查询」「这个 API 依赖哪些底层表」类关系推理需求。两者非互斥而是互补：语义层擅长声明式查询，知识图谱擅长关系推理。用户的宽表 API 场景两者都需要——用语义层定义字段度量口径（声明式），用知识图谱建模字段间关联与 API 间依赖（关系式）。",
+        "apply": "①主路径：用 Cube/dbt 类语义层定义宽表 API 字段的度量/口径/时区，Agent 声明式调用。②补充：用 SocratiCode 式知识图谱建模字段间关联、API 间调用链、API↔底层表映射，Agent 图遍历做影响分析与血缘追溯。③分工：声明式查询走语义层，关系推理走知识图谱。④集成：两者经 MCP 统一暴露给 Agent，Agent 按需求选择。",
+        "caveats": "①研判基于本周公开信号，知识图谱路线可能有未公开的企业级进展。②SocratiCode 为代码库场景，业务 API 场景适配需验证。③OpenSPG 停滞不代表知识图谱路线失效，仅反映该特定项目。④双路线集成复杂度高于单路线，需评估工程成本。",
+        "business": "双路线策略的商业意义在于「按场景分配技术而非按技术找场景」。语义层与知识图谱各有所长，企业应根据查询模式（声明式 vs 关系式）分配而非押注单一路线——这降低了技术选型风险，同时覆盖更全的业务查询需求。",
+        "sources": [
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.7.18",
+            "title": "Cube v1.7.18（语义层工业侧，20,575⭐）"
+          },
+          {
+            "url": "https://towardsdatascience.com/i-thought-loading-data-was-the-finish-line-it-was-the-starting-point/",
+            "title": "TDS Loading Data（语义层方法论侧）"
+          },
+          {
+            "url": "https://towardsdatascience.com/structured-output-with-local-llms/",
+            "title": "TDS Structured Output（语义层工程侧）"
+          },
+          {
+            "url": "https://arxiv.org/abs/2608.06167",
+            "title": "Schema-Guided IE（语义层学术侧）"
+          },
+          {
+            "url": "https://github.com/giancarloerra/SocratiCode",
+            "title": "SocratiCode（知识图谱侧，3,237⭐，MCP）"
+          }
+        ],
+        "diagram": {
+          "title": "语义层 vs 知识图谱双路线分工",
+          "flow": [
+            {
+              "label": "业务查询需求",
+              "sub": "意图分类",
+              "type": "frontend"
+            },
+            {
+              "label": "声明式查询",
+              "sub": "指标/口径/时区",
+              "type": "backend"
+            },
+            {
+              "label": "语义层路径",
+              "sub": "Cube/dbt",
+              "type": "database"
+            },
+            {
+              "label": "关系式推理",
+              "sub": "影响/血缘/关联",
+              "type": "backend"
+            },
+            {
+              "label": "知识图谱路径",
+              "sub": "SocratiCode式",
+              "type": "database"
+            },
+            {
+              "label": "MCP统一暴露",
+              "sub": "Agent按需选择",
+              "type": "cloud"
+            },
+            {
+              "label": "业务Agent",
+              "sub": "双路径协同",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "形态区别",
+              "text": "语义层=声明式定义，知识图谱=关系式图结构"
+            },
+            {
+              "label": "场景分工",
+              "text": "声明式查询走语义层，关系推理走知识图谱"
+            },
+            {
+              "label": "工业活跃度",
+              "text": "语义层周级迭代占优，知识图谱特定场景有活力"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
