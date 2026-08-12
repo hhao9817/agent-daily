@@ -182,7 +182,11 @@ def render(data, mode="interactive"):
                 meta_parts.append(esc(it["source"]))
             meta = " · ".join(meta_parts)
             summary = esc(it.get("summary", ""))
-            insight = esc(it.get("insight", ""))
+            insight_raw = it.get("insight", "")
+            # 去重：数据里可能已带"技术视角："前缀，模板会再渲染一次，避免重复
+            if insight_raw.startswith("技术视角："):
+                insight_raw = insight_raw[len("技术视角："):]
+            insight = esc(insight_raw)
 
             if mode == "full":
                 detail = it.get("detail", {})
@@ -205,6 +209,7 @@ def render(data, mode="interactive"):
             # interactive 列表卡片
             cards.append(
                 f'<div class="item" onclick="openDetail({idx})" role="button" tabindex="0" '
+                f'aria-label="{title}" '
                 f'onkeydown="if(event.key===\'Enter\'||event.key===\' \')openDetail({idx})">'
                 f'<div class="item-top">'
                 f'<span class="tag {tag_class}">{tag_label}</span>'
