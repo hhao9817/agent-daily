@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent 框架竞品分析：DSH vs Hermes vs Pi Agent</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f1117;
+    --card: #1a1d27;
+    --card-hover: #222636;
+    --border: #2a2e3f;
+    --text: #e4e7ee;
+    --muted: #8b90a0;
+    --dsh-color: #6366f1;
+    --dsh-soft: #6366f120;
+    --hermes-color: #f59e0b;
+    --hermes-soft: #f59e0b20;
+    --pi-color: #ef4444;
+    --pi-soft: #ef444420;
+    --green: #10b981;
+    --red: #ef4444;
+    --accent: #3b82f6;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    line-height: 1.7;
+    padding: 0;
+    overflow-x: hidden;
+    word-break: break-word;
+  }
+  .hero {
+    background: linear-gradient(135deg, #1a1d27 0%, #0f1117 50%, #1a1d27 100%);
+    padding: 60px 20px 40px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero h1 {
+    font-size: 2.2em;
+    background: linear-gradient(90deg, var(--dsh-color), var(--hermes-color), var(--pi-color));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+  }
+  .hero p { color: var(--muted); font-size: 1.05em; max-width: 700px; margin: 0 auto; }
+  .hero .date { color: var(--muted); font-size: 0.85em; margin-top: 16px; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 40px 20px; }
+  section { margin-bottom: 60px; }
+  section h2 {
+    font-size: 1.5em;
+    margin-bottom: 24px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  section h2 .num {
+    background: var(--accent);
+    color: #fff;
+    font-size: 0.65em;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  /* 概览卡片 */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  @media (max-width: 768px) { .overview-grid { grid-template-columns: 1fr; } }
+  .overview-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    transition: transform 0.2s, border-color 0.2s;
+  }
+  .overview-card:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .overview-card.dsh { border-top: 4px solid var(--dsh-color); }
+  .overview-card.hermes { border-top: 4px solid var(--hermes-color); }
+  .overview-card.pi { border-top: 4px solid var(--pi-color); }
+  .overview-card .logo { font-size: 2.5em; margin-bottom: 8px; }
+  .overview-card h3 { font-size: 1.25em; margin-bottom: 4px; }
+  .overview-card .subtitle { color: var(--muted); font-size: 0.85em; margin-bottom: 20px; }
+  .overview-card .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .overview-card .stat { background: var(--bg); padding: 10px 12px; border-radius: 8px; }
+  .overview-card .stat .label { font-size: 0.72em; color: var(--muted); text-transform: uppercase; }
+  .overview-card .stat .value { font-size: 1.05em; font-weight: 600; }
+  .overview-card .links { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .overview-card .links a {
+    color: var(--accent); font-size: 0.82em; text-decoration: none;
+    background: var(--bg); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border);
+  }
+  .overview-card .links a:hover { background: var(--card-hover); }
+  .badge {
+    display: inline-block; font-size: 0.72em; padding: 2px 10px; border-radius: 20px;
+    font-weight: 600; margin-top: 8px;
+  }
+  .badge-preview { background: #fbbf2420; color: #fbbf24; }
+  .badge-stable { background: #10b98120; color: #10b981; }
+  .badge-mature { background: #3b82f620; color: #3b82f6; }
+
+  /* 对比表格 */
+  .cmp-table { width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 12px; }
+  .cmp-table th, .cmp-table td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9em;
+  }
+  .cmp-table th {
+    background: var(--card);
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 0.82em;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .cmp-table tbody tr:hover { background: var(--card-hover); }
+  .cmp-table td:first-child { font-weight: 600; color: var(--muted); width: 18%; }
+  .cmp-table .col-dsh { border-left: 3px solid var(--dsh-color); }
+  .cmp-table .col-hermes { border-left: 3px solid var(--hermes-color); }
+  .cmp-table .col-pi { border-left: 3px solid var(--pi-color); }
+  .cmp-table .yes { color: var(--green); font-weight: 600; }
+  .cmp-table .no { color: var(--red); opacity: 0.6; }
+  .cmp-table .partial { color: var(--accent); }
+
+  /* 雷达图 */
+  .radar-wrap {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    align-items: center;
+    justify-content: center;
+  }
+  .radar-chart-container {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 30px;
+    flex: 1;
+    min-width: 320px;
+    max-width: 500px;
+  }
+  .radar-legend { flex: 1; min-width: 250px; }
+  .radar-legend h3 { margin-bottom: 16px; font-size: 1.1em; }
+  .radar-legend .item {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+    padding: 10px 14px; background: var(--card); border-radius: 10px; border: 1px solid var(--border);
+  }
+  .radar-legend .dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .radar-legend .label { font-weight: 600; }
+  .radar-legend .desc { font-size: 0.82em; color: var(--muted); }
+
+  /* 架构哲学卡片 */
+  .arch-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media (max-width: 768px) { .arch-grid { grid-template-columns: 1fr; } }
+  .arch-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 24px;
+  }
+  .arch-card.dsh { border-top: 4px solid var(--dsh-color); }
+  .arch-card.hermes { border-top: 4px solid var(--hermes-color); }
+  .arch-card.pi { border-top: 4px solid var(--pi-color); }
+  .arch-card h3 { font-size: 1.15em; margin-bottom: 16px; }
+  .arch-card .principle {
+    font-size: 1.05em; font-weight: 700; margin-bottom: 14px;
+    padding: 10px 14px; border-radius: 8px;
+  }
+  .arch-card.dsh .principle { background: var(--dsh-soft); color: var(--dsh-color); }
+  .arch-card.hermes .principle { background: var(--hermes-soft); color: var(--hermes-color); }
+  .arch-card.pi .principle { background: var(--pi-soft); color: var(--pi-color); }
+  .arch-card ul { list-style: none; padding: 0; }
+  .arch-card li { padding: 6px 0 6px 20px; position: relative; font-size: 0.9em; }
+  .arch-card li::before { content: "▸"; position: absolute; left: 0; color: var(--accent); }
+
+  /* 场景推荐 */
+  .scenario-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media (max-width: 768px) { .scenario-grid { grid-template-columns: 1fr; } }
+  .scenario-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 24px;
+    text-align: center;
+  }
+  .scenario-card.dsh { border-top: 4px solid var(--dsh-color); }
+  .scenario-card.hermes { border-top: 4px solid var(--hermes-color); }
+  .scenario-card.pi { border-top: 4px solid var(--pi-color); }
+  .scenario-card .icon { font-size: 2em; margin-bottom: 12px; }
+  .scenario-card h3 { font-size: 1.1em; margin-bottom: 12px; }
+  .scenario-card p { font-size: 0.88em; color: var(--muted); margin-bottom: 16px; text-align: left; }
+  .scenario-card .tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+  .scenario-card .tag {
+    font-size: 0.72em; padding: 3px 10px; border-radius: 20px;
+    background: var(--bg); border: 1px solid var(--border);
+  }
+
+  /* 包结构 */
+  .pkg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media (max-width: 768px) { .pkg-grid { grid-template-columns: 1fr; } }
+  .pkg-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; max-height: 400px; overflow-y: auto;
+  }
+  .pkg-card h3 { font-size: 1em; margin-bottom: 12px; position: sticky; top: 0; background: var(--card); }
+  .pkg-card .pkg-list { display: flex; flex-wrap: wrap; gap: 6px; }
+  .pkg-card .pkg-item {
+    font-size: 0.75em; padding: 3px 8px; border-radius: 6px;
+    background: var(--bg); border: 1px solid var(--border); color: var(--muted);
+  }
+
+  /* 优劣势 */
+  .pro-con-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  @media (max-width: 768px) { .pro-con-grid { grid-template-columns: 1fr; } }
+  .pro-con-card {
+    background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px;
+  }
+  .pro-con-card.dsh { border-top: 4px solid var(--dsh-color); }
+  .pro-con-card.hermes { border-top: 4px solid var(--hermes-color); }
+  .pro-con-card.pi { border-top: 4px solid var(--pi-color); }
+  .pro-con-card h3 { font-size: 1.05em; margin-bottom: 16px; }
+  .pro-con-card .section-label { font-size: 0.8em; font-weight: 700; text-transform: uppercase; margin: 14px 0 8px; }
+  .pro-con-card .pros { color: var(--green); }
+  .pro-con-card .cons { color: var(--red); }
+  .pro-con-card ul { list-style: none; padding: 0; }
+  .pro-con-card li { padding: 4px 0 4px 18px; position: relative; font-size: 0.85em; }
+  .pro-con-card .pros li::before { content: "✓"; position: absolute; left: 0; color: var(--green); }
+  .pro-con-card .cons li::before { content: "✗"; position: absolute; left: 0; color: var(--red); }
+
+  footer { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 0.82em; border-top: 1px solid var(--border); }
+  footer a { color: var(--accent); text-decoration: none; }
+  .highlight-box {
+    background: linear-gradient(135deg, var(--dsh-soft), var(--hermes-soft), var(--pi-soft));
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin: 30px 0;
+  }
+  .highlight-box h3 { font-size: 1.1em; margin-bottom: 12px; }
+  .highlight-box p { font-size: 0.92em; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <h1>🤖 Agent 框架竞品分析</h1>
+  <p>DeepSeek Harness vs Hermes Agent vs Pi Agent — 三大开源 Agent 框架的系统性对比</p>
+  <div class="date">2026-08-13 · 由 Hermes Agent (glm-5.2) 自动生成</div>
+</div>
+
+<div class="container">
+
+  <!-- 1. 概览 -->
+  <section>
+    <h2><span class="num">1</span> 概览</h2>
+    <div class="overview-grid">
+      <div class="overview-card dsh">
+        <div class="logo">🔷</div>
+        <h3>DeepSeek Harness</h3>
+        <div class="subtitle">deepseek-ai/deepseek-harness</div>
+        <div class="stat-grid">
+          <div class="stat"><div class="label">Stars</div><div class="value">27.7k</div></div>
+          <div class="stat"><div class="label">语言</div><div class="value">TypeScript</div></div>
+          <div class="stat"><div class="label">创建</div><div class="value">2026-08-13</div></div>
+          <div class="stat"><div class="label">协议</div><div class="value">MIT</div></div>
+          <div class="stat"><div class="label">Forks</div><div class="value">2,029</div></div>
+          <div class="stat"><div class="label">包数</div><div class="value">50+</div></div>
+        </div>
+        <div class="badge badge-preview">⚠️ Developer Preview</div>
+        <div class="links">
+          <a href="https://github.com/deepseek-ai/deepseek-harness">GitHub</a>
+          <a href="https://deepseek.com/harness">官网</a>
+          <a href="https://discord.gg/Ycq5dCaS4">Discord</a>
+        </div>
+      </div>
+      <div class="overview-card hermes">
+        <div class="logo">🟡</div>
+        <h3>Hermes Agent</h3>
+        <div class="subtitle">NousResearch/hermes-agent</div>
+        <div class="stat-grid">
+          <div class="stat"><div class="label">Stars</div><div class="value">230k</div></div>
+          <div class="stat"><div class="label">语言</div><div class="value">Python</div></div>
+          <div class="stat"><div class="label">创建</div><div class="value">2025-07-22</div></div>
+          <div class="stat"><div class="label">协议</div><div class="value">MIT</div></div>
+          <div class="stat"><div class="label">Forks</div><div class="value">45.4k</div></div>
+          <div class="stat"><div class="label">Skills</div><div class="value">86+</div></div>
+        </div>
+        <div class="badge badge-mature">✅ 成熟 · 活跃维护</div>
+        <div class="links">
+          <a href="https://github.com/NousResearch/hermes-agent">GitHub</a>
+          <a href="https://hermes-agent.nousresearch.com/docs">文档</a>
+        </div>
+      </div>
+      <div class="overview-card pi">
+        <div class="logo">🔴</div>
+        <h3>Pi Agent (Rust)</h3>
+        <div class="subtitle">Dicklesworthstone/pi_agent_rust</div>
+        <div class="stat-grid">
+          <div class="stat"><div class="label">Stars</div><div class="value">1.6k</div></div>
+          <div class="stat"><div class="label">语言</div><div class="value">Rust</div></div>
+          <div class="stat"><div class="label">创建</div><div class="value">2026-02-02</div></div>
+          <div class="stat"><div class="label">协议</div><div class="value">MIT+Rider</div></div>
+          <div class="stat"><div class="label">Forks</div><div class="value">184</div></div>
+          <div class="stat"><div class="label">工具</div><div class="value">9 内置</div></div>
+        </div>
+        <div class="badge badge-stable">🔒 安全优先 · 单二进制</div>
+        <div class="links">
+          <a href="https://github.com/Dicklesworthstone/pi_agent_rust">GitHub</a>
+          <a href="https://github.com/badlogic/pi">原版 Pi</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 架构哲学 -->
+  <section>
+    <h2><span class="num">2</span> 架构哲学</h2>
+    <div class="arch-grid">
+      <div class="arch-card dsh">
+        <h3>🔷 DeepSeek Harness</h3>
+        <div class="principle">"Everything is a Plugin"</div>
+        <ul>
+          <li>由 Cordis 框架驱动（有配套论文）</li>
+          <li>模型适配器、工具注册表、会话日志、<strong>连 Agent 循环本身都是插件</strong></li>
+          <li>没有特权核心——扩展方式 = 挂载一个插件</li>
+          <li>Profile + Bundle 组合机制（分层 patch）</li>
+          <li>事件驱动扩展（Session/Agent/Capability 三类事件）</li>
+          <li>插件卸载时注册的 effect 自动回滚</li>
+        </ul>
+      </div>
+      <div class="arch-card hermes">
+        <h3>🟡 Hermes Agent</h3>
+        <div class="principle">"Narrow Waist + Edges"</div>
+        <ul>
+          <li>核心窄腰——每个 model tool 随每次 API 调用发送</li>
+          <li>能力在边缘扩展：CLI 命令+skill、plugin、MCP server</li>
+          <li><strong>Prompt caching 神圣不可侵犯</strong>——不改过去上下文</li>
+          <li>Profile 隔离（独立 config/skills/memory/cron）</li>
+          <li>多平台 Gateway（同一 agent core 驱动 CLI/TUI/Desktop/Chat）</li>
+          <li>自进化：技能从经验中学习，跨会话持久记忆</li>
+        </ul>
+      </div>
+      <div class="arch-card pi">
+        <h3>🔴 Pi Agent (Rust)</h3>
+        <div class="principle">"Native + Secure by Design"</div>
+        <ul>
+          <li>Rust 2024 edition，<strong>零 unsafe 代码</strong></li>
+          <li>asupersync 结构化并发运行时</li>
+          <li>rich_rust 终端 UI（Rich 的 Rust 移植）</li>
+          <li>能力门控安全模型（capability-gated hostcalls）</li>
+          <li>扩展信任生命周期：pending→acknowledged→trusted→killed</li>
+          <li>Tamper-evident 运行时风险账本（可审计/回放）</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 核心能力矩阵 -->
+  <section>
+    <h2><span class="num">3</span> 核心能力矩阵</h2>
+    <div style="overflow-x:auto;">
+    <table class="cmp-table">
+      <thead>
+        <tr>
+          <th>能力</th>
+          <th class="col-dsh">🔷 DSH</th>
+          <th class="col-hermes">🟡 Hermes</th>
+          <th class="col-pi">🔴 Pi Agent</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>语言</td><td class="col-dsh">TypeScript / Node.js</td><td class="col-hermes">Python</td><td class="col-pi">Rust</td></tr>
+        <tr><td>插件系统</td><td class="col-dsh"><span class="yes">✅ Cordis（一切皆插件）</span></td><td class="col-hermes"><span class="yes">✅ Skills + Plugins + MCP</span></td><td class="col-pi"><span class="partial">🔶 Extensions（信任生命周期）</span></td></tr>
+        <tr><td>工具调用</td><td class="col-dsh"><span class="yes">✅</span></td><td class="col-hermes"><span class="yes">✅</span></td><td class="col-pi"><span class="yes">✅ 9 内置工具</span></td></tr>
+        <tr><td>多 Agent / 子 Agent</td><td class="col-dsh"><span class="yes">✅ subagent 包</span></td><td class="col-hermes"><span class="yes">✅ delegate_task</span></td><td class="col-pi"><span class="partial">🔶 pi-subagents (社区)</span></td></tr>
+        <tr><td>MCP 支持</td><td class="col-dsh"><span class="yes">✅ mcp 包</span></td><td class="col-hermes"><span class="yes">✅ hermes mcp catalog</span></td><td class="col-pi"><span class="no">❌</span></td></tr>
+        <tr><td>调度 / Cron</td><td class="col-dsh"><span class="yes">✅ schedule + jobs</span></td><td class="col-hermes"><span class="yes">✅ 内置 cron 调度</span></td><td class="col-pi"><span class="no">❌</span></td></tr>
+        <tr><td>持久化记忆</td><td class="col-dsh"><span class="yes">✅ session + storage</span></td><td class="col-hermes"><span class="yes">✅ 跨会话 memory</span></td><td class="col-pi"><span class="yes">✅ 会话续接</span></td></tr>
+        <tr><td>Skills / 知识库</td><td class="col-dsh"><span class="yes">✅ skill 包</span></td><td class="col-hermes"><span class="yes">✅ 86+ 内置 skills</span></td><td class="col-pi"><span class="no">❌</span></td></tr>
+        <tr><td>沙箱 / 代码执行</td><td class="col-dsh"><span class="yes">✅ sandbox + e2b + code-runtime</span></td><td class="col-hermes"><span class="yes">✅ terminal + execute_code</span></td><td class="col-pi"><span class="yes">✅ capability-gated exec</span></td></tr>
+        <tr><td>安全模型</td><td class="col-dsh"><span class="partial">🔶 guard + approval</span></td><td class="col-hermes"><span class="yes">✅ approval modes + redaction</span></td><td class="col-pi"><span class="yes">✅ 最强（能力门控+kill-switch）</span></td></tr>
+        <tr><td>CLI 界面</td><td class="col-dsh"><span class="yes">✅</span></td><td class="col-hermes"><span class="yes">✅ hermes chat</span></td><td class="col-pi"><span class="yes">✅ pi 命令</span></td></tr>
+        <tr><td>Web UI</td><td class="col-dsh"><span class="yes">✅ :3080</span></td><td class="col-hermes"><span class="yes">✅ hermes dashboard</span></td><td class="col-pi"><span class="no">❌</span></td></tr>
+        <tr><td>TUI (终端 UI)</td><td class="col-dsh"><span class="partial">🔶 headless 模式</span></td><td class="col-hermes"><span class="yes">✅ Ink TUI</span></td><td class="col-pi"><span class="yes">✅ rich_rust</span></td></tr>
+        <tr><td>桌面应用</td><td class="col-dsh"><span class="no">❌</span></td><td class="col-hermes"><span class="yes">✅ Electron 原生</span></td><td class="col-pi"><span class="no">❌</span></td></tr>
+        <tr><td>多平台 Gateway</td><td class="col-dsh"><span class="no">❌</span></td><td class="col-hermes"><span class="yes">✅ 20+ 平台</span></td><td class="col-pi"><span class="no">❌</span></td></tr>
+        <tr><td>Provider 无关</td><td class="col-dsh"><span class="yes">✅ llm 适配器 seam</span></td><td class="col-hermes"><span class="yes">✅ 20+ provider</span></td><td class="col-pi"><span class="yes">✅ OpenAI 兼容</span></td></tr>
+        <tr><td>上下文压缩</td><td class="col-dsh"><span class="yes">✅ compaction 包</span></td><td class="col-hermes"><span class="yes">✅ 内置</span></td><td class="col-pi"><span class="no">❌</span></td></tr>
+        <tr><td>浏览器自动化</td><td class="col-dsh"><span class="no">❌</span></td><td class="col-hermes"><span class="yes">✅ agent-browser</span></td><td class="col-pi"><span class="no">❌</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- 4. 雷达图 -->
+  <section>
+    <h2><span class="num">4</span> 多维评分雷达</h2>
+    <div class="radar-wrap">
+      <div class="radar-chart-container">
+        <canvas id="radarChart" width="400" height="400"></canvas>
+      </div>
+      <div class="radar-legend">
+        <h3>评分维度说明</h3>
+        <div class="item"><div class="dot" style="background:var(--dsh-color)"></div><div><div class="label">DeepSeek Harness</div><div class="desc">插件极致化 · 首日开源 · 生态爆发中</div></div></div>
+        <div class="item"><div class="dot" style="background:var(--hermes-color)"></div><div><div class="label">Hermes Agent</div><div class="desc">成熟全功能 · 20+ 平台 · 自进化</div></div></div>
+        <div class="item"><div class="dot" style="background:var(--pi-color)"></div><div><div class="label">Pi Agent (Rust)</div><div class="desc">安全最强 · 性能极致 · CLI 专注</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. 安全模型 -->
+  <section>
+    <h2><span class="num">5</span> 安全模型对比</h2>
+    <div style="overflow-x:auto;">
+    <table class="cmp-table">
+      <thead><tr><th>安全维度</th><th class="col-dsh">🔷 DSH</th><th class="col-hermes">🟡 Hermes</th><th class="col-pi">🔴 Pi Agent</th></tr></thead>
+      <tbody>
+        <tr><td>沙箱隔离</td><td class="col-dsh">sandbox-local + e2b 云沙箱</td><td class="col-hermes">terminal + approval modes</td><td class="col-pi">capability-gated exec 两阶段拦截</td></tr>
+        <tr><td>审批模式</td><td class="col-dsh">guard + approval policy 包</td><td class="col-hermes">approval modes (yolo/safe)</td><td class="col-pi">per-extension trust lifecycle</td></tr>
+        <tr><td>密钥保护</td><td class="col-dsh">credentials 包</td><td class="col-hermes">.env 隔离 + redaction</td><td class="col-pi">hostcall-lane 控制</td></tr>
+        <tr><td>Kill-switch</td><td class="col-dsh"><span class="no">❌</span></td><td class="col-hermes"><span class="no">❌</span></td><td class="col-pi"><span class="yes">✅ 全局+单扩展</span></td></tr>
+        <tr><td>审计日志</td><td class="col-dsh">telemetry 包</td><td class="col-hermes">session log + logs/</td><td class="col-pi"><span class="yes">✅ tamper-evident ledger</span></td></tr>
+        <tr><td>危险命令拦截</td><td class="col-dsh"><span class="no">❌</span></td><td class="col-hermes"><span class="partial">🔶 approval</span></td><td class="col-pi"><span class="yes">✅ 命令级+AST 检测</span></td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- 6. 生态对比 -->
+  <section>
+    <h2><span class="num">6</span> 生态对比</h2>
+    <div style="overflow-x:auto;">
+    <table class="cmp-table">
+      <thead><tr><th>生态指标</th><th class="col-dsh">🔷 DSH</th><th class="col-hermes">🟡 Hermes</th><th class="col-pi">🔴 Pi Agent</th></tr></thead>
+      <tbody>
+        <tr><td>GitHub Stars</td><td class="col-dsh">27.7k (首日)</td><td class="col-hermes">230k (1年)</td><td class="col-pi">1.6k (6月)</td></tr>
+        <tr><td>社区</td><td class="col-dsh">Discord + 企微群</td><td class="col-hermes">Discord + 多平台</td><td class="col-pi">awesome-pi-agent</td></tr>
+        <tr><td>插件/技能数</td><td class="col-dsh">50+ 包（首日）</td><td class="col-hermes">86+ skills</td><td class="col-pi">社区扩展</td></tr>
+        <tr><td>周边项目</td><td class="col-dsh">awesome-dsh-plugins (167★)<br>桌面shell/launcher/教程</td><td class="col-hermes">skills/plugins/skins<br>desktop-plugins/tui-widgets</td><td class="col-pi">pi-subagents<br>AgentPilot<br>how-pi-agent-works</td></tr>
+        <tr><td>文档</td><td class="col-dsh">中英双语 + 架构文档</td><td class="col-hermes">官方文档 + skill 参考</td><td class="col-pi">README + 教程仓库</td></tr>
+        <tr><td>主题/皮肤</td><td class="col-dsh"><span class="no">❌</span></td><td class="col-hermes"><span class="yes">✅ skins 系统</span></td><td class="col-pi"><span class="no">❌</span></td></tr>
+        <tr><td>贡献门槛</td><td class="col-dsh">TS/Cordis 知识</td><td class="col-hermes">Python（最低门槛）</td><td class="col-pi">Rust（最高门槛）</td></tr>
+      </tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- 7. 包结构对比 -->
+  <section>
+    <h2><span class="num">7</span> 包/模块结构</h2>
+    <div class="pkg-grid">
+      <div class="pkg-card">
+        <h3>🔷 DSH packages/</h3>
+        <div class="pkg-list">
+          <span class="pkg-item">core (agent-loop)</span><span class="pkg-item">session</span><span class="pkg-item">tools</span><span class="pkg-item">system-prompt</span><span class="pkg-item">llm</span><span class="pkg-item">mcp</span><span class="pkg-item">sandbox</span><span class="pkg-item">e2b</span><span class="pkg-item">code-runtime</span><span class="pkg-item">subagent</span><span class="pkg-item">workflow</span><span class="pkg-item">skill</span><span class="pkg-item">schedule</span><span class="pkg-item">jobs</span><span class="pkg-item">terminal</span><span class="pkg-item">shell</span><span class="pkg-item">compaction</span><span class="pkg-item">context</span><span class="pkg-item">fs</span><span class="pkg-item">guard</span><span class="pkg-item">hooks</span><span class="pkg-item">goal</span><span class="pkg-item">plan</span><span class="pkg-item">todo</span><span class="pkg-item">credentials</span><span class="pkg-item">identity</span><span class="pkg-item">settings</span><span class="pkg-item">storage</span><span class="pkg-item">feedback</span><span class="pkg-item">extensions</span><span class="pkg-item">preset</span><span class="pkg-item">boot</span><span class="pkg-item">bundle</span><span class="pkg-item">host</span><span class="pkg-item">client</span><span class="pkg-item">web</span><span class="pkg-item">api</span><span class="pkg-item">acp</span><span class="pkg-item">lsp</span><span class="pkg-item">attachment</span><span class="pkg-item">interaction</span><span class="pkg-item">sdk</span><span class="pkg-item">spill</span><span class="pkg-item">workspace</span><span class="pkg-item">runtime-diagnostics</span><span class="pkg-item">session-query</span><span class="pkg-item">typert</span>
+        </div>
+      </div>
+      <div class="pkg-card">
+        <h3>🟡 Hermes hermes_cli/</h3>
+        <div class="pkg-list">
+          <span class="pkg-item">agent (核心循环)</span><span class="pkg-item">anthropic_adapter</span><span class="pkg-item">browser_provider</span><span class="pkg-item">memory (持久记忆)</span><span class="pkg-item">skills (技能系统)</span><span class="pkg-item">delegate_task (子Agent)</span><span class="pkg-item">cron (调度)</span><span class="pkg-item">gateway (多平台)</span><span class="pkg-item">channels (飞书/TG/Discord...)</span><span class="pkg-item">console_engine (CLI)</span><span class="pkg-item">model_switch</span><span class="pkg-item">config</span><span class="pkg-item">session (会话管理)</span><span class="pkg-item">context_compression</span><span class="pkg-item">tools (工具注册)</span><span class="pkg-item">mcp (MCP catalog)</span><span class="pkg-item">webhooks</span><span class="pkg-item">auth (OAuth pools)</span><span class="pkg-item">billing/usage</span><span class="pkg-item">auxiliary_client</span><span class="pkg-item">background_review</span><span class="pkg-item">desktop (Electron)</span><span class="pkg-item">dashboard (Web)</span><span class="pkg-item">tui (Ink)</span><span class="pkg-item">skins (主题)</span><span class="pkg-item">plugins</span><span class="pkg-item">pairing</span>
+        </div>
+      </div>
+      <div class="pkg-card">
+        <h3>🔴 Pi Agent 核心</h3>
+        <div class="pkg-list">
+          <span class="pkg-item">agent loop</span><span class="pkg-item">9 内置工具</span><span class="pkg-item">streaming</span><span class="pkg-item">session mgmt</span><span class="pkg-item">asupersync (并发)</span><span class="pkg-item">rich_rust (TUI)</span><span class="pkg-item">capability gate</span><span class="pkg-item">exec guard (两阶段)</span><span class="pkg-item">trust lifecycle</span><span class="pkg-item">kill-switch</span><span class="pkg-item">risk ledger</span><span class="pkg-item">extensions system</span><span class="pkg-item">hostcall lanes</span><span class="pkg-item">NUMA tracking</span><span class="pkg-item">transpile cache</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. 优劣势 -->
+  <section>
+    <h2><span class="num">8</span> 优劣势分析</h2>
+    <div class="pro-con-grid">
+      <div class="pro-con-card dsh">
+        <h3>🔷 DeepSeek Harness</h3>
+        <div class="section-label pros">优势</div>
+        <ul>
+          <li>一切皆插件——连 agent loop 都可替换</li>
+          <li>Cordis 有论文支撑的理论基础</li>
+          <li>首日 27k stars，生态爆发力极强</li>
+          <li>中英双语文档 + 企微社区（国内友好）</li>
+          <li>50+ 包覆盖极广（含 e2b 云沙箱、LSP）</li>
+          <li>Profile+Bundle 层层 patch 的组合机制</li>
+        </ul>
+        <div class="section-label cons">不足</div>
+        <ul>
+          <li>Developer Preview——明说会有 breaking changes</li>
+          <li>无多平台 Gateway（不能接飞书/TG/Discord）</li>
+          <li>无桌面应用</li>
+          <li>Cordis 框架学习曲线陡峭</li>
+          <li>无浏览器自动化</li>
+          <li>生产就绪度未知</li>
+        </ul>
+      </div>
+      <div class="pro-con-card hermes">
+        <h3>🟡 Hermes Agent</h3>
+        <div class="section-label pros">优势</div>
+        <ul>
+          <li>230k stars——最成熟的社区</li>
+          <li>20+ 平台 Gateway（飞书/TG/Discord/Slack...）</li>
+          <li>自进化：86+ skills 从经验中学习</li>
+          <li>多界面：CLI/TUI/Desktop/Dashboard/Chat</li>
+          <li>Python 生态——贡献门槛最低</li>
+          <li>跨会话持久记忆 + profile 隔离</li>
+          <li>delegate_task 并行子 Agent</li>
+          <li>浏览器自动化</li>
+        </ul>
+        <div class="section-label cons">不足</div>
+        <ul>
+          <li>Python 运行时开销比 Rust/编译型大</li>
+          <li>核心窄腰哲学限制了核心扩展速度</li>
+          <li>安全模型不如 Pi Agent 精细</li>
+          <li>无 kill-switch / 审计账本</li>
+          <li>无 Cordis 式"一切皆插件"彻底性</li>
+        </ul>
+      </div>
+      <div class="pro-con-card pi">
+        <h3>🔴 Pi Agent (Rust)</h3>
+        <div class="section-label pros">优势</div>
+        <ul>
+          <li>单二进制——启动极快，零依赖</li>
+          <li>零 unsafe Rust——内存安全保证</li>
+          <li>安全模型最先进：能力门控+kill-switch+审计账本</li>
+          <li>两阶段 exec 拦截危险命令（含 AST 检测）</li>
+          <li>扩展信任生命周期（pending→trusted→killed）</li>
+          <li>asupersync 结构化并发——可预测的取消/生命周期</li>
+          <li>性能基准有证据门禁（不虚假宣传）</li>
+        </ul>
+        <div class="section-label cons">不足</div>
+        <ul>
+          <li>生态最小（1.6k stars）</li>
+          <li>无 Web UI / 桌面应用</li>
+          <li>无多平台 Gateway</li>
+          <li>无 MCP 支持</li>
+          <li>无 cron/调度</li>
+          <li>无 skills 知识库系统</li>
+          <li>Rust 贡献门槛最高</li>
+          <li>CLI 专注——不适合非编程场景</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. 场景推荐 -->
+  <section>
+    <h2><span class="num">9</span> 适用场景推荐</h2>
+    <div class="scenario-grid">
+      <div class="scenario-card dsh">
+        <div class="icon">🔷</div>
+        <h3>选 DSH 如果你…</h3>
+        <p>需要极致的插件化架构，想替换 agent loop 本身；做 TS/Node.js 技术栈的团队产品；需要 e2b 云沙箱或 LSP 集成；想搭一个可深度定制每一层的 agent 平台。适合<strong>平台型团队</strong>而非个人用户。</p>
+        <div class="tags"><span class="tag">平台开发</span><span class="tag">深度定制</span><span class="tag">TS/Node</span><span class="tag">云沙箱</span></div>
+      </div>
+      <div class="scenario-card hermes">
+        <div class="icon">🟡</div>
+        <h3>选 Hermes 如果你…</h3>
+        <p>需要多平台 Gateway（飞书/TG/Discord/Slack）；需要自进化+持久记忆；需要多界面（CLI/Desktop/Web）；做 AI for 业务（非纯编程）；团队用 Python；需要浏览器自动化+数据查询 Agent。适合<strong>业务型团队和个人</strong>。</p>
+        <div class="tags"><span class="tag">多平台</span><span class="tag">AI for 业务</span><span class="tag">自进化</span><span class="tag">Python</span><span class="tag">浏览器</span></div>
+      </div>
+      <div class="scenario-card pi">
+        <div class="icon">🔴</div>
+        <h3>选 Pi Agent 如果你…</h3>
+        <p>是个人开发者，要一个极快极安全的 CLI 编程助手；在意安全审计和 kill-switch；跑在资源受限环境需要单二进制；做安全敏感的代码任务；不需要 Web/多平台/调度。适合<strong>安全极客和个人编程者</strong>。</p>
+        <div class="tags"><span class="tag">CLI 编程</span><span class="tag">安全优先</span><span class="tag">单二进制</span><span class="tag">Rust</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 核心洞察 -->
+  <div class="highlight-box">
+    <h3>💡 核心洞察</h3>
+    <p>三个框架代表了 Agent 架构的三种哲学：<strong>DSH</strong> 追求"插件极致化"（连 loop 都可替换），<strong>Hermes</strong> 追求"全平台覆盖+自进化"（20+ 平台 + skills 学习），<strong>Pi Agent</strong> 追求"安全极致+性能极致"（Rust 零 unsafe + 能力门控）。这不是同一赛道的三选一，而是<strong>三种不同维度的极致</strong>——选哪个取决于你最看重哪个维度。对你（data Agent 开发者 + 业务型 Agent）而言，Hermes 的多平台 Gateway + 自进化 skills + 浏览器自动化最对口；DSH 的"一切皆插件"值得学习其架构思想，但目前不适合上生产。</p>
+  </div>
+
+</div>
+
+<footer>
+  <p>由 <a href="https://github.com/NousResearch/hermes-agent">Hermes Agent</a> (glm-5.2) 自动生成 · 2026-08-13 · 数据来源：GitHub API + 官方文档</p>
+  <p style="margin-top:8px;">仓库：<a href="https://github.com/hhao9817/agent-daily">hhao9817/agent-daily</a> · 报告路径：reports/dsh-vs-hermes-vs-pi.html</p>
+</footer>
+
+<script>
+const ctx = document.getElementById('radarChart').getContext('2d');
+new Chart(ctx, {
+  type: 'radar',
+  data: {
+    labels: ['架构灵活性', '安全模型', '生态规模', '多平台', '性能/效率', '易用性', '功能丰富度', '自进化'],
+    datasets: [
+      {
+        label: 'DSH',
+        data: [10, 6, 7, 2, 6, 5, 8, 3],
+        borderColor: '#6366f1',
+        backgroundColor: 'rgba(99,102,241,0.15)',
+        pointBackgroundColor: '#6366f1',
+        borderWidth: 2,
+      },
+      {
+        label: 'Hermes',
+        data: [7, 6, 10, 10, 5, 8, 10, 10],
+        borderColor: '#f59e0b',
+        backgroundColor: 'rgba(245,158,11,0.15)',
+        pointBackgroundColor: '#f59e0b',
+        borderWidth: 2,
+      },
+      {
+        label: 'Pi Agent',
+        data: [5, 10, 3, 1, 10, 6, 4, 2],
+        borderColor: '#ef4444',
+        backgroundColor: 'rgba(239,68,68,0.15)',
+        pointBackgroundColor: '#ef4444',
+        borderWidth: 2,
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+        labels: { color: '#e4e7ee', font: { size: 13 } }
+      },
+      tooltip: {
+        backgroundColor: '#1a1d27',
+        titleColor: '#e4e7ee',
+        bodyColor: '#e4e7ee',
+        borderColor: '#2a2e3f',
+        borderWidth: 1,
+      }
+    },
+    scales: {
+      r: {
+        beginAtZero: true,
+        max: 10,
+        ticks: { color: '#8b90a0', backdropColor: 'transparent', stepSize: 2, font: { size: 10 } },
+        grid: { color: '#2a2e3f' },
+        angleLines: { color: '#2a2e3f' },
+        pointLabels: { color: '#e4e7ee', font: { size: 12 } }
+      }
+    }
+  }
+});
+</script>
+</body>
+</html>
