@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI for Business 领域每日晨报</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+            --card: #ffffff;
+            --border: #d6dde8;
+            --border-strong: #adbac9;
+            --text: #111827;
+            --muted: #4b5563;
+            --accent: #2563eb;
+            --accent-soft: #dbeafe;
+            --accent2: #059669;
+            --accent2-soft: #d1fae5;
+            --warn: #b45309;
+            --warn-soft: #fef3c7;
+            --red: #dc2626;
+            --red-soft: #fee2e2;
+            --shadow: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+            --shadow-hover: 0 10px 25px -5px rgba(15,23,42,0.1), 0 8px 10px -6px rgba(15,23,42,0.05);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+      padding: 20px;
+      max-width: 920px;
+      margin: 0 auto;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    /* 长英文标识符/URL 在移动端强制换行，避免撑破卡片 */
+    p, li, h1, h2, h3, h4, .summary, .insight, .snap-title, .snap-points li,
+    .modal-sec p, .modal-body, .detail-block, .item, .snapshot, .snapshot-summary {
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    header {
+      text-align: center;
+      padding: 30px 0 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    header h1 {
+      font-size: 1.8em;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    header h1 .grad {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header .date { color: var(--muted); margin-top: 8px; font-size: 0.95em; }
+    .archive-link {
+      display: inline-block; margin-top: 12px; color: var(--accent); text-decoration: none;
+      font-size: 0.85em; border: 1px solid var(--border-strong); background: var(--card);
+      padding: 5px 14px; border-radius: 20px; box-shadow: var(--shadow);
+      transition: all .15s;
+    }
+    .archive-link:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+    /* 今日速览（结构化，按来源分类） */
+    .snapshot {
+      background: linear-gradient(135deg, var(--accent-soft), var(--accent2-soft));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow);
+    }
+    .snapshot-summary {
+      font-size: 0.98em;
+      color: var(--text);
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px dashed var(--border-strong);
+    }
+    .snapshot-summary strong { color: var(--accent); }
+    .snapshot-groups { display: flex; flex-direction: column; gap: 10px; }
+    .snap-group {
+      display: flex;
+      gap: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      box-shadow: var(--shadow);
+    }
+    .snap-bar { width: 5px; border-radius: 3px; flex-shrink: 0; }
+    .snap-bar-paper { background: var(--accent); }
+    .snap-bar-github { background: var(--accent2); }
+    .snap-bar-product { background: var(--warn); }
+    .snap-bar-blog { background: var(--red); }
+    .snap-body { flex: 1; }
+    .snap-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.85em; font-weight: 700; color: var(--text);
+      margin-bottom: 6px;
+    }
+    .snap-title .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-paper { background: var(--accent); }
+    .dot-github { background: var(--accent2); }
+    .dot-product { background: var(--warn); }
+    .dot-blog { background: var(--red); }
+    .snap-title .badge {
+      font-size: 0.7em; font-weight: 600;
+      background: var(--bg); border: 1px solid var(--border-strong);
+      color: var(--muted); padding: 1px 8px; border-radius: 20px;
+    }
+    .snap-points { list-style: none; padding: 0; margin: 0; }
+    .snap-points li {
+      font-size: 0.9em; color: var(--text);
+      padding: 3px 0 3px 18px;
+      position: relative;
+    }
+    .snap-points li::before {
+      content: "▸";
+      position: absolute; left: 2px;
+      color: var(--accent);
+    }
+
+    /* 分类区块 */
+    .section { margin-bottom: 30px; }
+    .section-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 4px; margin-bottom: 14px;
+      border-bottom: 2px solid var(--border);
+    }
+    .section-head .bar { width: 6px; height: 22px; border-radius: 3px; }
+    .section-head h2 { font-size: 1.15em; color: var(--text); flex: 1; }
+    .section-head .count { font-size: 0.8em; color: var(--muted); background: var(--card); border: 1px solid var(--border); padding: 2px 10px; border-radius: 20px; }
+    .bar-paper { background: var(--accent); }
+    .bar-github { background: var(--accent2); }
+    .bar-product { background: var(--warn); }
+    .bar-blog { background: var(--red); }
+
+    .item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: border-color .2s, transform .1s, box-shadow .2s;
+    }
+    .item:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+    .item:active { transform: scale(0.995); }
+    .item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .tag {
+      display: inline-block;
+      font-size: 0.72em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .tag-paper { background: var(--accent-soft); color: var(--accent); }
+    .tag-github { background: var(--accent2-soft); color: var(--accent2); }
+    .tag-product { background: var(--warn-soft); color: var(--warn); }
+    .tag-blog { background: var(--red-soft); color: var(--red); }
+    .detail-hint { font-size: 0.78em; color: var(--accent); opacity: .8; }
+    .item h3 { font-size: 1.1em; margin-bottom: 8px; }
+    .item h3 a { color: var(--text); text-decoration: none; }
+    .item h3 a:hover { color: var(--accent); }
+    .item .meta { color: var(--muted); font-size: 0.82em; margin-bottom: 10px; }
+    .item .summary { font-size: 0.95em; margin-bottom: 10px; color: var(--text); }
+    .item .insight {
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      padding: 8px 12px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.92em;
+      color: var(--text);
+    }
+    .item .insight strong { color: var(--accent); }
+
+    /* ===== 详情弹层（浅色） ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(30,41,59,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      overflow-y: auto;
+      padding: 30px 20px;
+    }
+    .modal.show { display: block; }
+    .modal-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 32px 36px;
+      position: relative;
+      box-shadow: var(--shadow-hover);
+      animation: pop .18s ease;
+    }
+    @keyframes pop { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .modal-close {
+      position: absolute;
+      top: 14px; right: 16px;
+      background: none; border: none;
+      color: var(--muted);
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+    .modal-close:hover { color: var(--text); background: var(--bg); }
+    .modal-content h2 {
+      font-size: 1.4em;
+      color: var(--text);
+      margin: 10px 0 6px;
+      line-height: 1.4;
+      padding-right: 30px;
+    }
+    .modal-content .meta { color: var(--muted); font-size: 0.85em; margin-bottom: 18px; }
+    .modal-body { margin-top: 8px; }
+    .modal-sec {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+    }
+    .modal-sec h4 { font-size: 0.95em; color: var(--accent); margin-bottom: 8px; }
+    .modal-sec p { font-size: 0.93em; color: var(--text); }
+    .modal-sources { background: var(--bg); }
+    .modal-business { background: var(--warn-soft); }
+    .modal-business h4 { color: var(--warn); }
+    .sources-list { list-style: none; padding: 0; margin: 0; }
+    .sources-list li { font-size: 0.88em; color: var(--text); margin-bottom: 6px; padding-left: 4px; }
+    .src-id { color: var(--accent); font-weight: 600; margin-right: 6px; }
+    .src-link { color: var(--accent); text-decoration: none; word-break: break-all; }
+    .src-link:hover { text-decoration: underline; }
+    .diagram-box {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      overflow-x: auto;
+      position: relative;
+    }
+    .diagram-svg svg { display: block; }
+    .diagram-zoom {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.82em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      z-index: 5;
+    }
+    .diagram-zoom:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ===== 架构图放大 lightbox ===== */
+    .diagram-lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.85);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      overflow: auto;
+      padding: 30px;
+    }
+    .diagram-lightbox.show { display: block; }
+    .diagram-lightbox-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .diagram-lightbox-inner .lb-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px;
+    }
+    .diagram-lightbox-inner .lb-head h3 { font-size: 1.1em; color: var(--text); }
+    .diagram-lightbox-inner .lb-tools { display: flex; align-items: center; gap: 8px; }
+    .lb-btn {
+      background: var(--accent-soft); color: var(--accent);
+      border: 1px solid var(--border-strong); border-radius: 8px;
+      padding: 5px 12px; font-size: 0.85em; font-weight: 600; cursor: pointer;
+      transition: all .15s;
+    }
+    .lb-btn:hover { background: var(--accent); color: #fff; }
+    .lb-close {
+      background: none; border: none; color: var(--muted);
+      font-size: 26px; line-height: 1; cursor: pointer; padding: 4px 8px; border-radius: 8px;
+    }
+    .lb-close:hover { color: var(--text); background: var(--bg); }
+    .diagram-lightbox-inner .lb-svg {
+      overflow: auto;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .diagram-lightbox-inner .lb-svg svg {
+      max-width: 100%;
+      height: auto;
+      transition: transform .15s ease;
+      transform-origin: center center;
+    }
+    .diagram-lightbox-inner .lb-svg svg.zoomed { transform: scale(1.6); cursor: grab; }
+    .diagram-lightbox-inner .lb-svg svg.zoomed:active { cursor: grabbing; }
+    .diagram-lightbox-inner .lb-tip { text-align: center; color: var(--muted); font-size: 0.8em; margin-top: 10px; }
+    .modal-foot {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .modal-link { color: var(--accent); font-size: 0.88em; text-decoration: none; word-break: break-all; }
+    .modal-link:hover { text-decoration: underline; }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8em;
+      padding: 30px 0 10px;
+      border-top: 1px solid var(--border);
+      margin-top: 30px;
+    }
+    .empty { color: var(--muted); text-align: center; padding: 40px; }
+    /* ===== 反馈按钮 + 提交按钮 ===== */
+    .feedback-fab {
+      position: fixed; bottom: 24px; right: 24px;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; color: #fff; font-size: 24px; cursor: pointer;
+      box-shadow: var(--shadow-hover);
+      z-index: 9000; transition: transform .15s;
+    }
+    .feedback-fab:hover { transform: scale(1.1); }
+    .modal-submit {
+      width: 100%; padding: 12px; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; font-size: 1em; font-weight: 600; cursor: pointer;
+    }
+    .modal-submit:hover { opacity: 0.9; }
+    @media (max-width: 600px) {
+      .modal-content { padding: 24px 18px; }
+      body { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🤖 <span class="grad">AI for Business</span> 每日晨报</h1>
+    <div class="date">业务知识库 · 业务语义理解 · API 精确查询 | 2026-08-16</div>
+    <a class="archive-link" href="archive/index.html">📚 历史晨报归档</a>
+  </header>
+
+  <div class="snapshot"><div class="snapshot-summary"><strong>📌 今日速览</strong><br>今日情报围绕“AI for Business 的约束饱和与治理基建”展开。学术线：CSE 论文用 369,753 次检查证明 LLM 在 5-6 个同时约束后性能崩溃（k=8 时全满足率仅 5.7%），为业务 API 多参数调用可靠性敲响警钟；GPM 提出 bitemporal 状态转移模型+fail-closed 释放管 agent 记忆生命周期，在 2,400 簧测试中 100% 正确 vs 无治理 7B 模型 25%；AstraZeneca Research Assistant 展示生产级多源（知识图谱+文献+临床试验+化学）Agentic RAG 系统，fast/multi-step 双模+证据溯源。博客线：dbt Antigravity 文章揭示 Google agentic IDE + dbt MCP server 把项目图+语义层+lineage+测试结果暴露给 agent，实现 ticket→SQL/YAML/test/PR 自动化；dbt IDC 报告量化 58.7 FTEs 产能回收+101,970 可复用模型+Analytics Development Lifecycle 四阶。GitHub 线：SBproxy（Rust 开源 AI 网关，72 原生 provider+keys/budgets/guardrails/semantic cache/WAF，8/15 密集迭代）为 Agent 调业务 API 提供统一治理入口；dbt-core 同日 12 版本发布含 v2.0.0-beta.1 Fusion 引擎+state explain+provably redundant test skipping。</div><div class="snapshot-groups"><div class="snap-group"><span class="snap-bar snap-bar-paper"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-paper"></span>📄 学术论文<span class="badge">4 项</span></div><ul class="snap-points"><li>CSE：LLM 单约束通过率~41% 但 k=8 全满足仅 5.7%，约束饱和呈乘法衰减，structural 约束比 lexical 损失 2x，可靠指令遵循在 5-6 约束后崩溃（15 模型 369,753 检查）</li><li>GPM：bitemporal 状态转移模型+source-bound admission+fail-closed 释放，5 条可执行子句管记忆生命周期（ledger 完整性/source binding/conflict isolation/non-revival/claim closure），2,400/2,400 簧正确 vs 无治理 600/2,400</li><li>AstraZeneca Research Assistant：生产级 Agentic RAG 跨知识图谱+文献+临床试验+化学+安全+表达数据，fast mode 直接问答+multi-step mode 复杂研究，证据溯源到原始来源</li><li>QuoteBench：matched score 隐藏 command-path 失败，GPT-5.6-sol 的 -3.6 分 matched gap 隐藏 -64.3 分损伤+60.7 分补偿，部署配置重排模型，agent 评估需报 model config+generation contract+execution path+final-state validator</li></ul></div></div><div class="snap-group"><span class="snap-bar snap-bar-github"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-github"></span>🐙 开源项目<span class="badge">2 项</span></div><ul class="snap-points"><li>SBproxy v1.11.0（soapbucket/sbproxy，49⭐ Rust Apache-2.0）：企业 AI 网关统一 API+MCP+agent+model 流量，72 原生 provider OpenAI 兼容 API，keys/budgets/guardrails/semantic cache/WAF，8/15 密集 9 commits（Metal probe+stream hook rewrite+stale-while-revalidate 组合）</li><li>dbt-core v2.0.0-beta.1（2026-08-10）+12 版本同日发布（8/12-8/14）：Fusion 引擎+dbt state explain+provably redundant test skipping+--infer-schemas catalog-free binding+overloaded UDFs+import_ctes lint rule (DBT01)</li></ul></div></div><div class="snap-group"><span class="snap-bar snap-bar-product"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-product"></span>🏢 业界动态<span class="badge">1 项</span></div><ul class="snap-points"><li>Agent 治理栈三层分工成型：CSE（约束饱和量化）→GPM（记忆生命周期治理）→SBproxy（流量网关治理）→dbt MCP（语义层暴露治理），从“模型能力竞赛”全面进入“约束建模+记忆治理+流量管控+语义暴露”四层治理基建阶段</li></ul></div></div><div class="snap-group"><span class="snap-bar snap-bar-blog"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-blog"></span>📝 技术博客<span class="badge">2 项</span></div><ul class="snap-points"><li>dbt Antigravity：Google agentic IDE（VS Code fork）+ dbt MCP server 暴露项目图+模型定义+lineage+测试结果+语义层给 agent，ticket→SQL/YAML/test/PR 自动化，dbt extension 提供列级 lineage+查询预览</li><li>dbt IDC 报告：8 家企业（均 20,000 员工/$16.75B 收入）用 dbt 回收 58.7 FTEs 产能，报告交付 16.3→8.4 天（-49%），onboarding 3.3→1.7 周（-47%），新员工 day-one 可用 101,970 可复用模型，数据质量问题 -33%</li></ul></div></div></div></div>
+
+  <div class="section"><div class="section-head"><span class="bar bar-paper"></span><h2>📄 学术论文</h2><span class="count">4 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-paper">📄 论文</span></div><h3><a href="https://arxiv.org/abs/2608.12426" target="_blank" rel="noopener">CSE：LLM 多约束饱和的相变崩溃——单约束 41% 通过率下 k=8 全满足仅 5.7%</a></h3><div class="meta">2026-08-12 · arXiv (cs.AI)</div><div class="summary">论文引入 Constraint Saturation Evaluation (CSE)，一个过程生成基准，系统性地变化同时约束数量 k（1-12），每条约束由确定性规则验证器评分、零 LLM-judge 参与。测试 15 个模型、36 种约束类型、369,753 次检查。三大发现：①单约束通过率 gradual decay 但全 k 约束同时满足的概率 collapse——k=8 时单约束 ~41% 通过率的模型全满足仅 5.7%；②约束退化不均等，structural 约束（需持续追踪）每加一条损失 2x 基线能力，lexical 约束（二元决策）退化慢；③失败近似独立，使衰减乘法化——残留耦合追踪共享输出特征（如错误句子计数会拖垮所有读取它的约束）。可靠指令遵循在 5-6 约束后崩溃：最强模型在 7 约束时 probe 级成功率低于 50%，12/15 模型在 ≤3 约束即低于 50%。</div><div class="insight"><strong>🔍 技术视角：</strong>这篇论文为用户的“上瘾字段宽表 API 精准调用”场景提供了最硬量化警示。业务 API 调用本质是多约束满足问题——字段语义约束+过滤条件+聚合规则+权限边界+输出格式+业务规则，轻易超过 5-6 条约束的崩溃阈值。CSE 的“乘法衰减”机制意味着：不能靠堆约束列表让 LLM 一次满足所有业务规则，必须把约束分阶段编排（先选 API→再填参→再验证→再格式化），每阶段约束数控制在 3-4 条以内。structural vs lexical 的 2x 差距提示：需要持续追踪上下文的约束（如“前面选的字段必须在后面 SELECT 中出现”）比二元约束（如“输出 JSON”）脆弱得多，宽表 API 的字段选择-引用一致性属于 structural 类，是最脆弱环节。5-6 约束崩溃阈值与 EnterpriseRAG 的 57 点编排鸿沟形成共振：单约束 80%→全约束 26.8% 的衰减曲线与 CSE 的乘法模型一致。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">CSE 约束饱和相变崩溃与分阶段编排应对</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">单约束 k=1</text><text x="156.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">通过率~41% 可接受</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">k=5-6 崩溃阈值</text><text x="352.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">最强模型&lt;50%</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">k=8 全满足</text><text x="548.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">仅5.7% 乘法衰减</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">分阶段编排</text><text x="744.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">每阶段≤3约束</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">语义层压缩</text><text x="450.0" y="252" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">structural→代码实现</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">乘法衰减</tspan>　P(全满足k)≈ΠP(单_i)，失败近似独立使衰减乘法化</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">structural 2x 退化</tspan>　需持续追踪的约束比二元决策约束每条多损失2x基线能力</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">编排应对</tspan>　业务API调用分阶段：API选择→填参→验证→格式化，每阶段约束≤3-4</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>这是首次用 369,753 次确定性检查量化“LLM 能同时满足几条约束”这一基础问题。5-6 约束崩溃阈值直接决定业务 Agent 的编排架构——超过此数的约束必须分层、分阶段处理。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>CSE 过程生成 k=1-12 约束组合，36 种约束类型分 structural（需持续追踪：句子计数/推理结构/输出 schema）和 lexical（二元决策：安全边界/词汇限制）。每约束由确定性规则验证器评分。失败近似独立性使衰减乘法化：P(全满足 k) ≈ Π P(单满足_i)，残留耦合来自共享输出特征。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>乘法衰减模型是核心洞察——单约束 41% 看似可接受，但 k=8 时 0.41^8 ≈ 0.0067（实测 5.7%），与 EnterpriseRAG 单约束 80%→全约束 26.8% 的衰减形态一致。structural 约束 2x 退化率意味着：宽表 API 字段选择-引用一致性（structural 类）比输出格式约束（lexical 类）脆弱 2 倍。12/15 模型在 ≤3 约束即低于 50% 的结论可能因模型选型偏中小型，前沿模型表现需进一步验证。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>CSE 的 5-6 约束崩溃阈值是 Agent 投资决策的关键参数：它量化了“为什么单次 prompt 无法可靠完成复杂业务查询”。企业应据此设计多阶段编排架构而非追求单次生成。IDC 报告显示 dbt 通过 Analytics Development Lifecycle 的 Build-Test-Deploy-Operate 四阶段把约束分阶段处理，本质上是 CSE 发现的工程化应对。dbt 101,970 可复用模型意味着约束已被预编码为可复用资产，Agent 调用时可减少实时约束数量。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>①业务 API 调用编排分阶段：每阶段约束≤3-4 条（API 选择→参数填充→结果验证→格式化），绝不一次给 LLM 全部业务规则。②structural 约束优先用确定性代码实现（schema 校验器），不交给 LLM 推理。③用语义层压缩约束——把字段语义+业务规则+权限编码为 schema 约束，让 LLM 只需满足 lexical 类约束。④Agent 编排器需实现 constraint budget tracking：动态计算剩余约束预算，超限则分拆任务。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>Semantic Scholar 引用数因 429 限流未能核实（信息待核实）。CSE 是过程生成基准，约束类型可能不完全覆盖真实业务场景的约束分布。15 模型中 12 个在 ≤3 约束即低于 50% 的结论可能因模型选型偏中小型，前沿模型表现需进一步验证。k=1-12 的范围可能不足以覆盖极复杂业务场景（如百字段 API 可能隐含 20+ 约束）。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2608.12426" target="_blank" rel="noopener" class="src-link">Large Language Models Can Follow Instructions, But Not Many at Once: Phase Transitions in Compositional Constraint Satisfaction</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2608.12426" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2608.12426</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-paper">📄 论文</span></div><h3><a href="https://arxiv.org/abs/2608.12476" target="_blank" rel="noopener">GPM：治理持久记忆——bitemporal 状态转移+fail-closed 释放，2,400/2,400 簧正确 vs 无治理 25%</a></h3><div class="meta">2026-08-12 · arXiv</div><div class="summary">论文提出 Governed Persistent Memory (GPM)，一个可审计的 bitemporal state-transition 模型，含 source-bound admission、derived lifecycle state、current public barriers 和 fail-closed structured release。5 条可执行子句覆盖：ledger 完整性、source binding、conflict isolation、retraction/deletion 后 non-revival、fresh view at one verified head 上的 exact claim closure。在预设 hash-frozen 的 3,600 案例 GPM-ReleaseBench 上，GPM 匹配所有完整结果；最强简单策略仅匹配 1,800/3,600 且 50% 违规案例做出未匹配释放。独立 sealed 端到端服务评估 8 个查询族：V3 arm 治理通道 2,400/2,400 簧正确 vs 无治理 Qwen2.5-7B 600/2,400，修复全部 1,800 基线失败无回归（单侧 95% 下界 99.875%）。V5 reseal 在中英文命令 arm 上同样 2,400/2,400。100,000-trace 三引擎差异零不匹配。</div><div class="insight"><strong>🔍 技术视角：</strong>GPM 是对“agent 记忆 select-store-retrieve 模型”的根本性升级——它指出 retrieval 不决定“矛盾/被取代/被撤回/被删除/过时的记录是否应支持一个外发声明”。这对用户业务场景至关重要：业务 API 返回的数据有时效性（昨日库存 vs 今日库存）、有版本（草案 vs 已批准）、有冲突源（两个系统对同一指标给出不同值）。GPM 的 bitemporal 模型+fail-closed 释放直接解决“agent 用过期/矛盾/被撤回的记忆做出业务判断”这一核心风险。2,400/2,400 vs 600/2,400 的对比（4x 提升）证明：治理记忆比堆模型参数更有效。GPM 与 FluctlightDB（8/15 已收录的 agent 记忆数据模型契约）形成互补——FluctlightDB 管记忆的读写语义契约，GPM 管记忆的生命周期治理（何时该释放/何时该隔离）。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">GPM bitemporal 状态转移与 fail-closed 释放模型</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">记忆写入</text><text x="156.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">source-bound admission</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">bitemporal 双时间</text><text x="352.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">transaction+valid time</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">状态转移引擎</text><text x="548.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">5条可执行子句</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">conflict isolation</text><text x="744.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">矛盾记忆隔离</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">fail-closed release</text><text x="450.0" y="252" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">不确定则拒绝释放</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">4x提升</tspan>　治理通道2400/2400 vs 无治理Qwen2.5-7B 600/2400，仮复18 00失败无回归</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">non-revival</tspan>　被撤回/删除的记忆不可复活，防止agent用过期信息做业务判断</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">与FluctlightDB互补</tspan>　FluctlightDB管读写语义契约，GPM管生命周期治理（何时释放/隔离）</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>这是首次把“记忆治理”从 select-store-retrieve 升级为 bitemporal state-transition+fail-closed release 的形式化模型。2,400/2,400 vs 600/2,400 的 4x 提升证明记忆治理比模型能力更重要。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>GPM 五条可执行子句：①ledger integrity（记忆账本不可篡改）②source binding（每条记忆绑定来源）③conflict isolation（矛盾记忆隔离不自动合并）④non-revival after retraction/deletion（被撤回/删除的记忆不可复活）⑤exact claim closure over fresh view at one verified head（在验证头上的新鲜视图上精确闭合声明）。Fail-closed 意味着无法确定时拒绝释放而非猜测。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>bitemporal 模型跟踪两个时间轴：transaction time（记忆何时被写入账本）和 valid time（记忆何时在真实世界有效）。这让 agent 能区分“昨天写入但今天已过时”vs“今天写入但描述的是上周状态”。Fail-closed structured release 与 EnterpriseRAG 的 instruction adherence collapse 形成互补——EnterpriseRAG 证明 LLM 在多约束下不可靠，GPM 证明即使 LLM 不可靠，记忆治理层可以在确定性代码中保证“不释放矛盾/过时/被撤回的记忆”。100,000-trace 三引擎零不匹配证明了模型的鲁棒性。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>GPM 把“agent 记忆可靠性”从模型能力问题转化为工程治理问题——2,400/2,400 的完美率证明确定性治理代码远胜模型自主判断。这对企业 agent 投资决策的启示：与其追求更强模型，不如建记忆治理层。dbt 的 Analytics Development Lifecycle 的 Test+Operate 阶段本质上是 GPM 理念的数据管道版本——automated checks catch errors before they ship + data lineage traces root cause。dbt 101,970 可复用模型需要 GPM 式治理才能可信地被 agent 调用。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>①业务 agent 记忆层实现 bitemporal tracking：API 返回数据带 transaction_time + valid_time 双时间戳。②实现 source-bound admission：每条记忆绑定来源 API+调用参数+响应哈希。③实现 fail-closed release：当记忆有矛盾/过时/被撤回标记时，agent 拒绝基于该记忆做业务判断，返回“需人工确认”。④对宽表 API 返回值实现 conflict isolation：同一指标多源不同值时隔离存储不自动合并。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>Semantic Scholar 引用数因 429 限流未能核实（信息待核实）。GPM 是 bounded contract and implementation results 而非 open-world model accuracy——治理通道的正确性是确定性服务输出，7B 结果是无治理对比而非声称模型本身变完美。3,600 + 2,400 案例规模虽大但可能不覆盖所有真实业务场景的记忆冲突模式。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2608.12476" target="_blank" rel="noopener" class="src-link">Governed Persistent Memory: Source-Bound State Semantics and Fail-Closed Release for Long-Horizon Agents</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2608.12476" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2608.12476</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-paper">📄 论文</span></div><h3><a href="https://arxiv.org/abs/2608.12395" target="_blank" rel="noopener">AstraZeneca Research Assistant：生产级多源 Agentic RAG——知识图谱+文献+临床试验+化学 fast/multi-step 双模</a></h3><div class="meta">2026-08-06 · arXiv (cs.AI)</div><div class="summary">论文描述 AstraZeneca 内部 LLM 系统 Research Assistant，帮助科学家和临床医生跨广泛数据源探索生物医学问题。系统整合科学文献、知识图谱、化学数据、临床试验、安全资源、表达数据和内部实验系统。提供 fast mode（直接问答）和 multi-step mode（复杂研究任务）双模式。响应基于检索证据并链接回原始来源，允许用户审查和进一步探索底层数据。论文概述系统架构、产品设计主要决策和大规模部署支持日常 R&amp;D 工作流的经验教训。</div><div class="insight"><strong>🔍 技术视角：</strong>这是罕见的制药巨头生产级 Agentic RAG 系统技术报告，直接展示了“多源业务知识+Agent 精确查询”的真实落地形态。对用户的核心启示：①fast/multi-step 双模架构——简单业务查询走 fast mode（单次 RAG），复杂分析走 multi-step mode（多步编排+证据聚合），这与 TDS dispatcher 的五级控制阶梯理念一致。②证据溯源到原始来源——每条响应链接回底层数据源，这是业务数据可信度验证的基础。③知识图谱作为多源整合骨架——文献/化学/临床试验/安全/表达数据通过知识图谱关联，与 DEW 五分类中 KG 管实例证据层的定位一致。④内部实验系统接入——展示如何把企业内部 API/数据源纳入 Agent 可调范围。这个案例是用户“AI for 业务”转型的直接参照——从研发场景迁移到业务场景只需替换数据源和知识图谱内容。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">AstraZeneca Research Assistant 多源双模架构</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">科学家查询</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">chat-style 交互</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">模式路由</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">fast vs multi-step</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">知识图谱骨架</text><text x="548.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">多源整合</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">7+数据源</text><text x="744.0" y="124" fill="#64748b" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">文献/化学/试验/安全</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">证据溯源</text><text x="450.0" y="252" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">链接回原始来源</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">双模路由</tspan>　fast mode单次RAG直接问答，multi-step mode多步编排+证据聚合</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">知识图谱骨架</tspan>　KG关联7+数据源类型，与DEW五分类中KG管实例证据层一致</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">内部系统接入</tspan>　内部实验系统API纳入Agent可调范围，展示企业API集成路径</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>这是世界 Top 20 制药企业的生产级 Agentic RAG 系统技术报告，展示了多源（7+ 数据源类型）企业 Agent 的真实架构和部署经验，而非实验室原型。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>系统架构含：①多源整合层——科学文献+知识图谱+化学+临床试验+安全+表达数据+内部实验系统 7+ 数据源。②双模式路由——fast mode 直接问答（单次检索+生成），multi-step mode 复杂研究任务（多步编排+证据聚合+溯源）。③证据溯源——响应链接回原始来源，用户可审查底层证据。④chat-style 交互——降低非技术科学家使用门槛。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>AstraZeneca 案例验证了用户三大方向的可落地性：①业务知识库构建——知识图谱作为多源整合骨架，关联文献/化学/试验/安全/表达数据。②业务语义理解——fast/multi-step 双模本质是按查询复杂度路由的语义理解策略。③业务系统精确查询——证据溯源到原始来源+内部实验系统接入，展示如何把企业 API 纳入 Agent 可调范围。multi-step mode 与 TDS dispatcher 五级控制阶梯的 workflow 级对应——止于 workflow 级保持可复现可审计，不盲目追求 agentic 级，与 dbt 的 40% agentic 项目取消率形成呼应。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>AstraZeneca 案例证明“AI for 业务”的多源 Agentic RAG 架构在生产环境可行。双模路由降低简单查询的成本（fast mode 不需多步编排），multi-step mode 保证复杂分析的深度和可溯源。知识图谱作为多源整合骨架的定位与 DEW 五分类一致——KG 管实例证据，semantic layer 管指标计算。这对用户转型“AI for 业务”是直接参照：研发场景的知识图谱+文献+实验系统 → 业务场景的业务知识图谱+API+宽表数据。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>①参考双模架构设计业务查询 Agent——简单查询 fast mode 走单次 API 调用+RAG，复杂分析 multi-step mode 走多步编排+证据聚合。②以知识图谱为多源整合骨架——把业务 API 返回值/文档/指标定义关联到统一图谱。③实现证据溯源——每条业务分析结果链接回调用的 API+参数+响应快照。④把内部业务系统 API 纳入 Agent 可调范围——用 MCP server 或 function calling 暴露。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>Semantic Scholar 引用数因 429 限流未能核实（信息待核实）。论文是技术笔记（technical note）非完整研究论文，系统细节和评估数据可能有限。制药 R&amp;D 场景与用户业务场景的数据源类型和查询模式有差异，迁移需适配。fast/multi-step 的路由判据（何时走 fast 何时走 multi-step）未详述。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2608.12395" target="_blank" rel="noopener" class="src-link">Research Assistant: AstraZeneca's Agentic System for R&amp;D</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2608.12395" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2608.12395</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-paper">📄 论文</span></div><h3><a href="https://arxiv.org/abs/2608.13547" target="_blank" rel="noopener">QuoteBench：matched score 隐藏 command-path 失败——GPT-5.6-sol 的 -3.6 分隐藏 -64.3 分损伤</a></h3><div class="meta">2026-08-13 · arXiv (cs.AI, cs.SE)</div><div class="summary">论文指出 LLM 编码 agent 通过接口发出 Bash 命令时，接口可能序列化、包装和重新解析模型输出。matched 执行分数无法区分命令生成错误和生成后引入的失败。QuoteBench 用 14 个 incident-derived 故障族的 56 个 one-shot 任务精确测量这一边界，交叉生成契约与执行传输，围绕一个故意未转义的添加解析器。在 8 个同窗口配置中，通过添加解析器重放相同回复降低成功率 55.4-73.2 个百分点；披露恢复 30.4-60.7 分（6 配置），另 2 配置零或略负。原始生成在 frontier 近饱和；boundary adaptation 是区分模型的剩余维度。GPT-5.6-sol 的 -3.6 分 matched gap 隐藏 -64.3 分损伤和 +60.7 分补偿。部署配置重排模型：26 个可比对中 1 个逆转明确。论文呼吁 agent 评估应报告 model config+generation contract+execution path+operating point+final-state validator 而非把 matched score 当模型内秉属性。</div><div class="insight"><strong>🔍 技术视角：</strong>QuoteBench 揭示了一个被广泛忽视的评估盲区——agent 工具调用评估只看最终 matched score 会同时掩盖生成损伤和传输补偿。对用户业务 API 场景的直接启示：Agent 调用业务 API 时，命令生成（LLM 输出 API 调用参数）和执行传输（参数序列化→API 网关→API 执行→响应解析）是两个独立环节，matched score（API 是否返回了数据）无法区分“LLM 生成了错误参数但传输层纠正了”vs“LLM 生成了正确参数但传输层损坏了”。GPT-5.6-sol 的 -3.6→-64.3/+60.7 揭示：一个看似接近完美的 agent 可能有严重的底层生成损伤被传输层补偿掩盖，一旦传输层变化（换 API 网关/换序列化协议）损伤会暴露。这与 SBproxy 的 AI 网关治理直接相关——网关的 semantic cache/WAF/guardrails 属于“传输层补偿”，QuoteBench 量化了这类补偿的价值和风险。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">QuoteBench：matched score 隐藏的生成损伤与传输补偿</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">LLM 生成命令</text><text x="156.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">API 调用参数</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">传输层</text><text x="352.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">序列化/网关/解析</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">matched score</text><text x="548.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">隐藏损伤-64.3</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">披露后补偿</text><text x="744.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">+60.7 恢复</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">final-state validator</text><text x="450.0" y="252" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">精确验证</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">frontier近饱和</tspan>　原始生成在frontier近饱和，boundary adaptation是区分模型的剩余维度</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">传输层补偿</tspan>　AI网关的guardrails/semantic cache属于传输层补偿，量化价值+60.7分</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">评估盲区</tspan>　agent评估需报model config+generation contract+execution path+final-state validator</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>首次用精确 final-state validation 量化 matched score 隐藏的 command-path 损伤和补偿。-64.3 分损伤被 +60.7 分补偿掩盖为 -3.6 分 matched gap，揭示 agent 评估的根本盲区。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>QuoteBench 在 56 个 one-shot 任务（14 故障族）上，把 generation contract 与 execution transport 交叉，围绕一个故意未转义的添加解析器。通过添加解析器重放相同回复：如果原始回复在标准路径成功但通过添加解析器失败，说明损伤在传输层而非生成层。披露（disclosure）告知模型传输层有解析器，看模型能否调整生成来补偿。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>核心发现是“原始生成在 frontier 近饱和，boundary adaptation 是区分模型的剩余维度”——这意味着继续提升模型生成能力的边际收益递减，而传输层（API 网关/序列化协议/解析器）的适配能力是新的差异化维度。-64.3 分损伤意味着 LLM 在未告知传输层特性时会生成不兼容的命令（如未转义特殊字符），+60.7 分补偿意味着告知后 LLM 能调整生成。这为 SBproxy 式 AI 网关的 guardrails/semantic cache 提供了量化依据——网关的传输层治理不仅是安全措施，更是 agent 可靠性的承重组件。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>QuoteBench 的核心商业启示：agent 可靠性的下一个提升点不在模型层而在传输层。企业投资 AI 网关（如 SBproxy 的 guardrails/semantic cache/WAF）的 ROI 不只是安全合规，更是 agent 可靠性承重组件。-64.3/+60.7 的量化数据为网关投资提供了硬数据支撑。dbt 的 Analytics Development Lifecycle 的 Deploy 阶段（CI/CD 变更管理）本质上是传输层治理的工程化——确保传输层变更不破坏 agent 可靠性。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>①业务 agent 评估不能只看 matched score——必须分别测量生成层正确率和传输层正确率。②API 网关（如 SBproxy）的 guardrails/semantic cache 应被纳入 agent 评估范围——它们是传输层补偿的关键组件。③对宽表 API 调用实现 final-state validation——不只检查 API 是否返回数据，还要检查返回数据是否符合预期 schema/值域。④生成契约文档化——明确 LLM 应如何序列化 API 调用参数，告知传输层特性。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>Semantic Scholar 引用数因 429 限流未能核实（信息待核实）。QuoteBench 聚焦 Bash 命令场景，业务 API 调用的序列化/解析模式可能不同。56 个 one-shot 任务规模有限。26 可比对中仅 1 个逆转明确、4 个在单任务边界，统计显著性需更多数据。frontier 近饱和的结论可能随模型迭代失效。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2608.13547" target="_blank" rel="noopener" class="src-link">QuoteBench: How Matched Scores Can Hide Command-Path Failures</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2608.13547" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2608.13547</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-product"></span><h2>🏢 业界动态</h2><span class="count">1 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-product">🏢 业界动态</span></div><h3><a href="https://arxiv.org/abs/2608.12426" target="_blank" rel="noopener">Agent 治理栈三层分工成型：约束建模（CSE）→记忆治理（GPM）→流量管控（SBproxy）→语义暴露（dbt MCP）</a></h3><div class="meta">2026-08-16 · 综合研判</div><div class="summary">本周情报串联成“Agent 治理基建四层分工”完整链路：①约束建模层——CSE 量化多约束饱和崩溃（5-6 约束阈值，k=8 全满足 5.7%），指导约束分阶段编排。②记忆治理层——GPM 用 bitemporal 状态转移+fail-closed 释放管记忆生命周期（2,400/2,400 vs 600/2,400）。③流量管控层——SBproxy 统一 API+MCP+agent 流量治理（keys/budgets/guardrails/semantic cache/WAF），QuoteBench 量化传输层补偿价值（-64.3 损伤/+60.7 补偿）。④语义暴露层——dbt MCP server 把项目图/模型定义/lineage/测试结果/语义层暴露给 agent，dbt Fusion 引擎实现增量计算+冗余测试跳过。四层共同把“Agent 可靠性”从模型能力竞赛转化为工程治理基建。</div><div class="insight"><strong>🔍 技术视角：</strong>四层分工为用户“AI for 业务”提供了完整的治理架构框架。约束建模层（CSE）告诉“agent 一次能可靠满足几条业务规则”——5-6 条是阈值，超过必须分阶段。记忆治理层（GPM）告诉“agent 如何可信地使用历史查询结果”——bitemporal+fail-closed，不确定则不释放。流量管控层（SBproxy+QuoteBench）告诉“agent 与业务 API 之间需要什么治理”——keys/budgets/guardrails/semantic cache/WAF，传输层补偿价值量化为 +60.7 分。语义暴露层（dbt MCP+Antigravity）告诉“如何把业务语义暴露给 agent”——项目图/模型定义/lineage/测试结果/语义层通过 MCP server 暴露。四层与 DEW 五分类（ontology/KG/semantic layer/context graph/taxonomy）形成映射：约束建模↔context graph 决策层，记忆治理↔KG 实例证据层，语义暱露↔semantic layer 计算层。IDC 报告的 Analytics Development Lifecycle 四阶（Build-Test-Deploy-Operate）是四层分工的工程化方法论——Build↔语义暱露，Test↔记忆治理，Deploy↔流量管控，Operate↔约束建模。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 376" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="376" fill="#f8fafc"/><rect width="900" height="376" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">Agent 治理基建四层分工架构</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">约束建模层</text><text x="156.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">CSE 5-6阈值</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">记忆治理层</text><text x="352.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">GPM bitemporal</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">流量管控层</text><text x="548.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">SBproxy+QuoteBench</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">语义暱露层</text><text x="744.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">dbt MCP+Antigravity</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="178" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="188" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="206" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">DEW五分类映射</tspan>　约束建模↔context graph, 记忆治理↔KG, 语义暱露↔semantic layer, 流量管控↔跨层入口</text><rect x="30" y="230" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="248" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">IDC四阶映射</tspan>　Build↔语义暱露, Test↔记忆治理, Deploy↔流量管控, Operate↔约束建模</text><rect x="30" y="272" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="290" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">AstraZeneca双模</tspan>　fast mode跳过重层, multi-step全四层编排</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>四层分工把分散的治理需求系统化为可工程化的架构框架，每层都有量化数据支撑（CSE 5.7%/GPM 2400-2400/QuoteBench +60.7/IDC 58.7 FTEs）。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>四层分工链路：①约束建模层（CSE）——量化约束饱和崩溃，指导分阶段编排每阶段≤3-4 约束。②记忆治理层（GPM）——bitemporal+fail-closed 管记忆生命周期，2,400/2,400 vs 600/2,400。③流量管控层（SBproxy+QuoteBench）——统一 API/MCP/agent 流量治理+传输层补偿量化。④语义暱露层（dbt MCP+Antigravity）——MCP server 暱露项目图/lineage/语义层+Fusion 增量计算。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>四层分工与 DEW 五分类的映射：约束建模↔context graph（决策切片），记忆治理↔KG（实例证据），语义暱露↔semantic layer（指标计算），流量管控↔跨层（API 网关是所有层的入口）。与 IDC Analytics Development Lifecycle 的映射：Build↔语义暱露（可复用模型），Test↔记忆治理（fail-closed 拦截），Deploy↔流量管控（CI/CD 变更管理），Operate↔约束建模（lineage 定位根因）。AstraZeneca 的双模架构（fast/multi-step）是四层分工的运行时实例——fast mode 跳过记忆治理和流量管控（简单查询），multi-step mode 全四层编排（复杂分析）。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>四层分工为“AI for 业务”的治理基建投资提供了清晰框架——每层都有量化 ROI 数据：约束建模（CSE 5.7% 崩溃率指导编排架构）、记忆治理（GPM 4x 提升）、流量管控（QuoteBench +60.7 补偿+SBproxy 开源降本）、语义暱露（IDC 58.7 FTEs+$1.75M/年）。企业 agent 投资应按四层分配预算而非全押模型层。AstraZeneca 双模架构为四层分工的运行时编排提供参照——简单查询跳过重层，复杂分析全四层编排。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>①约束建模层——用 CSE 5-6 阈值设计业务 API 调用的分阶段编排（API 选择→填参→验证→格式化）。②记忆治理层——用 GPM bitemporal+fail-closed 设计业务查询结果的记忆生命周期管理。③流量管控层——用 SBproxy 部署 agent 与业务 API 间的治理网关，用 QuoteBench 评估传输层补偿价值。④语义暱露层——用 dbt MCP server 模式设计业务 API 的 MCP 暱露层（业务术语表/API schema/字段语义/指标定义）。⑤用 IDC 四阶方法论框架组织四层分工的工程化实施。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>四层分工是综合研判而非单一论文的结论，各层成熟度不均：CSE/GPM 是新论文（引用数待核实），SBproxy 是低星项目（49⭐），dbt MCP 是产品博客无定量评估。四层间的接口协议未标准化。AstraZeneca 案例虽是生产级但未公开评估数据。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2608.12426" target="_blank" rel="noopener" class="src-link">CSE: Phase Transitions in Compositional Constraint Satisfaction</a></li><li><span class="src-id">[2]</span> <a href="https://arxiv.org/abs/2608.12476" target="_blank" rel="noopener" class="src-link">GPM: Governed Persistent Memory</a></li><li><span class="src-id">[3]</span> <a href="https://github.com/soapbucket/sbproxy" target="_blank" rel="noopener" class="src-link">SBproxy: Enterprise AI Gateway</a></li><li><span class="src-id">[4]</span> <a href="https://www.getdbt.com/blog/meet-antigravity-google-s-agentic-ide-enters-the-dbt-orbit" target="_blank" rel="noopener" class="src-link">dbt Antigravity + MCP server</a></li><li><span class="src-id">[5]</span> <a href="https://www.getdbt.com/blog/data-infrastructure-productivity-gains" target="_blank" rel="noopener" class="src-link">dbt IDC Productivity Gains</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2608.12426" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2608.12426</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-github"></span><h2>🐙 开源项目</h2><span class="count">2 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-github">🐙 GitHub</span></div><h3><a href="https://github.com/soapbucket/sbproxy" target="_blank" rel="noopener">SBproxy v1.11.0：开源企业 AI 网关统一 API+MCP+agent 流量治理（Rust, 72 provider, guardrails/semantic cache/WAF）</a></h3><div class="meta">2026-08-16 · GitHub (soapbucket/sbproxy)</div><div class="summary">SBproxy 是开源企业 AI 网关（Rust, Apache-2.0, 49⭐），用单一二进制统一管理 API、MCP 和 agent 及 AI model 流量。72 个原生 provider 在 OpenAI 兼容 API 后，或自托管 vLLM/llama.cpp。功能含：keys/budgets/guardrails/semantic cache/WAF/rate-limiting/load-balancing/reverse-proxy。8/15 密集 9 commits：Metal probe lane（七字段 Apple 记录+cert 编译）、stream hook 可重写双向 outbound 内容、stale-while-revalidate 组合、tool-call mutation refused 不变量、Apache-2.0-only swc crate 归属。支持 Kubernetes operator、Homebrew、Docker。文档含 API-estate 指南（把现有 HTTP API 放到策略后）、MCP gateway 指南（暴露/联邦 MCP 工具）。</div><div class="insight"><strong>🔍 技术视角：</strong>SBproxy 直接命中用户的“Agent 调业务 API 治理”痛点。用户的核心约束是“不直连数据库，通过高业务含义 API 查数”——这意味着 agent 与业务 API 之间需要一个治理层。SBproxy 的 API-estate 功能（把现有 HTTP API 放到策略后）正是这个治理层：keys/budgets 管调用预算，guardrails 管调用边界，semantic cache 管重复查询去重，WAF 管恶意输入。MCP gateway 功能（暴露/联邦 MCP 工具）让 SBproxy 成为业务 API 的 MCP 适配器——把业务 API 暴露为 MCP tool 供 agent 调用，同时施加治理。8/15 的 stream hook rewrite + tool-call mutation refused 不变量与 GPM 的 fail-closed release 形成共振——两者都在传输层实现“不确定则拒绝”。49⭐ 虽低但 8/15 密集 9 commits 显示活跃度，Rust+Apache-2.0+single binary 降低部署门槛。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">SBproxy 统一 AI 网关：API+MCP+agent 流量治理</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Agent 请求</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">业务查询</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">SBproxy 网关</text><text x="352.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">keys/budgets/guardrails</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">API-estate</text><text x="548.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">宽表API放策略后</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">MCP gateway</text><text x="744.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">业务API→MCP tool</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">semantic cache</text><text x="450.0" y="252" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">重复查询去重</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">四类流量统一</tspan>　API+MCP+agent+AI model单一二进制管理，72 provider OpenAI兼容</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">传输层治理</tspan>　stream hook rewrite+tool-call mutation refused，与QuoteBench传输补偿呼应</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">MCP适配器</tspan>　把业务API暴露为MCP tool，agent通过MCP调用，网关施加治理</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>SBproxy 是首个开源的统一 API+MCP+agent 流量治理网关，直接命中“agent 调业务 API 需治理层”痛点。Rust+Apache-2.0+single binary 降低部署门槛。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>单一 Rust 二进制统一管理四类流量：①API（HTTP API 放到策略后，API-estate）②MCP（暴露/联邦 MCP 工具，MCP gateway）③agent（agent 流量）④AI model（72 provider OpenAI 兼容，vLLM/llama.cpp 自托管）。治理功能：keys/budgets/guardrails/semantic cache/WAF/rate-limiting/load-balancing。8/15 关键 commits：Metal probe（七字段 Apple cert 记录+messenger 锁定）、stream hook 双向 outbound 内容重写、stale-while-revalidate 组合、tool-call mutation refused 不变量。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>SBproxy 的 API-estate 功能（把现有 HTTP API 放到策略后）是用户场景的直接映射——把上瘾字段的宽表 API 放到 SBproxy 策略后，agent 调用经过 keys/budgets/guardrails/semantic cache/WAF 治理。MCP gateway 功能让 SBproxy 成为业务 API→MCP tool 的适配器——把宽表 API 暴露为 MCP tool，agent 通过 MCP 调用，SBproxy 施加流量治理。stream hook rewrite 能力（双向 outbound 内容重写）与 QuoteBench 的传输层补偿直接对应——网关可以在传输层纠正/补偿 agent 的生成错误。tool-call mutation refused 不变量与 GPM 的 fail-closed release 共振——两者都在传输层实现“工具调用不可被篡改/不确定则拒绝”。semantic cache 为重复业务查询提供去重——同一业务问题的多次查询走缓存不重复调 API。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>SBproxy 为“agent 调业务 API 治理”提供了开源基础设施选项。与 MCP Gateway 论文（8/13 已收录）形成产品化映射——论文正式化碎片化痛点，SBproxy 提供工程实现。对企业 agent 投资决策的启示：agent 与业务 API 之间的治理层不是可选项而是必需品——keys/budgets 管成本，guardrails 管边界，semantic cache 管效率，WAF 管安全。QuoteBench 的 -64.3/+60.7 量化了这类治理层的价值。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>①把业务宽表 API 放到 SBproxy API-estate 后——agent 调用经 keys/budgets/guardrails 治理。②用 MCP gateway 把业务 API 暴露为 MCP tool——agent 通过 MCP 调用，SBproxy 施加治理。③启用 semantic cache——重复业务查询走缓存降本。④用 stream hook 在传输层实现 schema 校验/字段过滤——宽表 API 返回上瘾字段时只释放 agent 需要的子集。⑤参考 tool-call mutation refused 不变量设计业务 API 调用不可篡改保证。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>49⭐ 低星项目，社区支持和长期维护可持续性存风险。Rust 部署需编译或用预编译 binary。文档虽全但生产级案例未公开。8/15 密集 9 commits 显示活跃但也可能意味着不稳定。72 provider 兼容性覆盖需逐个验证。WAF/guardrails 规则需自定义，无预置业务规则。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://github.com/soapbucket/sbproxy" target="_blank" rel="noopener" class="src-link">SBproxy: Open source Enterprise AI Gateway for API, MCP and agent traffic</a></li></ol></div><div class="modal-foot"><a href="https://github.com/soapbucket/sbproxy" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://github.com/soapbucket/sbproxy</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-github">🐙 GitHub</span></div><h3><a href="https://github.com/dbt-labs/dbt-core/releases/tag/v2.0.0-beta.1" target="_blank" rel="noopener">dbt-core v2.0.0-beta.1 + 12 版本同日发布：Fusion 引擎+state explain+provably redundant test skipping</a></h3><div class="meta">2026-08-16 · GitHub (dbt-labs/dbt-core)</div><div class="summary">dbt-core 在 8/12-8/14 三天内发布了 12 个版本（v1.1.6 到 v2.0.0-beta.1），其中 v2.0.0-beta.1（2026-08-10）含重大功能：①Fusion 引擎——dbt state explain in Fusion 实现‘build what’s changed’增量计算（配合 8/15 已收录的省 30% 仓库计算）。②Test optimization——skip provably redundant tests，跳过可证明冗余的测试。③--infer-schemas/--skip-type-checking/--show-sources——catalog-free binding，无需 introspection 即可 bind SQL。④overloaded UDFs via overrides block。⑤import_ctes lint rule (DBT01)——要求每个 ref()/source() 通过 top-level CTE 导入。⑥Databricks Azure service principal 认证。⑦Docker 支持 dbt docs serve 自托管。多版本同日发布策略为旧版本用户提供安全修复+废式版本警告。</div><div class="insight"><strong>🔍 技术视角：</strong>dbt-core v2.0.0-beta.1 的 Fusion 引擎+state explain+provably redundant test skipping 直接服务“AI for 业务”的语义层建设。Fusion 引擎的‘build what’s changed’增量计算对应 GPM 的 bitemporal 模型——只重新计算变化部分，避免全量重算的浪费。provably redundant test skipping 对应 CSE 的约束分阶段——跳过可证明冗余的约束检查，集中资源在非冗余约束上。--infer-schemas catalog-free binding 对应 MDB-Link 的多库 schema linking——无需 introspection 即可 bind SQL，降低对数据字典的依赖。import_ctes lint rule (DBT01) 对应 structural 约束代码化——要求 ref()/source() 通过 top-level CTE 导入，把字段引用一致性从 LLM 推理变为 lint 规则。12 版本同日发布策略展示了语义层工业级维护——每个旧版本都有安全修复，这与 Cube Core 8/13 的安全 advisory 加固（历史已收录）形成跨平台共振：语义层承重墙依赖链漏洞必须及时修补。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">dbt-core v2.0 Fusion 引擎与本周情报共振</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Fusion 引擎</text><text x="156.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">Rust 重写增量计算</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">state explain</text><text x="352.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">build what's changed</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">redundant test skip</text><text x="548.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">跳过可证明冗余</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">import_ctes DBT01</text><text x="744.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">字段引用lint化</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">12版本同日</text><text x="450.0" y="252" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">工业级维护</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">Fusion↔GPM bitemporal</tspan>　增量计算只算变化部分，与GPM bitemporal只释放有效记忆共振</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">test skip↔CSE约束分阶段</tspan>　跳过冗余约束检查集中资源在非冗余上</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">三栈Rust核心化</tspan>　dbt Fusion+WrenAI wren-core+Cube tesseract语义层三栈Rust核心化</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>dbt-core v2.0.0-beta.1 是 Fusion 引擎（Rust 重写）的首个 beta，Fusion+state explain 是‘build what’s changed’增量计算的核心引擎。12 版本同日发布展示了语义层工业级维护策略。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>v2.0.0-beta.1 关键功能：①Fusion 引擎——dbt state explain in Fusion 实现增量计算。②skip provably redundant tests——编译期证明测试冗余则跳过。③--infer-schemas catalog-free binding——无需 introspection bind SQL。④overloaded UDFs via overrides block。⑤import_ctes lint rule (DBT01)——ref()/source() 必须通过 top-level CTE 导入。⑥Databricks Azure SP 认证。⑦Docker dbt docs serve。12 版本同日含 v1.1.6-v1.9.11，每版本含废式版本警告+安全修复。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>v2.0 功能与本周情报形成完整共振：①Fusion state explain（增量计算）↔ GPM bitemporal（只算变化部分）↔ IDC 报告 -30% 仓库计算。②provably redundant test skipping ↔ CSE 约束分阶段（跳过冗余约束）↔ GPM fail-closed（不确定则不释放）。③--infer-schemas ↔ MDB-Link 多库 schema linking（无需完整 introspection）。④import_ctes DBT01 ↔ CSE structural 约束代码化（字段引用一致性变 lint 规则而非 LLM 推理）。⑤12 版本同日 ↔ Cube 8/13 安全 advisory（语义层依赖链漏洞及时仮补）。Fusion 是 Rust 重写，与 WrenAI wren-core（Rust 核心）和 Cube tesseract（Rust 引擎）形成语义层三栈 Rust 核心化趋势。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>Fusion 引擎的‘build what’s changed’增量计算是 IDC 报告 -30% 仓库计算的技术基础，直接降本。provably redundant test skipping 是数据质量 -33% 的技术贡献之一。12 版本同日发布策略为企业提供版本管理安全网——旧版本也有安全修复+废式警告，降低升级压力。这对用户“AI for 业务”语义层建设的启示：语义层引擎的增量计算+冗余测试跳过+lint 规则化是把“AI 可信”工程化的三个关键维度。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>①用 Fusion state explain 实现‘build what’s changed’——业务数据资产变更只重算受影响部分。②启用 provably redundant test skipping——跳过可证明冗余的测试，集中资源在非冗余约束。③用 --infer-schemas catalog-free binding——降低对完整数据字典的依赖。④启用 import_ctes DBT01 lint rule——把字段引用一致性从 agent 推理变为编译期 lint。⑤参考 12 版本同日策略设计语义层版本管理——每版本安全修复+废式警告。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>v2.0.0-beta.1 是预发布，生产环境不建议直接使用。Fusion 引擎是 Rust 重写，与 Python 生态兼容性需验证。12 版本同日发布虽展示工业级维护但也可能意味着版本碎片化风险。--infer-schemas 可能降低 schema 校验精度。import_ctes DBT01 可能要求大规模重构现有模型。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://github.com/dbt-labs/dbt-core/releases/tag/v2.0.0-beta.1" target="_blank" rel="noopener" class="src-link">dbt-core v2.0.0-beta.1 Release</a></li></ol></div><div class="modal-foot"><a href="https://github.com/dbt-labs/dbt-core/releases/tag/v2.0.0-beta.1" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://github.com/dbt-labs/dbt-core/releases/tag/v2.0.0-beta.1</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-blog"></span><h2>📝 技术博客</h2><span class="count">2 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-blog">📝 技术博客</span></div><h3><a href="https://www.getdbt.com/blog/meet-antigravity-google-s-agentic-ide-enters-the-dbt-orbit" target="_blank" rel="noopener">dbt × Google Antigravity：agentic IDE + dbt MCP server 把项目图/语义层/lineage 暴露给 agent</a></h3><div class="meta">2026-08-16 · dbt Blog (Stephen Robb)</div><div class="summary">dbt 博客介绍 Google 新发布的 agentic IDE Antigravity（VS Code fork）与 dbt 生态的深度集成。安装 dbt extension 后立即获得列级 lineage、查询预览、跨模型/源/测试的导航。加入 dbt MCP server 后，agent 可访问项目图、模型定义、lineage、测试结果和语义层（governed, queryable 方式）。工作流示例：ticket→agent 读取→review Dataplex 数据分类标签→生成 SQL/YAML/test→写 GitHub PR→CI 编排 dbt 校验。文章还推荐 GitHub/BigQuery/AlloyDB/Dataplex MCP server 配合使用，并给出 Antigravity+Gemini CLI 双工具策略（Antigravity 做多 agent 架构规划，Gemini CLI 做终端聚焦任务）。</div><div class="insight"><strong>🔍 技术视角：</strong>这篇文章对用户的核心价值是展示了“语义层如何通过 MCP server 暴露给 agent”的完整落地形态。dbt MCP server 暴露的五类资产——项目图、模型定义、lineage、测试结果、语义层——恰好是 DEW 五分类中 semantic layer 计算层和 context graph 决策层的工程实现。ticket→SQL/YAML/test/PR 自动化工作流是“agent 调用语义层 API 精确查数”的研发场景版本，迁移到业务场景即为“业务问题→agent 调用业务 API→验证→生成报告”。Antigravity+Gemini CLI 双工具策略呼应 TDS dispatcher 的“控制留代码”理念——agent 行为通过 rules（~/.gemini/GEMINI.md）和 skills 定义约束，而非全交给 LLM 自主决策。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">Antigravity + dbt MCP server 语义层暴露架构</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Ticket 输入</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">agent 读取</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">dbt MCP server</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">项目图+语义层+lineage</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">rules 约束</text><text x="548.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">GEMINI.md 结构化约束</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">SQL/YAML/test 生成</text><text x="744.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">agent 执行</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">GitHub PR + CI</text><text x="450.0" y="252" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">dbt 校验</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">五类资产暴露</tspan>　项目图/模型定义/lineage/测试结果/语义层通过MCP暴露给agent</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">rules=structural约束代码化</tspan>　naming conventions/SQL style/testing requirements编码为agent行为约束</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">双工具策略</tspan>　Antigravity做架构规划，Gemini CLI做终端聚焦，呼应双模架构</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>Google agentic IDE + dbt MCP server 是“语义层作为 Agent 数据技能平台”的最新工程实证，展示了 MCP server 如何把语义层/项目图/lineage/测试结果暴露给 agent。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>dbt MCP server 暴露五类资产给 agent（governed, queryable）：①项目图（project graph）②模型定义（model definitions）③lineage ④测试结果 ⑤语义层（semantic layer）。dbt extension 提供列级 lineage+查询预览+跨模型导航。工作流：ticket→agent 读取→Dataplex 数据分类标签审查→SQL/YAML/test 生成→GitHub PR→CI dbt 校验。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>dbt MCP server 暴露的“语义层”与 Cube MCP server（历史已收录，20 工具含预聚合管理）形成跨平台验证——两者都把语义层作为 Agent 可调用的数据技能。Antigravity 的 rules 文件（~/.gemini/GEMINI.md, .agent/rule/）定义 naming conventions/SQL style/testing requirements，本质上是 CSE 论文中 structural 约束的代码化实现——把需要持续追踪的业务规则编码为 agent 行为约束而非交给 LLM 推理。双工具策略（Antigravity 做架构规划，Gemini CLI 做终端聚焦）呼应 multi-step vs fast mode 双模架构——复杂任务走多 agent 规划，简单任务走单 agent 执行。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>Antigravity+dbt MCP server 展示了“语义层从 BI 工具变 Agent 数据技能平台”的商业落地。ticket→PR 自动化工作流是研发效率提升的直接路径。dbt IDC 报告的 58.7 FTEs 产能回收中，agent 自动化 SQL/YAML/test 生成是关键贡献。这对用户“AI for 业务”的启示：语义层 MCP server 是 agent 调用业务 API 的基础设施——把业务术语/字段语义/指标定义暴露给 agent，让 agent 不需理解宽表 API 的全部上百字段即可精确调用。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>①参考 dbt MCP server 模式设计业务 API 的 MCP server——暴露业务术语表/API schema/字段语义/指标定义给 agent。②用 rules 文件把 structural 约束（字段选择-引用一致性/业务规则）编码为 agent 行为约束。③实现 ticket→SQL/YAML/test/PR 工作流的业务版本——业务问题→API 调用→数据验证→报告生成。④多 MCP server 编排——业务 API MCP + 数据目录 MCP + 语义层 MCP 协同工作。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>文章是产品体验博客而非技术论文，缺乏定量评估。Antigravity 是 Google 新产品，成熟度和长期可用性待观察。dbt MCP server ‘eventually available in the market’ 暗示当前仍需手动配置。工作流示例含 Dataplex/BigQuery/AlloyDB 等 Google 产品，跨云迁移需适配。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://www.getdbt.com/blog/meet-antigravity-google-s-agentic-ide-enters-the-dbt-orbit" target="_blank" rel="noopener" class="src-link">Meet Antigravity: Google's agentic IDE enters the dbt orbit</a></li></ol></div><div class="modal-foot"><a href="https://www.getdbt.com/blog/meet-antigravity-google-s-agentic-ide-enters-the-dbt-orbit" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://www.getdbt.com/blog/meet-antigravity-google-s-agentic-ide-enters-the-dbt-orbit</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-blog">📝 技术博客</span></div><h3><a href="https://www.getdbt.com/blog/data-infrastructure-productivity-gains" target="_blank" rel="noopener">dbt IDC 报告：58.7 FTEs 产能回收 + 101,970 可复用模型 + Analytics Development Lifecycle 四阶</a></h3><div class="meta">2026-08-16 · dbt Blog (Daniel Poppy, IDC Report)</div><div class="summary">dbt 博客引用 IDC Business Value 报告量化 dbt 的生产力收益。IDC 访谈 8 家企业（均 20,000 员工/$16.75B 年收入），报告：①产能回收 58.7 FTEs（analytics/data +25, developers +11.2, BA +17.6, governance +2.5, platform +2.4），analytics/data team 节省 $1.75M/年。②速度提升：报告交付 16.3→8.4 天（-49%），新 app 测试快 44%，pipeline 更新快 46%，新功能开发周期快 41%，交付新方案快 34%，扩展快 33%。③onboarding 3.3→1.7 周（-47%），新员工 day-one 可用 101,970 个可复用模型。④数据质量：问题 -33%，late-data -35%，incomplete-data -13%。⑤核心方法论 Analytics Development Lifecycle 四阶：Build（可复用模型替代一次性脚本）→Test（自动化检查在 ship 前拦截错误）→Deploy（CI/CD 自动变更管理）→Operate/Discover（lineage 定位根因+目录自助发现）。</div><div class="insight"><strong>🔍 技术视角：</strong>这份 IDC 报告为用户“AI for 业务”的立项提供了最硬的商业 ROI 数据。58.7 FTEs 产能回收和 $1.75M/年节省是 C 级可理解的语言。101,970 可复用模型是“语义层作为可复用资产”的量化证明——每个新模型是对未来的复利投资。Analytics Development Lifecycle 四阶（Build-Test-Deploy-Operate/Discover）与 CSE 的约束分阶段处理、GPM 的记忆治理、AstraZeneca 的双模路由形成共振——都指向“分阶段、可复用、可审计”的工程化路径。Build 阶段（可复用模型替代一次性脚本）直接对应语义层建设——把业务指标定义一次复用多次。Test 阶段（自动化检查在 ship 前拦截错误）对应 GPM 的 fail-closed release——不确定则不释放。Deploy 阶段（CI/CD 变更管理）对应 QuoteBench 的传输层治理。Operate/Discover 阶段（lineage 定位根因+目录自助）对应 AstraZeneca 的证据溯源。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 376" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="376" fill="#f8fafc"/><rect width="900" height="376" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">Analytics Development Lifecycle 四阶与本周情报共振</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Build</text><text x="156.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">可复用模型 101,970</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Test</text><text x="352.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">ship前拦截 -33%问题</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Deploy</text><text x="548.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">CI/CD 变更管理</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Operate/Discover</text><text x="744.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">lineage+cataloging</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="178" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="188" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="206" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">58.7 FTEs回收</tspan>　8家大企业样本，analytics/data team节省$1.75M/年</text><rect x="30" y="230" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="248" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">四阶共振</tspan>　Build↔语义层, Test↔GPM fail-closed, Deploy↔QuoteBench传输层, Operate↔证据溯源</text><rect x="30" y="272" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="290" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">复利资产</tspan>　101,970可复用模型，每新增一个都在为未来agent调用积累可复用资产</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>IDC 第三方报告量化了 dbt 的企业级生产力收益，8 家大企业样本（均 20,000 员工/$16.75B 收入）数据可信度高。58.7 FTEs + $1.75M/年是 C 级可理解的 ROI 语言。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>Analytics Development Lifecycle 四阶：①Build——可复用模型替代一次性脚本，每个问题解决一次不重复。②Test——自动化检查在 ship 前拦截错误，而非在 dashboard/AI 模型后 firefight。③Deploy——CI/CD 自动变更管理，非手动推送。④Operate/Discover——lineage 定位根因+cataloging 自助+health reports。101,970 可复用模型意味着新员工从 day-one 即可接入已有数据资产。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>IDC 数据与本周其他情报形成完整共振：①Build 阶段（可复用模型）↔语义层建设（把业务指标定义一次复用多次）↔ DEW 五分类中 semantic layer 计算层。②Test 阶段（ship 前拦截）↔ GPM fail-closed release（不确定则不释放）↔ CSE structural 约束代码化。③Deploy 阶段（CI/CD）↔ QuoteBench 传输层治理（变更不破坏可靠性）。④Operate/Discover（lineage+cataloging）↔ AstraZeneca 证据溯源（链接回原始来源）↔ Antigravity dbt MCP（暴露项目图+lineage 给 agent）。101,970 可复用模型是“语义层资产复利”的量化——每新增一个模型都在为未来 agent 调用积累可复用资产。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>这是“AI for 业务”立项最直接的 ROI 数据包。58.7 FTEs 产能回收+报告交付 -49%+onboarding -47%+数据质量 -33% 四组数据覆盖效率/质量/人才三大维度。$1.75M/年节省是 analytics/data team 单项，全组织 TCO 节省更高。101,970 可复用模型证明语义层是复利资产——投资一次复用多次。Analytics Development Lifecycle 四阶为“AI for 业务”提供了工程化方法论框架。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>①用 58.7 FTEs + $1.75M/年 作为“AI for 业务”语义层建设的立项 ROI 论据。②参考 Analytics Development Lifecycle 四阶设计业务数据资产管理体系——Build 业务指标定义/语义模型，Test 自动化校验，Deploy CI/CD 变更管理，Operate lineage 溯源+目录自助。③把 101,970 可复用模型作为“语义层是复利资产”的论据——每个新模型投资未来 agent 可复用。④数据质量 -33% 对应 GPM fail-closed 理念——ship 前拦截比 ship 后修复便宜 100x（$100 vs $10,000）。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>IDC 报告由 dbt 赞助，存在利益相关方偏向。8 家企业样本虽大但可能存在选择偏差（成功的 dbt 用户更愿参与）。58.7 FTEs ‘recouped capacity’ 不等于裁员，而是重新分配到战略工作。101,970 可复用模型是平均值，实际可用性取决于模型质量。-33% 数据质量问题改善是自报数据。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://www.getdbt.com/blog/data-infrastructure-productivity-gains" target="_blank" rel="noopener" class="src-link">The productivity gains hiding in your data infrastructure</a></li></ol></div><div class="modal-foot"><a href="https://www.getdbt.com/blog/data-infrastructure-productivity-gains" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://www.getdbt.com/blog/data-infrastructure-productivity-gains</a></div></div></div>
+
+  
+
+  <footer>
+    由 Hermes Agent 自动生成 · 点击卡片查看深度详情 · 2026-08-16
+  </footer>
+
+  <!-- ===== 反馈按钮 + 表单弹层 ===== -->
+  <button class="feedback-fab" onclick="openFeedback()" title="提交反馈">💬</button>
+
+  <div class="modal" id="feedback-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeFeedback()" aria-label="关闭">×</button>
+      <span class="tag tag-product">💬 读者反馈</span>
+      <h2>提交意见 / 反馈</h2>
+      <div class="modal-body">
+        <p style="color:var(--muted);font-size:0.9em;margin-bottom:12px;">
+          你的反馈会帮我改进晨报内容。提交后将打开 GitHub Issue 页面，确认后我会在每天 17:00 处理。
+        </p>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">反馈类型</label>
+        <select id="fb-type" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);margin-bottom:12px;">
+          <option value="内容建议">内容建议（选题/深度/方向）</option>
+          <option value="错误报告">错误报告（链接失效/信息有误）</option>
+          <option value="格式反馈">格式/排版反馈</option>
+          <option value="其他">其他</option>
+        </select>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">你的反馈内容</label>
+        <textarea id="fb-body" rows="5" placeholder="请描述你的意见、建议或发现的问题…"
+          style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);resize:vertical;margin-bottom:12px;"></textarea>
+        <button class="modal-submit" onclick="submitFeedback()">提交反馈 →</button>
+      </div>
+      <div class="modal-foot" style="color:var(--muted);font-size:0.8em;">提交后请在打开的 GitHub 页面点击确认。</div>
+    </div>
+  </div>
+
+  <!-- ===== 架构图放大 lightbox ===== -->
+  <div class="diagram-lightbox" id="diagram-lightbox" onclick="if(event.target===this)closeDiagramZoom()">
+    <div class="diagram-lightbox-inner">
+      <div class="lb-head">
+        <h3 id="lb-title">📊 架构图</h3>
+        <div class="lb-tools">
+          <button type="button" class="lb-btn" onclick="diagramToggleZoom()">🔍 放大/缩小</button>
+          <button type="button" class="lb-close" onclick="closeDiagramZoom()" aria-label="关闭">×</button>
+        </div>
+      </div>
+      <div class="lb-svg" id="lb-svg"></div>
+      <div class="lb-tip">提示：点击「放大/缩小」切换缩放，缩放后可在图内拖动查看细节 · 按 Esc 关闭</div>
+    </div>
+  </div>
+
+  <script>
+    function openDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.add('show'); document.body.style.overflow = 'hidden'; }
+    }
+    function closeDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.remove('show'); document.body.style.overflow = ''; }
+    }
+    function openFeedback() {
+      document.getElementById('feedback-modal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeFeedback() {
+      document.getElementById('feedback-modal').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function submitFeedback() {
+      const type = document.getElementById('fb-type').value;
+      const body = document.getElementById('fb-body').value.trim();
+      if (!body) { alert('请填写反馈内容'); return; }
+      const date = '2026-08-16';
+      const title = '[网页反馈/' + type + '] ' + date;
+      const full = '反馈类型: ' + type + '\n日期: ' + date + '\n\n' + body;
+      // 生成 GitHub Issue 预填链接（不暴露 token，安全）
+      const url = 'https://github.com/hhao9817/agent-daily/issues/new?title=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(full);
+      window.open(url, '_blank');
+      closeFeedback();
+    }
+    /* ===== 架构图放大 ===== */
+    function openDiagramZoom(btn) {
+      const box = btn.closest('.diagram-box');
+      const svg = box.querySelector('.diagram-svg svg') || box.querySelector('svg');
+      if (!svg) return;
+      const title = box.querySelector('h4') ? box.querySelector('h4').textContent : '📊 架构图';
+      document.getElementById('lb-title').textContent = title;
+      const holder = document.getElementById('lb-svg');
+      holder.innerHTML = '';
+      holder.appendChild(svg.cloneNode(true));
+      const lb = document.getElementById('diagram-lightbox');
+      lb.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeDiagramZoom() {
+      document.getElementById('diagram-lightbox').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function diagramToggleZoom() {
+      const svg = document.querySelector('#lb-svg svg');
+      if (!svg) return;
+      svg.classList.toggle('zoomed');
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal.show').forEach(function(m) { m.classList.remove('show'); });
+        document.getElementById('diagram-lightbox').classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+</html>
