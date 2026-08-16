@@ -1,0 +1,813 @@
+{
+  "date": "2026-08-17",
+  "banner": "语义层从\"薄抽象\"升级为\"语义控制平面\"：Yannick 论文提出 5 大关切+2 类契约(语义契约/执行契约)防厂商锁死；TDS 实战三层知识架构(Evidence/Knowledge/Orchestrator)用 6 种失败模式证明\"RAG 检索不等于累积理解\"；GraphRAG 三篇新论文量化知识图谱路线在持久/可追溯证据上的优势；Cube v1.7.20 今日发布加分支 CLI+安全加固、SBproxy 8/16 决策记录契约+观测事件治理成型、OpenMetadata MCP 修复让公司上下文搜索找到共享知识胶囊。",
+  "snapshot": {
+    "summary": "今日情报围绕\"语义层升级为语义控制平面 + 知识图谱路线的证据持久性优势\"两条主线展开。学术线：GraphRAG CTI 论文用 APT28 案例证明知识图谱检索产生的检测规则在 IP/域名/哈希全部轮换后仍 100% 触发(vs Naive RAG 29%)，量化了知识图谱在\"持久、难规避线索\"上的结构性优势；DocNavRAG 把文档层级+跨区关系组织为可导航图+暴露 locate/navigate/expand/fetch 操作+维护演进证据状态，4 个长文档 QA 基准平均提升答案质量 7.8%/上下文充分性 17.7%；Triple-Robustness 用 2x4,440 主矩阵+5,000+ 忠实度判断做 GraphRAG vs vector RAG 的客观评测，发现 GraphRAG 图遍历会以 0.12-0.23 精度淹没上下文窗口但合成器选择性引用达 0.48-0.65，答案级引用胜负随语料+跳数条件化但嵌入器鲁棒。博客线：TDS《持久知识层拒绝猜测》提出三层架构(Evidence 召回/Knowledge 累积/Orchestrator 路由)+6 种失败模式(scoped supersession/真矛盾/术语漂移/生效日期/rationale 丢失/多跳)+\"写入知识是不同风险等级\"+模型只提 patch 不直接写+provenance 是链不是字段+staleness 必须跟踪；Yannick Misteli《语义层不再是层》提出语义层正成为\"语义控制平面\"含 5 大关切(业务含义/执行/治理/知识上下文/性能)+消费者从人变 agent 改变接口必须携带的信息+\"推断的定义无人批准无人审计，机器速度下是带引用的大规模错误\"+两份契约(语义契约=Apache Ossie/执行契约=GoogleSQL+Substrait)防\"便携数据+不可移动含义\"。GitHub 线：Cube v1.7.20 今日发布含 data-model enable-branch/disable-branch CLI+LIKE 通配符转义+5 个安全 advisory 修复(lru use-after-free/async-std crossbeam/uuid/handlebars/tar)；SBproxy 8/16 密集发布决策记录契约(decision record contract)+4 个决策事件+auth 决策事件+策略决策汇合到共享审计形状+MCP 双修订并行；OpenMetadata 2.0.0-rc2 8/13 发布+8/16 MCP 修复让公司上下文搜索找到共享知识 pills+创建工具设置自定义属性。",
+    "groups": {
+      "paper": [
+        "GraphRAG CTI(2608.13050)：知识图谱检索让 APT28 检测规则在 IP/域名/哈希全轮换后仍 100% 触发 vs Naive RAG 29%，9 篇真实 CTI 报告跨 4 厂商验证同模式——知识图谱路线在\"持久、金字塔顶端线索\"上有结构性优势",
+        "DocNavRAG(2608.01565)：文档层级+跨区关系组织为可导航图，暴露 locate/navigate/expand/fetch 图操作+维护演进证据状态直到充分收集，4 个长/多文档 QA 基准平均答案质量+7.8%/上下文充分性+17.7%——agent 应在文档结构内导航而非反复从头搜",
+        "Triple-Robustness(2608.00705)：2x4,440 主矩阵+600 跨语料+5,000+ 忠实度判断客观评测 GraphRAG vs vector RAG，发现 GraphRAG 图遍历以 0.12-0.23 精度淹没上下文窗口但合成器选择性引用达 0.48-0.65，答案级引用胜负随语料+跳数条件化但嵌入器鲁棒，单判官 LLM 忠实度对检索状态脆弱"
+      ],
+      "blog": [
+        "TDS《持久知识层拒绝猜测》(Miodrag Cekikj, 8/16)：RAG 检索但从不记忆，提出三层架构(Evidence 召回精确措辞/Knowledge 累积连续性关系综合/Orchestrator 路由风险时间范围)+6 种失败模式(scoped supersession 15年误用到全量/真矛盾两文档均当前/术语漂移 ACV=现金结算=折旧值/生效日期语义相似不编码时间/rationale 丢失只在邮件/多跳 top-k 不遍历只排序)+写入知识是不同风险等级模型只提 patch+provenance 是链+staleness 跟踪",
+        "Yannick Misteli《语义层不再是层》(DEW #282 转载, 8/4)：语义层从薄抽象升级为\"语义控制平面\"含 5 大关切(业务含义/执行/治理/知识上下文/性能)，消费者从人变 agent 改变接口必须携带信息——\"推断定义无人批准无人审计，机器速度下是带引用的大规模错误\"，分离语义契约(Apache Ossie 业务对象级)与执行契约(GoogleSQL+Substrait 时间戳/精度/舍入/溢出/NULL)防\"便携数据+不可移动含义\"",
+        "DEW #282 Dhilip Kumar《从非结构化混乱到可查询知识》(DEW 摘要转载)：传统数据工程要求先定义 schema(ontology)再抽取，作者论证这不适用陌生领域，应用 LLM 探索非结构化数据先抽取候选实体关系+人审创建种子本体让 schema 从实际数据有机演化"
+      ],
+      "github": [
+        "Cube v1.7.20(2026-08-16 今日发布)：data-model enable-branch/disable-branch CLI 命令(d51199)+schema-compiler LIKE 通配符转义(f050c08)+5 个安全 advisory 修复(lru 0.18.2 清两个 use-after-free #11531+drop async-std 清 crossbeam #11546+uuid 8.3→11.1.1 #11534+handlebars/form-data/tar 清两个 critical #11549)+Chat API 端点文档化+每图 PNG/PDF/CSV 导出文档",
+        "SBproxy v1.11.0(soapbucket/sbproxy, 8/16 密集迭代)：决策记录契约(decision record contract)生成+门控(WOR-24)+4 个决策事件接线+auth 决策事件+策略决策汇合到共享审计形状(WOR-2448)+MCP 双修订并行(2026-07-28 beside 2025-06-18)+Apple 七字段证书+Metal probe 编译+messengers 诚实保持",
+        "OpenMetadata 2.0.0-rc2(8/13 发布, 8/16 MCP 修复)：fix(mcp) 让公司上下文搜索找到共享知识 pills(#31527)+创建工具设置自定义属性(#31526)+Ontology Explorer RDF 知识图谱+ContextCenter 版本化上下文+AI Mode+Data Marketplace+Glossary 治理迁移"
+      ],
+      "product": [
+        "语义层升级为语义控制平面+知识图谱路线证据持久性优势共振：Yannick 的\"语义控制平面 5 大关切\"与 TDS 的\"三层架构\"形成架构层共振——Yannick 管\"意义必须开放\"(语义契约+执行契约防锁死)，TDS 管\"理解必须累积\"(Evidence/Knowledge/Orchestrator 防一次性检索)；GraphRAG CTI 的 100% vs 29% 触发率为\"知识图谱管持久证据\"提供最硬量化；三者共同指向\"AI for Business 的可信不是靠更强模型，而是靠分层语义基建+持久知识累积+开放契约防锁死\""
+      ]
+    }
+  },
+  "items": [
+    {
+      "tag": "paper",
+      "title": "GraphRAG CTI：知识图谱检索让检测规则在攻击者轮换 IOC 后仍 100% 触发 vs Naive RAG 29%",
+      "date": "2026-08-13",
+      "source": "arXiv (cs.CR)",
+      "link": "https://arxiv.org/abs/2608.13050",
+      "summary": "论文研究网络威胁情报(CTI)运营化：当安全研究员发布攻击报告后，检测工程师需将其转为可工作的检测规则。大多数自动化方案只抽取最简单线索(坏 IP/域名/文件哈希)做成封禁列表，但攻击者可在数小时数天内更换这些简单线索使检测失效(Pyramid of Pain 概念)。论文问：把报告喂给知识图谱检索系统(Microsoft GraphRAG)而非标准向量相似检索(Naive RAG)，是否产生依赖更持久、金字塔顶端线索的检测计划？两系统用相同报告+相同生成指令+相同 LLM 写最终计划，只改检索步骤。APT28 案例研究：GraphRAG 计划在报告内每个 IP/域名/文件哈希轮换后仍 100% 触发检测，Naive RAG 仅 29%。9 篇真实 CTI 报告(4 厂商)重复对比确认同模式：GraphRAG 计划一致达到更高、更难规避的金字塔层级。",
+      "insight": "技术视角：这是对用户\"语义层 vs 企业知识图谱\"双路线在\"证据持久性\"维度上的最硬量化区分。GraphRAG CTI 的 100% vs 29% 触发率证明：知识图谱检索抽取的是攻击者的战术、技术和程序(TTPs)——这些是攻击者难以更改的持久行为模式，而向量检索抽的是易变 IOC。迁移到用户业务场景：宽表 API 字段语义标注如果只靠向量相似(易变表面线索)，在数据分布漂移(字段重命名/业务规则变更)后迅速失效；如果用知识图谱抽取业务概念间的结构关系(如\"这个字段是 Active Customer 的判定依据，关联到订单状态+时间窗+产品线\")，则即使底层 API 字段重命名，业务概念关系仍持久可追溯。这与昨日 VDGR-RAG 的\"四路统一企业推理\"形成共振——知识图谱路线的核心价值不是召回率，而是证据的持久性与可追溯性。Pyramid of Pain 的\"顶端线索难规避\"可直接迁移为\"业务知识图谱的顶端概念难漂移\"。",
+      "detail": {
+        "why": "首次用 9 篇真实 CTI 报告(4 厂商)量化证明知识图谱检索在\"持久线索\"上的结构性优势。100% vs 29% 的触发率差距不是召回率差距，而是抽取线索类型不同——知识图谱抽 TTPs(持久行为模式)，向量抽 IOC(易变表面值)。这为用户\"何时选知识图谱路线\"提供了决策依据。",
+        "mechanism": "Microsoft GraphRAG 从攻击报告中构建实体+关系图(TTPs/工具/漏洞/目标/行动者)，检索时遍历图抽取持久的行为模式线索；Naive RAG 用向量相似检索最相关文本块，自然偏向抽取显式出现的 IOC(IP/域名/哈希)。两者用相同 LLM 生成检测计划，只改检索步骤。控制变量设计干净。Pyramid of Pain 把检测线索按\"攻击者更改成本\"排序：哈希(几小时)→IP(数天)→域名(数周)→TTPs(需重写攻击基础设施，数月-永久)。",
+        "deep": "100% vs 29% 的差距在 IOC 全轮换后测量——这模拟了攻击者最简单的规避动作。GraphRAG 计划依赖的 TTPs(如\"APT28 使用特定 PowerShell 编码模式绕过执行策略\")即使 IOC 全换仍触发，因为 TTP 是行为模式不是值。迁移到业务 API 语义：业务知识图谱应存储\"字段语义的业务逻辑关系\"而非\"字段名相似度\"——前者在字段重命名后持久，后者失效。9 篇报告跨 4 厂商验证模式一致性，非单一案例偶然。论文局限：仅 CTI 域，业务域的\"持久线索\"定义需迁移(如业务规则 vs 字段值)，但结构性洞察(图谱抽关系/向量抽值)跨域成立。",
+        "apply": "①宽表 API 字段语义标注用知识图谱存储业务概念关系(如\"customer_status 字段关联到订单活跃度+时间窗+产品线\")，而非仅靠字段名向量相似。②业务知识图谱的节点应是\"业务概念\"(Active Customer/ churned/ revenue)而非\"字段名\"，边是\"判定逻辑关系\"。③当 API 字段重命名或数据分布漂移时，业务概念关系仍可追溯(类比 IOC 轮换后 TTP 仍触发)。④在评估业务 Agent 查询可靠性时，区分\"持久证据测试\"(概念关系是否正确)与\"易变证据测试\"(具体字段值是否匹配)。",
+        "caveats": "Semantic Scholar 引用数因 429 限流未能核实(信息待核实)。论文仅 CTI 域案例研究，业务域的\"持久 vs 易变\"映射需进一步验证。100% vs 29% 是单次 APT28 案例的精确数字，9 篇跨厂商是\"一致模式\"非精确复制——但模式一致性足够支撑结构性结论。GraphRAG 构图成本高于向量索引，需权衡持久性收益与构图成本。",
+        "business": "GraphRAG CTI 的 100% vs 29% 为\"知识图谱路线\"在业务 API 语义理解场景的投资决策提供了最硬量化依据：知识图谱抽取的持久业务概念关系在 API 字段漂移后仍可追溯，而向量相似的表面匹配会失效。这意味着企业在做\"业务知识库构建\"时应优先投入知识图谱路线存储业务概念关系，而非仅靠向量索引字段语义——长期 ROI 在数据分布漂移后凸显。这与 Yannick 的\"语义控制平面\"形成共振：知识图谱管持久证据，语义层管可执行计算，两者分层而非二选一。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.13050",
+            "title": "Operationalizing Cyber Threat Intelligence with GraphRAG"
+          }
+        ],
+        "diagram": {
+          "title": "GraphRAG CTI 持久证据 vs Naive RAG 易变线索——知识图谱路线的结构性优势",
+          "flow": [
+            {
+              "label": "攻击报告/业务文档",
+              "sub": "原始语料",
+              "type": "external"
+            },
+            {
+              "label": "GraphRAG 构图",
+              "sub": "实体+关系图 TTPs/业务概念关系",
+              "type": "backend"
+            },
+            {
+              "label": "图遍历检索",
+              "sub": "抽取持久行为模式",
+              "type": "backend"
+            },
+            {
+              "label": "检测计划/查询计划",
+              "sub": "依赖持久线索",
+              "type": "backend"
+            },
+            {
+              "label": "IOC 轮换/字段漂移",
+              "sub": "攻击者/数据分布变化",
+              "type": "security"
+            },
+            {
+              "label": "100% 仍触发",
+              "sub": "TTPs 持久",
+              "type": "backend"
+            },
+            {
+              "label": "Naive RAG 向量检索",
+              "sub": "抽取 IOC/字段值相似",
+              "type": "database"
+            },
+            {
+              "label": "29% 触发",
+              "sub": "IOC 易变失效",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "持久性差距",
+              "text": "GraphRAG 100% vs Naive 29% 不是召回率差距，是抽取线索类型不同——图谱抽关系(持久)，向量抽值(易变)"
+            },
+            {
+              "label": "业务迁移",
+              "text": "业务知识图谱节点=业务概念，边=判定逻辑关系，字段重命名后概念关系仍可追溯"
+            },
+            {
+              "label": "双路线决策",
+              "text": "知识图谱管持久证据(CTI 证明)，语义层管可执行计算(Yannick)，两者分层非二选一"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "DocNavRAG：文档结构化图 RAG+有状态证据构建，agent 在文档内导航而非反复从头搜",
+      "date": "2026-08-03",
+      "source": "arXiv (cs.CL)",
+      "link": "https://arxiv.org/abs/2608.01565",
+      "summary": "论文解决复杂问题在大型文档集合上需跨章节跨文档组装互补证据的难题。GraphRAG 提供结构化检索但通常用固定遍历，agentic RAG 在弱结构化接口上操作。核心洞察：agent 应在文档结构内和跨文档导航，而非反复从头搜索。DocNavRAG 把文档层级+跨区关系组织为可导航图，暴露图操作(locate 定位/navigate 导航/expand 展开/fetch 取)，维护演进证据状态指导检索直到收集充分证据。在 4 个长文档和多文档 QA 基准上，DocNavRAG 平均提升答案质量 7.8% 和上下文充分性 17.7% 超过最强基线。",
+      "insight": "技术视角：DocNavRAG 的\"agent 在文档结构内导航而非反复从头搜\"直接对应用户\"业务 API 调用应先探查后查询\"的痛点。宽表 API 的上百字段如果每次查询都从全部字段从头检索，既耗 context 又易选错；如果用 DocNavRAG 的 locate/navigate/expand/fetch 模式——先定位 API 的业务模块(navigate 到订单区/客户区)，再展开字段子集(expand)，最后取数(fetch)——可大幅压缩 context 占用并提高字段选择精度。这与昨日 Guided Table Retrieval 的\"四阶段确定性优先+LLM 兜底\"和 LinkAlign 的\"千字段选列\"形成共振：三者共同指向\"先探查结构后精确取数\"范式。17.7% 的上下文充分性提升对本地中小模型尤为重要——context 充分性决定工具调用可靠性(8/12 TDS 本地 LLM 文章证明 256K+122B 把破损率 25%→0)。",
+      "detail": {
+        "why": "首次把\"文档导航\"形式化为图操作(locate/navigate/expand/fetch)+有状态证据构建。固定遍历的 GraphRAG 无法适应查询的动态证据需求，agentic RAG 的弱结构接口反复从头搜浪费 context。DocNavRAG 在\"结构化导航+有状态累积\"间找到平衡。",
+        "mechanism": "文档层级(章/节/段)+跨区关系(引用/对比/补充)组织为可导航图。四个图操作：locate(定位起点章节)/navigate(在图内移动)/expand(展开节点的子结构或关联区)/fetch(取具体内容)。有状态证据构建：维护演进证据状态(已收集/缺口/充分度判断)指导下一步操作，直到证据充分才停止。这区别于 top-k 反复独立检索。",
+        "deep": "7.8% 答案质量+17.7% 上下文充分性的提升来自\"有状态\"——agent 不丢弃已收集的证据，而是在其上增量导航。这与昨日 MIRA 的\"证据验证记忆复用\"和 FluctlightDB 的\"experience()/activate() 读写契约\"形成记忆层互补：DocNavRAG 管单次查询内的证据累积，MIRA/FluctlightDB 管跨查询的记忆复用。迁移到业务 API：宽表 API 的字段语义理解可建模为\"在 API schema 图内导航\"——先 locate 到业务模块，navigate 到相关字段组，expand 展开子结构，fetch 取具体字段值，全程有状态累积。",
+        "apply": "①业务 API 调用编排实现 locate/navigate/expand/fetch 模式：先定位 API 的业务模块区(如订单/客户/产品)，再导航到相关字段组，展开子结构确认语义，最后取数。②维护单次查询内的证据状态(已选字段/已确认语义/缺口)，增量导航而非反复全字段检索。③用文档层级图类比 API schema 图——API 的字段分组(如\"地址相关字段\"/\"金额相关字段\")作为节点，字段间业务关系(如\"此字段依赖彼字段值\")作为边。④17.7% 上下文充分性提升意味着可用更小 context 窗口的本地模型达到同等可靠性。",
+        "caveats": "Semantic Scholar 引用数因 429 限流未能核实(信息待核实)。论文在长文档/多文档 QA 基准评测，业务 API schema 场景的\"图结构\"定义需迁移(文档章节≠ API 字段分组)。7.8%/17.7% 提升是平均值，具体查询类型(单跳/多跳)的提升分布未详细报告。有状态证据构建的存储开销在超大规模 API 场景需评估。",
+        "business": "DocNavRAG 的\"在结构内导航而非从头搜\"为业务 API 语义理解的 context 压缩提供了直接可用范式——宽表 API 上百字段不必每次全量暴露给 LLM，而是按业务模块分组导航。17.7% 上下文充分性提升意味着企业可用更便宜的本地中小模型(而非前沿大模型)达到同等查询可靠性，直接降低 Agent 调业务 API 的 token 成本。这与 Yannick 的\"语义控制平面性能关切\"形成共振：性能不是独立层，而是意义+治理+执行交汇处——DocNavRAG 的有状态导航是性能优化的一种实现。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.01565",
+            "title": "DocNavRAG: Document-Structured Graph RAG with Stateful Evidence Construction for Complex Document Question Answering"
+          }
+        ],
+        "diagram": {
+          "title": "DocNavRAG 有状态文档导航 vs 反复从头检索——在结构内累积证据",
+          "flow": [
+            {
+              "label": "文档层级图",
+              "sub": "章/节/段+跨区关系",
+              "type": "database"
+            },
+            {
+              "label": "locate 定位",
+              "sub": "起点章节",
+              "type": "backend"
+            },
+            {
+              "label": "navigate 导航",
+              "sub": "图内移动",
+              "type": "backend"
+            },
+            {
+              "label": "expand 展开",
+              "sub": "子结构/关联区",
+              "type": "backend"
+            },
+            {
+              "label": "fetch 取数",
+              "sub": "具体内容",
+              "type": "backend"
+            },
+            {
+              "label": "有状态证据",
+              "sub": "已收集/缺口/充分度",
+              "type": "backend"
+            },
+            {
+              "label": "答案",
+              "sub": "证据充分后生成",
+              "type": "frontend"
+            },
+            {
+              "label": "vs 反复从头搜",
+              "sub": "top-k 独立检索丢弃证据",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "有状态累积",
+              "text": "agent 不丢弃已收集证据，增量导航——区别于 top-k 反复独立检索"
+            },
+            {
+              "label": "API 迁移",
+              "text": "宽表 API 字段按业务模块分组作为图节点，字段间业务关系作为边，locate/navigate/expand/fetch 导航"
+            },
+            {
+              "label": "context 压缩",
+              "text": "17.7% 上下文充分性提升=可用更小 context 窗口的本地模型达同等可靠性，降 token 成本"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "Triple-Robustness：GraphRAG vs vector RAG 客观评测——图遍历淹上下文但合成器选择性引用救回",
+      "date": "2026-08-01",
+      "source": "arXiv (cs.IR)",
+      "link": "https://arxiv.org/abs/2608.00705",
+      "summary": "论文指出 GraphRAG vs vector RAG 的已有结论相互矛盾，证据通常绑定单一语料/嵌入器/判官——论文还指出绑定引用质量测量位置。论文做三重鲁棒性分析：固定五管线架构矩阵，变嵌入器(local e5-small vs Azure text-embedding-3-small)、语料(DO-178C 类型边需求 vs MuSiQue 维基段落链)、判官(GPT-5.4 x GPT-4.1 配对)，共 2x4,440 主矩阵+600 跨语料+5,000+ 忠实度判断。发现：(C2a) GraphRAG 图遍历以 0.12-0.23 精度淹没上下文窗口，但合成器选择性引用达 0.48-0.65；把检索集当归属集评分会反转架构排名。(C1) 答案级引用胜负随语料+分层条件化但嵌入器鲁棒：GraphRAG 在短跳 DO-178C 上与 vanilla 持平，在每个 MuSiQue 分层取胜，agentic 管线仅在 3+跳需求查询领先。(C2b) 忠实度随语料条件化：DO-178C 随跳距下降(4 组合中 3 组 p<0.05)，维基链两个判官都不崩溃。(C3) 单判官 LLM 忠实度对检索状态脆弱。",
+      "insight": "技术视角：这篇论文为用户\"语义层 vs 知识图谱\"双路线提供了最客观的评测方法论与警示。最关键发现：GraphRAG 图遍历会把大量低精度(0.12-0.23)内容塞满 context 窗口，但合成器(即最终生成答案的 LLM)能选择性引用达到 0.48-0.65 精度——这意味着知识图谱路线的成本是 context 占用，收益是引用精度，需要在\"图遍历的 context 淹没\"与\"合成器的引用救回\"间权衡。迁移到用户宽表 API 场景：业务知识图谱遍历可能把上百字段的关联关系全塞进 context 淹没 LLM，但如果编排器有\"选择性引用\"能力(只把最相关字段关系传给生成 LLM)，可救回精度。C1 的\"胜负随语料+跳数条件化但嵌入器鲁棒\"意味着：选不选知识图谱路线取决于业务查询的跳数特征——短跳查询语义层足够，3+跳复杂查询知识图谱才显优势。这与 CSE 的\"5-6 约束崩溃阈值\"共振：图遍历的低精度淹没本质是给 LLM 塞了太多约束。",
+      "detail": {
+        "why": "已有 GraphRAG vs vector RAG 结论矛盾，因证据绑定单一变量。三重鲁棒性(嵌入器/语料/判官)是首次系统性隔离各变量贡献的评测。发现\"评分归属集\"(检索集 vs 合成器引用集)会反转排名——这是方法论上的关键纠偏。",
+        "mechanism": "五管线架构矩阵固定(含 vanilla RAG/GraphRAG/agentic 等)，三变量正交变化：嵌入器(e5-small vs Azure)、语料(DO-178C 航空需求类型边 vs MuSiQue 维基段落链)、判官(GPT-5.4 x GPT-4.1 配对)。2x4,440 主矩阵+600 跨语料+5,000+ 忠实度判断。关键测量：检索集精度 vs 合成器引用集精度的分离——前者是图遍历/向量检索返回的全集，后者是 LLM 最终答案中引用的子集。",
+        "deep": "C2a 的\"图遍历淹上下文(0.12-0.23)但合成器引用救回(0.48-0.65)\"是核心洞察——知识图谱路线的价值不在检索阶段(那阶段低精度淹没)，而在合成阶段(LLM 选择性引用)。这解释了为何不同研究报告矛盾：如果把检索集当归属集评分，GraphRAG 排名低(淹没)；如果评合成器引用集，GraphRAG 排名高(救回)。迁移到业务 API：业务知识图谱遍历可能返回上百字段关系淹没 context，但编排器需实现\"选择性引用\"只传最相关子集给生成 LLM。C1 的\"3+跳才显优势\"为双路线选择提供跳数阈值——与 VAKRA 的\"multi-hop 衰减\"呼应。",
+        "apply": "①业务知识图谱路线实现\"合成器选择性引用\"层：图遍历返回全集后，编排器按查询相关性筛选子集再传给生成 LLM，避免 context 淹没。②按业务查询跳数选路线：短跳(<3)用语义层足够，3+跳复杂查询用知识图谱。③评测业务 Agent 时区分\"检索集精度\"与\"合成器引用集精度\"，避免方法论误导。④多判官配对+跨语料验证，避免单判官忠实度对检索状态脆弱(C3)。",
+        "caveats": "Semantic Scholar 引用数因 429 限流未能核实(信息待核实)。DO-178C 是航空安全需求(类型边结构强)，MuSiQue 是维基段落链(结构弱)——业务 API 场景的\"类型边强度\"需评估。5,000+ 忠实度判断的判官本身是 LLM，存在自评偏差。e5-small vs Azure 的嵌入器对比未覆盖本地开源前沿嵌入器。",
+        "business": "Triple-Robustness 为企业\"语义层 vs 知识图谱\"投资决策提供最客观的方法论：不要被单一评测的排名误导，必须分离检索集与合成器引用集精度，按业务查询跳数特征选路线。\"3+跳才显优势\"意味着如果业务查询多为短跳(如\"某客户本月订单额\")，语义层足够且成本更低；如果多为多跳(如\"为何此客户被分类为流失风险\")，知识图谱才显价值。合成器选择性引用层是知识图谱路线的必要配套——否则图遍历的 context 淹没会拖垮生成质量。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.00705",
+            "title": "A Triple-Robustness Analysis of Retrieval-Augmented Generation for Multi-Hop Requirements Traceability"
+          }
+        ],
+        "diagram": {
+          "title": "Triple-Robustness 评测——检索集淹没 vs 合成器引用救回的双层精度",
+          "flow": [
+            {
+              "label": "查询",
+              "sub": "短跳/3+跳",
+              "type": "frontend"
+            },
+            {
+              "label": "GraphRAG 图遍历",
+              "sub": "检索集精度 0.12-0.23 淹没",
+              "type": "backend"
+            },
+            {
+              "label": "合成器选择性引用",
+              "sub": "引用集精度 0.48-0.65 救回",
+              "type": "backend"
+            },
+            {
+              "label": "答案+引用",
+              "sub": "最终输出",
+              "type": "frontend"
+            },
+            {
+              "label": "三重鲁棒性",
+              "sub": "嵌入器×语料×判官",
+              "type": "security"
+            },
+            {
+              "label": "C1 胜负条件化",
+              "sub": "短跳持平/3+跳 KG 胜",
+              "type": "backend"
+            },
+            {
+              "label": "C3 判官脆弱",
+              "sub": "单判官对检索状态脆弱",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "双层精度",
+              "text": "检索集(淹没 0.12-0.23)vs 合成器引用集(救回 0.48-0.65)——评分归属集不同会反转架构排名"
+            },
+            {
+              "label": "跳数阈值",
+              "text": "短跳(<3)语义层足够，3+跳知识图谱才显优势——按业务查询跳数选路线"
+            },
+            {
+              "label": "合成器配套",
+              "text": "知识图谱路线必须配\"选择性引用\"层，否则图遍历 context 淹没拖垮生成"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "TDS《持久知识层拒绝猜测》：三层架构+6 种失败模式——RAG 检索不等于累积理解",
+      "date": "2026-08-16",
+      "source": "Towards Data Science (Miodrag Cekikj)",
+      "link": "https://towardsdatascience.com/designing-a-persistent-knowledge-layer-that-refuses-to-guess/",
+      "summary": "文章论点：RAG 检索但从不记忆——语义缓存只缓存答案不缓存理解，检索系统无处累积理解。提出三层架构：Evidence 层(检索索引，优化召回/精确措辞/引用/新鲜度)、Knowledge 层(维护的结构化人可读领域模型，优化连续性/关系/综合/复用)、Orchestrator 层(路由/风险/时间范围)。核心规则：\"知识页永远不是源，总是可追溯到源\"。Knowledge 层对象模型含 Decision(规则+范围+生效日+责任人+rationale 指针)、Contradiction(一等对象非错误，两陈述逐字+状态+why_not_resolved)、Open question(知道不知道什么)。6 种失败模式：scoped supersession(15年误用到全量普通屋顶)、genuine contradiction(两文档均当前不同团队)、terminology drift(ACV=现金结算=折旧值六别名)、effective-date scoping(语义相似不编码时间，规则不能溯及既往)、rationale loss(理由只在邮件规则在指南连接无处)、multi-hop(top-k 不遍历只排序)。写入知识是不同风险等级：模型只提 patch 不直接写，应用验证+人批准 consequential 变更；provenance 是链不是字段(缺链则删非改)；staleness 必须跟踪(last_validated_at+superseded_by)。查询路由：时间检查在检索前(否则不适用的消耗 top-k)，矛盾检查是出口门(不论走哪路由)。完整 Azure 实现(Microsoft Foundry/Azure AI Search/Cosmos DB/FastAPI)+合成财产保险语料 Ostermere Mutual 21 文档+Obsidian vault，GitHub MIT 开源。",
+      "insight": "技术视角：这是本周最贴合用户\"业务知识库构建+业务语义理解\"两大方向的实战文章。三层架构直接映射用户场景：Evidence 层=业务文档/API schema 的向量检索索引，Knowledge 层=业务知识图谱+业务术语表+决策记录，Orchestrator 层=业务 API 调用编排器。6 种失败模式每一条都能在用户\"上百字段宽表 API\"场景找到对应：scoped supersession 对应\"某字段语义在新业务线有更窄范围但被误用到全量查询\"；terminology drift 对应\"同一业务概念在不同 API 字段名不同(如 customer_status/customer_state/cust_st)\"；effective-date scoping 对应\"业务规则有生效日期但语义检索不编码时间\"——这是宽表 API 场景最隐蔽的失败。\"写入知识是不同风险等级\"+\"模型只提 patch 不直接写\"与昨日 GPM 的\"fail-closed 释放\"和 FluctlightDB 的\"experience()/activate() 读写契约\"形成记忆治理层共鸣：业务知识库的写入必须人批准+provenance 链+staleness 跟踪，否则\"错的知识页影响所有后续答案且无人察觉\"。Contradiction 作为一等对象而非错误——这是对用户\"语义层 vs 知识图谱\"的精确区分：语义层管已定义无矛盾的，知识图谱管有矛盾需保留的。",
+      "detail": {
+        "why": "首次系统性地把\"RAG 不累积理解\"问题拆解为可实施的三层架构+6 种可测试失败模式+写入治理(patch/provenance/staleness)。这不是理论文章，而是有完整 Azure 实现+合成语料+开源代码的实战蓝图。6 种失败模式每条都是\"检索系统会自信地错误回答\"的具体陷阱。",
+        "mechanism": "三层架构：Evidence(检索索引，查询时召回) / Knowledge(维护的结构化领域模型，累积理解) / Orchestrator(路由决定走哪层)。Knowledge 层对象模型：Decision(规则+范围+生效日+owner+rationale 指针)/Contradiction(两陈述逐字+状态+owner+why_not_resolved)/Open question(被矛盾阻塞的未答)。写入治理三原则：①模型只提 patch，应用验证+人批准 consequential；②provenance 是链，缺链则删非改；③staleness 跟踪(last_validated_at+superseded_by，源被取代则派生标记 stale)。查询路由：时间检查在检索前(否则不适用消耗 top-k)，矛盾检查是出口门(不论路由，topic contested 则停)。",
+        "deep": "6 种失败模式的深层共性：检索系统\"自信地错\"因为语义相似不编码范围/矛盾/术语别名/时间/rationale 连接/多跳路径。Contradiction 作为一等对象是核心洞察——真实语料矛盾是常态非边缘案例，检索系统会\"流畅自信地悄悄选边\"(通常选最近文档，但 recency≠applicability)。迁移到用户宽表 API：字段语义冲突(如 customer_status 在不同业务线有不同枚举值)应作为 Contradiction 对象存储+why_not_resolved+owner，而非让 LLM 单次 forward pass 静默裁决。\"模型只提 patch 不直接写\"与 CSE 的\"5-6 约束崩溃\"共振：写知识比答知识约束更多(影响所有后续答案)，必须分阶段(patch→验证→批准)控制约束数。Obsidian vault 作为\"人可读窗口\"呼应 Karpathy 的 LLM Wiki 模式——知识编译一次为持久制品而非每次从原始块重建。",
+        "apply": "①业务知识库分三层：Evidence(业务文档/API schema 向量索引)/Knowledge(业务知识图谱+术语表+决策记录)/Orchestrator(API 调用编排器)。②字段语义冲突存储为 Contradiction 对象(两枚举值集逐字+状态+owner+why_not_resolved)，禁止 LLM 单次裁决。③业务规则生效日期放索引过滤层(检索前)，否则不适用规则消耗 top-k。④知识写入实现 patch 生命周期：LLM 提 patch→schema 校验→consequential 人批准。⑤staleness 跟踪：字段语义被业务规则变更取代时，派生知识标记 stale 不作 current。⑥术语别名表(ACV=现金结算=折旧值)做实体解析，避免四页相互矛盾。",
+        "caveats": "文章为 Azure 原生实现(Microsoft Foundry/Azure AI Search/Cosmos DB)，但 Part I 架构是厂商中立的(AWS/GCP/Postgres+pgvector+本地模型均适用)。合成语料(Ostermere Mutual 21 文档财产保险)规模有限，大规模业务语料的 staleness 传播(一条源变更影响多少派生知识)需评估。Obsidian vault 是人可读视图非生产存储——生产需结构化存储+Markdown 视图生成。Contradiction 的人工解决成本在大量冲突场景可能成为瓶颈。",
+        "business": "TDS 三层架构+6 种失败模式为企业\"业务知识库构建\"提供了最完整的实战蓝图：不是建一个 RAG 系统就够，而是要建 Evidence(召回)+Knowledge(累积)+Orchestrator(路由)三层。\"写入知识是不同风险等级\"是立项论据——错的知识页影响所有后续答案且无人察觉，这比错的聊天答案危险得多，必须配套 patch 治理+provenance 链+staleness 跟踪。Contradiction 作为一等对象意味着企业需接受\"业务语料矛盾是常态\"并建治理流程(指定 owner+why_not_resolved)，而非期望 LLM 自动裁决。这与 Yannick 的\"推断定义无人批准无人审计=机器速度下带引用的大规模错误\"形成最强共振——两者共同指向\"知识必须人批准+可追溯+可审计\"。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/designing-a-persistent-knowledge-layer-that-refuses-to-guess/",
+            "title": "Designing a Persistent Knowledge Layer That Refuses to Guess"
+          }
+        ],
+        "diagram": {
+          "title": "TDS 持久知识层三层架构+6 种失败模式+写入治理",
+          "flow": [
+            {
+              "label": "原始源",
+              "sub": "业务文档/API schema",
+              "type": "external"
+            },
+            {
+              "label": "Evidence 层",
+              "sub": "检索索引 召回/精确措辞/引用",
+              "type": "database"
+            },
+            {
+              "label": "Knowledge 层",
+              "sub": "维护的结构化领域模型 累积理解",
+              "type": "backend"
+            },
+            {
+              "label": "Decision 对象",
+              "sub": "规则+范围+生效日+owner+rationale 指针",
+              "type": "backend"
+            },
+            {
+              "label": "Contradiction 对象",
+              "sub": "两陈述逐字+状态+why_not_resolved",
+              "type": "security"
+            },
+            {
+              "label": "Orchestrator 层",
+              "sub": "路由+风险+时间范围",
+              "type": "backend"
+            },
+            {
+              "label": "时间检查",
+              "sub": "检索前过滤(否则消耗 top-k)",
+              "type": "backend"
+            },
+            {
+              "label": "矛盾检查门",
+              "sub": "出口门 topic contested 则停",
+              "type": "security"
+            },
+            {
+              "label": "写入治理",
+              "sub": "patch→验证→人批准+provenance 链+staleness",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "三层分工",
+              "text": "Evidence 召回精确措辞/Knowledge 累积连续性关系综合/Orchestrator 路由风险时间范围——各优化不同事"
+            },
+            {
+              "label": "Contradiction 一等对象",
+              "text": "真实语料矛盾是常态非边缘，检索会流畅自信悄悄选边(选最近≠适用)，知识层检测冲突拒绝裁决"
+            },
+            {
+              "label": "写入风险等级",
+              "text": "错知识页影响所有后续答案无人察觉——模型只提 patch，provenance 缺链则删，staleness 必须跟踪"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "Yannick Misteli《语义层不再是层》：升级为语义控制平面+5 大关切+2 类契约防厂商锁死",
+      "date": "2026-08-04",
+      "source": "Data Engineering Weekly #282 / y4nnick.substack.com",
+      "link": "https://y4nnick.substack.com/p/the-semantic-layer-is-not-a-layer",
+      "summary": "文章论点：过去十年让数据开放(开放表格式)，现在需让意义也开放。语义层正从\"仓库与仪表盘间的薄抽象\"升级为\"语义控制平面\"——连接业务意义/可执行计算/所有权/策略/上下文/性能/交付的地方。5 大关切：①业务含义(定义/实体/维度/指标/术语/所有权)②执行(join/聚合逻辑/查询编译/联邦/引擎选择)③治理(访问/认证/血缘/策略/问责/变更控制)④知识上下文(解释模型为何如此的决策/示例/关系)⑤性能(缓存/预聚合/物化/新鲜度/成本感知路由，性能不是独立层而是意义+治理+执行交汇处反复出现)。各厂商各做部分加手势其余=陷阱：不是单一控制平面而是多个局部权威各自只在自己工具内有效。关键转变：消费者从人变 agent——人能修歧义数字(问人)，agent 不能。agent 组合：查询喂决策喂下个查询，过时/违规/上季度定义的数字不以一个错误单元格浮现而是作为自信推荐传播。\"能干模型自己读 dbt 项目+Slack+表格推断定义\"的诱惑——但推断定义无人批准无人审计，多数正确不是治理模型，机器速度下是带引用的大规模错误。语义系统战略价值=把隐形谈判转为显式治理资产(业务定义+owner+可执行计算+有效维度+join 路径+策略+血缘+生命周期+使用边界上下文)=更好的组织记忆而非更好 YAML。两份契约：语义契约(业务对象级，Apache Ossie 操作)+执行契约(计算不变量：时间戳/小数精度/舍入/溢出/NULL/distinct 精确或近似，GoogleSQL/ZetaSQL 开源 Apache 2.0 已证明可声明可测合规，Substrait 跨厂商但仅交换关系计划不够)。问题不是哪个产品拥有全部 5 关切，而是产品间接口是否开放——否则\"便携数据+不可移动含义\"。",
+      "insight": "技术视角：这是本周最具战略视野的博客，为用户\"语义层 vs 企业知识图谱\"双路线提供了精确的架构定义与厂商锁死警示。\"消费者从人变 agent 改变接口必须携带的信息\"是核心洞察——人能修歧义，agent 不能，且 agent 组合放大错误(过时定义作为自信推荐传播)。这与昨日 CSE 的\"约束崩溃\"和 GPM 的\"记忆治理\"共振：agent 组合链=约束叠加链，一条过时定义在链中乘法放大。\"推断定义无人批准无人审计=机器速度下带引用的大规模错误\"是对\"靠强模型读 dbt+Slack 自己推断\"路径的最强反驳——这与 TDS 持久知识层的\"写入知识是不同风险等级\"完全共振：推断的定义就是无人批准的 patch。两份契约的区分(语义契约=Apache Ossie/执行契约=GoogleSQL+Substrait)为用户的语义层选型提供了精确维度：Apache Ossie 管业务对象语义(什么算 revenue)，GoogleSQL 管执行不变量(时间戳/精度/NULL)，两者都须开放否则\"便携数据+不可移动含义\"。5 大关切中\"知识上下文\"被列为独立关切——这正是知识图谱路线的价值所在(存储解释模型为何如此的决策/示例/关系)，与 DEW 五分类的\"context graph 决策层\"呼应。",
+      "detail": {
+        "why": "首次把语义层的厂商锁死风险系统化为\"5 大关切+2 类契约\"框架。\"消费者从人变 agent\"的转变论证了为何语义层正在被快速重建——不是更好 YAML，而是 agent 无法修歧义所以接口必须携带完整治理信息。\"便携数据+不可移动含义\"的警示对用户避免厂商锁死有直接战略价值。",
+        "mechanism": "语义控制平面 5 大关切：业务含义/执行/治理/知识上下文/性能(性能反复出现在缓存键/路由/物化中非独立层)。消费者转变：人→agent(人能问人修歧义，agent 推断且快，且 agent 组合放大错误)。两份契约：①语义契约(业务对象级：哪些交易算收入/退款归属/货币转换/有效维度/报告期日期——Apache Ossie 操作此层)②执行契约(计算不变量：时间戳强制/小数精度/舍入/溢出/NULL 处理/distinct 精确或近似——GoogleSQL/ZetaSQL 开源 Apache 2.0 已证明可声明+可测合规，Substrait 跨厂商交换关系计划但仅关系计划不够)。可移植计划≠可移植答案，两契约都须成立两引擎才被信任同意。",
+        "deep": "\"推断定义无人批准无人审计=机器速度下带引用的大规模错误\"是对\"靠强模型自己推断业务定义\"路径的最强反驳。迁移到用户宽表 API：LLM 读 API 文档+字段名+样本数据推断\"customer_status=active 意味着最近 90 天有订单\"——这个推断可能多数对，但(a)无人批准所以无审计(b)agent 组合后过时定义作为自信推荐传播(c)机器速度下带引用的大规模错误。这与 TDS 的\"模型只提 patch 不直接写\"共振——推断的定义必须经过人批准+provenance 链才成为知识。两份契约的区分对用户选型：Apache Ossie(语义契约，厂商中立业务对象规范)+Cube/dbt MetricFlow(语义层实现)+GoogleSQL/Substrait(执行契约，引擎中立计算规范)——三者分层而非竞争。\"知识上下文\"作为独立关切印证知识图谱路线的必要性。",
+        "apply": "①语义层选型按 5 大关切评估各产品覆盖度+接口开放性，避免\"多个局部权威各自只在自己工具内有效\"。②业务定义必须人批准+owner+可审计，禁止 LLM 推断定义直接用——推断的作为 patch 经人批准。③区分语义契约(用 Apache Ossie 厂商中立)与执行契约(用 GoogleSQL/Substrait 引擎中立)，两者都开放才防\"便携数据+不可移动含义\"。④agent 组合链中的定义必须检查生命周期状态(是否 current)+使用边界上下文(何时该用何时不该用)。⑤把\"知识上下文\"作为独立关切建设——存储解释模型为何如此的决策/示例/关系(知识图谱路线)。",
+        "caveats": "文章为架构观点文章非实证研究，5 大关切框架的完整性需实践验证。GoogleSQL 虽开源 Apache 2.0 但不跨厂商边界(BigQuery/Spanner/F1 内部)，Substrait 跨厂商但仅关系计划——执行契约的完全跨厂商方案尚不存在。文章未量化\"推断定义错误率\"，\"多数正确不是治理模型\"是定性论断。厂商锁死风险的具体量化(迁移成本)未提供。",
+        "business": "Yannick 的\"语义控制平面 5 大关切+2 类契约\"为企业\"语义层路线\"投资提供最战略性的选型框架：不要选\"一个产品拥有全部 5 关切\"(不存在)，而要选\"产品间接口开放\"。\"消费者从人变 agent\"是语义层正在被快速重建的根本原因——agent 无法修歧义所以接口必须携带完整治理信息，这意味着语义层建设不是可选优化而是 agent 时代的必需基础设施。\"便携数据+不可移动含义\"警示企业：如果语义层选了封闭厂商格式，数据虽在 Iceberg 开放但业务意义锁死在该厂商——这与 Apache Ossie 的厂商中立使命完全呼应。推断定义的风险(无人批准无人审计)是\"靠强模型自动理解业务\"路线的最强反驳。",
+        "sources": [
+          {
+            "url": "https://y4nnick.substack.com/p/the-semantic-layer-is-not-a-layer",
+            "title": "The Semantic Layer Is Not a Layer Anymore"
+          },
+          {
+            "url": "https://www.dataengineeringweekly.com/p/data-engineering-weekly-282",
+            "title": "Data Engineering Weekly #282"
+          }
+        ],
+        "diagram": {
+          "title": "语义控制平面 5 大关切+2 类契约——防便携数据+不可移动含义",
+          "flow": [
+            {
+              "label": "业务问题",
+              "sub": "agent 消费者(不能修歧义)",
+              "type": "frontend"
+            },
+            {
+              "label": "语义控制平面",
+              "sub": "连接业务意义/计算/治理/上下文/性能",
+              "type": "backend"
+            },
+            {
+              "label": "1 业务含义",
+              "sub": "定义/实体/维度/指标/术语/所有权",
+              "type": "backend"
+            },
+            {
+              "label": "2 执行",
+              "sub": "join/聚合/编译/联邦/引擎选择",
+              "type": "backend"
+            },
+            {
+              "label": "3 治理",
+              "sub": "访问/认证/血缘/策略/变更控制",
+              "type": "security"
+            },
+            {
+              "label": "4 知识上下文",
+              "sub": "决策/示例/关系(知识图谱)",
+              "type": "backend"
+            },
+            {
+              "label": "5 性能",
+              "sub": "缓存/预聚合/物化/成本路由(非独立层)",
+              "type": "cloud"
+            },
+            {
+              "label": "语义契约",
+              "sub": "Apache Ossie 业务对象级",
+              "type": "external"
+            },
+            {
+              "label": "执行契约",
+              "sub": "GoogleSQL+Substrait 计算不变量",
+              "type": "external"
+            },
+            {
+              "label": "可移植答案",
+              "sub": "两契约都成立才信任",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "消费者转变",
+              "text": "人→agent：人能问人修歧义，agent 推断且快且组合放大错误——过时定义作为自信推荐传播"
+            },
+            {
+              "label": "推断定义风险",
+              "text": "强模型读 dbt+Slack 推断定义=无人批准无人审计，机器速度下带引用的大规模错误——须人批准 patch+provenance"
+            },
+            {
+              "label": "两契约防锁死",
+              "text": "语义契约(Apache Ossie)+执行契约(GoogleSQL+Substrait)都须开放，否则便携数据+不可移动含义"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "DEW #282 荐文：从非结构化混乱到可查询知识——LLM 探索先于本体定义的演化式知识图谱",
+      "date": "2026-08-10",
+      "source": "Data Engineering Weekly #282 (Dhilip Kumar 荐文)",
+      "link": "https://www.dataengineeringweekly.com/p/data-engineering-weekly-282",
+      "summary": "Data Engineering Weekly #282 期刊推荐 Dhilip Kumar 文章《从非结构化混乱到可查询知识：为 Agentic 应用设计本体支持的知识图谱》。核心论点：传统数据工程要求先定义 schema(ontology)再抽取数据，但这不适用于陌生领域。作者论证应改用 LLM 探索非结构化数据，先抽取候选实体和关系，然后由人审阅这些候选创建种子本体，让 schema 从实际数据有机演化而非预先硬定义。DEW #282 同期还推荐：Yannick Misteli《语义层不再是层》(已单独收录)、Netflix 实时分布式图 Part 3(gRPC 执行 API+广度优先遍历+异步优先并发+下推流过滤+波动感知缓存)、Oracle 收敛数据库定义(列存+文本搜索+向量索引=收敛数据库 vs 多模型)、OLX 因果推断(聚合指标误导+倾向得分匹配 PSM)。",
+      "insight": "技术视角：Dhilip Kumar 的\"LLM 探索先于本体定义\"为用户\"业务知识库构建\"方向提供了关键的启动顺序洞察——不是先建本体再灌数据，而是先用 LLM 从非结构化业务文档(API 文档/需求文档/会议纪要)抽取候选实体关系，人审后建种子本体，让 schema 演化。这与 TDS 持久知识层的\"模型提 patch 人审\"和 Yannick 的\"推断定义须人批准\"完全一致：LLM 做探索/提议，人做审阅/批准。迁移到用户宽表 API 场景：上百字段宽表 API 的字段语义不必预先手动标注全部，而是用 LLM 从 API 响应样本+文档抽取候选字段语义(如\"customer_status 枚举值 active/inactive/churned 关联到订单频次\")，人审后建种子字段语义本体，随业务演化增补。这与 AnnoIndex(8/15 已收录)的\"SchemaLoop 自动建分层 annotation schema+渐进式 extraction\"和 Rosetta(8/8 已收录)的\"值反推列语义\"形成共振：三篇共同指向\"LLM 辅助+人审+演化式\"字段语义标注范式，而非纯手动或纯自动。Netflix 分布式图的 gRPC 执行 API+下推过滤为大规模知识图谱的查询执行提供工程参考。",
+      "detail": {
+        "why": "传统\"先定义 schema 再灌数据\"在陌生业务域失效——不知道有什么实体和关系就无法预先定义本体。LLM 探索先于本体定义是\"从数据到 schema\"的逆向方法，让本体从实际数据涌现而非人为硬编码。这解决了用户\"上百字段宽表 API 字段语义未知\"的冷启动问题。",
+        "mechanism": "LLM 探索非结构化数据(API 文档/响应样本)抽取候选实体+关系→人审阅候选创建种子本体→本体随业务演化增补。区别于传统\"先定义 ontology 再 ETL\"。Netflix 分布式图的查询执行：广度优先遍历+异步优先并发模型+下推流过滤+波动感知缓存——让远程分布式图像内存数据结构。",
+        "deep": "\"LLM 探索先于本体定义\"与 TDS 的\"模型提 patch 人审\"+Yannick 的\"推断须人批准\"三角共振：LLM 做提议(探索/patch/推断)，人做批准(审阅/验证/批准)。这区分了\"LLM 自动建本体\"(危险，无人审=推断定义无人批准)与\"LLM 辅助建本体\"(安全，人审种子+演化)。迁移到宽表 API：LLM 从 API 响应样本抽取\"字段 X 枚举值 a/b/c 关联到业务概念 Y\"作为候选 patch，人审后入种子字段语义本体，随业务规则变更演化。Netflix 的下推流过滤启示大规模业务知识图谱查询应在图遍历早期下推过滤减少传输量。",
+        "apply": "①宽表 API 字段语义冷启动用 LLM 探索：从 API 响应样本+文档抽取候选字段语义关系，人审建种子本体。②本体随业务演化增补，不追求一次性完美定义——种子本体+增量补丁。③区分\"LLM 自动建本体\"(危险)与\"LLM 辅助建本体\"(安全)，LLM 提议人批准。④大规模知识图谱查询参考 Netflix gRPC+下推流过滤+波动感知缓存。⑤用 Oracle 收敛数据库概念(列存+文本+向量)评估 lakehouse 是否需支持多模态检索。",
+        "caveats": "Dhilip Kumar 原文(Medium)因 Cloudflare 拦截未能抓取全文，本条基于 DEW #282 摘要整理(信息待核实完整细节)。\"LLM 探索先于本体\"的适用性取决于业务域陌生度——已知域仍可先定义本体。人审成本在大量候选实体关系场景可能成为瓶颈。Netflix 分布式图为图数据库内部查询执行，业务 API 场景的\"分布式图\"定义需迁移。",
+        "business": "Dhilip Kumar 的\"LLM 探索先于本体\"为企业\"业务知识库构建\"冷启动提供了务实路径——不必等业务专家预先定义完整本体再启动，而是用 LLM 从现有业务文档快速抽取候选+人审建种子+演化。这大幅降低业务知识库启动门槛与成本。与 TDS patch 治理+Yannick 推断须人批准共同指向\"LLM 辅助而非替代人审\"范式——企业应投资 LLM 探索工具+人审工作流，而非期望 LLM 自动建可信本体。Netflix 分布式图工程为大规模知识图谱的查询性能提供参考。",
+        "sources": [
+          {
+            "url": "https://www.dataengineeringweekly.com/p/data-engineering-weekly-282",
+            "title": "Data Engineering Weekly #282 (Dhilip Kumar 荐文)"
+          }
+        ],
+        "diagram": {
+          "title": "LLM 探索先于本体定义——演化式知识图谱构建",
+          "flow": [
+            {
+              "label": "非结构化业务数据",
+              "sub": "API 文档/响应样本/需求",
+              "type": "external"
+            },
+            {
+              "label": "LLM 探索抽取",
+              "sub": "候选实体+关系",
+              "type": "backend"
+            },
+            {
+              "label": "人审阅",
+              "sub": "创建种子本体",
+              "type": "security"
+            },
+            {
+              "label": "演化增补",
+              "sub": "业务规则变更→patch",
+              "type": "backend"
+            },
+            {
+              "label": "可查询知识图谱",
+              "sub": "schema 从数据涌现",
+              "type": "database"
+            },
+            {
+              "label": "vs 传统先定义后灌",
+              "sub": "陌生域无法预定义",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "启动顺序",
+              "text": "LLM 探索→人审种子→演化增补，而非先定义本体再灌数据——解决陌生域冷启动"
+            },
+            {
+              "label": "LLM 辅助非替代",
+              "text": "与 TDS patch 治理+Yannick 推断须人批准共振：LLM 提议人批准，非自动建本体"
+            },
+            {
+              "label": "宽表 API 冷启动",
+              "text": "上百字段语义不必手动全标，LLM 从样本抽取候选+人审建种子+随业务演化"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "Cube v1.7.20 今日发布：分支 CLI+LIKE 转义+5 安全 advisory 修复——语义层工业迭代",
+      "date": "2026-08-16",
+      "source": "GitHub (cube-js/cube)",
+      "link": "https://github.com/cube-js/cube/releases/tag/v1.7.20",
+      "summary": "Cube 语义层 v1.7.20 于 2026-08-16(今日)发布。新增：①cube-cli data-model enable-branch / disable-branch 命令(da51199)——支持语义层模型的分支管理，类比 Git 分支工作流用于语义层定义的并行开发/审阅/合并；②schema-compiler 在 native planner 上转义 LIKE 通配符(f050c08, #11569)——防止用户输入的 LIKE 模式中的 % _ 被解释为通配符导致意外匹配或注入。5 个安全 advisory 修复：①cubestore bump lru 0.18.2 清两个 use-after-free(#11531)②cubestore drop async-std 清 crossbeam 安全公告(#11546)③deps bump uuid 8.3.2→11.1.1(#11534)④deps float handlebars/form-data/tar 清两个 critical(#11549)⑤文档化部署级 Chat API 端点+每图 PNG/PDF/CSV 导出+拖放仪表盘部件。Cube 是开源语义层(20,575+ stars)，topics 含 agentic-analytics/agents/ai，为 AI/BI/嵌入式分析提供语义运行时。",
+      "insight": "技术视角：Cube v1.7.20 的两个新功能直接服务于用户\"业务语义层\"方向。data-model enable-branch/disable-branch 是语义层模型治理的重要进展——业务语义定义(指标/维度/业务规则)可像代码一样分支管理，支持多人并行修改语义层定义+审阅后合并，这与 Yannick 的\"变更控制\"关切和 TDS 的\"patch 生命周期\"完全呼应：语义层定义变更需分支审阅而非直接改 main。LIKE 通配符转义是安全加固——防止宽表 API 查询中用户输入的 LIKE 模式意外匹配或注入，这对用户\"业务系统精确查询\"方向的查询安全直接相关。5 个安全 advisory 修复(lru use-after-free/async-std crossbeam/uuid/handlebars/tar)印证昨日判断：语义层是承重墙，依赖链漏洞传导所有查询——Cube 持续加固供应链安全。这与 dbt-core v2.0-beta 的\"provably redundant test skipping\"和 SBproxy 的\"决策记录契约\"形成治理层共振：语义层+数据编排+AI 网关三栈都在强化治理与安全。",
+      "detail": {
+        "why": "data-model 分支 CLI 是语义层从\"BI 工具\"向\"agent 数据技能平台\"演进的治理基建——业务语义定义需分支审阅合并工作流。LIKE 转义+5 安全修复是查询安全与供应链安全的持续加固。",
+        "mechanism": "data-model enable-branch/disable-branch：cube-cli 命令支持语义层模型定义的分支创建/禁用，类比 Git 分支用于并行开发/审阅/合并。LIKE 通配符转义：native planner 在生成 SQL LIKE 谓词时转义用户输入中的 % _ 通配字符，防止意外匹配或注入。安全修复：lru 0.18.2 修两个 use-after-free(缓存淘汰竞态)、async-std 移除清 crossbeam 通道安全公告、uuid 大版本升级、handlebars/form-data/tar 清两个 critical 漏洞。",
+        "deep": "分支 CLI 对语义层治理的意义：业务语义定义(如\"Active Customer 的判定逻辑变更\")不再直接改生产，而是开分支→修改→审阅→合并，这与 TDS 的\"模型提 patch 人批准\"和 Yannick 的\"变更控制\"关切完全一致——语义层定义变更是有风险等级的治理动作。LIKE 转义对宽表 API 场景：用户通过语义层查业务数据时，过滤条件的 LIKE 模式需转义通配符防意外匹配。5 安全修复中 lru use-after-free 最关键——缓存淘汰竞态可导致查询返回错误缓存数据，这在语义层(所有查询经缓存)是承重墙漏洞。",
+        "apply": "①语义层定义变更用分支工作流(enable-branch→修改→审阅→disable-branch/merge)，禁止直接改生产 main。②LIKE 查询输入做通配符转义防注入。③持续跟踪依赖安全 advisory(lru/async-std/uuid/handlebars 等)，语义层缓存依赖漏洞传导所有查询。④用 Cube 的 agentic-analytics topics 评估其作为 agent 数据技能平台的成熟度。⑤每图导出 PNG/PDF/CSV + 拖放仪表盘用于 agent 生成报告的输出层。",
+        "caveats": "分支 CLI 的合并冲突处理在大型语义层模型(上百指标+维度)场景需评估。LIKE 转义可能影响合法通配符查询(需提供转义 opt-in)。lru use-after-free 已修复但需升级到 v1.7.20 才生效——旧版本暴露风险。Cube 虽 topics 含 ai 但作为 agent 数据技能平台的实际工具集成度需进一步验证。",
+        "business": "Cube v1.7.20 的分支 CLI 是语义层治理成熟度信号——企业可用分支工作流管理业务语义定义变更，降低误改生产风险。LIKE 转义+5 安全修复印证语义层作为查询承重墙需持续安全投入。这与 Yannick 的\"变更控制\"关切和 TDS 的\"patch 生命周期\"形成治理层共鸣：语义层建设不仅是定义指标，更是建变更审阅+安全加固的治理基建。企业选语义层时应评估其分支管理+安全响应能力，而非仅看功能列表。",
+        "sources": [
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.7.20",
+            "title": "Cube v1.7.20 Release"
+          }
+        ],
+        "diagram": {
+          "title": "Cube v1.7.20 分支 CLI+LIKE 转义+安全加固——语义层治理成熟",
+          "flow": [
+            {
+              "label": "语义层定义",
+              "sub": "指标/维度/业务规则",
+              "type": "backend"
+            },
+            {
+              "label": "enable-branch",
+              "sub": "cube-cli 分支创建",
+              "type": "backend"
+            },
+            {
+              "label": "并行修改+审阅",
+              "sub": "类比 Git 分支工作流",
+              "type": "security"
+            },
+            {
+              "label": "disable-branch/merge",
+              "sub": "审阅后合并 main",
+              "type": "security"
+            },
+            {
+              "label": "LIKE 查询",
+              "sub": "native planner 转义通配符",
+              "type": "database"
+            },
+            {
+              "label": "安全加固",
+              "sub": "lru/async-std/uuid/handlebars/tar",
+              "type": "security"
+            },
+            {
+              "label": "agent 数据技能",
+              "sub": "agentic-analytics topics",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "分支治理",
+              "text": "语义层定义变更用分支审阅合并而非直接改 main——与 TDS patch 生命周期+Yannick 变更控制共鸣"
+            },
+            {
+              "label": "LIKE 安全",
+              "text": "native planner 转义 LIKE 通配符防用户输入意外匹配或注入——宽表 API 查询安全"
+            },
+            {
+              "label": "供应链加固",
+              "text": "5 安全 advisory 修复(lru use-after-free 最关键)，语义层缓存依赖漏洞传导所有查询"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "SBproxy 8/16 决策记录契约+观测事件+OpenMetadata MCP 知识胶囊——AI 网关与数据目录治理同日成型",
+      "date": "2026-08-16",
+      "source": "GitHub (soapbucket/sbproxy + open-metadata/OpenMetadata)",
+      "link": "https://github.com/soapbucket/sbproxy",
+      "summary": "SBproxy(soapbucket/sbproxy，AI 网关统一 API+MCP+agent 流量治理)8/16 密集迭代：①docs(observe) 发布决策记录契约(decision record contract)生成+门控(WOR-24)——AI 网关的每个治理决策(keys/budgets/guardrails)有可审计的决策记录；②feat(observe) 接线 4 个决策事件+退休 2 个从未有 gap 的；③feat(observe) auth 决策事件通过单一 seam 接线(WOR-2446)；④feat(observe) 策略决策汇合到共享审计形状(WOR-2448)；⑤feat(mcp) 双修订并行服务(2026-07-28 修订 beside 冻结 2025-06-18)；⑥cert 七字段 Apple 记录+Metal probe 编译+messengers 诚实保持；⑦fix 关闭 4 个 extension-surface epic 缺陷。OpenMetadata 2.0.0-rc2(8/13 发布)8/16 修复：fix(mcp) 让公司上下文搜索找到共享知识 pills(#31527)+fix(mcp) 创建工具设置自定义属性(#31526)+Ontology Explorer RDF 知识图谱+ContextCenter 版本化上下文+AI Mode+Data Marketplace+Glossary 治理迁移——从数据目录向 AI 原生平台跃迁。",
+      "insight": "技术视角：SBproxy 的决策记录契约与 OpenMetadata 的 MCP 知识胶囊在 8/16 同日成型，共同指向\"AI 网关治理+数据目录治理\"两层的治理契约化趋势。SBproxy 的\"决策记录契约\"把网关的每个治理决策(允许哪个 key/预算多少/guardrail 规则)记录为可审计契约——这与昨日 GPM 的\"bitemporal 状态转移+fail-closed\"和 CSE 的\"约束建模\"共振：AI 网关的治理决策本身需约束建模+可追溯。OpenMetadata 的\"共享知识 pills\"把数据目录的知识(术语定义/血缘/owner)暴露为 MCP 工具可搜索的胶囊——这正是 Yannick 的\"知识上下文关切\"和 TDS 的\"Knowledge 层累积\"在数据目录层的实现：业务知识以小胶囊形式通过 MCP 暴露给 agent，agent 调业务 API 时可先搜知识 pills 理解上下文。两者同日成型印证\"AI for Business 治理栈\"从\"约束建模(CSE)+记忆治理(GPM)+流量管控(SBproxy)+语义暴露(dbt MCP)\"四层(8/16 已收录)向\"决策契约化(SBproxy)+知识胶囊化(OpenMetadata MCP)\"深化。",
+      "detail": {
+        "why": "SBproxy 决策记录契约把 AI 网关治理从\"配置\"升级为\"可审计契约\"——每个决策有生成+门控记录。OpenMetadata MCP 知识胶囊把数据目录从\"人查\"升级为\"agent 搜\"——业务知识通过 MCP 工具可检索。两者同日成型标志治理契约化+知识胶囊化趋势。",
+        "mechanism": "SBproxy 决策记录契约：docs(observe) 发布 decision record contract 生成+gated(WOR-24)，4 个决策事件接线+2 个退休(从未有 gap)，auth 决策事件通过单一 seam，策略决策汇合共享审计形状(WOR-2448)。MCP 双修订并行(2026-07-28 beside 冻结 2025-06-18)。OpenMetadata：fix(mcp) 公司上下文搜索找到共享 knowledge pills(#31527)+创建工具设置自定义属性(#31526)+Ontology Explorer RDF 知识图谱+ContextCenter 版本化上下文+AI Mode+Data Marketplace+Glossary 治理迁移。",
+        "deep": "SBproxy 决策记录契约的核心：AI 网关治理决策(keys/budgets/guardrails)不再是无记录的配置，而是有生成+门控的可审计契约——这把 Yannick 的\"治理关切\"和 TDS 的\"patch 生命周期\"从语义层/知识层扩展到流量管控层。迁移到用户场景：agent 调业务 API 的每个治理决策(允许调哪个 API/预算多少 token/guardrail 规则)应记录为可审计契约，出错时可追溯。OpenMetadata 知识胶囊：数据目录的术语定义/血缘/owner 以 knowledge pills 形式通过 MCP 暴露给 agent——agent 调宽表 API 前先搜 pills 理解字段语义+业务规则上下文。这与 TDS 的 Knowledge 层(累积理解)和 DEW 五分类的 context graph(决策切片)共振：业务知识不只在向量库，也在数据目录的 MCP 胶囊中。",
+        "apply": "①agent 调业务 API 的网关治理决策记录为可审计契约(决策事件+门控+共享审计形状)。②数据目录的业务知识(术语/血缘/owner)通过 MCP 暴露为可搜索胶囊，agent 调 API 前先搜 pills 理解上下文。③MCP 修订支持双版本并行(冻结旧版+新版)，平滑迁移。④OpenMetadata Ontology Explorer RDF 知识图谱作为业务实体关系的存储。⑤ContextCenter 版本化上下文用于 agent 查询的历史可追溯。",
+        "caveats": "SBproxy 为 49 星 Rust 项目(较小社区)，生产采用需评估成熟度。决策记录契约的存储与查询开销在高频决策场景需评估。OpenMetadata 2.0.0-rc2 为候选发布版非正式版，生产采用需等正式版。知识 pills 的粒度与搜索精度在大量术语场景需调优。MCP 双修订并行的兼容性边界需明确。",
+        "business": "SBproxy 决策记录契约+OpenMetadata MCP 知识胶囊同日成型标志\"AI for Business 治理栈\"深化：AI 网关治理决策从配置升级为可审计契约，数据目录知识从人查升级为 agent 搜。企业建业务 Agent 时应配套：①AI 网关层记录每个 API 调用治理决策为可审计契约(SBproxy 模式)②数据目录层把业务知识暴露为 MCP 可搜索胶囊(OpenMetadata 模式)——agent 调 API 前先搜知识胶囊理解字段语义+业务规则上下文。这降低 agent 调错 API/误解字段语义的风险，且出错可追溯。",
+        "sources": [
+          {
+            "url": "https://github.com/soapbucket/sbproxy",
+            "title": "SBproxy AI Gateway"
+          },
+          {
+            "url": "https://github.com/open-metadata/OpenMetadata",
+            "title": "OpenMetadata 2.0.0-rc2"
+          }
+        ],
+        "diagram": {
+          "title": "SBproxy 决策契约+OpenMetadata 知识胶囊——AI 网关与数据目录治理同日成型",
+          "flow": [
+            {
+              "label": "agent 调业务 API",
+              "sub": "流量入口",
+              "type": "frontend"
+            },
+            {
+              "label": "SBproxy AI 网关",
+              "sub": "keys/budgets/guardrails",
+              "type": "security"
+            },
+            {
+              "label": "决策记录契约",
+              "sub": "生成+门控(WOR-24) 可审计",
+              "type": "security"
+            },
+            {
+              "label": "4 决策事件",
+              "sub": "auth/策略 汇合共享审计形状",
+              "type": "backend"
+            },
+            {
+              "label": "MCP 双修订",
+              "sub": "2026-07-28 beside 冻结 2025-06-18",
+              "type": "backend"
+            },
+            {
+              "label": "OpenMetadata 数据目录",
+              "sub": "Ontology Explorer RDF 知识图谱",
+              "type": "database"
+            },
+            {
+              "label": "知识 pills(MCP)",
+              "sub": "公司上下文搜索可找到",
+              "type": "backend"
+            },
+            {
+              "label": "agent 搜 pills 理解上下文",
+              "sub": "字段语义+业务规则",
+              "type": "backend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "决策契约化",
+              "text": "SBproxy 网关治理决策从配置升级为可审计契约——与 GPM bitemporal+CSE 约束建模共振"
+            },
+            {
+              "label": "知识胶囊化",
+              "text": "OpenMetadata 业务知识通过 MCP 暴露为可搜索 pills——与 TDS Knowledge 层+DEW context graph 共振"
+            },
+            {
+              "label": "同日成型",
+              "text": "8/16 两层治理同日深化：AI 网关决策契约化+数据目录知识胶囊化，治理栈从四层向契约+胶囊深化"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "product",
+      "title": "战略研判：语义控制平面+持久知识层+知识图谱证据持久性——AI for Business 可信三支柱共振",
+      "date": "2026-08-17",
+      "source": "综合研判",
+      "link": "https://hhao9817.github.io/agent-daily/",
+      "summary": "今日 8 条情报串成\"AI for Business 可信三支柱\"完整链路。Yannick 的\"语义控制平面 5 大关切+2 类契约\"管意义开放(防厂商锁死)，TDS 的\"三层架构+6 种失败模式+写入治理\"管理解累积(防一次性检索)，GraphRAG CTI 的 100% vs 29% 触发率管证据持久(防漂移失效)，三者共振指向\"AI for Business 的可信不是靠更强模型，而是靠分层语义基建+持久知识累积+开放契约防锁死\"。Yannick 的\"消费者从人变 agent\"+\"推断定义无人批准=机器速度下带引用的大规模错误\"与 TDS 的\"写入知识是不同风险等级+模型只提 patch\"和 CSE 的\"5-6 约束崩溃\"三角共振：agent 组合链=约束叠加链，推断的定义在链中乘法放大。GraphRAG CTI 的 Pyramid of Pain 迁移为\"业务知识图谱存储业务概念关系(持久)而非字段名相似(易变)\"。DocNavRAG 的有状态导航+Triple-Robustness 的合成器选择性引用为知识图谱路线提供 context 压缩与精度救回的工程方案。Cube v1.7.20 分支 CLI+SBproxy 决策契约+OpenMetadata 知识胶囊三栈同日强化治理基建。",
+      "insight": "技术视角：本周战略研判把用户长期纠结的\"语义层 vs 企业知识图谱\"双路线升级为\"语义控制平面(意义开放)+持久知识层(理解累积)+知识图谱证据持久性(防漂移)\"三支柱。Yannick 的 5 大关切中\"知识上下文\"被列为独立关切——这正是知识图谱路线的价值(存储解释模型为何如此的决策/示例/关系)，与 DEW 五分类的 context graph 决策层呼应。两份契约的区分(语义契约=Apache Ossie/执行契约=GoogleSQL+Substrait)为双路线提供精确分层：语义层管可执行计算(语义契约)，知识图谱管持久证据(知识上下文关切)，两者分层非二选一。GraphRAG CTI 的 100% vs 29% 为\"知识图谱管持久证据\"提供最硬量化，TDS 的 6 种失败模式为\"语义层管可执行计算但须配合持久知识层\"提供最完整实战蓝图。Cube 分支 CLI+SBproxy 决策契约+OpenMetadata 知识胶囊三栈同日成型把治理从\"概念\"落到\"工程契约\"。",
+      "detail": {
+        "why": "三支柱共振不是偶然——Yannick(意义开放)+TDS(理解累积)+GraphRAG CTI(证据持久)分别管 AI for Business 可信的三个正交维度，缺一则崩。意义不开放→厂商锁死；理解不累积→每次从零检索重复错；证据不持久→字段漂移后失效。三者共同反驳\"靠更强模型自动懂业务\"路径。",
+        "mechanism": "三支柱：①语义控制平面(Yannick 5 大关切+2 类契约)管意义开放——语义契约(Apache Ossie 业务对象)+执行契约(GoogleSQL+Substrait 计算不变量)都须开放防\"便携数据+不可移动含义\"。②持久知识层(TDS 三层架构+6 失败模式+写入治理)管理解累积——Evidence 召回/Knowledge 累积/Orchestrator 路由，写入须 patch 治理+provenance 链+staleness 跟踪。③知识图谱证据持久性(GraphRAG CTI 100% vs 29%)管防漂移——存储业务概念关系(持久)而非字段名相似(易变)。",
+        "deep": "\"消费者从人变 agent\"是三支柱共振的根因——人能问人修歧义，agent 不能且组合放大错误。这解释了为何语义层正被快速重建(须携带完整治理信息)、为何需持久知识层(累积理解防重复错)、为何知识图谱路线价值凸显(持久证据防漂移)。\"推断定义无人批准=机器速度下带引用的大规模错误\"与 TDS\"写入知识是不同风险等级\"+CSE\"5-6 约束崩溃\"三角共振：agent 组合链=约束叠加链，推断定义在链中乘法放大。GraphRAG CTI 的 Pyramid of Pain 迁移：业务知识图谱节点=业务概念(Active Customer/churned/revenue)，边=判定逻辑关系，字段重命名后概念关系仍可追溯(类比 IOC 轮换后 TTP 仍触发)。",
+        "apply": "①语义层选型按 Yannick 5 大关切+2 类契约评估接口开放性，选 Apache Ossie(语义契约)+GoogleSQL/Substrait(执行契约)开放方案。②业务知识库按 TDS 三层架构建：Evidence(向量索引)+Knowledge(知识图谱+术语表+决策记录)+Orchestrator(API 调用编排)，写入实现 patch 治理+provenance+staleness。③知识图谱存业务概念关系(持久)而非字段名相似(易变)，用 GraphRAG CTI 的 Pyramid of Pain 迁移业务概念层级。④按 Triple-Robustness 跳数阈值选路线：短跳(<3)语义层，3+跳知识图谱，知识图谱配合成器选择性引用层。⑤DocNavRAG 有状态导航+locate/navigate/expand/fetch 压缩宽表 API context。⑥治理基建用 Cube 分支 CLI(语义层变更)+SBproxy 决策契约(网关治理)+OpenMetadata 知识胶囊(目录知识 MCP 暴露)。",
+        "caveats": "三支柱是架构研判非实证结论，各支柱的工程实现成本与成熟度需分别评估。Yannick 的执行契约完全跨厂商方案尚不存在(GoogleSQL 不跨厂商+Substrait 仅关系计划)。TDS 的 Azure 实现需迁移到厂商中立栈。GraphRAG CTI 仅 CTI 域案例，业务域持久证据映射需验证。三支柱并行建设的组织投入与人才需求可能超出单一团队容量，需分阶段优先级排序。",
+        "business": "三支柱共振为企业\"AI for 业务\"投资提供最完整的架构蓝图：不是选语义层或知识图谱(伪命题)，而是并行建三支柱——语义控制平面(意义开放防锁死)+持久知识层(理解累积防重复错)+知识图谱(证据持久防漂移)。\"消费者从人变 agent\"是建三支柱的根本动因——agent 无法修歧义且组合放大错误，所以接口必须携带完整治理信息+知识必须累积+证据必须持久。投资优先级：先建持久知识层(解决冷启动与累积)+语义控制平面(解决意义开放)，知识图谱按业务查询跳数特征(3+跳才显优势)增量投入。Cube 分支 CLI+SBproxy 决策契约+OpenMetadata 知识胶囊三栈同日成型提供工程参考实现。",
+        "sources": [
+          {
+            "url": "https://y4nnick.substack.com/p/the-semantic-layer-is-not-a-layer",
+            "title": "The Semantic Layer Is Not a Layer Anymore"
+          },
+          {
+            "url": "https://towardsdatascience.com/designing-a-persistent-knowledge-layer-that-refuses-to-guess/",
+            "title": "Designing a Persistent Knowledge Layer That Refuses to Guess"
+          },
+          {
+            "url": "https://arxiv.org/abs/2608.13050",
+            "title": "Operationalizing Cyber Threat Intelligence with GraphRAG"
+          },
+          {
+            "url": "https://arxiv.org/abs/2608.01565",
+            "title": "DocNavRAG: Document-Structured Graph RAG"
+          },
+          {
+            "url": "https://arxiv.org/abs/2608.00705",
+            "title": "Triple-Robustness Analysis of RAG"
+          },
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.7.20",
+            "title": "Cube v1.7.20"
+          },
+          {
+            "url": "https://github.com/soapbucket/sbproxy",
+            "title": "SBproxy AI Gateway"
+          },
+          {
+            "url": "https://github.com/open-metadata/OpenMetadata",
+            "title": "OpenMetadata 2.0.0-rc2"
+          }
+        ],
+        "diagram": {
+          "title": "AI for Business 可信三支柱——语义控制平面+持久知识层+知识图谱证据持久性",
+          "flow": [
+            {
+              "label": "业务问题",
+              "sub": "agent 消费者(不能修歧义)",
+              "type": "frontend"
+            },
+            {
+              "label": "支柱1 语义控制平面",
+              "sub": "意义开放 5 关切+2 契约",
+              "type": "backend"
+            },
+            {
+              "label": "语义契约",
+              "sub": "Apache Ossie 业务对象级",
+              "type": "external"
+            },
+            {
+              "label": "执行契约",
+              "sub": "GoogleSQL+Substrait 计算不变量",
+              "type": "external"
+            },
+            {
+              "label": "支柱2 持久知识层",
+              "sub": "理解累积 三层架构+6 失败模式",
+              "type": "backend"
+            },
+            {
+              "label": "Evidence",
+              "sub": "向量索引 召回",
+              "type": "database"
+            },
+            {
+              "label": "Knowledge",
+              "sub": "知识图谱+术语表+决策记录",
+              "type": "backend"
+            },
+            {
+              "label": "Orchestrator",
+              "sub": "API 调用编排+路由+矛盾门",
+              "type": "backend"
+            },
+            {
+              "label": "支柱3 知识图谱证据持久",
+              "sub": "防漂移 100% vs 29%",
+              "type": "security"
+            },
+            {
+              "label": "业务概念关系",
+              "sub": "持久 vs 字段名相似易变",
+              "type": "database"
+            },
+            {
+              "label": "治理基建",
+              "sub": "Cube 分支 CLI+SBproxy 决策契约+OpenMetadata 知识胶囊",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "三支柱正交",
+              "text": "意义开放(防锁死)+理解累积(防重复错)+证据持久(防漂移)——缺一则崩"
+            },
+            {
+              "label": "agent 转变根因",
+              "text": "人→agent：不能修歧义且组合放大错误，推断定义=无人批准机器速度下带引用大规模错误"
+            },
+            {
+              "label": "双路线升级三支柱",
+              "text": "语义层 vs 知识图谱(伪命题)→语义控制平面+持久知识层+知识图谱证据持久(三支柱分层)"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
