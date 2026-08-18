@@ -1,0 +1,675 @@
+{
+  "date": "2026-08-19",
+  "banner": "Agent 可信治理栈成型：知识图谱进入 governed bitemporal 时代，reliability 从模型能力升为 path property，GraphRAG 采购基准暴露商业授权盲区，TDS 两篇企业治理博客 + DEW Anthropic 多 agent 协调共振。",
+  "snapshot": {
+    "summary": "今日情报围绕\"agent 可信治理栈\"成型展开：学术端 Quipu 提出 governed bitemporal 知识图谱存储（agent 写入时代的四默认反转），Policy Algebra 把 reliability 从模型能力升级为 path property（9 维约束的 policy algebra 运行时拦截 94.8% 违规），Commercial Tax 量化 GraphRAG 采购基准的授权+成本盲区（NV-Embed-v2 cc-by-nc 盲区被 Nemotron-3-Embed-8B 7 月抹平，但付费 vs 自建 5.2-14.6 点鸿沟仍在）；博客端 TDS 两篇 8/18 同日发布（Sheila Teo $100M IT 流失检测 5 原则+Partha Sarkar 安全治理 ACL 层）+ DEW #283 Anthropic 多 agent 协调把 state isolation/protocol/HITL 升为平台原语；GitHub 端 Cube 三版本同日发布（v1.7.23/v1.7.22/v1.6.72 LTS postgres-driver UDT 线性时间构建+放弃 decompress 依赖）。四层分工（约束建模/记忆治理/语义暴露/流量管控）在本日获三支柱共振补全：Quipu 管知识图谱写入治理，Policy Algebra 管行动路径可靠性，TDS Sheila 管人机交接验证。",
+    "groups": {
+      "paper": [
+        "Quipu：governed bitemporal 知识图谱存储——agent 写入时代反转四个传统默认（写入前 gate 校验/bitemporal 独立时间轴/named graph 为信任与权限单元/governance spec 与审计本身是 store 内事实），gated store 0/6 缺陷 vs ungated 6/6，composition lattice 保证不放宽权限，50/50 bitemporal 重新推导 vs latest-only 全错报",
+        "Policy Algebra：trust-preserving agent execution——把 reliability 定义为 path property（9 维约束 identity/profile/tool/data/memory/budget/artifact/approval/audit），policy algebra 通过 join/intersection/budget narrowing/approval inheritance/evidence accumulation 组合出最小限制满足所有治理输入的可靠信封，运行时拦截 94.8% 违规事件同时保留 86.9% 任务完成率，消除 profile-monotonicity 与 zero-artifact-exhaustion 违规",
+        "Commercial Tax：multi-hop retrieval benchmark 的 rent-vs-own 盲区——领域锚点 NV-Embed-v2 是 cc-by-nc-4.0 非商业授权，4 个 MuSiQue 领先系统中 3 个依赖它但未声明；NVIDIA Nemotron-3-Embed-8B（2026-07-16 发布）首次抹平商业授权鸿沟（+0.24 Recall@5 vs anchor），但 API embedder 每次重索引按 token 收费 vs 自建零成本，GraphRAG 索引成本在第三方论文中 11x 跨度（USD 2.30 vs 24.94/5.64MB）"
+      ],
+      "blog": [
+        "TDS Sheila Teo《Building Enterprise Agent Systems that People can Trust, Verify and Improve》——$100M IT 托管商流失检测案例，5 原则：产品形态贴合业务流/每步给最简机制/重设人机交接工作/交接为验证与反馈设计/人反馈自改进闭环；核心洞察\"agent harness 工程化≠产品成功，最被忽视的是产品/工作流/人机交接\"，确定性代码拥有 recurrence threshold（记忆=代码不是 LLM）",
+        "DEW #283——Anthropic 多 agent 系统研究：共享激励与人类不同是核心观察，state isolation/protocol design/HITL 将成平台原语（agent 不再互调为 tool 时才暴露协调难题）；Brad Coles 声明式转换论：dbt/dynamic tables/Spark Declarative Pipelines 同一迁移，声明期望数据集+标准化依赖测试运营，AI 时代声明式成为业务逻辑默认（对 agent 可重复）",
+        "TDS Partha Sarkar《From Prototype to Production: Secure & Governed AI Agents》——8/18 同日第二篇，企业就绪 agent 需建责任 AI 层（治理/安全/透明/可解释），pre-filter（gemini flash/GPT mini）做直接注入拦截+意图分类+prompt 抽取，ACL 两阶段（文档级向量库 pre-filter + 运行时权限），HITL 对高风险写操作（薪资更新/请假申请）强制暂停人审，与 Policy Algebra 的 approval/budget 维度共振"
+      ],
+      "github": [
+        "Cube v1.7.23/v1.7.22/v1.6.72 LTS 三版本同日发布（2026-08-18）——v1.7.23 postgres-driver 在线性时间构建 user defined types map（#11586）+ 跳过 relation array types（#11587）关闭 #11149；v1.7.22 backend-native 迁移 post-installer ^0.1.2 放弃 decompress 依赖（#11580）+ cube-cli 遵循 API items+pageInfo list shape（#11582）；v1.6.72 LTS 同步 postgres-driver 性能修复，语义层引擎周级迭代延续"
+      ],
+      "product": [
+        "Agent 可信治理栈四层分工成型——Quipu 管知识图谱写入治理（gate 校验+bitemporal+lattice 不放宽），Policy Algebra 管行动路径可靠性（9 维约束 path property+cost-aware artifact materialization），TDS Sheila 管人机交接验证（reviewable evidence 为有意输出+确定性代码拥有阈值+人反馈自改进闭环），三者共振指向\"agent 可信不是靠更强模型而是靠分层治理基建+代码可控交接+持久可审计事实\"。DEW Anthropic 多 agent 协调把 state isolation/protocol/HITL 升为平台原语补充流量管控层。与 8/16 四层分工（CSE 约束建模+GPM 记忆治理+dbt MCP 语义暴露+SBproxy 流量管控）映射：Quipu=记忆治理层 KG 写入治理，Policy Algebra=约束建模层 path property，TDS Sheila=语义暴露层人机交接"
+      ]
+    }
+  },
+  "items": [
+    {
+      "tag": "paper",
+      "title": "Quipu: A Governed Bitemporal Knowledge Graph Store",
+      "date": "2026-08-19",
+      "source": "arXiv 2608.16813",
+      "link": "https://arxiv.org/abs/2608.16813",
+      "summary": "Steve Brown 提出 Quipu，一个 embeddable 知识图谱存储，专门针对 agent 写入时代反转四个传统默认：(1) 写入前 gate 校验 pending post-state（非写入后清理）；(2) data/trust labels/verdicts/rules 全部 bitemporal（非单时间轴或无）；(3) named graph 作为 authority 与 trust 单元，在 lattice 下组合且组合永不放宽；(4) governance spec Σ、trace、signed verdicts 本身是 store 内的事实，使审计 T⊨Σ 成为一个查询。用 Census 确定性多写者生命周期评测：gated store 0/6 planted defects vs ungated 6/6；全部 7 composition probes 维持 lattice 契约；50/50 satisfied verdicts 按其瞬间忠实重推导而 latest-only 规则集全 50 会误报；SARC reference checker 与 in-store audit 逐 verdict 一致。",
+      "insight": "这是知识图谱路线本周最关键进展。用户长期纠结的\"语义层 vs 企业知识图谱\"二元选择，在 agent 写入时代有了精确答案：知识图谱路线的价值不再是\"存关系\"而是\"存可治理的、bitemporal 的、lattice 不放宽权限的、审计即查询的事实\"。Quipu 的四默认反转直接补全 8/17 已收录 TDS 持久知识层——TDS 的 Contradiction 一等对象+staleness+provenance 链在 Quipu 里被工程化为 named graph lattice + bitemporal verdicts + gate 校验。对用户\"通过业务 API 查数\"场景：业务知识图谱不再只是查询时召回的图，而是 agent 写入时即被治理的图，写入前 gate 校验意味着 agent 写入的领域知识必须通过业务规则谓词才能落地，这把\"AI 生成定义无人批准=机器速度下带引用大规模错误\"（8/17 Yannick）从警告变成可执行契约。引用数信息待核实（2026-08-17 新文，预期 0）。",
+      "detail": {
+        "why": "知识图谱路线在 8/17 获 TDS 持久知识层（理解累积）+GraphRAG CTI（证据持久）两支柱后，8/19 Quipu 补全第三支柱：写入治理。三支柱共振把 KG 路线从\"召回增强\"升级为\"可治理持久事实层\"。",
+        "mechanism": "四个反转：(1) gate 谓词在写入前评估 pending post-state，拒绝即不落地；(2) bitemporal 即事务时间+有效时间双轴，50/50 verdicts 可按任意历史瞬间重推导而 latest-only 全误报；(3) named graph lattice 组合的单一不变量是\"组合永不放宽权限\"（security 下限保证）；(4) governance spec Σ+trace+signed verdicts 是 store 内事实，审计 T⊨Σ 是 query 而非外部 dashboard。",
+        "deep": "Census 评测用确定性多写者生命周期，单 seeded run 对每个研究问题评分 vs planted ground truth。gated 0/6 vs ungated 6/6 是最硬数字——证明 gate 在写入时即拦住全部 planted defects。7 composition probes 全 uphold lattice 契约证明组合不放宽。SARC reference checker 与 in-store audit verdict-for-verdict 一致（仅 coverage 差异）证明审计可信。Quipu 是 embeddable（非独立服务），意味着可作为 agent 的记忆子系统而非外部依赖。",
+        "apply": "对用户业务知识图谱：采用 gate 谓词校验 agent 写入的业务术语/关系（如\"active customer\"定义变更必须通过规则谓词）；采用 bitemporal 双轴记录业务规则生效日（与 8/17 TDS effective-date scoping 共振，避免语义相似不编码时间）；采用 named graph lattice 按业务域（销售/财务/供应链）分权限且组合不放宽；采用 in-store audit 使\"这条结论依据哪条规则\"成为查询。",
+        "caveats": "Semantic Scholar 引用数因 429 限流未核实，标注信息待核实（2026-08-17 新文预期 0）。Census 是确定性合成评测，真实多 agent 异步并发写入下的 lattice 契约可维护性未验证。embeddable 设计意味着治理逻辑嵌入应用进程，跨服务共享需额外基础设施。gate 谓词的表达力与性能开销未报告（复杂业务规则谓词可能成瓶颈）。",
+        "business": "知识图谱路线在 agent 写入时代获可治理工程范式，企业 KG 投资从\"建图召回\"升级为\"建 governed bitemporal 可审计事实层\"。Quipu 的 lattice 不放宽权限是合规场景（金融/医疗）落地 KG 的安全前提。in-store audit 使\"AI 结论可追溯\"从口号变查询，是监管就绪的硬基建。与 8/17 Yannick\"推断定义无人批准=机器速度下带引用大规模错误\"形成工程闭环：gate 谓词就是\"批准\"的代码化。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.16813",
+            "title": "Quipu: A Governed Bitemporal Knowledge Graph Store"
+          }
+        ],
+        "diagram": {
+          "title": "Quipu Governed Bitemporal KG Store — 写入治理四默认反转",
+          "flow": [
+            {
+              "label": "Agent 写入",
+              "sub": "领域知识/规则变更",
+              "type": "frontend"
+            },
+            {
+              "label": "Gate 谓词",
+              "sub": "评估 pending post-state",
+              "type": "security"
+            },
+            {
+              "label": "Bitemporal Store",
+              "sub": "data+trust+verdicts 双时间轴",
+              "type": "database"
+            },
+            {
+              "label": "Named Graph Lattice",
+              "sub": "权限单元 组合不放宽",
+              "type": "security"
+            },
+            {
+              "label": "Governance Spec Σ",
+              "sub": "trace+signed verdicts 是 store 内事实",
+              "type": "database"
+            },
+            {
+              "label": "审计查询 T⊨Σ",
+              "sub": "SARC reference checker 一致",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "gate 写入前校验",
+              "text": "拒绝即不落地，gated 0/6 vs ungated 6/6 planted defects"
+            },
+            {
+              "label": "bitemporal 重推导",
+              "text": "50/50 verdicts 按瞬间忠实重推导，latest-only 全 50 误报"
+            },
+            {
+              "label": "lattice 不放宽",
+              "text": "7 composition probes 全 uphold，security 下限保证"
+            },
+            {
+              "label": "审计即查询",
+              "text": "governance spec 与 verdicts 是 store 内事实，T⊨Σ 是 query 非 dashboard"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "A Policy Algebra for Trust-Preserving Agentic AI Execution",
+      "date": "2026-08-19",
+      "source": "arXiv 2608.16402",
+      "link": "https://arxiv.org/abs/2608.16402",
+      "summary": "Tripathi 等提出 policy algebra，把 agent reliability 定义为 path property 而非能力属性：agent 可靠当且仅当通过在 9 维约束（identity/profile/tool/data/memory/budget/artifact/approval/audit）下均 admissible 的行动事件完成任务。policy algebra 通过 joins/intersections/budget narrowing/approval inheritance/evidence accumulation 组合 security profiles 与 runtime obligations，产生既 trust-preserving 又满足所有治理输入的最小限制状态。algebra 跨多 agent 调用传播限制，引入 cost-aware artifact materialization 在 budget 暴露增长时将开放式执行重定向至可恢复结果。评测：运行时拦截 94.8% policy-violating 事件，保留 86.9% 任务完成率，消除 profile-monotonicity 与 zero-artifact-exhaustion 违规。Semantic Scholar 核实 citationCount=0/influentialCitationCount=0（2026-08-17 新文符合预期）。",
+      "insight": "这是本周对\"agent 可信\"最形式化的贡献。8/16 已收录 CSE 量化约束饱和崩溃（5-6 约束乘法衰减），Policy Algebra 把约束从\"一次能满足几条\"升级为\"一条行动路径在 9 维上是否全程 admissible\"。path property 是关键洞察——不问\"agent 能否完成\"而问\"通过什么路径完成\"，因为未授权数据访问/扩大委托权限/未批准副作用/不可恢复预算消耗/证据不完整的成功结果不可靠。对用户\"通过业务 API 查数\"场景：agent 调业务 API 不是单次能力问题而是路径问题——调对了 API 但越权访问数据、用错 profile、消耗不可恢复预算、产出无审批 artifact 都使结果不可靠。policy algebra 的 cost-aware artifact materialization 与 8/16 SBproxy 流量管控层直接互补：SBproxy 管入口流量，policy algebra 管行动路径。",
+      "detail": {
+        "why": "8/16 四层分工的约束建模层（CSE）只量化\"约束饱和\"，Policy Algebra 补全\"约束如何组合成可靠信封\"。94.8% 拦截率+86.9% 完成率是\"可靠 vs 能力\"trade-off 的首个量化点。path property 概念把 agent 治理从\"能力基准\"转向\"路径审计\"，是监管就绪的形式化基础。",
+        "mechanism": "9 维约束：identity（谁）/profile（角色）/tool（可用工具）/data（可访问数据）/memory（可读历史）/budget（可消耗预算）/artifact（可产出物）/approval（需谁批）/audit（需留什么痕）。组合操作：join（并集限制）/intersection（交集最严）/budget narrowing（预算收窄）/approval inheritance（审批继承）/evidence accumulation（证据累积）。cost-aware artifact materialization：当 budget 暴露增长，重定向开放式执行至可恢复 outcome（物化中间 artifact 以便失败回滚）。",
+        "deep": "policy-monotonicity 违规指\"profile 更严但结果更宽\"的悖论，algebra 消除之；zero-artifact-exhaustion 违规指\"预算耗尽但无 artifact 产出\"，cost-aware materialization 消除之。94.8% 拦截+86.9% 完成率意味着 5.2% 违规被放行（trade-off）且 13.1% 任务因约束未完成。跨多 agent 调用传播限制意味着被委托 agent 继承委托者的约束子集，防止\"用子 agent 绕过权限\"。",
+        "apply": "对用户 agent 调业务 API：为每个业务 API 定义 9 维约束（如财务 API 需 identity=财务角色+profile=分析师+tool=财务API+data=本季度+budget=10次+artifact=报告+approval=财务主管+audit=全链路）。agent 调用前 policy algebra 组合约束生成可靠信封，运行时拦截越权。cost-aware materialization 用于多步查询：物化中间结果以便某步失败时回滚至上一致状态而非从头重来。",
+        "caveats": "引用数已核实 0/0（Semantic Scholar 成功）。94.8% 拦截率是合成评测，真实业务规则的 9 维约束谓词表达与组合复杂度未报告。86.9% 完成率意味着 13.1% 任务因约束未完成——对高吞吐业务场景可能不可接受，需 HITL 兜底（与 TDS Sheila 人机交接共振）。cost-aware materialization 的 artifact 存储成本未量化。",
+        "business": "policy algebra 把\"agent 可信\"从营销词变形式化契约，是合规/审计场景（金融交易/医疗诊断）落地 agent 的监管就绪前提。9 维约束可直接映射企业现有 IAM/RBAC/数据治理/预算审批/审计体系，降低 agent 落地的治理迁移成本。cost-aware materialization 的\"失败可回滚\"是高风险业务操作（资金调拨/合同生成）上 agent 的安全网。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.16402",
+            "title": "A Policy Algebra for Trust-Preserving Agentic AI Execution"
+          }
+        ],
+        "diagram": {
+          "title": "Policy Algebra — reliability as path property (9 维约束组合)",
+          "flow": [
+            {
+              "label": "Agent 行动",
+              "sub": "调业务 API/查数/生成 artifact",
+              "type": "frontend"
+            },
+            {
+              "label": "9 维约束",
+              "sub": "identity/profile/tool/data/memory/budget/artifact/approval/audit",
+              "type": "security"
+            },
+            {
+              "label": "Policy Algebra 组合",
+              "sub": "join/intersection/budget narrowing/approval inheritance/evidence accumulation",
+              "type": "backend"
+            },
+            {
+              "label": "可靠信封",
+              "sub": "最小限制满足所有治理输入",
+              "type": "security"
+            },
+            {
+              "label": "运行时拦截",
+              "sub": "94.8% policy-violating 事件",
+              "type": "security"
+            },
+            {
+              "label": "Cost-aware Materialization",
+              "sub": "budget 暴露增长→可恢复 outcome",
+              "type": "cloud"
+            },
+            {
+              "label": "86.9% 任务完成",
+              "sub": "trade-off 非能力基准",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "path property 非能力属性",
+              "text": "不问能否完成，问通过什么路径完成；越权/超预算/无审批的成功不可靠"
+            },
+            {
+              "label": "消除两类违规",
+              "text": "profile-monotonicity（更严 profile 结果更宽）+ zero-artifact-exhaustion（预算耗尽无产出）"
+            },
+            {
+              "label": "跨 agent 传播",
+              "text": "被委托 agent 继承委托者约束子集，防子 agent 绕权限"
+            },
+            {
+              "label": "trade-off 量化",
+              "text": "94.8% 拦截 + 86.9% 完成 = 5.2% 放行 + 13.1% 未完成，需 HITL 兜底"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "The Commercial Tax: Rent-vs-Own Blind Spots in Multi-Hop Retrieval Benchmarks",
+      "date": "2026-08-19",
+      "source": "arXiv 2608.16096",
+      "link": "https://arxiv.org/abs/2608.16096",
+      "summary": "Sanchez & Dehnad 指出 multi-hop retrieval 基准遗漏买家两个关键事实：(1) 授权——领域锚点 NV-Embed-v2 是 cc-by-nc-4.0 非商业授权，4 个 MuSiQue 领先系统（HippoRAG-2/PropRAG/SAG/KET-RAG）中 3 个依赖它拿最佳数字但未声明；(2) 成本——13 个 embedder（8 家厂商）在同一 MuSiQue harness 上测，带 bootstrap 置信区间。直到 2026 年中存在真实商业税：最佳商业授权 embedder 落后锚点 2.31 Recall@5 点。NVIDIA Nemotron-3-Embed-8B（2026-07-16 发布）首次抹平（+0.24 Recall@5，95% CI [-0.94,+1.43]，p=0.69，与锚点不可区分），且是唯一商业授权+免费自建+与锚点不可区分的 entrant；其他满足前两条件的低 5.2-14.6 点。持久发现是付费 vs 自建鸿沟：API embedder 每次重索引按 token 收费，自建零成本。GraphRAG 索引成本在第三方论文中 11x 跨度（USD 2.30 vs 24.94/5.64MB）。Semantic Scholar 引用数信息待核实（限流）。",
+      "insight": "这是本周对用户\"语义层 vs 知识图谱\"双路线决策最实用的采购指南。用户团队已建研发知识库转型业务，正面临\"选 GraphRAG 还是 semantic layer\"的采购决策。Commercial Tax 量化了 GraphRAG 路线的两个隐藏成本：(1) 授权盲区——领先系统用的 embedder 可能不可商用，企业部署前必须审计 embedder 授权链；(2) 成本盲区——GraphRAG 索引成本 11x 跨度且多数系统不披露，API embedder 每次重索引按 token 收费 vs 自建零成本。Nemotron-3-Embed-8B 抹平商业税是 7 月关键事件——现在可商用+免费自建+与锚点不可区分，但 5.2-14.6 点鸿沟说明\"免费自建但非锚点级\"的 embedder 仍显著落后。对用户：semantic layer 路线（Cube/WrenAI/dbt）的嵌入成本结构更可控（语义层是结构化 schema 非全语料嵌入），GraphRAG 路线需预算重索引成本。",
+      "detail": {
+        "why": "用户正处双路线采购决策期，Commercial Tax 提供采购前必做的两项审计（授权链+成本结构）。8/17 已收录 Triple-Robustness 评测 GraphRAG 客观效果（3+跳才显优势），Commercial Tax 补全\"效果之外还有商业可行性\"维度。两者结合：3+跳用 GraphRAG（但审计授权+预算成本），短跳用 semantic layer（成本可控）。",
+        "mechanism": "授权审计：NV-Embed-v2（cc-by-nc-4.0）是 MuSiQue 领先系统的事实锚点，3/4 系统依赖未声明。商业税量化：最佳商业 embedder 落后锚点 2.31 Recall@5 点（2026 年中前）。Nemotron-3-Embed-8B（2026-07-16）首次抹平：+0.24 Recall@5 与锚点不可区分（p=0.69），唯一商业授权+免费自建+锚点级。付费 vs 自建鸿沟：API embedder 每次 re-index 按 token 收费，自建零成本（持久发现）。GraphRAG 成本不透明：3/5 系统不披露索引成本，唯一公开数字 11x 跨度。",
+        "deep": "2.31 点商业税在 2026 年中前是真实的——意味着企业用商业 embedder 比学术锚点差 2.31 Recall@5。Nemotron-3-Embed-8B 抹平是 7 月事件，但 5.2-14.6 点鸿沟说明非锚点级商业 embedder 仍显著落后。11x 索引成本跨度（USD 2.30 vs 24.94/5.64MB）意味着同一 GraphRAG 方法在不同实现下成本差 11 倍——采购前必须要求供应商披露索引成本。bootstrap 置信区间贯穿是评测方法学亮点。",
+        "apply": "对用户双路线决策：选 GraphRAG 前审计 embedder 授权链（是否 cc-by-nc 依赖）+要求供应商披露索引成本（避免 11x 意外）+预算 re-index 成本（语料更新时 API embedder 按 token 收费）。选 semantic layer 前确认其成本结构（schema 驱动非全语料嵌入，成本更可控）。若用 GraphRAG，Nemotron-3-Embed-8B 是当前唯一商业安全+免费自建+锚点级选择。短跳（<3）用 semantic layer 足够，3+跳才需 GraphRAG（与 8/17 Triple-Robustness 共振）。",
+        "caveats": "Semantic Scholar 引用数因 429 限流未核实，标注信息待核实（2026-08-17 新文预期 0）。MuSiQue 是单基准，跨基准的授权/成本模式未验证。Nemotron-3-Embed-8B 的\"与锚点不可区分\"是统计意义（p=0.69 不拒绝原假设）非\"等同\"，Recall@10 实际 -0.58。GraphRAG 11x 成本跨度来自单一第三方论文，不同实现/语料可能不同。",
+        "business": "Commercial Tax 是 agent 采购的隐藏成本显性化——企业选 GraphRAG 路线可能因 embedder 授权（cc-by-nc 不可商用）或 re-index 成本（API 按 token）而预算超支或被迫下线。Nemotron-3-Embed-8B 抹平商业税是 7 月关键事件，降低 GraphRAG 商用门槛。对用户：双路线决策应纳入\"总拥有成本\"=嵌入授权+索引成本+re-index 频率×token 单价，semantic layer 在此维度通常更优（结构化 schema 驱动）。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.16096",
+            "title": "The Commercial Tax: Rent-vs-Own Blind Spots in Multi-Hop Retrieval Benchmarks"
+          }
+        ],
+        "diagram": {
+          "title": "Commercial Tax — GraphRAG 采购的授权+成本双盲区",
+          "flow": [
+            {
+              "label": "Multi-hop 基准",
+              "sub": "MuSiQue 领先系统排名",
+              "type": "frontend"
+            },
+            {
+              "label": "授权盲区",
+              "sub": "NV-Embed-v2 cc-by-nc-4.0 锚点",
+              "type": "security"
+            },
+            {
+              "label": "3/4 系统依赖未声明",
+              "sub": "HippoRAG-2/PropRAG/SAG/KET-RAG",
+              "type": "security"
+            },
+            {
+              "label": "成本盲区",
+              "sub": "GraphRAG 索引 11x 跨度",
+              "type": "cloud"
+            },
+            {
+              "label": "Nemotron-3-Embed-8B",
+              "sub": "2026-07-16 抹平商业税",
+              "type": "backend"
+            },
+            {
+              "label": "付费 vs 自建鸿沟",
+              "sub": "API re-index 按 token vs 自建零成本",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "商业税 2.31 点",
+              "text": "2026 年中前最佳商业 embedder 落后锚点 2.31 Recall@5（95% CI [0.91,3.71] p=0.001）"
+            },
+            {
+              "label": "Nemotron 抹平",
+              "text": "+0.24 Recall@5 与锚点不可区分（p=0.69），唯一商业+免费自建+锚点级"
+            },
+            {
+              "label": "11x 成本跨度",
+              "text": "GraphRAG 索引 USD 2.30 vs 24.94/5.64MB，3/5 系统不披露索引成本"
+            },
+            {
+              "label": "持久鸿沟",
+              "text": "API embedder 每次重索引按 token 收费，自建零成本——语料频繁更新场景自建更优"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "Building Enterprise Agent Systems that People can Trust, Verify and Improve",
+      "date": "2026-08-19",
+      "source": "Towards Data Science (Sheila Teo)",
+      "link": "https://towardsdatascience.com/building-enterprise-agent-systems-that-people-can-trust-verify-and-improve/",
+      "summary": "Sheila Teo 基于 $100M+ managed IT provider 客户流失检测项目提出企业 agent 生产化 5 原则：(1) 产品形态贴合业务流——agent harness 不是产品，工作流贴合才是；(2) 每步给最简机制——确定性代码拥有 recurrence threshold（记忆=代码不是 LLM），LLM 只做模糊部分；(3) 重设人机交接工作——account manager 的 job 被重设而非自动化掉；(4) 交接为验证与反馈设计——reviewable evidence 是有意输出（不只报风险等级而留人重建原因），证据随结论同行；(5) 人反馈自改进闭环。案例：service ticket 重复模式检测，account manager 原需记忆早期 incident+判断 pattern+收集证据+alert，agent 自动每周拉新 ticket→summarize-and-embed→比对历史→生成带证据的 churn risk alert。",
+      "insight": "这是本周最贴合用户\"AI for 业务\"落地的方法论。核心洞察\"agent harness 工程化≠产品成功，最被忽视的是产品/工作流/人机交接\"直击用户团队转型痛点——研发知识库已建成，但业务 agent 落地的瓶颈不在 harness 而在产品形态与人机交接设计。原则2\"确定性代码拥有 recurrence threshold\"与 8/18 已收录 Policy Algebra 的 path property 共振：threshold 是业务规则谓词，agent 行动必须通过它。原则4\"reviewable evidence 是有意输出\"与 8/17 TDS 持久知识层\"知识页永远不是源总是可追溯\"共振——证据随结论同行即 provenance 链。原则5\"人反馈自改进\"与 8/13 LinkedIn 自进化 agent 共振——但 Sheila 更务实：先建人反馈闭环再谈自进化。",
+      "detail": {
+        "why": "用户团队从研发转型业务，最缺的不是 harness 技术而是\"业务 agent 怎么落地\"方法论。Sheila 的 5 原则来自真实 $100M 公司部署，非理论。原则1-3 管\"怎么建\"，原则4-5 管\"怎么可信+怎么改进\"，覆盖落地全生命周期。",
+        "mechanism": "5 原则：(1) 产品形态贴合业务流——agent 是工作流的一个 step 不是全部；(2) 每步最简机制——确定性代码管阈值/规则，LLM 只管模糊（summarize/embed/分类）；(3) 重设人机交接——account manager 的 job 从\"记忆+判断+收集+alert\"重设为\"审 reviewable evidence+决策\"；(4) 交接为验证反馈设计——alert 带 reviewable evidence（不只风险等级），证据是 intentional output；(5) 人反馈自改进——account manager 的反馈喂回系统改进 embed/阈值/分类。",
+        "deep": "案例的确定性代码拥有 recurrence threshold 是关键——\"service issue 重复 N 次\"的 N 是代码阈值不是 LLM 判断，这避免了 LLM 在计数/比较上的不可靠。LLM 只做 summarize-and-embed（模糊→向量）+ 分类（新 ticket 是否匹配历史 pattern）。reviewable evidence 为有意输出意味着 alert 设计时就规划\"证据随结论同行\"，而非事后补充解释。人机交接重设 account manager 的 job——从\"信息收集者\"变\"证据审查者+决策者\"，这是 agent 落地的组织变更维度。",
+        "apply": "对用户业务 agent：(1) 先画业务工作流（客户查询/订单分析/财务对账）再决定 agent 在哪 step；(2) 阈值/规则/业务逻辑用确定性代码（如\"订单金额>100万需审批\"是代码不是 LLM 判断），LLM 只做语义匹配/摘要/分类；(3) agent 交接给人时带 reviewable evidence（调了哪个 API+返回什么+为什么得出结论），不只给结论；(4) 人的\"这个结论对不对\"反馈喂回改进 embed/阈值；(5) 人 job 从\"查数\"重设为\"审证据+决策\"。",
+        "caveats": "案例是 managed IT provider 的 churn 检测，场景特定（service ticket 文本+重复模式）。$100M 公司规模可能不足以代表超大型企业。5 原则是经验总结非对照实验，未量化各原则贡献。reviewable evidence 的\"有意输出\"设计成本未讨论（可能增加 agent 输出 token 成本）。",
+        "business": "5 原则是\"AI for 业务\"立项的方法论骨架——agent 投资不应从 harness 开始应从业务工作流贴合+人机交接设计开始。原则2\"确定性代码拥有阈值\"是 agent 可信的工程前提（与 Policy Algebra path property 共振）。原则4\"reviewable evidence 为有意输出\"是监管/审计就绪的产品设计（与 Quipu in-store audit 共振）。原则3\"重设人 job\"是 agent 落地的组织变更管理维度——不可忽视。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/building-enterprise-agent-systems-that-people-can-trust-verify-and-improve/",
+            "title": "Building Enterprise Agent Systems that People can Trust, Verify and Improve"
+          }
+        ],
+        "diagram": {
+          "title": "Sheila 5 原则 — 企业 agent 落地可信+可验证+可改进",
+          "flow": [
+            {
+              "label": "业务工作流",
+              "sub": "客户查询/订单/对账",
+              "type": "frontend"
+            },
+            {
+              "label": "原则1 产品形态贴合",
+              "sub": "agent 是 step 非全部",
+              "type": "backend"
+            },
+            {
+              "label": "原则2 确定性代码管阈值",
+              "sub": "recurrence threshold=代码非 LLM",
+              "type": "database"
+            },
+            {
+              "label": "LLM 管模糊",
+              "sub": "summarize/embed/分类",
+              "type": "backend"
+            },
+            {
+              "label": "原则3 重设人 job",
+              "sub": "信息收集者→证据审查者",
+              "type": "frontend"
+            },
+            {
+              "label": "原则4 reviewable evidence",
+              "sub": "证据随结论同行 intentional",
+              "type": "security"
+            },
+            {
+              "label": "原则5 人反馈自改进",
+              "sub": "反馈喂回 embed/阈值/分类",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "harness≠产品",
+              "text": "最被忽视的是产品/工作流/人机交接，agent harness 工程化不等于产品成功"
+            },
+            {
+              "label": "记忆=代码",
+              "text": "确定性代码拥有 recurrence threshold，LLM 只做模糊部分（summarize/embed/分类）"
+            },
+            {
+              "label": "证据有意输出",
+              "text": "alert 带 reviewable evidence 不只风险等级，证据随结论同行非事后补充"
+            },
+            {
+              "label": "人 job 重设",
+              "text": "account manager 从记忆+判断+收集+alert 重设为审证据+决策，组织变更维度"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "Data Engineering Weekly #283 — Anthropic 多 agent 协调 + 声明式转换 AI 时代",
+      "date": "2026-08-19",
+      "source": "Data Engineering Weekly (Ananth Packkildurai)",
+      "link": "https://www.dataengineeringweekly.com/p/data-engineering-weekly-283",
+      "summary": "DEW #283（2026-08-17）两条核心：(1) Anthropic《Patterns and problems in emerging multiagent systems》研究——agent swarm 在共享环境找漏洞但挣扎，核心观察不是\"agent 行为意外\"而是\"agent 共享激励与人类不同\"；当 agent 超越互调为工具，state isolation/protocol design/HITL 将成平台原语。(2) Brad Coles《Data Engineering's Shift from Imperative to Declarative》——dbt/dynamic tables/Spark Declarative Pipelines 是同一迁移：声明期望数据集+标准化依赖测试运营行为，声明式正成为业务逻辑默认（对 agent 可重复）。另推荐 Uber 支付平台 zero-sum 原则（immutable money order+double-entry accounting 是核心 data contract 先于 Kafka/microservice）、Depop Spark 成本降 52%、StreamFusion 列式流执行。",
+      "insight": "Anthropic 多 agent 研究的\"共享激励与人类不同\"是本周对 agent 治理最深刻的洞察——agent 不可靠的根因不是能力不足而是激励错位。这解释了为何 8/16 Policy Algebra 的 9 维约束必要：约束不是限制 agent 能力而是对齐 agent 激励与人类治理。\"state isolation/protocol design/HITL 将成平台原语\"与 8/16 SBproxy 流量管控层+8/19 Policy Algebra approval 维度+8/19 TDS Sheila 人机交接三支柱共振——三者都是把\"agent 间协调\"从应用层下沉到平台层。Brad Coles 声明式转换论对用户\"业务知识库\"直接启示：业务逻辑应声明式定义（dbt-style）以便 agent 可重复执行，而非命令式硬编码。",
+      "detail": {
+        "why": "用户正建业务 agent 调业务 API，多 agent 协调是迟早场景。Anthropic 研究提前警示：协调难题在 agent 超越互调为工具时才暴露，且根因是激励错位非能力。声明式转换论为用户业务知识库提供\"怎么定义业务逻辑\"方向：声明式（可重复）非命令式（agent 难复现）。",
+        "mechanism": "Anthropic 多 agent：agent swarm 找漏洞但在共享环境挣扎；共享激励与人类不同是根因（非行为意外）；超越互调为工具时 state isolation/protocol/HITL 成平台原语。Brad Coles 声明式：dbt（声明期望数据集+标准化依赖测试运营）+dynamic tables+Spark Declarative Pipelines 同一迁移；声明式成为业务逻辑默认因对 agent 可重复。Uber 支付：immutable money order+double-entry accounting 是核心 data contract 先于 Kafka/microservice。",
+        "deep": "\"共享激励与人类不同\"是关键——agent 优化自身目标函数可能与人治理冲突（如 agent 为完成任务越权访问数据）。这与 8/16 Policy Algebra 的 path property 互补：policy algebra 约束行动路径使激励对齐，Anthropic 指出需平台原语（state isolation 防 agent 互相污染状态/protocol design 规范 agent 通信/HITL 兜底高风险）。声明式转换论与 8/18 TDS Sheila 原则2\"确定性代码管阈值\"共振——声明式业务逻辑是\"确定性代码\"的高级形式。",
+        "apply": "对用户多 agent 协调：为每个 agent 设 state isolation（不共享可变状态避免污染）；设计 protocol（agent 间通信格式+约束）；高风险操作强制 HITL（与 Policy Algebra approval 维度共振）。对用户业务知识库：业务逻辑（指标定义/校验规则/审批流）用声明式定义（dbt YAML/semantic layer spec）以便 agent 可重复执行，非命令式硬编码（agent 难复现命令式流程）。",
+        "caveats": "Anthropic 研究原文未直接抓取（DEW #283 摘要引用），基于 DEW 摘要整理，详细案例/数据待核实原文。Brad Coles 文章原文未抓取（DEW 摘要引用），声明式迁移的具体量化未报告。Uber/Depot/StreamFusion 是 DEW 推荐阅读非本期核心，相关度中低。",
+        "business": "Anthropic 多 agent 研究把\"agent 间协调\"从应用层问题升级为平台层基建需求——企业 agent 平台需建 state isolation/protocol/HITL 原语。声明式转换论使业务知识库投资方向明确：声明式定义业务逻辑（指标/规则/审批流）对 agent 可重复且可治理，是\"AI for 业务\"的基础设施选择。Uber 的\"data contract 先于 microservice\"是数据治理优先级硬启示。",
+        "sources": [
+          {
+            "url": "https://www.dataengineeringweekly.com/p/data-engineering-weekly-283",
+            "title": "Data Engineering Weekly #283"
+          },
+          {
+            "url": "https://www.anthropic.com/research/multiagent-systems",
+            "title": "Anthropic: Patterns and problems in emerging multiagent systems"
+          },
+          {
+            "url": "https://bradcoles.dev/blog/declarative-transformation.html",
+            "title": "Data Engineering's Shift from Imperative to Declarative"
+          }
+        ],
+        "diagram": {
+          "title": "DEW #283 — 多 agent 协调平台原语 + 声明式业务逻辑",
+          "flow": [
+            {
+              "label": "Agent Swarm",
+              "sub": "共享环境找漏洞但挣扎",
+              "type": "frontend"
+            },
+            {
+              "label": "根因：激励错位",
+              "sub": "共享激励≠人类激励",
+              "type": "security"
+            },
+            {
+              "label": "State Isolation",
+              "sub": "平台原语 防 agent 互相污染",
+              "type": "security"
+            },
+            {
+              "label": "Protocol Design",
+              "sub": "平台原语 规范 agent 通信",
+              "type": "backend"
+            },
+            {
+              "label": "HITL",
+              "sub": "平台原语 高风险兜底",
+              "type": "frontend"
+            },
+            {
+              "label": "声明式业务逻辑",
+              "sub": "dbt/dynamic tables/Spark Declarative",
+              "type": "database"
+            },
+            {
+              "label": "Agent 可重复执行",
+              "sub": "声明期望+标准化依赖测试运营",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "激励错位非能力不足",
+              "text": "agent 不可靠根因是共享激励与人类不同，这解释为何需 policy algebra 约束对齐激励"
+            },
+            {
+              "label": "平台原语三件套",
+              "text": "state isolation + protocol design + HITL 将成 agent 平台标配"
+            },
+            {
+              "label": "声明式=可重复",
+              "text": "业务逻辑声明式定义对 agent 可重复执行，命令式硬编码 agent 难复现"
+            },
+            {
+              "label": "data contract 先于 microservice",
+              "text": "Uber 支付：immutable money order+double-entry 是核心 data contract 先于 Kafka/microservice"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "From Prototype to Production: The Architecture Behind Secure & Governed AI Agents",
+      "date": "2026-08-19",
+      "source": "Towards Data Science (Partha Sarkar)",
+      "link": "https://towardsdatascience.com/from-prototype-to-production-the-architecture-behind-secure-governed-ai-agents/",
+      "summary": "Partha Sarkar（2026-08-18）提出企业就绪 agent 需建责任 AI 层：model & agent governance/security/transparency/explainability。核心架构：(1) pre-filter 层——用 gemini flash/GPT mini 等低成本 LLM 做 direct injection blocking（扫描\"ignore all previous instructions\"/\"you are now DAN\"/\"pretend you have no restrictions\" 等攻击模式）+意图分类+prompt 抽取；(2) ACL 两阶段——文档级（向量库 embedding 时每 chunk 注入 permitted ACL levels，pre-filter 在检索前按用户权限过滤）+运行时（agent 调工具/API 前校验当前用户权限）；(3) HITL——高风险写操作（薪资更新/请假申请）强制 REQUIRES_HITL 标记暂停人审；(4) audit trail——全行动留痕。与传统软件对比：传统软件 if user.role!=admin then disable button 是确定性的，agent 核心 LLM 是概率文本预测器，传统测试方法不适用。",
+      "insight": "这是 8/18 第二篇企业 agent 治理博客，与同日 Sheila Teo 5 原则互补——Sheila 管\"怎么建可信产品\"，Partha 管\"怎么建安全治理层\"。Partha 的 pre-filter（低成本 LLM 做注入拦截）+ ACL 两阶段（文档级向量库 pre-filter+运行时校验）+ HITL（高风险写暂停人审）三件套与 8/19 Policy Algebra 的 9 维约束映射：pre-filter≈tool/data 维度 ACL，HITL≈approval 维度，audit trail≈audit 维度。\"传统软件确定性 vs agent 概率性\"对比是关键认知——传统测试方法（if-then 断言）不适用于概率核心，需用 golden test dataset+治理层拦截。",
+      "detail": {
+        "why": "用户业务 agent 调业务 API 涉及数据访问+写操作（订单/财务），安全治理层是生产就绪前提。Partha 的 pre-filter+ACL+HITL 三件套是可落地的工程架构，与 Policy Algebra 9 维约束形成\"工程实现 vs 形式化定义\"互补。",
+        "mechanism": "pre-filter：低成本 LLM（gemini flash/GPT mini）扫描攻击模式+意图分类+prompt 抽取。ACL 文档级：embedding 时每 chunk 注入 permitted ACL levels，检索前按用户权限 pre-filter。ACL 运行时：agent 调工具/API 前校验当前用户权限。HITL：高风险写操作（薪资更新/请假申请）标 REQUIRES_HITL 暂停人审。audit trail：全行动留痕。传统软件 if-then 确定性 vs agent LLM 概率性——传统测试不适用。",
+        "deep": "pre-filter 用低成本 LLM 是经济选择——每次 agent 调用前先过 pre-filter 拦截攻击比让主 LLM 处理攻击更省。ACL 文档级 pre-filter 的关键是在 embedding 时就注入 ACL levels（不是检索后过滤），这避免\"检索到无权限文档再过滤\"的泄露风险。HITL 的 REQUIRES_HITL 标记是 Policy Algebra approval 维度的工程实现。\"传统软件确定性 vs agent 概率性\"是 agent 测试方法学的认知前提——需 golden test dataset+概率容差。",
+        "apply": "对用户业务 agent：(1) 接业务 API 前加 pre-filter 层（低成本 LLM 扫描\"忽略指令\"类攻击+意图分类）；(2) 业务 API 返回的宽表字段在语义标注时注入 ACL levels（按角色限制可见字段）；(3) 写操作（下单/调价/审批）标 REQUIRES_HITL 强制人审；(4) 全 API 调用留 audit trail。传统 if-then 测试不适用——建 golden test dataset（已知正确业务场景+期望行为）。",
+        "caveats": "pre-filter 用低成本 LLM 可能漏检新型攻击模式（攻击者可构造绕过模式列表的注入）。ACL 文档级 pre-filter 在 embedding 时注入 ACL levels 要求 embedding 管线支持 metadata 注入（非所有向量库支持）。HITL 的\"高风险\"分类标准未给（何为高风险需业务定义）。golden test dataset 的覆盖度是 agent 可信上限——覆盖不全则测试无意义。",
+        "business": "Partha 三件套是 agent 生产就绪的安全治理工程骨架——pre-filter 经济性（低成本 LLM 拦截）+ACL 两阶段（文档级+运行时）+HITL（高风险人审）可直接纳入企业 agent 平台需求。与 Policy Algebra 9 维约束映射使形式化定义有工程实现路径。\"传统软件确定性 vs agent 概率性\"是 agent 测试预算的教育要点——企业需投资 golden test dataset 建设而非传统单元测试。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/from-prototype-to-production-the-architecture-behind-secure-governed-ai-agents/",
+            "title": "From Prototype to Production: The Architecture Behind Secure & Governed AI Agents"
+          }
+        ],
+        "diagram": {
+          "title": "Partha 安全治理三件套 — pre-filter + ACL 两阶段 + HITL",
+          "flow": [
+            {
+              "label": "用户输入",
+              "sub": "自然语言请求",
+              "type": "frontend"
+            },
+            {
+              "label": "Pre-filter",
+              "sub": "低成本 LLM 注入拦截+意图分类",
+              "type": "security"
+            },
+            {
+              "label": "ACL 文档级",
+              "sub": "embedding 注入 ACL levels 检索前过滤",
+              "type": "database"
+            },
+            {
+              "label": "Agent 核心 LLM",
+              "sub": "概率文本预测器",
+              "type": "backend"
+            },
+            {
+              "label": "ACL 运行时",
+              "sub": "调 API 前校验用户权限",
+              "type": "security"
+            },
+            {
+              "label": "HITL",
+              "sub": "高风险写操作暂停人审",
+              "type": "frontend"
+            },
+            {
+              "label": "Audit Trail",
+              "sub": "全行动留痕",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "概率 vs 确定性",
+              "text": "传统 if-then 断言不适用于概率核心 LLM，需 golden test dataset+概率容差"
+            },
+            {
+              "label": "pre-filter 经济性",
+              "text": "低成本 LLM（gemini flash/GPT mini）先拦截攻击比主 LLM 处理更省"
+            },
+            {
+              "label": "ACL embedding 时注入",
+              "text": "检索前过滤避免检索到无权限文档再过滤的泄露风险"
+            },
+            {
+              "label": "HITL=approval 维度",
+              "text": "REQUIRES_HITL 标记是 Policy Algebra approval 维度的工程实现"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "Cube v1.7.23 / v1.7.22 / v1.6.72 LTS — postgres-driver 性能 + 放弃 decompress 依赖",
+      "date": "2026-08-19",
+      "source": "GitHub (cube-js/cube)",
+      "link": "https://github.com/cube-js/cube/releases/tag/v1.7.23",
+      "summary": "Cube 2026-08-18 三版本同日发布：v1.7.23（latest）postgres-driver 在线性时间构建 user defined types map（#11586，closes #11149）+ 跳过 relation array types when loading user defined types（#11587，closes #11149）；v1.7.22 backend-native 迁移 post-installer ^0.1.2 放弃 decompress 依赖（#11580）+ cube-cli 遵循 API items+pageInfo list shape（#11582）；v1.6.72 LTS 同步 postgres-driver UDT 性能修复（#11586/#11587 同 commit）。延续 8/18 已收录 v1.7.21 的 cube spec CLI+分支审阅+v1.6.71 LTS playground bypass 安全收紧，本周 Cube 连续 4 版本密集迭代（v1.7.20→v1.7.23+v1.6.71→v1.6.72）。",
+      "insight": "Cube 本周连续 4 版本密集迭代延续语义层引擎周级节奏。两个关键信号：(1) postgres-driver UDT 线性时间构建——UDT（user defined types）在 Postgres 业务库中常见（业务域枚举/复合类型），线性时间构建意味着大 schema 的 UDT 加载从 O(n²) 降 O(n)，对用户\"上百字段宽表 API\"场景（底层可能对接 Postgres）直接性能受益；(2) 放弃 decompress 依赖——延续 8/13 已收录\"drop unmaintained decompress\"供应链安全加固，语义层承重墙依赖链漏洞传导所有查询的风险持续被治理。cube-cli 遵循 API list shape 是 8/18 已收录 cube spec CLI 的配套——语义层定义从配置文件升级为可治理代码资产后，CLI 工具链也在规范化。",
+      "detail": {
+        "why": "用户关注语义层路线（Cube 是三栈之一），Cube 周级迭代节奏是语义层工业成熟度硬指标。postgres-driver UDT 性能+放弃 decompress 依赖两个修复直接关系用户场景（宽表 API 底层对接+供应链安全）。",
+        "mechanism": "v1.7.23 postgres-driver：UDT map 线性时间构建（#11586）+ 跳过 relation array types（#11587）关闭 #11149（UDT 加载性能问题）。v1.7.22 backend-native：post-installer ^0.1.2 放弃 decompress（#11580，供应链加固）+ cube-cli items+pageInfo list shape（#11582，CLI 规范化）。v1.6.72 LTS：同步 UDT 修复（LTS 通道安全+性能同步）。",
+        "deep": "UDT 线性时间构建是数据库 driver 性能优化——传统 UDT map 构建可能 O(n²)（嵌套查询），线性时间意味着批量加载+哈希索引。跳过 relation array types 避免 Postgres 在加载 UDT 时把 relation 的 array 类型也拉进来（无意义且慢）。放弃 decompress 是供应链安全——decompress 包有已知漏洞，post-installer 替代。cube-cli list shape 规范化是 API 契约——CLI 输出与 API 返回结构一致便于脚本处理。LTS 通道同步性能修复意味着生产用户不必升级到 v1.7.x 也能获 UDT 性能。",
+        "apply": "对用户若 Cube 对接 Postgres 业务库：升级 v1.7.23/v1.6.72 获 UDT 加载性能（尤其大 schema/多 UDT 场景）。若用 cube-cli 管理语义层：升级 v1.7.22 获 items+pageInfo 规范化 list shape（脚本可依赖稳定结构）。供应链安全：放弃 decompress 降低语义层承重墙依赖链漏洞传导风险。",
+        "caveats": "v1.7.23 UDT 修复关闭 #11149 但原 issue 的具体场景（UDT 数量级/慢的程度）未在 release notes 详述。cube-cli list shape 变更可能是 breaking change（依赖旧 list shape 的脚本需适配）。LTS v1.6.72 同步 UDT 修复但非 v1.7.x 全部功能（LTS 通道功能冻结只安全+关键性能）。",
+        "business": "Cube 周级迭代节奏（本周 4 版本）是语义层工业成熟度的硬指标——企业可信赖持续迭代而非停滞。UDT 性能+供应链安全两个修复关系生产可靠性。LTS 通道同步关键修复降低企业升级风险（不必追 v1.7.x 也能获安全+性能）。与 8/18 dbt Core v1.12 GA（Rust parser 5-10x 更快）+ WrenAI wren-core 形成语义层三栈 Rust 核心化+周级迭代趋势。",
+        "sources": [
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.7.23",
+            "title": "Cube v1.7.23 Release"
+          }
+        ],
+        "diagram": {
+          "title": "Cube v1.7.23/v1.7.22/v1.6.72 — UDT 性能+供应链加固+CLI 规范化",
+          "flow": [
+            {
+              "label": "Postgres 业务库",
+              "sub": "UDT（枚举/复合类型）",
+              "type": "database"
+            },
+            {
+              "label": "postgres-driver",
+              "sub": "UDT map 线性时间构建",
+              "type": "backend"
+            },
+            {
+              "label": "跳过 relation array types",
+              "sub": "避免无意义加载",
+              "type": "backend"
+            },
+            {
+              "label": "backend-native post-installer",
+              "sub": "放弃 decompress 依赖",
+              "type": "security"
+            },
+            {
+              "label": "cube-cli",
+              "sub": "items+pageInfo list shape",
+              "type": "frontend"
+            },
+            {
+              "label": "LTS v1.6.72",
+              "sub": "同步 UDT 性能+安全",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "UDT 线性时间",
+              "text": "大 schema UDT 加载从 O(n²) 降 O(n)，宽表 API 底层 Postgres 直接受益"
+            },
+            {
+              "label": "放弃 decompress",
+              "text": "供应链安全加固，语义层承重墙依赖链漏洞传导风险持续治理"
+            },
+            {
+              "label": "CLI list shape 规范化",
+              "text": "cube-cli 输出与 API 返回结构一致，脚本可依赖稳定结构"
+            },
+            {
+              "label": "LTS 同步",
+              "text": "v1.6.72 同步 UDT 修复，生产用户不必升 v1.7.x 也能获性能+安全"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "product",
+      "title": "Agent 可信治理栈四层分工成型：Quipu KG 写入治理 + Policy Algebra path property + TDS Sheila 人机交接验证",
+      "date": "2026-08-19",
+      "source": "综合研判（Quipu + Policy Algebra + TDS Sheila + DEW Anthropic）",
+      "link": "https://arxiv.org/abs/2608.16813",
+      "summary": "本日四支柱共振指向\"agent 可信治理栈四层分工成型\"：Quipu 管知识图谱写入治理（gate 校验+bitemporal+lattice 不放宽+审计即查询），Policy Algebra 管行动路径可靠性（9 维约束 path property+cost-aware materialization+94.8% 拦截/86.9% 完成），TDS Sheila 管人机交接验证（reviewable evidence 有意输出+确定性代码管阈值+人反馈自改进），DEW Anthropic 管多 agent 协调平台原语（state isolation/protocol/HITL）。与 8/16 已收录四层分工（CSE 约束建模+GPM 记忆治理+dbt MCP 语义暴露+SBproxy 流量管控）精确映射：Quipu=记忆治理层 KG 写入治理，Policy Algebra=约束建模层 path property，TDS Sheila=语义暴露层人机交接，DEW Anthropic=流量管控层平台原语。",
+      "insight": "本日四支柱共振把\"语义层 vs 知识图谱\"二元选择彻底升级为四层各司其职的治理架构。最核心战略研判：agent 可信不是靠更强模型而是靠\"分层治理基建+代码可控交接+持久可审计事实\"。Quipu 的 gate 校验把 8/17 Yannick\"推断定义无人批准=机器速度下带引用大规模错误\"从警告变成可执行契约——agent 写入知识图谱前必须通过业务规则谓词。Policy Algebra 的 path property 把 8/16 CSE 约束饱和从\"一次能满足几条\"升级为\"一条行动路径在 9 维上是否全程 admissible\"。TDS Sheila 的\"确定性代码管阈值\"与 Policy Algebra path property 共振——threshold 是业务规则谓词的代码化。DEW Anthropic 的\"激励错位非能力不足\"解释了为何四层分工必要：约束不是限制能力而是对齐激励。",
+      "detail": {
+        "why": "用户正建业务 agent 调业务 API，可信治理栈是生产就绪前提。本日四支柱从四个维度（KG 写入/行动路径/人机交接/多 agent 协调）共振补全 8/16 四层分工，形成完整治理架构。",
+        "mechanism": "四层映射：(1) 记忆治理层——Quipu gate 校验 agent 写入 KG+bitemporal 双时间轴+lattice 不放宽权限+审计即查询；(2) 约束建模层——Policy Algebra 9 维约束 path property+join/intersection/budget narrowing 组合+cost-aware materialization+94.8% 拦截；(3) 语义暴露层——TDS Sheila reviewable evidence 有意输出+确定性代码管阈值+人反馈自改进闭环；(4) 流量管控层——DEW Anthropic state isolation+protocol design+HITL 平台原语。",
+        "deep": "四支柱交叉验证：(1) Quipu gate 校验=Policy Algebra data/memory 维度的写入侧——agent 写入 KG 前过 data/memory 约束谓词；(2) Policy Algebra approval 维度=TDS Sheila HITL 的形式化——高风险写需 approval 维度 admissible；(3) TDS Sheila reviewable evidence=Quipu in-store audit 的产品侧——证据随结论同行即审计即查询的产品化；(4) DEW Anthropic 激励错位=Policy Algebra 9 维约束的根因解释——约束对齐激励。三组共振：(1) Quipu gate+Policy Algebra path property+Sheila 确定性代码管阈值=\"治理代码化\"共振；(2) Quipu bitemporal+Policy Algebra cost-aware materialization+Sheila reviewable evidence=\"可审计可回滚\"共振；(3) DEW Anthropic 激励错位+Policy Algebra 9 维约束+Sheila 人反馈自改进=\"激励对齐\"共振。",
+        "apply": "对用户业务 agent 四层分工落地：(1) 记忆治理——业务知识图谱用 Quipu 式 gate 校验 agent 写入的业务术语/关系+bitemporal 记录生效日+lattice 按业务域分权限；(2) 约束建模——为每个业务 API 定义 9 维约束（identity/profile/tool/data/memory/budget/artifact/approval/audit）+ policy algebra 组合生成可靠信封；(3) 语义暴露——agent 交接给人时带 reviewable evidence（调了哪个 API+返回什么+为什么）+阈值用确定性代码（如金额>100万审批是代码非 LLM）；(4) 流量管控——多 agent 协调用 state isolation+protocol+HITL 平台原语。",
+        "caveats": "四支柱来自不同来源（Quipu/Policy Algebra 学术+TDS Sheila/DEW Anthropic 博客），共振是研判非原文献主张。各支柱的量化（Quipu 0/6 defects/Policy Algebra 94.8% 拦截/Sheila 5 原则/Anthropic 平台原语）来自各自评测或经验，跨支柱集成效果未验证。四层分工的工程实现复杂度高——企业可能需分阶段落地（先约束建模+语义暴露，再记忆治理+流量管控）。",
+        "business": "四层分工是\"AI for 业务\"立项的治理架构骨架——agent 可信投资应四维并行而非单点突破。Quipu gate+Policy Algebra path property 使\"AI 结论可追溯+行动可审计\"从口号变契约（监管就绪）。TDS Sheila 5 原则+DEW Anthropic 平台原语使\"agent 落地\"从 harness 工程变产品+工作流+组织变更工程。与 8/16 四层分工（CSE+GPM+dbt MCP+SBproxy）映射验证了分工架构的跨日一致性——非偶然共振而是领域共识。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.16813",
+            "title": "Quipu: A Governed Bitemporal Knowledge Graph Store"
+          },
+          {
+            "url": "https://arxiv.org/abs/2608.16402",
+            "title": "A Policy Algebra for Trust-Preserving Agentic AI Execution"
+          },
+          {
+            "url": "https://towardsdatascience.com/building-enterprise-agent-systems-that-people-can-trust-verify-and-improve/",
+            "title": "Building Enterprise Agent Systems that People can Trust, Verify and Improve"
+          },
+          {
+            "url": "https://www.dataengineeringweekly.com/p/data-engineering-weekly-283",
+            "title": "Data Engineering Weekly #283"
+          }
+        ],
+        "diagram": {
+          "title": "Agent 可信治理栈四层分工 — 本日四支柱共振补全 8/16 四层",
+          "flow": [
+            {
+              "label": "记忆治理层",
+              "sub": "Quipu gate+bitemporal+lattice",
+              "type": "database"
+            },
+            {
+              "label": "约束建模层",
+              "sub": "Policy Algebra 9 维 path property",
+              "type": "security"
+            },
+            {
+              "label": "语义暴露层",
+              "sub": "TDS Sheila reviewable evidence+确定性代码",
+              "type": "frontend"
+            },
+            {
+              "label": "流量管控层",
+              "sub": "DEW Anthropic state isolation/protocol/HITL",
+              "type": "cloud"
+            },
+            {
+              "label": "Agent 调业务 API",
+              "sub": "四层联合治理",
+              "type": "backend"
+            },
+            {
+              "label": "可信可审计结果",
+              "sub": "gate+path+evidence+isolation",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "治理代码化共振",
+              "text": "Quipu gate 谓词+Policy Algebra path property+Sheila 确定性代码管阈值=治理代码化三角"
+            },
+            {
+              "label": "可审计可回滚共振",
+              "text": "Quipu bitemporal+Policy Algebra cost-aware materialization+Sheila reviewable evidence=可审计可回滚三角"
+            },
+            {
+              "label": "激励对齐共振",
+              "text": "DEW Anthropic 激励错位+Policy Algebra 9 维约束+Sheila 人反馈自改进=激励对齐三角"
+            },
+            {
+              "label": "跨日一致性",
+              "text": "与 8/16 四层分工（CSE+GPM+dbt MCP+SBproxy）映射验证分工架构非偶然共振而是领域共识"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

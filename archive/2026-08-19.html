@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI for Business 领域每日晨报</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+            --card: #ffffff;
+            --border: #d6dde8;
+            --border-strong: #adbac9;
+            --text: #111827;
+            --muted: #4b5563;
+            --accent: #2563eb;
+            --accent-soft: #dbeafe;
+            --accent2: #059669;
+            --accent2-soft: #d1fae5;
+            --warn: #b45309;
+            --warn-soft: #fef3c7;
+            --red: #dc2626;
+            --red-soft: #fee2e2;
+            --shadow: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+            --shadow-hover: 0 10px 25px -5px rgba(15,23,42,0.1), 0 8px 10px -6px rgba(15,23,42,0.05);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+      padding: 20px;
+      max-width: 920px;
+      margin: 0 auto;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    /* 长英文标识符/URL 在移动端强制换行，避免撑破卡片 */
+    p, li, h1, h2, h3, h4, .summary, .insight, .snap-title, .snap-points li,
+    .modal-sec p, .modal-body, .detail-block, .item, .snapshot, .snapshot-summary {
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    header {
+      text-align: center;
+      padding: 30px 0 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    header h1 {
+      font-size: 1.8em;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    header h1 .grad {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header .date { color: var(--muted); margin-top: 8px; font-size: 0.95em; }
+    .archive-link {
+      display: inline-block; margin-top: 12px; color: var(--accent); text-decoration: none;
+      font-size: 0.85em; border: 1px solid var(--border-strong); background: var(--card);
+      padding: 5px 14px; border-radius: 20px; box-shadow: var(--shadow);
+      transition: all .15s;
+    }
+    .archive-link:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+    /* 今日速览（结构化，按来源分类） */
+    .snapshot {
+      background: linear-gradient(135deg, var(--accent-soft), var(--accent2-soft));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow);
+    }
+    .snapshot-summary {
+      font-size: 0.98em;
+      color: var(--text);
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px dashed var(--border-strong);
+    }
+    .snapshot-summary strong { color: var(--accent); }
+    .snapshot-groups { display: flex; flex-direction: column; gap: 10px; }
+    .snap-group {
+      display: flex;
+      gap: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      box-shadow: var(--shadow);
+    }
+    .snap-bar { width: 5px; border-radius: 3px; flex-shrink: 0; }
+    .snap-bar-paper { background: var(--accent); }
+    .snap-bar-github { background: var(--accent2); }
+    .snap-bar-product { background: var(--warn); }
+    .snap-bar-blog { background: var(--red); }
+    .snap-body { flex: 1; }
+    .snap-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.85em; font-weight: 700; color: var(--text);
+      margin-bottom: 6px;
+    }
+    .snap-title .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-paper { background: var(--accent); }
+    .dot-github { background: var(--accent2); }
+    .dot-product { background: var(--warn); }
+    .dot-blog { background: var(--red); }
+    .snap-title .badge {
+      font-size: 0.7em; font-weight: 600;
+      background: var(--bg); border: 1px solid var(--border-strong);
+      color: var(--muted); padding: 1px 8px; border-radius: 20px;
+    }
+    .snap-points { list-style: none; padding: 0; margin: 0; }
+    .snap-points li {
+      font-size: 0.9em; color: var(--text);
+      padding: 3px 0 3px 18px;
+      position: relative;
+    }
+    .snap-points li::before {
+      content: "▸";
+      position: absolute; left: 2px;
+      color: var(--accent);
+    }
+
+    /* 分类区块 */
+    .section { margin-bottom: 30px; }
+    .section-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 4px; margin-bottom: 14px;
+      border-bottom: 2px solid var(--border);
+    }
+    .section-head .bar { width: 6px; height: 22px; border-radius: 3px; }
+    .section-head h2 { font-size: 1.15em; color: var(--text); flex: 1; }
+    .section-head .count { font-size: 0.8em; color: var(--muted); background: var(--card); border: 1px solid var(--border); padding: 2px 10px; border-radius: 20px; }
+    .bar-paper { background: var(--accent); }
+    .bar-github { background: var(--accent2); }
+    .bar-product { background: var(--warn); }
+    .bar-blog { background: var(--red); }
+
+    .item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: border-color .2s, transform .1s, box-shadow .2s;
+    }
+    .item:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+    .item:active { transform: scale(0.995); }
+    .item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .tag {
+      display: inline-block;
+      font-size: 0.72em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .tag-paper { background: var(--accent-soft); color: var(--accent); }
+    .tag-github { background: var(--accent2-soft); color: var(--accent2); }
+    .tag-product { background: var(--warn-soft); color: var(--warn); }
+    .tag-blog { background: var(--red-soft); color: var(--red); }
+    .detail-hint { font-size: 0.78em; color: var(--accent); opacity: .8; }
+    .item h3 { font-size: 1.1em; margin-bottom: 8px; }
+    .item h3 a { color: var(--text); text-decoration: none; }
+    .item h3 a:hover { color: var(--accent); }
+    .item .meta { color: var(--muted); font-size: 0.82em; margin-bottom: 10px; }
+    .item .summary { font-size: 0.95em; margin-bottom: 10px; color: var(--text); }
+    .item .insight {
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      padding: 8px 12px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.92em;
+      color: var(--text);
+    }
+    .item .insight strong { color: var(--accent); }
+
+    /* ===== 详情弹层（浅色） ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(30,41,59,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      overflow-y: auto;
+      padding: 30px 20px;
+    }
+    .modal.show { display: block; }
+    .modal-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 32px 36px;
+      position: relative;
+      box-shadow: var(--shadow-hover);
+      animation: pop .18s ease;
+    }
+    @keyframes pop { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .modal-close {
+      position: absolute;
+      top: 14px; right: 16px;
+      background: none; border: none;
+      color: var(--muted);
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+    .modal-close:hover { color: var(--text); background: var(--bg); }
+    .modal-content h2 {
+      font-size: 1.4em;
+      color: var(--text);
+      margin: 10px 0 6px;
+      line-height: 1.4;
+      padding-right: 30px;
+    }
+    .modal-content .meta { color: var(--muted); font-size: 0.85em; margin-bottom: 18px; }
+    .modal-body { margin-top: 8px; }
+    .modal-sec {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+    }
+    .modal-sec h4 { font-size: 0.95em; color: var(--accent); margin-bottom: 8px; }
+    .modal-sec p { font-size: 0.93em; color: var(--text); }
+    .modal-sources { background: var(--bg); }
+    .modal-business { background: var(--warn-soft); }
+    .modal-business h4 { color: var(--warn); }
+    .sources-list { list-style: none; padding: 0; margin: 0; }
+    .sources-list li { font-size: 0.88em; color: var(--text); margin-bottom: 6px; padding-left: 4px; }
+    .src-id { color: var(--accent); font-weight: 600; margin-right: 6px; }
+    .src-link { color: var(--accent); text-decoration: none; word-break: break-all; }
+    .src-link:hover { text-decoration: underline; }
+    .diagram-box {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      overflow-x: auto;
+      position: relative;
+    }
+    .diagram-svg svg { display: block; }
+    .diagram-zoom {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.82em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      z-index: 5;
+    }
+    .diagram-zoom:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ===== 架构图放大 lightbox ===== */
+    .diagram-lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.85);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      overflow: auto;
+      padding: 30px;
+    }
+    .diagram-lightbox.show { display: block; }
+    .diagram-lightbox-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .diagram-lightbox-inner .lb-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px;
+    }
+    .diagram-lightbox-inner .lb-head h3 { font-size: 1.1em; color: var(--text); }
+    .diagram-lightbox-inner .lb-tools { display: flex; align-items: center; gap: 8px; }
+    .lb-btn {
+      background: var(--accent-soft); color: var(--accent);
+      border: 1px solid var(--border-strong); border-radius: 8px;
+      padding: 5px 12px; font-size: 0.85em; font-weight: 600; cursor: pointer;
+      transition: all .15s;
+    }
+    .lb-btn:hover { background: var(--accent); color: #fff; }
+    .lb-close {
+      background: none; border: none; color: var(--muted);
+      font-size: 26px; line-height: 1; cursor: pointer; padding: 4px 8px; border-radius: 8px;
+    }
+    .lb-close:hover { color: var(--text); background: var(--bg); }
+    .diagram-lightbox-inner .lb-svg {
+      overflow: auto;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .diagram-lightbox-inner .lb-svg svg {
+      max-width: 100%;
+      height: auto;
+      transition: transform .15s ease;
+      transform-origin: center center;
+    }
+    .diagram-lightbox-inner .lb-svg svg.zoomed { transform: scale(1.6); cursor: grab; }
+    .diagram-lightbox-inner .lb-svg svg.zoomed:active { cursor: grabbing; }
+    .diagram-lightbox-inner .lb-tip { text-align: center; color: var(--muted); font-size: 0.8em; margin-top: 10px; }
+    .modal-foot {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .modal-link { color: var(--accent); font-size: 0.88em; text-decoration: none; word-break: break-all; }
+    .modal-link:hover { text-decoration: underline; }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8em;
+      padding: 30px 0 10px;
+      border-top: 1px solid var(--border);
+      margin-top: 30px;
+    }
+    .empty { color: var(--muted); text-align: center; padding: 40px; }
+    /* ===== 反馈按钮 + 提交按钮 ===== */
+    .feedback-fab {
+      position: fixed; bottom: 24px; right: 24px;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; color: #fff; font-size: 24px; cursor: pointer;
+      box-shadow: var(--shadow-hover);
+      z-index: 9000; transition: transform .15s;
+    }
+    .feedback-fab:hover { transform: scale(1.1); }
+    .modal-submit {
+      width: 100%; padding: 12px; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; font-size: 1em; font-weight: 600; cursor: pointer;
+    }
+    .modal-submit:hover { opacity: 0.9; }
+    @media (max-width: 600px) {
+      .modal-content { padding: 24px 18px; }
+      body { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🤖 <span class="grad">AI for Business</span> 每日晨报</h1>
+    <div class="date">业务知识库 · 业务语义理解 · API 精确查询 | 2026-08-19</div>
+    <a class="archive-link" href="archive/index.html">📚 历史晨报归档</a>
+  </header>
+
+  <div class="snapshot"><div class="snapshot-summary"><strong>📌 今日速览</strong><br>今日情报围绕"agent 可信治理栈"成型展开：学术端 Quipu 提出 governed bitemporal 知识图谱存储（agent 写入时代的四默认反转），Policy Algebra 把 reliability 从模型能力升级为 path property（9 维约束的 policy algebra 运行时拦截 94.8% 违规），Commercial Tax 量化 GraphRAG 采购基准的授权+成本盲区（NV-Embed-v2 cc-by-nc 盲区被 Nemotron-3-Embed-8B 7 月抹平，但付费 vs 自建 5.2-14.6 点鸿沟仍在）；博客端 TDS 两篇 8/18 同日发布（Sheila Teo $100M IT 流失检测 5 原则+Partha Sarkar 安全治理 ACL 层）+ DEW #283 Anthropic 多 agent 协调把 state isolation/protocol/HITL 升为平台原语；GitHub 端 Cube 三版本同日发布（v1.7.23/v1.7.22/v1.6.72 LTS postgres-driver UDT 线性时间构建+放弃 decompress 依赖）。四层分工（约束建模/记忆治理/语义暴露/流量管控）在本日获三支柱共振补全：Quipu 管知识图谱写入治理，Policy Algebra 管行动路径可靠性，TDS Sheila 管人机交接验证。</div><div class="snapshot-groups"><div class="snap-group"><span class="snap-bar snap-bar-paper"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-paper"></span>📄 学术论文<span class="badge">3 项</span></div><ul class="snap-points"><li>Quipu：governed bitemporal 知识图谱存储——agent 写入时代反转四个传统默认（写入前 gate 校验/bitemporal 独立时间轴/named graph 为信任与权限单元/governance spec 与审计本身是 store 内事实），gated store 0/6 缺陷 vs ungated 6/6，composition lattice 保证不放宽权限，50/50 bitemporal 重新推导 vs latest-only 全错报</li><li>Policy Algebra：trust-preserving agent execution——把 reliability 定义为 path property（9 维约束 identity/profile/tool/data/memory/budget/artifact/approval/audit），policy algebra 通过 join/intersection/budget narrowing/approval inheritance/evidence accumulation 组合出最小限制满足所有治理输入的可靠信封，运行时拦截 94.8% 违规事件同时保留 86.9% 任务完成率，消除 profile-monotonicity 与 zero-artifact-exhaustion 违规</li><li>Commercial Tax：multi-hop retrieval benchmark 的 rent-vs-own 盲区——领域锚点 NV-Embed-v2 是 cc-by-nc-4.0 非商业授权，4 个 MuSiQue 领先系统中 3 个依赖它但未声明；NVIDIA Nemotron-3-Embed-8B（2026-07-16 发布）首次抹平商业授权鸿沟（+0.24 Recall@5 vs anchor），但 API embedder 每次重索引按 token 收费 vs 自建零成本，GraphRAG 索引成本在第三方论文中 11x 跨度（USD 2.30 vs 24.94/5.64MB）</li></ul></div></div><div class="snap-group"><span class="snap-bar snap-bar-github"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-github"></span>🐙 开源项目<span class="badge">1 项</span></div><ul class="snap-points"><li>Cube v1.7.23/v1.7.22/v1.6.72 LTS 三版本同日发布（2026-08-18）——v1.7.23 postgres-driver 在线性时间构建 user defined types map（#11586）+ 跳过 relation array types（#11587）关闭 #11149；v1.7.22 backend-native 迁移 post-installer ^0.1.2 放弃 decompress 依赖（#11580）+ cube-cli 遵循 API items+pageInfo list shape（#11582）；v1.6.72 LTS 同步 postgres-driver 性能修复，语义层引擎周级迭代延续</li></ul></div></div><div class="snap-group"><span class="snap-bar snap-bar-product"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-product"></span>🏢 业界动态<span class="badge">1 项</span></div><ul class="snap-points"><li>Agent 可信治理栈四层分工成型——Quipu 管知识图谱写入治理（gate 校验+bitemporal+lattice 不放宽），Policy Algebra 管行动路径可靠性（9 维约束 path property+cost-aware artifact materialization），TDS Sheila 管人机交接验证（reviewable evidence 为有意输出+确定性代码拥有阈值+人反馈自改进闭环），三者共振指向"agent 可信不是靠更强模型而是靠分层治理基建+代码可控交接+持久可审计事实"。DEW Anthropic 多 agent 协调把 state isolation/protocol/HITL 升为平台原语补充流量管控层。与 8/16 四层分工（CSE 约束建模+GPM 记忆治理+dbt MCP 语义暴露+SBproxy 流量管控）映射：Quipu=记忆治理层 KG 写入治理，Policy Algebra=约束建模层 path property，TDS Sheila=语义暴露层人机交接</li></ul></div></div><div class="snap-group"><span class="snap-bar snap-bar-blog"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-blog"></span>📝 技术博客<span class="badge">3 项</span></div><ul class="snap-points"><li>TDS Sheila Teo《Building Enterprise Agent Systems that People can Trust, Verify and Improve》——$100M IT 托管商流失检测案例，5 原则：产品形态贴合业务流/每步给最简机制/重设人机交接工作/交接为验证与反馈设计/人反馈自改进闭环；核心洞察"agent harness 工程化≠产品成功，最被忽视的是产品/工作流/人机交接"，确定性代码拥有 recurrence threshold（记忆=代码不是 LLM）</li><li>DEW #283——Anthropic 多 agent 系统研究：共享激励与人类不同是核心观察，state isolation/protocol design/HITL 将成平台原语（agent 不再互调为 tool 时才暴露协调难题）；Brad Coles 声明式转换论：dbt/dynamic tables/Spark Declarative Pipelines 同一迁移，声明期望数据集+标准化依赖测试运营，AI 时代声明式成为业务逻辑默认（对 agent 可重复）</li><li>TDS Partha Sarkar《From Prototype to Production: Secure &amp; Governed AI Agents》——8/18 同日第二篇，企业就绪 agent 需建责任 AI 层（治理/安全/透明/可解释），pre-filter（gemini flash/GPT mini）做直接注入拦截+意图分类+prompt 抽取，ACL 两阶段（文档级向量库 pre-filter + 运行时权限），HITL 对高风险写操作（薪资更新/请假申请）强制暂停人审，与 Policy Algebra 的 approval/budget 维度共振</li></ul></div></div></div></div>
+
+  <div class="section"><div class="section-head"><span class="bar bar-paper"></span><h2>📄 学术论文</h2><span class="count">3 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-paper">📄 论文</span></div><h3><a href="https://arxiv.org/abs/2608.16813" target="_blank" rel="noopener">Quipu: A Governed Bitemporal Knowledge Graph Store</a></h3><div class="meta">2026-08-19 · arXiv 2608.16813</div><div class="summary">Steve Brown 提出 Quipu，一个 embeddable 知识图谱存储，专门针对 agent 写入时代反转四个传统默认：(1) 写入前 gate 校验 pending post-state（非写入后清理）；(2) data/trust labels/verdicts/rules 全部 bitemporal（非单时间轴或无）；(3) named graph 作为 authority 与 trust 单元，在 lattice 下组合且组合永不放宽；(4) governance spec Σ、trace、signed verdicts 本身是 store 内的事实，使审计 T⊨Σ 成为一个查询。用 Census 确定性多写者生命周期评测：gated store 0/6 planted defects vs ungated 6/6；全部 7 composition probes 维持 lattice 契约；50/50 satisfied verdicts 按其瞬间忠实重推导而 latest-only 规则集全 50 会误报；SARC reference checker 与 in-store audit 逐 verdict 一致。</div><div class="insight"><strong>🔍 技术视角：</strong>这是知识图谱路线本周最关键进展。用户长期纠结的"语义层 vs 企业知识图谱"二元选择，在 agent 写入时代有了精确答案：知识图谱路线的价值不再是"存关系"而是"存可治理的、bitemporal 的、lattice 不放宽权限的、审计即查询的事实"。Quipu 的四默认反转直接补全 8/17 已收录 TDS 持久知识层——TDS 的 Contradiction 一等对象+staleness+provenance 链在 Quipu 里被工程化为 named graph lattice + bitemporal verdicts + gate 校验。对用户"通过业务 API 查数"场景：业务知识图谱不再只是查询时召回的图，而是 agent 写入时即被治理的图，写入前 gate 校验意味着 agent 写入的领域知识必须通过业务规则谓词才能落地，这把"AI 生成定义无人批准=机器速度下带引用大规模错误"（8/17 Yannick）从警告变成可执行契约。引用数信息待核实（2026-08-17 新文，预期 0）。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 550" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="550" fill="#f8fafc"/><rect width="900" height="550" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">Quipu Governed Bitemporal KG Store — 写入治理四默认反转</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Agent 写入</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">领域知识/规则变更</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Gate 谓词</text><text x="352.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">评估 pending post-state</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Bitemporal Store</text><text x="548.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">data+trust+verdicts 双时间轴</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Named Graph Lattice</text><text x="744.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">权限单元 组合不放宽</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="277.0" y="208" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="352.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Governance Spec Σ</text><text x="352.0" y="252" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">trace+signed verdicts 是 store 内事实</text><rect x="473.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="548.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">审计查询 T⊨Σ</text><text x="548.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">SARC reference checker 一致</text><line x1="427.0" y1="237.0" x2="469.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">gate 写入前校验</tspan>　拒绝即不落地，gated 0/6 vs ungated 6/6 planted defects</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">bitemporal 重推导</tspan>　50/50 verdicts 按瞬间忠实重推导，latest-only 全 50 误报</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">lattice 不放宽</tspan>　7 composition probes 全 uphold，security 下限保证</text><rect x="30" y="442" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="460" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">审计即查询</tspan>　governance spec 与 verdicts 是 store 内事实，T⊨Σ 是 query 非 dashboard</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>知识图谱路线在 8/17 获 TDS 持久知识层（理解累积）+GraphRAG CTI（证据持久）两支柱后，8/19 Quipu 补全第三支柱：写入治理。三支柱共振把 KG 路线从"召回增强"升级为"可治理持久事实层"。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>四个反转：(1) gate 谓词在写入前评估 pending post-state，拒绝即不落地；(2) bitemporal 即事务时间+有效时间双轴，50/50 verdicts 可按任意历史瞬间重推导而 latest-only 全误报；(3) named graph lattice 组合的单一不变量是"组合永不放宽权限"（security 下限保证）；(4) governance spec Σ+trace+signed verdicts 是 store 内事实，审计 T⊨Σ 是 query 而非外部 dashboard。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>Census 评测用确定性多写者生命周期，单 seeded run 对每个研究问题评分 vs planted ground truth。gated 0/6 vs ungated 6/6 是最硬数字——证明 gate 在写入时即拦住全部 planted defects。7 composition probes 全 uphold lattice 契约证明组合不放宽。SARC reference checker 与 in-store audit verdict-for-verdict 一致（仅 coverage 差异）证明审计可信。Quipu 是 embeddable（非独立服务），意味着可作为 agent 的记忆子系统而非外部依赖。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>知识图谱路线在 agent 写入时代获可治理工程范式，企业 KG 投资从"建图召回"升级为"建 governed bitemporal 可审计事实层"。Quipu 的 lattice 不放宽权限是合规场景（金融/医疗）落地 KG 的安全前提。in-store audit 使"AI 结论可追溯"从口号变查询，是监管就绪的硬基建。与 8/17 Yannick"推断定义无人批准=机器速度下带引用大规模错误"形成工程闭环：gate 谓词就是"批准"的代码化。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>对用户业务知识图谱：采用 gate 谓词校验 agent 写入的业务术语/关系（如"active customer"定义变更必须通过规则谓词）；采用 bitemporal 双轴记录业务规则生效日（与 8/17 TDS effective-date scoping 共振，避免语义相似不编码时间）；采用 named graph lattice 按业务域（销售/财务/供应链）分权限且组合不放宽；采用 in-store audit 使"这条结论依据哪条规则"成为查询。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>Semantic Scholar 引用数因 429 限流未核实，标注信息待核实（2026-08-17 新文预期 0）。Census 是确定性合成评测，真实多 agent 异步并发写入下的 lattice 契约可维护性未验证。embeddable 设计意味着治理逻辑嵌入应用进程，跨服务共享需额外基础设施。gate 谓词的表达力与性能开销未报告（复杂业务规则谓词可能成瓶颈）。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2608.16813" target="_blank" rel="noopener" class="src-link">Quipu: A Governed Bitemporal Knowledge Graph Store</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2608.16813" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2608.16813</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-paper">📄 论文</span></div><h3><a href="https://arxiv.org/abs/2608.16402" target="_blank" rel="noopener">A Policy Algebra for Trust-Preserving Agentic AI Execution</a></h3><div class="meta">2026-08-19 · arXiv 2608.16402</div><div class="summary">Tripathi 等提出 policy algebra，把 agent reliability 定义为 path property 而非能力属性：agent 可靠当且仅当通过在 9 维约束（identity/profile/tool/data/memory/budget/artifact/approval/audit）下均 admissible 的行动事件完成任务。policy algebra 通过 joins/intersections/budget narrowing/approval inheritance/evidence accumulation 组合 security profiles 与 runtime obligations，产生既 trust-preserving 又满足所有治理输入的最小限制状态。algebra 跨多 agent 调用传播限制，引入 cost-aware artifact materialization 在 budget 暴露增长时将开放式执行重定向至可恢复结果。评测：运行时拦截 94.8% policy-violating 事件，保留 86.9% 任务完成率，消除 profile-monotonicity 与 zero-artifact-exhaustion 违规。Semantic Scholar 核实 citationCount=0/influentialCitationCount=0（2026-08-17 新文符合预期）。</div><div class="insight"><strong>🔍 技术视角：</strong>这是本周对"agent 可信"最形式化的贡献。8/16 已收录 CSE 量化约束饱和崩溃（5-6 约束乘法衰减），Policy Algebra 把约束从"一次能满足几条"升级为"一条行动路径在 9 维上是否全程 admissible"。path property 是关键洞察——不问"agent 能否完成"而问"通过什么路径完成"，因为未授权数据访问/扩大委托权限/未批准副作用/不可恢复预算消耗/证据不完整的成功结果不可靠。对用户"通过业务 API 查数"场景：agent 调业务 API 不是单次能力问题而是路径问题——调对了 API 但越权访问数据、用错 profile、消耗不可恢复预算、产出无审批 artifact 都使结果不可靠。policy algebra 的 cost-aware artifact materialization 与 8/16 SBproxy 流量管控层直接互补：SBproxy 管入口流量，policy algebra 管行动路径。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 550" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="550" fill="#f8fafc"/><rect width="900" height="550" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">Policy Algebra — reliability as path property (9 维约束组合)</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Agent 行动</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">调业务 API/查数/生成 artifact</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">9 维约束</text><text x="352.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">identity/profile/tool/data/memory/budget/artifact/approval/audit</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Policy Algebra 组合</text><text x="548.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">join/intersection/budget narrowing/approval inheritance/evidence accumulation</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">可靠信封</text><text x="744.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">最小限制满足所有治理输入</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="179.0" y="208" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="254.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">运行时拦截</text><text x="254.0" y="252" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">94.8% policy-violating 事件</text><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Cost-aware Materialization</text><text x="450.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">budget 暴露增长→可恢复 outcome</text><line x1="329.0" y1="237.0" x2="371.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="571.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="646.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">86.9% 任务完成</text><text x="646.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">trade-off 非能力基准</text><line x1="525.0" y1="237.0" x2="567.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">path property 非能力属性</tspan>　不问能否完成，问通过什么路径完成；越权/超预算/无审批的成功不可靠</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">消除两类违规</tspan>　profile-monotonicity（更严 profile 结果更宽）+ zero-artifact-exhaustion（预算耗尽无产出）</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">跨 agent 传播</tspan>　被委托 agent 继承委托者约束子集，防子 agent 绕权限</text><rect x="30" y="442" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="460" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">trade-off 量化</tspan>　94.8% 拦截 + 86.9% 完成 = 5.2% 放行 + 13.1% 未完成，需 HITL 兜底</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>8/16 四层分工的约束建模层（CSE）只量化"约束饱和"，Policy Algebra 补全"约束如何组合成可靠信封"。94.8% 拦截率+86.9% 完成率是"可靠 vs 能力"trade-off 的首个量化点。path property 概念把 agent 治理从"能力基准"转向"路径审计"，是监管就绪的形式化基础。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>9 维约束：identity（谁）/profile（角色）/tool（可用工具）/data（可访问数据）/memory（可读历史）/budget（可消耗预算）/artifact（可产出物）/approval（需谁批）/audit（需留什么痕）。组合操作：join（并集限制）/intersection（交集最严）/budget narrowing（预算收窄）/approval inheritance（审批继承）/evidence accumulation（证据累积）。cost-aware artifact materialization：当 budget 暴露增长，重定向开放式执行至可恢复 outcome（物化中间 artifact 以便失败回滚）。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>policy-monotonicity 违规指"profile 更严但结果更宽"的悖论，algebra 消除之；zero-artifact-exhaustion 违规指"预算耗尽但无 artifact 产出"，cost-aware materialization 消除之。94.8% 拦截+86.9% 完成率意味着 5.2% 违规被放行（trade-off）且 13.1% 任务因约束未完成。跨多 agent 调用传播限制意味着被委托 agent 继承委托者的约束子集，防止"用子 agent 绕过权限"。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>policy algebra 把"agent 可信"从营销词变形式化契约，是合规/审计场景（金融交易/医疗诊断）落地 agent 的监管就绪前提。9 维约束可直接映射企业现有 IAM/RBAC/数据治理/预算审批/审计体系，降低 agent 落地的治理迁移成本。cost-aware materialization 的"失败可回滚"是高风险业务操作（资金调拨/合同生成）上 agent 的安全网。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>对用户 agent 调业务 API：为每个业务 API 定义 9 维约束（如财务 API 需 identity=财务角色+profile=分析师+tool=财务API+data=本季度+budget=10次+artifact=报告+approval=财务主管+audit=全链路）。agent 调用前 policy algebra 组合约束生成可靠信封，运行时拦截越权。cost-aware materialization 用于多步查询：物化中间结果以便某步失败时回滚至上一致状态而非从头重来。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>引用数已核实 0/0（Semantic Scholar 成功）。94.8% 拦截率是合成评测，真实业务规则的 9 维约束谓词表达与组合复杂度未报告。86.9% 完成率意味着 13.1% 任务因约束未完成——对高吞吐业务场景可能不可接受，需 HITL 兜底（与 TDS Sheila 人机交接共振）。cost-aware materialization 的 artifact 存储成本未量化。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2608.16402" target="_blank" rel="noopener" class="src-link">A Policy Algebra for Trust-Preserving Agentic AI Execution</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2608.16402" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2608.16402</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-paper">📄 论文</span></div><h3><a href="https://arxiv.org/abs/2608.16096" target="_blank" rel="noopener">The Commercial Tax: Rent-vs-Own Blind Spots in Multi-Hop Retrieval Benchmarks</a></h3><div class="meta">2026-08-19 · arXiv 2608.16096</div><div class="summary">Sanchez &amp; Dehnad 指出 multi-hop retrieval 基准遗漏买家两个关键事实：(1) 授权——领域锚点 NV-Embed-v2 是 cc-by-nc-4.0 非商业授权，4 个 MuSiQue 领先系统（HippoRAG-2/PropRAG/SAG/KET-RAG）中 3 个依赖它拿最佳数字但未声明；(2) 成本——13 个 embedder（8 家厂商）在同一 MuSiQue harness 上测，带 bootstrap 置信区间。直到 2026 年中存在真实商业税：最佳商业授权 embedder 落后锚点 2.31 Recall@5 点。NVIDIA Nemotron-3-Embed-8B（2026-07-16 发布）首次抹平（+0.24 Recall@5，95% CI [-0.94,+1.43]，p=0.69，与锚点不可区分），且是唯一商业授权+免费自建+与锚点不可区分的 entrant；其他满足前两条件的低 5.2-14.6 点。持久发现是付费 vs 自建鸿沟：API embedder 每次重索引按 token 收费，自建零成本。GraphRAG 索引成本在第三方论文中 11x 跨度（USD 2.30 vs 24.94/5.64MB）。Semantic Scholar 引用数信息待核实（限流）。</div><div class="insight"><strong>🔍 技术视角：</strong>这是本周对用户"语义层 vs 知识图谱"双路线决策最实用的采购指南。用户团队已建研发知识库转型业务，正面临"选 GraphRAG 还是 semantic layer"的采购决策。Commercial Tax 量化了 GraphRAG 路线的两个隐藏成本：(1) 授权盲区——领先系统用的 embedder 可能不可商用，企业部署前必须审计 embedder 授权链；(2) 成本盲区——GraphRAG 索引成本 11x 跨度且多数系统不披露，API embedder 每次重索引按 token 收费 vs 自建零成本。Nemotron-3-Embed-8B 抹平商业税是 7 月关键事件——现在可商用+免费自建+与锚点不可区分，但 5.2-14.6 点鸿沟说明"免费自建但非锚点级"的 embedder 仍显著落后。对用户：semantic layer 路线（Cube/WrenAI/dbt）的嵌入成本结构更可控（语义层是结构化 schema 非全语料嵌入），GraphRAG 路线需预算重索引成本。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 550" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="550" fill="#f8fafc"/><rect width="900" height="550" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">Commercial Tax — GraphRAG 采购的授权+成本双盲区</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Multi-hop 基准</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">MuSiQue 领先系统排名</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">授权盲区</text><text x="352.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">NV-Embed-v2 cc-by-nc-4.0 锚点</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">3/4 系统依赖未声明</text><text x="548.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">HippoRAG-2/PropRAG/SAG/KET-RAG</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">成本盲区</text><text x="744.0" y="124" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">GraphRAG 索引 11x 跨度</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="277.0" y="208" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Nemotron-3-Embed-8B</text><text x="352.0" y="252" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">2026-07-16 抹平商业税</text><rect x="473.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="548.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">付费 vs 自建鸿沟</text><text x="548.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">API re-index 按 token vs 自建零成本</text><line x1="427.0" y1="237.0" x2="469.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">商业税 2.31 点</tspan>　2026 年中前最佳商业 embedder 落后锚点 2.31 Recall@5（95% CI [0.91,3.71] p=0.001）</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">Nemotron 抹平</tspan>　+0.24 Recall@5 与锚点不可区分（p=0.69），唯一商业+免费自建+锚点级</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">11x 成本跨度</tspan>　GraphRAG 索引 USD 2.30 vs 24.94/5.64MB，3/5 系统不披露索引成本</text><rect x="30" y="442" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="460" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">持久鸿沟</tspan>　API embedder 每次重索引按 token 收费，自建零成本——语料频繁更新场景自建更优</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>用户正处双路线采购决策期，Commercial Tax 提供采购前必做的两项审计（授权链+成本结构）。8/17 已收录 Triple-Robustness 评测 GraphRAG 客观效果（3+跳才显优势），Commercial Tax 补全"效果之外还有商业可行性"维度。两者结合：3+跳用 GraphRAG（但审计授权+预算成本），短跳用 semantic layer（成本可控）。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>授权审计：NV-Embed-v2（cc-by-nc-4.0）是 MuSiQue 领先系统的事实锚点，3/4 系统依赖未声明。商业税量化：最佳商业 embedder 落后锚点 2.31 Recall@5 点（2026 年中前）。Nemotron-3-Embed-8B（2026-07-16）首次抹平：+0.24 Recall@5 与锚点不可区分（p=0.69），唯一商业授权+免费自建+锚点级。付费 vs 自建鸿沟：API embedder 每次 re-index 按 token 收费，自建零成本（持久发现）。GraphRAG 成本不透明：3/5 系统不披露索引成本，唯一公开数字 11x 跨度。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>2.31 点商业税在 2026 年中前是真实的——意味着企业用商业 embedder 比学术锚点差 2.31 Recall@5。Nemotron-3-Embed-8B 抹平是 7 月事件，但 5.2-14.6 点鸿沟说明非锚点级商业 embedder 仍显著落后。11x 索引成本跨度（USD 2.30 vs 24.94/5.64MB）意味着同一 GraphRAG 方法在不同实现下成本差 11 倍——采购前必须要求供应商披露索引成本。bootstrap 置信区间贯穿是评测方法学亮点。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>Commercial Tax 是 agent 采购的隐藏成本显性化——企业选 GraphRAG 路线可能因 embedder 授权（cc-by-nc 不可商用）或 re-index 成本（API 按 token）而预算超支或被迫下线。Nemotron-3-Embed-8B 抹平商业税是 7 月关键事件，降低 GraphRAG 商用门槛。对用户：双路线决策应纳入"总拥有成本"=嵌入授权+索引成本+re-index 频率×token 单价，semantic layer 在此维度通常更优（结构化 schema 驱动）。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>对用户双路线决策：选 GraphRAG 前审计 embedder 授权链（是否 cc-by-nc 依赖）+要求供应商披露索引成本（避免 11x 意外）+预算 re-index 成本（语料更新时 API embedder 按 token 收费）。选 semantic layer 前确认其成本结构（schema 驱动非全语料嵌入，成本更可控）。若用 GraphRAG，Nemotron-3-Embed-8B 是当前唯一商业安全+免费自建+锚点级选择。短跳（&lt;3）用 semantic layer 足够，3+跳才需 GraphRAG（与 8/17 Triple-Robustness 共振）。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>Semantic Scholar 引用数因 429 限流未核实，标注信息待核实（2026-08-17 新文预期 0）。MuSiQue 是单基准，跨基准的授权/成本模式未验证。Nemotron-3-Embed-8B 的"与锚点不可区分"是统计意义（p=0.69 不拒绝原假设）非"等同"，Recall@10 实际 -0.58。GraphRAG 11x 成本跨度来自单一第三方论文，不同实现/语料可能不同。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2608.16096" target="_blank" rel="noopener" class="src-link">The Commercial Tax: Rent-vs-Own Blind Spots in Multi-Hop Retrieval Benchmarks</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2608.16096" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2608.16096</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-product"></span><h2>🏢 业界动态</h2><span class="count">1 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-product">🏢 业界动态</span></div><h3><a href="https://arxiv.org/abs/2608.16813" target="_blank" rel="noopener">Agent 可信治理栈四层分工成型：Quipu KG 写入治理 + Policy Algebra path property + TDS Sheila 人机交接验证</a></h3><div class="meta">2026-08-19 · 综合研判（Quipu + Policy Algebra + TDS Sheila + DEW Anthropic）</div><div class="summary">本日四支柱共振指向"agent 可信治理栈四层分工成型"：Quipu 管知识图谱写入治理（gate 校验+bitemporal+lattice 不放宽+审计即查询），Policy Algebra 管行动路径可靠性（9 维约束 path property+cost-aware materialization+94.8% 拦截/86.9% 完成），TDS Sheila 管人机交接验证（reviewable evidence 有意输出+确定性代码管阈值+人反馈自改进），DEW Anthropic 管多 agent 协调平台原语（state isolation/protocol/HITL）。与 8/16 已收录四层分工（CSE 约束建模+GPM 记忆治理+dbt MCP 语义暴露+SBproxy 流量管控）精确映射：Quipu=记忆治理层 KG 写入治理，Policy Algebra=约束建模层 path property，TDS Sheila=语义暴露层人机交接，DEW Anthropic=流量管控层平台原语。</div><div class="insight"><strong>🔍 技术视角：</strong>本日四支柱共振把"语义层 vs 知识图谱"二元选择彻底升级为四层各司其职的治理架构。最核心战略研判：agent 可信不是靠更强模型而是靠"分层治理基建+代码可控交接+持久可审计事实"。Quipu 的 gate 校验把 8/17 Yannick"推断定义无人批准=机器速度下带引用大规模错误"从警告变成可执行契约——agent 写入知识图谱前必须通过业务规则谓词。Policy Algebra 的 path property 把 8/16 CSE 约束饱和从"一次能满足几条"升级为"一条行动路径在 9 维上是否全程 admissible"。TDS Sheila 的"确定性代码管阈值"与 Policy Algebra path property 共振——threshold 是业务规则谓词的代码化。DEW Anthropic 的"激励错位非能力不足"解释了为何四层分工必要：约束不是限制能力而是对齐激励。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 550" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="550" fill="#f8fafc"/><rect width="900" height="550" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">Agent 可信治理栈四层分工 — 本日四支柱共振补全 8/16 四层</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">记忆治理层</text><text x="156.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">Quipu gate+bitemporal+lattice</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">约束建模层</text><text x="352.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">Policy Algebra 9 维 path property</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">语义暴露层</text><text x="548.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">TDS Sheila reviewable evidence+确定性代码</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">流量管控层</text><text x="744.0" y="124" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">DEW Anthropic state isolation/protocol/HITL</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="277.0" y="208" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Agent 调业务 API</text><text x="352.0" y="252" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">四层联合治理</text><rect x="473.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="548.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">可信可审计结果</text><text x="548.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">gate+path+evidence+isolation</text><line x1="427.0" y1="237.0" x2="469.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">治理代码化共振</tspan>　Quipu gate 谓词+Policy Algebra path property+Sheila 确定性代码管阈值=治理代码化三角</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">可审计可回滚共振</tspan>　Quipu bitemporal+Policy Algebra cost-aware materialization+Sheila reviewable evidence=可审计可回滚三角</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">激励对齐共振</tspan>　DEW Anthropic 激励错位+Policy Algebra 9 维约束+Sheila 人反馈自改进=激励对齐三角</text><rect x="30" y="442" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="460" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">跨日一致性</tspan>　与 8/16 四层分工（CSE+GPM+dbt MCP+SBproxy）映射验证分工架构非偶然共振而是领域共识</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>用户正建业务 agent 调业务 API，可信治理栈是生产就绪前提。本日四支柱从四个维度（KG 写入/行动路径/人机交接/多 agent 协调）共振补全 8/16 四层分工，形成完整治理架构。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>四层映射：(1) 记忆治理层——Quipu gate 校验 agent 写入 KG+bitemporal 双时间轴+lattice 不放宽权限+审计即查询；(2) 约束建模层——Policy Algebra 9 维约束 path property+join/intersection/budget narrowing 组合+cost-aware materialization+94.8% 拦截；(3) 语义暴露层——TDS Sheila reviewable evidence 有意输出+确定性代码管阈值+人反馈自改进闭环；(4) 流量管控层——DEW Anthropic state isolation+protocol design+HITL 平台原语。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>四支柱交叉验证：(1) Quipu gate 校验=Policy Algebra data/memory 维度的写入侧——agent 写入 KG 前过 data/memory 约束谓词；(2) Policy Algebra approval 维度=TDS Sheila HITL 的形式化——高风险写需 approval 维度 admissible；(3) TDS Sheila reviewable evidence=Quipu in-store audit 的产品侧——证据随结论同行即审计即查询的产品化；(4) DEW Anthropic 激励错位=Policy Algebra 9 维约束的根因解释——约束对齐激励。三组共振：(1) Quipu gate+Policy Algebra path property+Sheila 确定性代码管阈值="治理代码化"共振；(2) Quipu bitemporal+Policy Algebra cost-aware materialization+Sheila reviewable evidence="可审计可回滚"共振；(3) DEW Anthropic 激励错位+Policy Algebra 9 维约束+Sheila 人反馈自改进="激励对齐"共振。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>四层分工是"AI for 业务"立项的治理架构骨架——agent 可信投资应四维并行而非单点突破。Quipu gate+Policy Algebra path property 使"AI 结论可追溯+行动可审计"从口号变契约（监管就绪）。TDS Sheila 5 原则+DEW Anthropic 平台原语使"agent 落地"从 harness 工程变产品+工作流+组织变更工程。与 8/16 四层分工（CSE+GPM+dbt MCP+SBproxy）映射验证了分工架构的跨日一致性——非偶然共振而是领域共识。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>对用户业务 agent 四层分工落地：(1) 记忆治理——业务知识图谱用 Quipu 式 gate 校验 agent 写入的业务术语/关系+bitemporal 记录生效日+lattice 按业务域分权限；(2) 约束建模——为每个业务 API 定义 9 维约束（identity/profile/tool/data/memory/budget/artifact/approval/audit）+ policy algebra 组合生成可靠信封；(3) 语义暴露——agent 交接给人时带 reviewable evidence（调了哪个 API+返回什么+为什么）+阈值用确定性代码（如金额&gt;100万审批是代码非 LLM）；(4) 流量管控——多 agent 协调用 state isolation+protocol+HITL 平台原语。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>四支柱来自不同来源（Quipu/Policy Algebra 学术+TDS Sheila/DEW Anthropic 博客），共振是研判非原文献主张。各支柱的量化（Quipu 0/6 defects/Policy Algebra 94.8% 拦截/Sheila 5 原则/Anthropic 平台原语）来自各自评测或经验，跨支柱集成效果未验证。四层分工的工程实现复杂度高——企业可能需分阶段落地（先约束建模+语义暴露，再记忆治理+流量管控）。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2608.16813" target="_blank" rel="noopener" class="src-link">Quipu: A Governed Bitemporal Knowledge Graph Store</a></li><li><span class="src-id">[2]</span> <a href="https://arxiv.org/abs/2608.16402" target="_blank" rel="noopener" class="src-link">A Policy Algebra for Trust-Preserving Agentic AI Execution</a></li><li><span class="src-id">[3]</span> <a href="https://towardsdatascience.com/building-enterprise-agent-systems-that-people-can-trust-verify-and-improve/" target="_blank" rel="noopener" class="src-link">Building Enterprise Agent Systems that People can Trust, Verify and Improve</a></li><li><span class="src-id">[4]</span> <a href="https://www.dataengineeringweekly.com/p/data-engineering-weekly-283" target="_blank" rel="noopener" class="src-link">Data Engineering Weekly #283</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2608.16813" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2608.16813</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-github"></span><h2>🐙 开源项目</h2><span class="count">1 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-github">🐙 GitHub</span></div><h3><a href="https://github.com/cube-js/cube/releases/tag/v1.7.23" target="_blank" rel="noopener">Cube v1.7.23 / v1.7.22 / v1.6.72 LTS — postgres-driver 性能 + 放弃 decompress 依赖</a></h3><div class="meta">2026-08-19 · GitHub (cube-js/cube)</div><div class="summary">Cube 2026-08-18 三版本同日发布：v1.7.23（latest）postgres-driver 在线性时间构建 user defined types map（#11586，closes #11149）+ 跳过 relation array types when loading user defined types（#11587，closes #11149）；v1.7.22 backend-native 迁移 post-installer ^0.1.2 放弃 decompress 依赖（#11580）+ cube-cli 遵循 API items+pageInfo list shape（#11582）；v1.6.72 LTS 同步 postgres-driver UDT 性能修复（#11586/#11587 同 commit）。延续 8/18 已收录 v1.7.21 的 cube spec CLI+分支审阅+v1.6.71 LTS playground bypass 安全收紧，本周 Cube 连续 4 版本密集迭代（v1.7.20→v1.7.23+v1.6.71→v1.6.72）。</div><div class="insight"><strong>🔍 技术视角：</strong>Cube 本周连续 4 版本密集迭代延续语义层引擎周级节奏。两个关键信号：(1) postgres-driver UDT 线性时间构建——UDT（user defined types）在 Postgres 业务库中常见（业务域枚举/复合类型），线性时间构建意味着大 schema 的 UDT 加载从 O(n²) 降 O(n)，对用户"上百字段宽表 API"场景（底层可能对接 Postgres）直接性能受益；(2) 放弃 decompress 依赖——延续 8/13 已收录"drop unmaintained decompress"供应链安全加固，语义层承重墙依赖链漏洞传导所有查询的风险持续被治理。cube-cli 遵循 API list shape 是 8/18 已收录 cube spec CLI 的配套——语义层定义从配置文件升级为可治理代码资产后，CLI 工具链也在规范化。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 550" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="550" fill="#f8fafc"/><rect width="900" height="550" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">Cube v1.7.23/v1.7.22/v1.6.72 — UDT 性能+供应链加固+CLI 规范化</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Postgres 业务库</text><text x="156.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">UDT（枚举/复合类型）</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">postgres-driver</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">UDT map 线性时间构建</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">跳过 relation array types</text><text x="548.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">避免无意义加载</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">backend-native post-installer</text><text x="744.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">放弃 decompress 依赖</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="277.0" y="208" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="352.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">cube-cli</text><text x="352.0" y="252" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">items+pageInfo list shape</text><rect x="473.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="548.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">LTS v1.6.72</text><text x="548.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">同步 UDT 性能+安全</text><line x1="427.0" y1="237.0" x2="469.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">UDT 线性时间</tspan>　大 schema UDT 加载从 O(n²) 降 O(n)，宽表 API 底层 Postgres 直接受益</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">放弃 decompress</tspan>　供应链安全加固，语义层承重墙依赖链漏洞传导风险持续治理</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">CLI list shape 规范化</tspan>　cube-cli 输出与 API 返回结构一致，脚本可依赖稳定结构</text><rect x="30" y="442" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="460" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">LTS 同步</tspan>　v1.6.72 同步 UDT 修复，生产用户不必升 v1.7.x 也能获性能+安全</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>用户关注语义层路线（Cube 是三栈之一），Cube 周级迭代节奏是语义层工业成熟度硬指标。postgres-driver UDT 性能+放弃 decompress 依赖两个修复直接关系用户场景（宽表 API 底层对接+供应链安全）。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>v1.7.23 postgres-driver：UDT map 线性时间构建（#11586）+ 跳过 relation array types（#11587）关闭 #11149（UDT 加载性能问题）。v1.7.22 backend-native：post-installer ^0.1.2 放弃 decompress（#11580，供应链加固）+ cube-cli items+pageInfo list shape（#11582，CLI 规范化）。v1.6.72 LTS：同步 UDT 修复（LTS 通道安全+性能同步）。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>UDT 线性时间构建是数据库 driver 性能优化——传统 UDT map 构建可能 O(n²)（嵌套查询），线性时间意味着批量加载+哈希索引。跳过 relation array types 避免 Postgres 在加载 UDT 时把 relation 的 array 类型也拉进来（无意义且慢）。放弃 decompress 是供应链安全——decompress 包有已知漏洞，post-installer 替代。cube-cli list shape 规范化是 API 契约——CLI 输出与 API 返回结构一致便于脚本处理。LTS 通道同步性能修复意味着生产用户不必升级到 v1.7.x 也能获 UDT 性能。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>Cube 周级迭代节奏（本周 4 版本）是语义层工业成熟度的硬指标——企业可信赖持续迭代而非停滞。UDT 性能+供应链安全两个修复关系生产可靠性。LTS 通道同步关键修复降低企业升级风险（不必追 v1.7.x 也能获安全+性能）。与 8/18 dbt Core v1.12 GA（Rust parser 5-10x 更快）+ WrenAI wren-core 形成语义层三栈 Rust 核心化+周级迭代趋势。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>对用户若 Cube 对接 Postgres 业务库：升级 v1.7.23/v1.6.72 获 UDT 加载性能（尤其大 schema/多 UDT 场景）。若用 cube-cli 管理语义层：升级 v1.7.22 获 items+pageInfo 规范化 list shape（脚本可依赖稳定结构）。供应链安全：放弃 decompress 降低语义层承重墙依赖链漏洞传导风险。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>v1.7.23 UDT 修复关闭 #11149 但原 issue 的具体场景（UDT 数量级/慢的程度）未在 release notes 详述。cube-cli list shape 变更可能是 breaking change（依赖旧 list shape 的脚本需适配）。LTS v1.6.72 同步 UDT 修复但非 v1.7.x 全部功能（LTS 通道功能冻结只安全+关键性能）。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://github.com/cube-js/cube/releases/tag/v1.7.23" target="_blank" rel="noopener" class="src-link">Cube v1.7.23 Release</a></li></ol></div><div class="modal-foot"><a href="https://github.com/cube-js/cube/releases/tag/v1.7.23" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://github.com/cube-js/cube/releases/tag/v1.7.23</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-blog"></span><h2>📝 技术博客</h2><span class="count">3 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-blog">📝 技术博客</span></div><h3><a href="https://towardsdatascience.com/building-enterprise-agent-systems-that-people-can-trust-verify-and-improve/" target="_blank" rel="noopener">Building Enterprise Agent Systems that People can Trust, Verify and Improve</a></h3><div class="meta">2026-08-19 · Towards Data Science (Sheila Teo)</div><div class="summary">Sheila Teo 基于 $100M+ managed IT provider 客户流失检测项目提出企业 agent 生产化 5 原则：(1) 产品形态贴合业务流——agent harness 不是产品，工作流贴合才是；(2) 每步给最简机制——确定性代码拥有 recurrence threshold（记忆=代码不是 LLM），LLM 只做模糊部分；(3) 重设人机交接工作——account manager 的 job 被重设而非自动化掉；(4) 交接为验证与反馈设计——reviewable evidence 是有意输出（不只报风险等级而留人重建原因），证据随结论同行；(5) 人反馈自改进闭环。案例：service ticket 重复模式检测，account manager 原需记忆早期 incident+判断 pattern+收集证据+alert，agent 自动每周拉新 ticket→summarize-and-embed→比对历史→生成带证据的 churn risk alert。</div><div class="insight"><strong>🔍 技术视角：</strong>这是本周最贴合用户"AI for 业务"落地的方法论。核心洞察"agent harness 工程化≠产品成功，最被忽视的是产品/工作流/人机交接"直击用户团队转型痛点——研发知识库已建成，但业务 agent 落地的瓶颈不在 harness 而在产品形态与人机交接设计。原则2"确定性代码拥有 recurrence threshold"与 8/18 已收录 Policy Algebra 的 path property 共振：threshold 是业务规则谓词，agent 行动必须通过它。原则4"reviewable evidence 是有意输出"与 8/17 TDS 持久知识层"知识页永远不是源总是可追溯"共振——证据随结论同行即 provenance 链。原则5"人反馈自改进"与 8/13 LinkedIn 自进化 agent 共振——但 Sheila 更务实：先建人反馈闭环再谈自进化。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 550" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="550" fill="#f8fafc"/><rect width="900" height="550" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">Sheila 5 原则 — 企业 agent 落地可信+可验证+可改进</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">业务工作流</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">客户查询/订单/对账</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">原则1 产品形态贴合</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">agent 是 step 非全部</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">原则2 确定性代码管阈值</text><text x="548.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">recurrence threshold=代码非 LLM</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">LLM 管模糊</text><text x="744.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">summarize/embed/分类</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="179.0" y="208" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="254.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">原则3 重设人 job</text><text x="254.0" y="252" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">信息收集者→证据审查者</text><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">原则4 reviewable evidence</text><text x="450.0" y="252" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">证据随结论同行 intentional</text><line x1="329.0" y1="237.0" x2="371.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="571.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="646.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">原则5 人反馈自改进</text><text x="646.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">反馈喂回 embed/阈值/分类</text><line x1="525.0" y1="237.0" x2="567.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">harness≠产品</tspan>　最被忽视的是产品/工作流/人机交接，agent harness 工程化不等于产品成功</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">记忆=代码</tspan>　确定性代码拥有 recurrence threshold，LLM 只做模糊部分（summarize/embed/分类）</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">证据有意输出</tspan>　alert 带 reviewable evidence 不只风险等级，证据随结论同行非事后补充</text><rect x="30" y="442" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="460" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">人 job 重设</tspan>　account manager 从记忆+判断+收集+alert 重设为审证据+决策，组织变更维度</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>用户团队从研发转型业务，最缺的不是 harness 技术而是"业务 agent 怎么落地"方法论。Sheila 的 5 原则来自真实 $100M 公司部署，非理论。原则1-3 管"怎么建"，原则4-5 管"怎么可信+怎么改进"，覆盖落地全生命周期。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>5 原则：(1) 产品形态贴合业务流——agent 是工作流的一个 step 不是全部；(2) 每步最简机制——确定性代码管阈值/规则，LLM 只管模糊（summarize/embed/分类）；(3) 重设人机交接——account manager 的 job 从"记忆+判断+收集+alert"重设为"审 reviewable evidence+决策"；(4) 交接为验证反馈设计——alert 带 reviewable evidence（不只风险等级），证据是 intentional output；(5) 人反馈自改进——account manager 的反馈喂回系统改进 embed/阈值/分类。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>案例的确定性代码拥有 recurrence threshold 是关键——"service issue 重复 N 次"的 N 是代码阈值不是 LLM 判断，这避免了 LLM 在计数/比较上的不可靠。LLM 只做 summarize-and-embed（模糊→向量）+ 分类（新 ticket 是否匹配历史 pattern）。reviewable evidence 为有意输出意味着 alert 设计时就规划"证据随结论同行"，而非事后补充解释。人机交接重设 account manager 的 job——从"信息收集者"变"证据审查者+决策者"，这是 agent 落地的组织变更维度。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>5 原则是"AI for 业务"立项的方法论骨架——agent 投资不应从 harness 开始应从业务工作流贴合+人机交接设计开始。原则2"确定性代码拥有阈值"是 agent 可信的工程前提（与 Policy Algebra path property 共振）。原则4"reviewable evidence 为有意输出"是监管/审计就绪的产品设计（与 Quipu in-store audit 共振）。原则3"重设人 job"是 agent 落地的组织变更管理维度——不可忽视。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>对用户业务 agent：(1) 先画业务工作流（客户查询/订单分析/财务对账）再决定 agent 在哪 step；(2) 阈值/规则/业务逻辑用确定性代码（如"订单金额&gt;100万需审批"是代码不是 LLM 判断），LLM 只做语义匹配/摘要/分类；(3) agent 交接给人时带 reviewable evidence（调了哪个 API+返回什么+为什么得出结论），不只给结论；(4) 人的"这个结论对不对"反馈喂回改进 embed/阈值；(5) 人 job 从"查数"重设为"审证据+决策"。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>案例是 managed IT provider 的 churn 检测，场景特定（service ticket 文本+重复模式）。$100M 公司规模可能不足以代表超大型企业。5 原则是经验总结非对照实验，未量化各原则贡献。reviewable evidence 的"有意输出"设计成本未讨论（可能增加 agent 输出 token 成本）。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://towardsdatascience.com/building-enterprise-agent-systems-that-people-can-trust-verify-and-improve/" target="_blank" rel="noopener" class="src-link">Building Enterprise Agent Systems that People can Trust, Verify and Improve</a></li></ol></div><div class="modal-foot"><a href="https://towardsdatascience.com/building-enterprise-agent-systems-that-people-can-trust-verify-and-improve/" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://towardsdatascience.com/building-enterprise-agent-systems-that-people-can-trust-verify-and-improve/</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-blog">📝 技术博客</span></div><h3><a href="https://www.dataengineeringweekly.com/p/data-engineering-weekly-283" target="_blank" rel="noopener">Data Engineering Weekly #283 — Anthropic 多 agent 协调 + 声明式转换 AI 时代</a></h3><div class="meta">2026-08-19 · Data Engineering Weekly (Ananth Packkildurai)</div><div class="summary">DEW #283（2026-08-17）两条核心：(1) Anthropic《Patterns and problems in emerging multiagent systems》研究——agent swarm 在共享环境找漏洞但挣扎，核心观察不是"agent 行为意外"而是"agent 共享激励与人类不同"；当 agent 超越互调为工具，state isolation/protocol design/HITL 将成平台原语。(2) Brad Coles《Data Engineering's Shift from Imperative to Declarative》——dbt/dynamic tables/Spark Declarative Pipelines 是同一迁移：声明期望数据集+标准化依赖测试运营行为，声明式正成为业务逻辑默认（对 agent 可重复）。另推荐 Uber 支付平台 zero-sum 原则（immutable money order+double-entry accounting 是核心 data contract 先于 Kafka/microservice）、Depop Spark 成本降 52%、StreamFusion 列式流执行。</div><div class="insight"><strong>🔍 技术视角：</strong>Anthropic 多 agent 研究的"共享激励与人类不同"是本周对 agent 治理最深刻的洞察——agent 不可靠的根因不是能力不足而是激励错位。这解释了为何 8/16 Policy Algebra 的 9 维约束必要：约束不是限制 agent 能力而是对齐 agent 激励与人类治理。"state isolation/protocol design/HITL 将成平台原语"与 8/16 SBproxy 流量管控层+8/19 Policy Algebra approval 维度+8/19 TDS Sheila 人机交接三支柱共振——三者都是把"agent 间协调"从应用层下沉到平台层。Brad Coles 声明式转换论对用户"业务知识库"直接启示：业务逻辑应声明式定义（dbt-style）以便 agent 可重复执行，而非命令式硬编码。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 550" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="550" fill="#f8fafc"/><rect width="900" height="550" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">DEW #283 — 多 agent 协调平台原语 + 声明式业务逻辑</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Agent Swarm</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">共享环境找漏洞但挣扎</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">根因：激励错位</text><text x="352.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">共享激励≠人类激励</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">State Isolation</text><text x="548.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">平台原语 防 agent 互相污染</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Protocol Design</text><text x="744.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">平台原语 规范 agent 通信</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="179.0" y="208" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="254.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">HITL</text><text x="254.0" y="252" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">平台原语 高风险兜底</text><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">声明式业务逻辑</text><text x="450.0" y="252" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">dbt/dynamic tables/Spark Declarative</text><line x1="329.0" y1="237.0" x2="371.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="571.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="646.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Agent 可重复执行</text><text x="646.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">声明期望+标准化依赖测试运营</text><line x1="525.0" y1="237.0" x2="567.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">激励错位非能力不足</tspan>　agent 不可靠根因是共享激励与人类不同，这解释为何需 policy algebra 约束对齐激励</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">平台原语三件套</tspan>　state isolation + protocol design + HITL 将成 agent 平台标配</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">声明式=可重复</tspan>　业务逻辑声明式定义对 agent 可重复执行，命令式硬编码 agent 难复现</text><rect x="30" y="442" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="460" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">data contract 先于 microservice</tspan>　Uber 支付：immutable money order+double-entry 是核心 data contract 先于 Kafka/microservice</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>用户正建业务 agent 调业务 API，多 agent 协调是迟早场景。Anthropic 研究提前警示：协调难题在 agent 超越互调为工具时才暴露，且根因是激励错位非能力。声明式转换论为用户业务知识库提供"怎么定义业务逻辑"方向：声明式（可重复）非命令式（agent 难复现）。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>Anthropic 多 agent：agent swarm 找漏洞但在共享环境挣扎；共享激励与人类不同是根因（非行为意外）；超越互调为工具时 state isolation/protocol/HITL 成平台原语。Brad Coles 声明式：dbt（声明期望数据集+标准化依赖测试运营）+dynamic tables+Spark Declarative Pipelines 同一迁移；声明式成为业务逻辑默认因对 agent 可重复。Uber 支付：immutable money order+double-entry accounting 是核心 data contract 先于 Kafka/microservice。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>"共享激励与人类不同"是关键——agent 优化自身目标函数可能与人治理冲突（如 agent 为完成任务越权访问数据）。这与 8/16 Policy Algebra 的 path property 互补：policy algebra 约束行动路径使激励对齐，Anthropic 指出需平台原语（state isolation 防 agent 互相污染状态/protocol design 规范 agent 通信/HITL 兜底高风险）。声明式转换论与 8/18 TDS Sheila 原则2"确定性代码管阈值"共振——声明式业务逻辑是"确定性代码"的高级形式。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>Anthropic 多 agent 研究把"agent 间协调"从应用层问题升级为平台层基建需求——企业 agent 平台需建 state isolation/protocol/HITL 原语。声明式转换论使业务知识库投资方向明确：声明式定义业务逻辑（指标/规则/审批流）对 agent 可重复且可治理，是"AI for 业务"的基础设施选择。Uber 的"data contract 先于 microservice"是数据治理优先级硬启示。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>对用户多 agent 协调：为每个 agent 设 state isolation（不共享可变状态避免污染）；设计 protocol（agent 间通信格式+约束）；高风险操作强制 HITL（与 Policy Algebra approval 维度共振）。对用户业务知识库：业务逻辑（指标定义/校验规则/审批流）用声明式定义（dbt YAML/semantic layer spec）以便 agent 可重复执行，非命令式硬编码（agent 难复现命令式流程）。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>Anthropic 研究原文未直接抓取（DEW #283 摘要引用），基于 DEW 摘要整理，详细案例/数据待核实原文。Brad Coles 文章原文未抓取（DEW 摘要引用），声明式迁移的具体量化未报告。Uber/Depot/StreamFusion 是 DEW 推荐阅读非本期核心，相关度中低。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://www.dataengineeringweekly.com/p/data-engineering-weekly-283" target="_blank" rel="noopener" class="src-link">Data Engineering Weekly #283</a></li><li><span class="src-id">[2]</span> <a href="https://www.anthropic.com/research/multiagent-systems" target="_blank" rel="noopener" class="src-link">Anthropic: Patterns and problems in emerging multiagent systems</a></li><li><span class="src-id">[3]</span> <a href="https://bradcoles.dev/blog/declarative-transformation.html" target="_blank" rel="noopener" class="src-link">Data Engineering's Shift from Imperative to Declarative</a></li></ol></div><div class="modal-foot"><a href="https://www.dataengineeringweekly.com/p/data-engineering-weekly-283" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://www.dataengineeringweekly.com/p/data-engineering-weekly-283</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-blog">📝 技术博客</span></div><h3><a href="https://towardsdatascience.com/from-prototype-to-production-the-architecture-behind-secure-governed-ai-agents/" target="_blank" rel="noopener">From Prototype to Production: The Architecture Behind Secure &amp; Governed AI Agents</a></h3><div class="meta">2026-08-19 · Towards Data Science (Partha Sarkar)</div><div class="summary">Partha Sarkar（2026-08-18）提出企业就绪 agent 需建责任 AI 层：model &amp; agent governance/security/transparency/explainability。核心架构：(1) pre-filter 层——用 gemini flash/GPT mini 等低成本 LLM 做 direct injection blocking（扫描"ignore all previous instructions"/"you are now DAN"/"pretend you have no restrictions" 等攻击模式）+意图分类+prompt 抽取；(2) ACL 两阶段——文档级（向量库 embedding 时每 chunk 注入 permitted ACL levels，pre-filter 在检索前按用户权限过滤）+运行时（agent 调工具/API 前校验当前用户权限）；(3) HITL——高风险写操作（薪资更新/请假申请）强制 REQUIRES_HITL 标记暂停人审；(4) audit trail——全行动留痕。与传统软件对比：传统软件 if user.role!=admin then disable button 是确定性的，agent 核心 LLM 是概率文本预测器，传统测试方法不适用。</div><div class="insight"><strong>🔍 技术视角：</strong>这是 8/18 第二篇企业 agent 治理博客，与同日 Sheila Teo 5 原则互补——Sheila 管"怎么建可信产品"，Partha 管"怎么建安全治理层"。Partha 的 pre-filter（低成本 LLM 做注入拦截）+ ACL 两阶段（文档级向量库 pre-filter+运行时校验）+ HITL（高风险写暂停人审）三件套与 8/19 Policy Algebra 的 9 维约束映射：pre-filter≈tool/data 维度 ACL，HITL≈approval 维度，audit trail≈audit 维度。"传统软件确定性 vs agent 概率性"对比是关键认知——传统测试方法（if-then 断言）不适用于概率核心，需用 golden test dataset+治理层拦截。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 550" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="550" fill="#f8fafc"/><rect width="900" height="550" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">Partha 安全治理三件套 — pre-filter + ACL 两阶段 + HITL</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">用户输入</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">自然语言请求</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Pre-filter</text><text x="352.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">低成本 LLM 注入拦截+意图分类</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">ACL 文档级</text><text x="548.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">embedding 注入 ACL levels 检索前过滤</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Agent 核心 LLM</text><text x="744.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">概率文本预测器</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="179.0" y="208" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="254.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">ACL 运行时</text><text x="254.0" y="252" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">调 API 前校验用户权限</text><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">HITL</text><text x="450.0" y="252" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">高风险写操作暂停人审</text><line x1="329.0" y1="237.0" x2="371.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="571.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="646.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Audit Trail</text><text x="646.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">全行动留痕</text><line x1="525.0" y1="237.0" x2="567.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">概率 vs 确定性</tspan>　传统 if-then 断言不适用于概率核心 LLM，需 golden test dataset+概率容差</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">pre-filter 经济性</tspan>　低成本 LLM（gemini flash/GPT mini）先拦截攻击比主 LLM 处理更省</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">ACL embedding 时注入</tspan>　检索前过滤避免检索到无权限文档再过滤的泄露风险</text><rect x="30" y="442" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="460" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">HITL=approval 维度</tspan>　REQUIRES_HITL 标记是 Policy Algebra approval 维度的工程实现</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>用户业务 agent 调业务 API 涉及数据访问+写操作（订单/财务），安全治理层是生产就绪前提。Partha 的 pre-filter+ACL+HITL 三件套是可落地的工程架构，与 Policy Algebra 9 维约束形成"工程实现 vs 形式化定义"互补。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>pre-filter：低成本 LLM（gemini flash/GPT mini）扫描攻击模式+意图分类+prompt 抽取。ACL 文档级：embedding 时每 chunk 注入 permitted ACL levels，检索前按用户权限 pre-filter。ACL 运行时：agent 调工具/API 前校验当前用户权限。HITL：高风险写操作（薪资更新/请假申请）标 REQUIRES_HITL 暂停人审。audit trail：全行动留痕。传统软件 if-then 确定性 vs agent LLM 概率性——传统测试不适用。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>pre-filter 用低成本 LLM 是经济选择——每次 agent 调用前先过 pre-filter 拦截攻击比让主 LLM 处理攻击更省。ACL 文档级 pre-filter 的关键是在 embedding 时就注入 ACL levels（不是检索后过滤），这避免"检索到无权限文档再过滤"的泄露风险。HITL 的 REQUIRES_HITL 标记是 Policy Algebra approval 维度的工程实现。"传统软件确定性 vs agent 概率性"是 agent 测试方法学的认知前提——需 golden test dataset+概率容差。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>Partha 三件套是 agent 生产就绪的安全治理工程骨架——pre-filter 经济性（低成本 LLM 拦截）+ACL 两阶段（文档级+运行时）+HITL（高风险人审）可直接纳入企业 agent 平台需求。与 Policy Algebra 9 维约束映射使形式化定义有工程实现路径。"传统软件确定性 vs agent 概率性"是 agent 测试预算的教育要点——企业需投资 golden test dataset 建设而非传统单元测试。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>对用户业务 agent：(1) 接业务 API 前加 pre-filter 层（低成本 LLM 扫描"忽略指令"类攻击+意图分类）；(2) 业务 API 返回的宽表字段在语义标注时注入 ACL levels（按角色限制可见字段）；(3) 写操作（下单/调价/审批）标 REQUIRES_HITL 强制人审；(4) 全 API 调用留 audit trail。传统 if-then 测试不适用——建 golden test dataset（已知正确业务场景+期望行为）。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>pre-filter 用低成本 LLM 可能漏检新型攻击模式（攻击者可构造绕过模式列表的注入）。ACL 文档级 pre-filter 在 embedding 时注入 ACL levels 要求 embedding 管线支持 metadata 注入（非所有向量库支持）。HITL 的"高风险"分类标准未给（何为高风险需业务定义）。golden test dataset 的覆盖度是 agent 可信上限——覆盖不全则测试无意义。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://towardsdatascience.com/from-prototype-to-production-the-architecture-behind-secure-governed-ai-agents/" target="_blank" rel="noopener" class="src-link">From Prototype to Production: The Architecture Behind Secure &amp; Governed AI Agents</a></li></ol></div><div class="modal-foot"><a href="https://towardsdatascience.com/from-prototype-to-production-the-architecture-behind-secure-governed-ai-agents/" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://towardsdatascience.com/from-prototype-to-production-the-architecture-behind-secure-governed-ai-agents/</a></div></div></div>
+
+  
+
+  <footer>
+    由 Hermes Agent 自动生成 · 点击卡片查看深度详情 · 2026-08-19
+  </footer>
+
+  <!-- ===== 反馈按钮 + 表单弹层 ===== -->
+  <button class="feedback-fab" onclick="openFeedback()" title="提交反馈">💬</button>
+
+  <div class="modal" id="feedback-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeFeedback()" aria-label="关闭">×</button>
+      <span class="tag tag-product">💬 读者反馈</span>
+      <h2>提交意见 / 反馈</h2>
+      <div class="modal-body">
+        <p style="color:var(--muted);font-size:0.9em;margin-bottom:12px;">
+          你的反馈会帮我改进晨报内容。提交后将打开 GitHub Issue 页面，确认后我会在每天 17:00 处理。
+        </p>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">反馈类型</label>
+        <select id="fb-type" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);margin-bottom:12px;">
+          <option value="内容建议">内容建议（选题/深度/方向）</option>
+          <option value="错误报告">错误报告（链接失效/信息有误）</option>
+          <option value="格式反馈">格式/排版反馈</option>
+          <option value="其他">其他</option>
+        </select>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">你的反馈内容</label>
+        <textarea id="fb-body" rows="5" placeholder="请描述你的意见、建议或发现的问题…"
+          style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);resize:vertical;margin-bottom:12px;"></textarea>
+        <button class="modal-submit" onclick="submitFeedback()">提交反馈 →</button>
+      </div>
+      <div class="modal-foot" style="color:var(--muted);font-size:0.8em;">提交后请在打开的 GitHub 页面点击确认。</div>
+    </div>
+  </div>
+
+  <!-- ===== 架构图放大 lightbox ===== -->
+  <div class="diagram-lightbox" id="diagram-lightbox" onclick="if(event.target===this)closeDiagramZoom()">
+    <div class="diagram-lightbox-inner">
+      <div class="lb-head">
+        <h3 id="lb-title">📊 架构图</h3>
+        <div class="lb-tools">
+          <button type="button" class="lb-btn" onclick="diagramToggleZoom()">🔍 放大/缩小</button>
+          <button type="button" class="lb-close" onclick="closeDiagramZoom()" aria-label="关闭">×</button>
+        </div>
+      </div>
+      <div class="lb-svg" id="lb-svg"></div>
+      <div class="lb-tip">提示：点击「放大/缩小」切换缩放，缩放后可在图内拖动查看细节 · 按 Esc 关闭</div>
+    </div>
+  </div>
+
+  <script>
+    function openDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.add('show'); document.body.style.overflow = 'hidden'; }
+    }
+    function closeDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.remove('show'); document.body.style.overflow = ''; }
+    }
+    function openFeedback() {
+      document.getElementById('feedback-modal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeFeedback() {
+      document.getElementById('feedback-modal').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function submitFeedback() {
+      const type = document.getElementById('fb-type').value;
+      const body = document.getElementById('fb-body').value.trim();
+      if (!body) { alert('请填写反馈内容'); return; }
+      const date = '2026-08-19';
+      const title = '[网页反馈/' + type + '] ' + date;
+      const full = '反馈类型: ' + type + '\n日期: ' + date + '\n\n' + body;
+      // 生成 GitHub Issue 预填链接（不暴露 token，安全）
+      const url = 'https://github.com/hhao9817/agent-daily/issues/new?title=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(full);
+      window.open(url, '_blank');
+      closeFeedback();
+    }
+    /* ===== 架构图放大 ===== */
+    function openDiagramZoom(btn) {
+      const box = btn.closest('.diagram-box');
+      const svg = box.querySelector('.diagram-svg svg') || box.querySelector('svg');
+      if (!svg) return;
+      const title = box.querySelector('h4') ? box.querySelector('h4').textContent : '📊 架构图';
+      document.getElementById('lb-title').textContent = title;
+      const holder = document.getElementById('lb-svg');
+      holder.innerHTML = '';
+      holder.appendChild(svg.cloneNode(true));
+      const lb = document.getElementById('diagram-lightbox');
+      lb.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeDiagramZoom() {
+      document.getElementById('diagram-lightbox').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function diagramToggleZoom() {
+      const svg = document.querySelector('#lb-svg svg');
+      if (!svg) return;
+      svg.classList.toggle('zoomed');
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal.show').forEach(function(m) { m.classList.remove('show'); });
+        document.getElementById('diagram-lightbox').classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+</html>
