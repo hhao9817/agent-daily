@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI for Business 领域每日晨报</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+            --card: #ffffff;
+            --border: #d6dde8;
+            --border-strong: #adbac9;
+            --text: #111827;
+            --muted: #4b5563;
+            --accent: #2563eb;
+            --accent-soft: #dbeafe;
+            --accent2: #059669;
+            --accent2-soft: #d1fae5;
+            --warn: #b45309;
+            --warn-soft: #fef3c7;
+            --red: #dc2626;
+            --red-soft: #fee2e2;
+            --shadow: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+            --shadow-hover: 0 10px 25px -5px rgba(15,23,42,0.1), 0 8px 10px -6px rgba(15,23,42,0.05);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+      padding: 20px;
+      max-width: 920px;
+      margin: 0 auto;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    /* 长英文标识符/URL 在移动端强制换行，避免撑破卡片 */
+    p, li, h1, h2, h3, h4, .summary, .insight, .snap-title, .snap-points li,
+    .modal-sec p, .modal-body, .detail-block, .item, .snapshot, .snapshot-summary {
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    header {
+      text-align: center;
+      padding: 30px 0 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    header h1 {
+      font-size: 1.8em;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    header h1 .grad {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header .date { color: var(--muted); margin-top: 8px; font-size: 0.95em; }
+    .archive-link {
+      display: inline-block; margin-top: 12px; color: var(--accent); text-decoration: none;
+      font-size: 0.85em; border: 1px solid var(--border-strong); background: var(--card);
+      padding: 5px 14px; border-radius: 20px; box-shadow: var(--shadow);
+      transition: all .15s;
+    }
+    .archive-link:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+    /* 今日速览（结构化，按来源分类） */
+    .snapshot {
+      background: linear-gradient(135deg, var(--accent-soft), var(--accent2-soft));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow);
+    }
+    .snapshot-summary {
+      font-size: 0.98em;
+      color: var(--text);
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px dashed var(--border-strong);
+    }
+    .snapshot-summary strong { color: var(--accent); }
+    .snapshot-groups { display: flex; flex-direction: column; gap: 10px; }
+    .snap-group {
+      display: flex;
+      gap: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      box-shadow: var(--shadow);
+    }
+    .snap-bar { width: 5px; border-radius: 3px; flex-shrink: 0; }
+    .snap-bar-paper { background: var(--accent); }
+    .snap-bar-github { background: var(--accent2); }
+    .snap-bar-product { background: var(--warn); }
+    .snap-bar-blog { background: var(--red); }
+    .snap-body { flex: 1; }
+    .snap-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.85em; font-weight: 700; color: var(--text);
+      margin-bottom: 6px;
+    }
+    .snap-title .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-paper { background: var(--accent); }
+    .dot-github { background: var(--accent2); }
+    .dot-product { background: var(--warn); }
+    .dot-blog { background: var(--red); }
+    .snap-title .badge {
+      font-size: 0.7em; font-weight: 600;
+      background: var(--bg); border: 1px solid var(--border-strong);
+      color: var(--muted); padding: 1px 8px; border-radius: 20px;
+    }
+    .snap-points { list-style: none; padding: 0; margin: 0; }
+    .snap-points li {
+      font-size: 0.9em; color: var(--text);
+      padding: 3px 0 3px 18px;
+      position: relative;
+    }
+    .snap-points li::before {
+      content: "▸";
+      position: absolute; left: 2px;
+      color: var(--accent);
+    }
+
+    /* 分类区块 */
+    .section { margin-bottom: 30px; }
+    .section-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 4px; margin-bottom: 14px;
+      border-bottom: 2px solid var(--border);
+    }
+    .section-head .bar { width: 6px; height: 22px; border-radius: 3px; }
+    .section-head h2 { font-size: 1.15em; color: var(--text); flex: 1; }
+    .section-head .count { font-size: 0.8em; color: var(--muted); background: var(--card); border: 1px solid var(--border); padding: 2px 10px; border-radius: 20px; }
+    .bar-paper { background: var(--accent); }
+    .bar-github { background: var(--accent2); }
+    .bar-product { background: var(--warn); }
+    .bar-blog { background: var(--red); }
+
+    .item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: border-color .2s, transform .1s, box-shadow .2s;
+    }
+    .item:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+    .item:active { transform: scale(0.995); }
+    .item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .tag {
+      display: inline-block;
+      font-size: 0.72em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .tag-paper { background: var(--accent-soft); color: var(--accent); }
+    .tag-github { background: var(--accent2-soft); color: var(--accent2); }
+    .tag-product { background: var(--warn-soft); color: var(--warn); }
+    .tag-blog { background: var(--red-soft); color: var(--red); }
+    .detail-hint { font-size: 0.78em; color: var(--accent); opacity: .8; }
+    .item h3 { font-size: 1.1em; margin-bottom: 8px; }
+    .item h3 a { color: var(--text); text-decoration: none; }
+    .item h3 a:hover { color: var(--accent); }
+    .item .meta { color: var(--muted); font-size: 0.82em; margin-bottom: 10px; }
+    .item .summary { font-size: 0.95em; margin-bottom: 10px; color: var(--text); }
+    .item .insight {
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      padding: 8px 12px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.92em;
+      color: var(--text);
+    }
+    .item .insight strong { color: var(--accent); }
+
+    /* ===== 详情弹层（浅色） ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(30,41,59,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      overflow-y: auto;
+      padding: 30px 20px;
+    }
+    .modal.show { display: block; }
+    .modal-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 32px 36px;
+      position: relative;
+      box-shadow: var(--shadow-hover);
+      animation: pop .18s ease;
+    }
+    @keyframes pop { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .modal-close {
+      position: absolute;
+      top: 14px; right: 16px;
+      background: none; border: none;
+      color: var(--muted);
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+    .modal-close:hover { color: var(--text); background: var(--bg); }
+    .modal-content h2 {
+      font-size: 1.4em;
+      color: var(--text);
+      margin: 10px 0 6px;
+      line-height: 1.4;
+      padding-right: 30px;
+    }
+    .modal-content .meta { color: var(--muted); font-size: 0.85em; margin-bottom: 18px; }
+    .modal-body { margin-top: 8px; }
+    .modal-sec {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+    }
+    .modal-sec h4 { font-size: 0.95em; color: var(--accent); margin-bottom: 8px; }
+    .modal-sec p { font-size: 0.93em; color: var(--text); }
+    .modal-sources { background: var(--bg); }
+    .modal-business { background: var(--warn-soft); }
+    .modal-business h4 { color: var(--warn); }
+    .sources-list { list-style: none; padding: 0; margin: 0; }
+    .sources-list li { font-size: 0.88em; color: var(--text); margin-bottom: 6px; padding-left: 4px; }
+    .src-id { color: var(--accent); font-weight: 600; margin-right: 6px; }
+    .src-link { color: var(--accent); text-decoration: none; word-break: break-all; }
+    .src-link:hover { text-decoration: underline; }
+    .diagram-box {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      overflow-x: auto;
+      position: relative;
+    }
+    .diagram-svg svg { display: block; }
+    .diagram-zoom {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.82em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      z-index: 5;
+    }
+    .diagram-zoom:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ===== 架构图放大 lightbox ===== */
+    .diagram-lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.85);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      overflow: auto;
+      padding: 30px;
+    }
+    .diagram-lightbox.show { display: block; }
+    .diagram-lightbox-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .diagram-lightbox-inner .lb-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px;
+    }
+    .diagram-lightbox-inner .lb-head h3 { font-size: 1.1em; color: var(--text); }
+    .diagram-lightbox-inner .lb-tools { display: flex; align-items: center; gap: 8px; }
+    .lb-btn {
+      background: var(--accent-soft); color: var(--accent);
+      border: 1px solid var(--border-strong); border-radius: 8px;
+      padding: 5px 12px; font-size: 0.85em; font-weight: 600; cursor: pointer;
+      transition: all .15s;
+    }
+    .lb-btn:hover { background: var(--accent); color: #fff; }
+    .lb-close {
+      background: none; border: none; color: var(--muted);
+      font-size: 26px; line-height: 1; cursor: pointer; padding: 4px 8px; border-radius: 8px;
+    }
+    .lb-close:hover { color: var(--text); background: var(--bg); }
+    .diagram-lightbox-inner .lb-svg {
+      overflow: auto;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .diagram-lightbox-inner .lb-svg svg {
+      max-width: 100%;
+      height: auto;
+      transition: transform .15s ease;
+      transform-origin: center center;
+    }
+    .diagram-lightbox-inner .lb-svg svg.zoomed { transform: scale(1.6); cursor: grab; }
+    .diagram-lightbox-inner .lb-svg svg.zoomed:active { cursor: grabbing; }
+    .diagram-lightbox-inner .lb-tip { text-align: center; color: var(--muted); font-size: 0.8em; margin-top: 10px; }
+    .modal-foot {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .modal-link { color: var(--accent); font-size: 0.88em; text-decoration: none; word-break: break-all; }
+    .modal-link:hover { text-decoration: underline; }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8em;
+      padding: 30px 0 10px;
+      border-top: 1px solid var(--border);
+      margin-top: 30px;
+    }
+    .empty { color: var(--muted); text-align: center; padding: 40px; }
+    /* ===== 反馈按钮 + 提交按钮 ===== */
+    .feedback-fab {
+      position: fixed; bottom: 24px; right: 24px;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; color: #fff; font-size: 24px; cursor: pointer;
+      box-shadow: var(--shadow-hover);
+      z-index: 9000; transition: transform .15s;
+    }
+    .feedback-fab:hover { transform: scale(1.1); }
+    .modal-submit {
+      width: 100%; padding: 12px; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; font-size: 1em; font-weight: 600; cursor: pointer;
+    }
+    .modal-submit:hover { opacity: 0.9; }
+    @media (max-width: 600px) {
+      .modal-content { padding: 24px 18px; }
+      body { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🤖 <span class="grad">AI for Business</span> 每日晨报</h1>
+    <div class="date">业务知识库 · 业务语义理解 · API 精确查询 | 2026-08-20</div>
+    <a class="archive-link" href="archive/index.html">📚 历史晨报归档</a>
+  </header>
+
+  <div class="snapshot"><div class="snapshot-summary"><strong>📌 今日速览</strong><br>学术线：TraceSQL（67 个可追溯特征，reference-free 验证 66.47% F1）+LAVA（金融文档四阶段可审计验证，符号/算术校验）+Noesis（35B 本地模型跨知识库 Graph-RAG，Mesh 路由+AIMD 并发 23x 加速，HotpotQA +27.8 EM）共同补全"业务数据可信度验证"的验证-检索-跨源三段。商业/博客线：TDS 实测 Kimi K3 1M 长上下文全量喂入 vs top-5 RAG，12 题 long_context 满分但 C3 延迟 273.7s vs 46.3s 且单日配额耗尽——为"语义层不是可有可无"提供最硬实验数据；TDS 企业集成流水线 20+ 业务系统 16x 吞吐且两道正确性铁律（version check + dedup 同事务）对用户"上百字段宽表 API 精确查询"直接可迁移。GitHub 线：Cube v1.7.24（IANA 时区校验+agent skills 指南）+tokensave v7.10.0（解析器 order-independence 消除伪造边+ambiguous_calls 暴露不确定性+多 root 联邦）+WrenAI v0.13.3（NUMERIC 精度保留+路径穿越防护+DatabaseTimeoutError 分类）三栈同日加固，验证-检索-工程化三轨共振。</div><div class="snapshot-groups"><div class="snap-group"><span class="snap-bar snap-bar-paper"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-paper"></span>📄 学术论文<span class="badge">3 项</span></div><ul class="snap-points"><li>TraceSQL（2608.17795，8/18 新文）：reference-free 验证是部署期核心难题——ground-truth SQL 在真实推理时不可得。TraceSQL 用 67 个显式诊断特征（question ambiguity/question requirements/question-schema-SQL consistency/SQL structure/intent alignment）做轻量可解释验证模型，BIRD dev 上 66.47% F1 / 64.48% ROC-AUC，胜过 GradeSQL-7B ORM 的 61.87% F1，且特征归因可回溯每一处预测。引用待核实（Semantic Scholar 429 限流，8/18 新文预期 0）。</li><li>LAVA（2608.16763，8/17 新文）：金融文档生产验证（薪酬审计/税务合规/贷款核保）需异常精度+一致性+可复现。LAVA 四阶段流水线：document-rule retrieval → layout-preserving IE → auxiliary metadata enrichment → auditable symbolic/arithmetic verification，backbone-agnostic 模块化，支持 rule grounding/fine-grained error attribution/traceable end-to-end execution，在真实金融文档+专家规则基准上幻觉控制与边缘案例优于基线且 token 高效。引用待核实（429 限流，8/17 新文预期 0）。</li><li>Noesis（2608.15919，8/16 新文）：解耦 Graph-RAG 架构解决三顽疾（静态 chunk 碎片化/ingestion 不自适应扩展/多域需单体或人工路由）。四算法：双向图遍历+Graph-Feedback Context Resolver 模拟人类阅读带衰减记忆；AIMD 并发控制（TCP 拥塞启发）23x 加速零 OOM；Moesis 域感知量化让 12GB 消费级 GPU 上 MoE 6.3x 加速；Mesh 跨 KB 语义路由+运行时结构发现让小本地模型做多跳跨域推理。HotpotQA 59.5 EM / 74.7 F1，超 GraphRAG +27.8 EM，用 35B 本地模型而非 GPT-4o 做图构建。引用待核实（429 限流，8/16 新文预期 0）。</li></ul></div></div><div class="snap-group"><span class="snap-bar snap-bar-github"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-github"></span>🐙 开源项目<span class="badge">3 项</span></div><ul class="snap-points"><li>Cube v1.7.24（2026-08-19 发布）：单 bugfix release——Validate query timezone against IANA zones（#11575 d1ba22a），查询时区按 IANA 时区库校验。同期 docs commit 双发：add Cube agent skills guide（#11594）+describe how the best-fit chart type is recommended（#11567）。延续 v1.7.21 cube spec CLI 分支审阅+v1.7.22/23 postgres-driver UDT 性能+放弃 decompress 的密集迭代，今日聚焦"Agent 数据技能"文档化与查询输入校验。</li><li>tokensave v7.10.0（2026-08-19 发布）：解析器 order-independence 是核心——最后一条 order-dependent pick 被移除（#412），score tie 不再按文件枚举序猜一个，而是不产生 edge 并记入 ambiguous_calls（schema v17）。Rust 索引 call edges 22,502→19,309（-14.2%），但其中 71.6% 的消失边指向"不同文件的 private item"——即 Rust 语言无法表达的伪造边被撤回而非事实丢失。新增 Ruby alias/alias_method + attr_reader/writer/accessor 方法节点；graph_root 接受数组实现多项目联邦查询（worktree 自动折叠，round-robin by rank 而非 score）；六个 MCP handler 改用 SQL 谓词下推替代全节点物化（module_api 17,594→2,206 行）。test 由 resolution_order_independence_test.rs 钉住。</li><li>WrenAI wren-v0.13.3 + wren-core-py v0.7.5（2026-08-18 发布）：批量 harden 版本——context 层 filter non-mapping entries in _load_views_v1（#2604）+ harden description checks for bad MDL rows（#2616）+ harden relationships load 并像 views 一样校验（#2613）；memory 层 reject non-list relationship models（#2605）+ skip non-dict rows（#2586）+ skip unnamed cubes/measures/dimensions（#2665）；wren engine preserve unconstrained PostgreSQL NUMERIC precision（#2655）+ classify bare TimeoutError as DatabaseTimeoutError（#2654）+ bound session-context cache 32 LRU（#2628）+ prevent context upgrade path traversal（#2649）+ validate import paths before force cleanup（#2580）；genbi harden non-dict apps.yml + reject non-object Vercel API JSON；spark apply limit via DataFrame.limit before toPandas（#2574）。8/19 新增 commit fix(memory): validate imported query pair field types（#2656）。</li></ul></div></div><div class="snap-group"><span class="snap-bar snap-bar-product"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-product"></span>🏢 业界动态<span class="badge">1 项</span></div><ul class="snap-points"><li>业界动态研判——本周"验证-检索-工程化"三轨共振成型：TraceSQL（reference-free 验证）+LAVA（可审计符号验证）+Noesis（跨 KB 检索）三篇 8/16-18 新文与 Cube v1.7.24（输入校验）+tokensave v7.10.0（解析器确定性）+WrenAI v0.13.3（输入校验+超时分类）三栈同日加固，共同把 8/19 已成型"Agent 可信治理栈四层分工"补全"验证层+检索层+工程化层"的底层基建。Kimi K3 1M 长上下文实测为"语义层/知识图谱是否仍必要"提供了最硬反证：长上下文在 12% 占用时虽满分，但 latency 与成本随语料级问题爆炸（273.7s、单日配额打穿），而 RAG 的短板不在 grounding 而在 completeness——语义层压缩+结构化检索是补 completeness 的正解，而非取消检索。tokensave 的"撤回伪造边而非事实丢失"（71.6% 撤回边指向跨文件 private item）为用户"上百字段宽表 API 语义标注"提供了"宁可缺不要错"的确定性原则。</li></ul></div></div><div class="snap-group"><span class="snap-bar snap-bar-blog"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-blog"></span>📝 技术博客<span class="badge">2 项</span></div><ul class="snap-points"><li>TDS《How to Scale an Integration Pipeline Without Breaking Correctness》（8/19）：企业数据集成——订单/库存/财务/物流/客户记录+遗留 FTP 批处理，20+ 业务系统两端，日均百万事件、月末峰值十倍。16x 吞吐跃升背后是两道不可触碰的正确性铁律：(1) 后到版本不可覆盖先到版本——每实体带源系统 own 的 version 号，写路径对乱序/重传/重投递无感（version check 拒绝 stale）；(2) "是否已处理"永不可错——dedup-log 与业务数据同事务提交，下沉到主键约束让 DB 而非业务代码裁决。批大小 50/100/200/500 实测，同实体同分区（keyed by entity ID）保顺序。consumer-side runtime metric 而非洁净集群基准。</li><li>TDS《Kimi K3's 1M Token Context Window vs. RAG: Cost, Latency and Answer Quality》（8/19）：作者自有 33 篇文章共 127,068 tokens（仅占 1M 窗口 12%），12 题（易/中/难三级），同 system prompt 同模型，blind grading 正确性+完整性+grounding。结果反直觉：long_context 12/12 满分；RAG 在 grounded（2.00 平手）与 correctness（1.92 略低）几乎不输，整个 gap 来自 completeness（0.83/2）——RAG 不幻觉但答案不完整。延迟发现：单事实题两路接近，跨文章题 long_context 慢 2-3x，语料级题 C3 慢到 273.7s vs 46.3s，因思考 token 多 2-10x（非读 context）。单日配额：long_context 12 题共 1,528,152 input tokens 直接打穿 Kimi 入门 tier 1.5M 日配额。</li></ul></div></div></div></div>
+
+  <div class="section"><div class="section-head"><span class="bar bar-paper"></span><h2>📄 学术论文</h2><span class="count">3 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-paper">📄 论文</span></div><h3><a href="https://arxiv.org/abs/2608.17795" target="_blank" rel="noopener">TraceSQL：reference-free 的可追溯 SQL 验证模型，67 个诊断特征</a></h3><div class="meta">2026-08-20 · arXiv</div><div class="summary">Text-to-SQL 系统在真实部署时没有 ground-truth SQL 可供比对，验证成为部署期核心难题。TraceSQL 用 67 个显式诊断特征（question ambiguity、question requirements、question-schema-SQL consistency、SQL structure、intent alignment）构建轻量可解释验证模型，在 BIRD dev 上达 66.47% F1 / 64.48% ROC-AUC，胜过 GradeSQL-7B ORM 基线的 61.87% F1。特征归因可回溯每一处预测，把"为什么判这个 SQL 可能错"变成可检查的诊断证据，而非 ORM 的不可解释分数。论文发表于 2026-08-18（引用数待核实，Semantic Scholar 限流）。</div><div class="insight"><strong>🔍 技术视角：</strong>这是本周最贴合用户"业务数据可信度验证"方向的论文。用户通过业务 API 查数而非直连数据库，但同样面临"agent 生成的查询/调用是否可信"问题，且无 ground-truth 可比。TraceSQL 的 67 特征可迁移到"业务 API 调用验证"：question-schema-API consistency（问的与 API 字段是否对得上）、intent alignment（调用意图与返回字段是否匹配）、SQL structure（调用结构是否合理）。关键是"可追溯"——ORM 黑盒给分，TraceSQL 给证据，这与 8/19 TDS Sheila 的"reviewable evidence 为有意输出而非事后补充"共振。特征级证据是 agent 可信治理栈"验证层"的工程化形态。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">TraceSQL reference-free 验证链路</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">用户问题</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">自然语言</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Agent 生成 SQL/调用</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">LLM 输出</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">67 诊断特征提取</text><text x="548.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">ambiguity/requirements/consistency/structure/intent</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">轻量验证模型</text><text x="744.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">可解释 非黑盒 ORM</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="277.0" y="208" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="352.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">特征归因报告</text><text x="352.0" y="252" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">可追溯证据</text><rect x="473.0" y="208" width="150" height="58" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/><text x="548.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">HITL 兜底</text><text x="548.0" y="252" fill="#64748b" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">F1 66% 约 1/3 未捕</text><line x1="427.0" y1="237.0" x2="469.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">可解释 vs 性能权衡</tspan>　显式特征换可追溯性，代价是 67 特征需手工设计且 F1 66% 仍需 HITL</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">与 Never the Number 互补</tspan>　生成端 gate（弃答）+ 验证端诊断（67 特征）双层验证</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">迁移到业务 API</tspan>　question-schema-SQL consistency → question-API-field consistency</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>用户课题第三方向"业务系统精确查询"明确要求"业务数据可信度验证"。TraceSQL 是 reference-free 验证——部署期可用，不依赖 ground-truth，这正是用户场景（agent 查业务 API 无法预先知道正确答案）的刚需。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>67 特征分五类：question ambiguity（问题本身是否模糊）、question requirements（问题要求什么粒度/聚合）、question-schema-SQL consistency（问题-schema-SQL 三者一致性）、SQL structure（SQL 结构合理性）、intent alignment（生成 SQL 与用户意图对齐）。轻量学习模型基于这些显式特征预测，特征归因可回溯每个预测依赖哪些信号。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>TraceSQL 与 8/19 Never the Number（结构化弃答）形成"验证"主题两种实现：Never the Number 管"何时该拒绝答"（不可表示=拒绝），TraceSQL 管"生成后如何验证可信"（67 特征诊断）。两者互补——前者在生成端设 gate，后者在验证端给证据。与 8/18 SemPlan A3 结构化语义请求+确定性规划同构：都是"LLM 生成→确定性诊断"路线。ORM（Outcome Reward Model）从执行标注候选 SQL 学习给分，但黑盒；TraceSQL 用显式特征换可解释性，代价是需手工设计 67 特征——这是"可解释 vs 性能"的工程权衡。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>商业启示：reference-free 验证是 agent 产品化的"信任闸门"——客户不会接受"agent 说对就对"，必须给可检查证据。TraceSQL 的"67 特征+可追溯"模式可成为 ChatBI/Agent 数据产品差异化卖点：不只给答案，还给"为什么这个答案可信"的诊断报告。这是企业采购决策的硬指标，与 8/17 TDS Partha 安全治理三件套的"HITL REQUIRES_HITL"形成验证-审批闭环。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>落地建议：将 67 特征框架迁移到业务 API 调用验证——question-schema-API consistency 改为 question-API-field consistency（问的与宽表 API 字段是否对齐），intent alignment 改为 call-intent vs response-field alignment（调用意图与返回字段是否匹配）。先建特征工程做轻量验证模型，与 LLM-as-judge 并行，对比可解释性与准确率。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>67 特征需针对业务 API 重新设计，迁移成本非零。F1 66.47% 仍低，约 1/3 错误未捕获，必须 HITL 兜底（与 8/19 DEW Anthropic 平台原语一致）。特征归因虽可追溯但特征本身是启发式，可能系统性遗漏某类错误。引用数待核实（8/18 新文预期 0，Semantic Scholar 429 限流）。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2608.17795" target="_blank" rel="noopener" class="src-link">TraceSQL: Traceable Answerability Estimation for Reference-Free Text-to-SQL Verification</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2608.17795" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2608.17795</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-paper">📄 论文</span></div><h3><a href="https://arxiv.org/abs/2608.16763" target="_blank" rel="noopener">LAVA：金融文档四阶段可审计验证，符号/算术校验保可复现</a></h3><div class="meta">2026-08-20 · arXiv</div><div class="summary">金融文档生产验证（薪酬审计/税务合规/贷款核保）要求异常精度+一致性+可复现性，受严格企业约束。LAVA（Logic-Aware Validation and Augmentation）是 modular、backbone-agnostic 的流水线，基于多模态大模型，四阶段设计：document-rule retrieval（文档-规则检索）→layout-preserving information extraction（保版式信息抽取）→auxiliary metadata enrichment（辅助元数据增强）→auditable symbolic/arithmetic verification（可审计符号/算术验证）。支持 robust rule grounding（规则锚定）、fine-grained error attribution（细粒度错误归因）、consistent traceable end-to-end execution。在大型真实金融文档+数十条专家规则基准上，幻觉控制与边缘案例处理优于基线，且 token 使用高效。论文发表于 2026-08-17（引用数待核实）。</div><div class="insight"><strong>🔍 技术视角：</strong>LAVA 是"业务数据可信度验证"在企业金融场景的工程化范式。用户虽非金融场景，但"可审计符号/算术验证"机制直接可迁移——业务 API 返回的数值（订单金额、库存、指标）同样需要"LLM 抽取+符号校验"双轨，而非全靠 LLM 算。四阶段中"document-rule retrieval"对应业务 API 的"问句-API 字段-规则"检索，"auxiliary metadata enrichment"对应宽表字段语义标注，"auditable symbolic verification"对应业务数值的可复现校验。与 8/19 Quipu bitemporal KG 写入治理的"审计即查询"共振——都把审计从事后补充变为一等输出。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">LAVA 四阶段可审计验证流水线</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">金融文档输入</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">薪酬/税务/贷款 异构版式</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">1. document-rule 检索</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">文档↔规则配对</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">2. layout-preserving IE</text><text x="548.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">保版式抽取 防语义错位</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">3. metadata 增强</text><text x="744.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">字段语义/单位/时间戳</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="277.0" y="208" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="352.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">4. 符号/算术验证</text><text x="352.0" y="252" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">确定性可审计可复现</text><rect x="473.0" y="208" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="548.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">fine-grained error attribution</text><text x="548.0" y="252" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">细粒度错误归因</text><line x1="427.0" y1="237.0" x2="469.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">确定性符号层兜底</tspan>　第四阶段用符号/算术引擎而非 LLM 概率判断，与 Policy Algebra path property 共振</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">backbone-agnostic</tspan>　多模态 LLM 可替换，验证栈与模型解耦降低厂商锁定</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">迁移到业务 API</tspan>　document-rule → question-API-field-rule，symbolic verification → 数值算术一致性校验</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>用户第三方向"业务数据可信度验证"要求对 agent 查数结果做可信校验。金融场景的"异常精度+可复现"是所有业务验证的极端形态，LAVA 的工程化范式是可迁移模板。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>四阶段：(1) document-rule retrieval——把待验证文档与适用的业务规则配对检索；(2) layout-preserving IE——保版式抽取，避免布局丢失致语义错位；(3) auxiliary metadata enrichment——补元数据（如字段语义、单位、时间戳）增强校验上下文；(4) auditable symbolic/arithmetic verification——用符号/算术引擎做确定性校验，可审计可复现，非 LLM 概率判断。backbone-agnostic 意味着多模态 LLM 可替换。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>LAVA 与 8/19 Policy Algebra（reliability as path property）共振：Policy Algebra 管行动路径可靠性，LAVA 管数据验证可靠性，两者都是"确定性符号层兜底 LLM 概率层"。第四阶段"符号/算术验证"是"治理代码化"的典型——把 8/19 TDS Sheila 的"确定性代码拥有 recurrence threshold"从阈值判断扩展到算术校验。与 8/16 CSE 约束建模、8/15 AnnoIndex 结构化查询引擎同属"LLM 生成+确定性校验"路线。fine-grained error attribution 与 TraceSQL 特征归因互补：TraceSQL 在查询生成端归因，LAVA 在结果验证端归因。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>商业启示：金融场景的"可审计可复现"是 agent 进高价值业务（支付/合规/审计）的入场券。LAVA 的 backbone-agnostic 设计说明验证层与模型层解耦——企业可换模型不换验证栈，降低厂商锁定。fine-grained error attribution 是合规审计的硬需求：监管要的不是"结果对"而是"能证明为什么对"。这与 Apache Ossie 厂商中立语义规范方向一致。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>落地建议：业务 API 查数后增加"符号校验层"——对返回数值做算术一致性检查（如订单明细之和=总额、库存增减平衡、指标随时间单调性）。先在金额/库存/核心指标三类高价值字段试点，与 LLM 抽取并行，差异即告警。保版式 IE 对宽表 API 响应同样适用——保留字段顺序与层级，避免 LLM 重排致语义错位。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>四阶段流水线工程复杂度高，需先有规则库与版式解析能力。符号/算术校验只覆盖可形式化的规则，模糊业务判断仍需 HITL。token 高效是相对基线，绝对成本在高量场景仍可观。引用数待核实（8/17 新文预期 0）。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2608.16763" target="_blank" rel="noopener" class="src-link">LAVA: Logic-Aware Validation and Augmentation Framework for Large-Scale Financial Document Auditing</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2608.16763" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2608.16763</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-paper">📄 论文</span></div><h3><a href="https://arxiv.org/abs/2608.15919" target="_blank" rel="noopener">Noesis：跨知识库 Graph-RAG，35B 本地模型+Mesh 路由做多跳跨域推理</a></h3><div class="meta">2026-08-20 · arXiv</div><div class="summary">Noesis 是解耦 Graph-RAG 架构，解决三顽疾：静态 chunk 碎片化丢失跨节语义连接、ingestion 不自适应扩展、多域部署需单体 KB（稀释精度）或人工路由。四算法：(a) 双向图遍历+Graph-Feedback Context Resolver 模拟人类阅读带衰减记忆；(b) AIMD 并发控制器（TCP 拥塞控制启发）23x 加速零 OOM；(c) Moesis 域感知选择性量化让 12GB 消费级 GPU 上 MoE 6.3x 加速；(d) Mesh 跨 KB 语义路由+运行时结构发现让小本地模型做多跳跨域推理。HotpotQA 1000 题 59.5 EM / 74.7 F1，超 GraphRAG +27.8 EM，用 35B 本地模型而非 GPT-4o 做图构建。193 页文档源文本验证 90% 精度长程因果边。论文发表于 2026-08-16（引用数待核实）。</div><div class="insight"><strong>🔍 技术视角：</strong>Noesis 是用户"语义层 vs 知识图谱"双路线中知识图谱路线的最强工程证据。Mesh 跨 KB 语义路由直接对应用户"多业务 API/多知识库"场景——不同业务域（订单/库存/财务）各有 KB，agent 需跨域多跳推理而非塞进单体 KB。35B 本地模型做图构建+小本地模型做推理，是"数据不出域"的合规友好架构，与 8/14 TDS 本地 LLM 实测的"256K+122B 把破损率 25%→0"呼应——本地模型足够做 Graph-RAG，关键在架构而非堆参数。AIMD 并发控制把网络拥塞控制引入 RAG ingestion 是创新，解决静态 chunk 不扩展的根因。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">Noesis 跨知识库 Graph-RAG 架构</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">业务域 KB-A 订单</text><text x="156.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">本地 35B 图构建</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">业务域 KB-B 库存</text><text x="352.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">本地 35B 图构建</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">业务域 KB-C 财务</text><text x="548.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">本地 35B 图构建</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Mesh 跨 KB 语义路由</text><text x="744.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">运行时结构发现</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="179.0" y="208" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="254.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">双向图遍历+衰减记忆</text><text x="254.0" y="252" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">Graph-Feedback Resolver</text><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">AIMD 并发 ingestion</text><text x="450.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">23x 加速 零 OOM</text><line x1="329.0" y1="237.0" x2="371.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="571.0" y="208" width="150" height="58" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/><text x="646.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">小本地模型多跳推理</text><text x="646.0" y="252" fill="#64748b" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">跨域 HotpotQA +27.8 EM</text><line x1="525.0" y1="237.0" x2="567.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">跨域不合并</tspan>　Mesh 路由让跨域推理不要求数据物理合并，合规友好</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">本地模型够用</tspan>　35B 做图构建+小模型做推理，数据不出域</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">AIMD 引入网络工程</tspan>　TCP 拥塞控制启发 ingestion 并发，解决静态 chunk 不扩展根因</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>用户课题第二方向"业务语义理解"含知识图谱路线，且需跨多个业务 API/KB。Noesis 的 Mesh 跨 KB 路由+本地模型推理是用户场景的直接映射——多个业务 API 的语义不应塞进单体 KB（稀释精度），而应分域建图+运行时路由。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>四算法：(1) 双向图遍历——前向+后向遍历 corpus graph，Graph-Feedback Context Resolver 模拟人类阅读（带衰减记忆，近期上下文权重高）；(2) AIMD 并发控制——Additive Increase Multiplicative Decrease（TCP 拥塞控制启发），动态调 ingestion 并发度，23x 加速零 OOM；(3) Moesis——域感知选择性量化，对 MoE 模型按域重要性选择性量化，12GB GPU 上 6.3x 加速；(4) Mesh——跨 KB 语义路由+运行时结构发现，小本地模型即可做多跳跨域推理。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>Noesis 与 8/15 VDGR-RAG（层级异构知识图四路统一企业推理）共振——都主张企业推理需跨源统一而非单体 KB。Mesh 路由与 8/10 MDB-Link（多库 schema linking）互补：MDB-Link 管选对库，Mesh 管跨库推理。35B 本地模型做图构建（非 GPT-4o）是关键——证明 Graph-RAG 图构建可本地化，降低商用门槛（与 8/19 Commercial Tax 的"Nemotron-3-Embed-8B 抹平商业税"方向一致）。AIMD 并发控制是"把网络工程成熟方法引入 RAG"的范例，与 8/18 TDS Autoscaling 的"AgentLoopDetector"形成"ingestion 侧 AIMD+serving 侧循环检测"的 RAG 运维双轨。双向遍历+衰减记忆模拟人类阅读，与 8/16 Noesis 同名论文的 Graph-Feedback Context Resolver 是"认知启发检索"路线。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>商业启示：Mesh 跨 KB 路由是"数据不出域+跨域推理"的合规友好架构——金融/医疗等强合规场景各域数据不可合并，Noesis 让跨域推理不要求物理合并。35B 本地模型做图构建降低商用门槛，与 Commercial Tax 的"自建零成本持久鸿沟"方向互补。这是知识图谱路线相对语义层路线的差异化优势：跨域多跳+本地化。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>落地建议：多业务 API 场景按域分建知识图（订单域/库存域/财务域），用 Mesh 路由做跨域多跳查询。图构建用本地 35B 模型（数据不出域），ingestion 并发用 AIMD 自适应。先在 2-3 个高关联业务域试点跨域多跳（如订单→库存→财务对账），验证 Mesh 路由精度。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>Graph-RAG 工程复杂度高于语义层，图构建+维护成本非零。35B 本地模型仍需 GPU 资源。HotpotQA 是通用问答基准，业务场景精度需自建基准验证。AIMD 在 bursty 业务流量下可能振荡。引用数待核实（8/16 新文预期 0）。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2608.15919" target="_blank" rel="noopener" class="src-link">Noesis: Bidirectional Graph-RAG with Adaptive Parallelism and Cross-Knowledge-Base Semantic Discovery</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2608.15919" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2608.15919</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-product"></span><h2>🏢 业界动态</h2><span class="count">1 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-product">🏢 业界动态</span></div><h3><a href="https://arxiv.org/abs/2608.17795" target="_blank" rel="noopener">业界研判："验证-检索-工程化"三轨共振成型，补全 Agent 可信治理栈底层基建</a></h3><div class="meta">2026-08-20 · 综合研判</div><div class="summary">本周（8/16-8/19）"验证-检索-工程化"三轨共振成型：学术三篇（TraceSQL reference-free 验证 67 特征 66.47% F1/LAVA 金融四阶段可审计验证符号算术校验/Noesis 跨 KB Graph-RAG 35B 本地模型 Mesh 路由 +27.8 EM）补全"业务数据可信度验证"的验证-检索-跨源三段；GitHub 三栈同日加固（Cube v1.7.24 IANA 时区校验+agent skills guide/tokensave v7.10.0 解析器 order-independence 消除伪造边+ambiguous_calls/WrenAI v0.13.3 四层 harden NUMERIC 精度+path traversal）；TDS 两篇博客补全运维与路线反证（企业集成流水线两道正确性铁律 16x 吞吐/Kimi K3 1M 长上下文实测打脸"取代 RAG"幻觉）。三轨共振把 8/19 已成型"Agent 可信治理栈四层分工"补全"验证层+检索层+工程化层"的底层基建。</div><div class="insight"><strong>🔍 技术视角：</strong>最核心战略研判：本周三轨共振把"语义层 vs 知识图谱"二元选择彻底升级为"验证层+检索层+工程化层"三维基建架构——TraceSQL 管验证层（reference-free 67 特征诊断），Noesis 管检索层（跨 KB Graph-RAG Mesh 路由），Cube/tokensave/WrenAI 管工程化层（输入校验+解析器确定性+脏输入容错）。Kimi K3 实测为"语义层/知识图谱是否仍必要"提供最硬反证：长上下文满分但延迟与配额爆炸，RAG 短板在 completeness 非 grounding，语义层补的是完整性。三组共振：(1) TraceSQL 特征归因+LAVA error attribution+tokensave ambiguous_calls="不确定性暴露为数据"共振；(2) LAVA 符号/算术校验+WrenAI NUMERIC 精度+TDS version check="数值正确性"共振；(3) Noesis Mesh 跨 KB+tokensave 多 root 联邦+MDB-Link 多库="跨源联邦"共振。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">验证-检索-工程化三轨共振补全 Agent 可信治理栈底层基建</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">验证层</text><text x="156.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">TraceSQL 67 特征 + LAVA 符号校验</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">检索层</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">Noesis Mesh 跨 KB + 35B 本地</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">工程化层</text><text x="548.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">Cube IANA + tokensave ambiguous + WrenAI harden</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">8/19 四层治理</text><text x="744.0" y="124" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">记忆治理+约束建模+语义暴露+流量管控</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="277.0" y="208" width="150" height="58" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/><text x="352.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Kimi K3 反证</text><text x="352.0" y="252" fill="#64748b" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">长上下文不消灭语义层 补 completeness</text><rect x="473.0" y="208" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="548.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">三组共振</text><text x="548.0" y="252" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">暴露不确定性/数值正确性/跨源联邦</text><line x1="427.0" y1="237.0" x2="469.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">三层基建是四层治理的底座</tspan>　验证层检验 path property，检索层补 completeness，工程化层落地治理代码化</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">长上下文不消灭语义层</tspan>　Kimi K3 满分但延迟+配额爆炸，RAG 短板在 completeness，语义层补完整性</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">三组共振非偶然</tspan>　暴露不确定性/数值正确性/跨源联邦，跨日一致性验证领域共识</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>用户课题三大方向（业务知识库构建/业务语义理解/业务系统精确查询）都需"验证层+检索层+工程化层"底层基建。本周三轨共振为三层分工提供跨日一致性证据，非偶然共振而是领域共识。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>三轨：(1) 学术验证-检索——TraceSQL（reference-free 验证，67 特征，部署期可用）+LAVA（可审计符号/算术验证，四阶段流水线）+Noesis（跨 KB Graph-RAG，Mesh 路由+AIMD 并发+本地 35B）补全验证+检索+跨源。(2) GitHub 工程化——Cube v1.7.24（IANA 时区校验+agent skills guide）+tokensave v7.10.0（解析器 order-independence+ambiguous_calls+多 root 联邦）+WrenAI v0.13.3（四层 harden NUMERIC 精度+path traversal+DatabaseTimeoutError）补全输入校验+解析器确定性+脏输入容错。(3) 博客运维与反证——TDS 企业集成两道铁律（version check+dedup 同事务）+TDS Kimi K3 实测（长上下文不消灭 RAG，补 completeness 是语义层正解）。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>与 8/19 已成型四层分工的映射：8/19 是"记忆治理层(Quipu)+约束建模层(Policy Algebra)+语义暴露层(TDS Sheila)+流量管控层(DEW Anthropic)"四层治理。本周补"验证层+检索层+工程化层"三层基建：验证层=TraceSQL+LAVA（reference-free+符号校验），检索层=Noesis（跨 KB Mesh），工程化层=Cube/tokensave/WrenAI（输入校验+解析器确定性+脏输入容错）。三层基建是四层治理的底座——没有验证层，约束建模层的 path property 无从检验；没有检索层，语义暴露层的 context 无从补 completeness；没有工程化层，治理代码化无从落地。三组共振验证非偶然：(1) "不确定性暴露为数据"——TraceSQL 特征归因+LAVA error attribution+tokensave ambiguous_calls，三者都拒绝"黑盒猜"改"暴露证据"。(2) "数值正确性"——LAVA 符号算术+WrenAI NUMERIC 精度+TDS version check，三者都管数值不可错。(3) "跨源联邦"——Noesis Mesh+tokensave 多 root+MDB-Link 多库，三者都管跨源不合并。Kimi K3 实测是路线反证：长上下文 12/12 满分但 C3 延迟 273.7s+配额打穿，RAG 短板在 completeness（0.83/2）非 grounding（2.00 平手），语义层补的是完整性而非 grounding——结构化预聚合跨域答案是正解。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>商业启示：三层基建是"AI for 业务"的立项硬基建——验证层管"可信"，检索层管"完整"，工程化层管"可靠"。Kimi K3 实测说明长上下文不消灭语义层/知识图谱市场，反强化其补 completeness 价值。tokensave 的"宁可缺不要错"与 TraceSQL 的"可解释验证"是 agent 可信查询的差异化卖点——客户要"能证明为什么对"而非"说对就对"。三层基建成熟度是 ChatBI/Agent 数据产品企业级选型的硬指标。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>落地建议：三层基建并行建设——验证层用 TraceSQL 67 特征框架+LAVA 符号校验做业务 API 调用验证；检索层用 Noesis Mesh 路由做跨业务 API 多跳推理；工程化层用 Cube IANA 时区+tokensave ambiguous 原则+WrenAI 脏输入防御做输入校验与字段语义标注可信。不要因 1M 长上下文放弃语义层——补 completeness 是语义层的核心价值。字段语义标注用"tie 不猜+记 ambiguous"原则。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>三轨共振是跨日趋势非单日事件，落地需分阶段（验证层先于检索层先于工程化层）。TraceSQL 67 特征需迁移设计，Noesis Graph-RAG 工程复杂度高，Cube/tokensave/WrenAI 是工具非方案。Kimi K3 实验规模小（12 题）不可直接推广。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2608.17795" target="_blank" rel="noopener" class="src-link">TraceSQL: Traceable Answerability Estimation for Reference-Free Text-to-SQL Verification</a></li><li><span class="src-id">[2]</span> <a href="https://arxiv.org/abs/2608.16763" target="_blank" rel="noopener" class="src-link">LAVA: Logic-Aware Validation and Augmentation Framework for Large-Scale Financial Document Auditing</a></li><li><span class="src-id">[3]</span> <a href="https://arxiv.org/abs/2608.15919" target="_blank" rel="noopener" class="src-link">Noesis: Bidirectional Graph-RAG with Adaptive Parallelism and Cross-Knowledge-Base Semantic Discovery</a></li><li><span class="src-id">[4]</span> <a href="https://towardsdatascience.com/scaling-an-integration-pipeline-without-breaking-correctness/" target="_blank" rel="noopener" class="src-link">How to Scale an Integration Pipeline Without Breaking Correctness</a></li><li><span class="src-id">[5]</span> <a href="https://towardsdatascience.com/kimi-k3s-1m-token-context-window-vs-rag-cost-latency-and-answer-quality/" target="_blank" rel="noopener" class="src-link">Kimi K3's 1M Token Context Window vs. RAG: Cost, Latency and Answer Quality</a></li><li><span class="src-id">[6]</span> <a href="https://github.com/cube-js/cube/releases/tag/v1.7.24" target="_blank" rel="noopener" class="src-link">Cube v1.7.24</a></li><li><span class="src-id">[7]</span> <a href="https://github.com/aovestdipaperino/tokensave/releases/tag/v7.10.0" target="_blank" rel="noopener" class="src-link">tokensave v7.10.0</a></li><li><span class="src-id">[8]</span> <a href="https://github.com/Canner/WrenAI/releases/tag/wren-v0.13.3" target="_blank" rel="noopener" class="src-link">WrenAI wren-v0.13.3</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2608.17795" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2608.17795</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-github"></span><h2>🐙 开源项目</h2><span class="count">3 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-github">🐙 GitHub</span></div><h3><a href="https://github.com/cube-js/cube/releases/tag/v1.7.24" target="_blank" rel="noopener">Cube v1.7.24：IANA 时区校验 + Cube agent skills 指南 + best-fit 图表推荐</a></h3><div class="meta">2026-08-20 · GitHub</div><div class="summary">Cube v1.7.24（2026-08-19T12:29:25Z 发布）单 bugfix release：Validate query timezone against IANA zones（#11575 d1ba22a）——查询时区按 IANA 时区库校验。同期 docs commit 双发：add Cube agent skills guide（#11594）+ describe how the best-fit chart type is recommended（#11567）。延续 v1.7.21 cube spec CLI 分支审阅 + v1.7.22/23 postgres-driver UDT 线性时间构建+放弃 decompress 的密集迭代，今日聚焦"Agent 数据技能"文档化与查询输入校验。</div><div class="insight"><strong>🔍 技术视角：</strong>Cube 本版信号在 docs 不在 code——agent skills guide + best-fit 图表推荐说明 Cube 把"Agent 作为一等消费方"的产品化推进。IANA 时区校验看似小，实则是"查询输入校验"的延续——与 8/19 v1.7.23 的 postgres-driver UDT 性能+8/18 v1.7.21 的 cube spec CLI 分支审阅一脉相承，都在加固"语义层定义从配置文件升级为可治理代码资产"。对用户"上百字段宽表 API"，时区校验直接相关——跨时区业务数据查询的时间维度对齐是精确查询的前提。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">Cube v1.7.24 语义层 Agent 化三信号</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">agent skills guide #11594</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">Agent 一等消费方文档化</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">best-fit chart 推荐 #11567</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">语义层选图表 非LLM</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">IANA 时区校验 #11575</text><text x="548.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">查询输入校验 跨时区精确</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">延续 v1.7.21 cube spec CLI</text><text x="744.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">分支审阅 可治理代码资产</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">延续 v1.7.22/23 UDT+decompress</text><text x="450.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">工业级性能+供应链加固</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">信号在 docs 不在 code</tspan>　本版是单 bugfix+docs，但 agent skills guide 是产品化信号</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">语义层→Agent 数据技能平台</tspan>　与 MCP 单端点+20 工具一脉相承，BI 工具变 Agent 接口</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">时区校验是企业级细节</tspan>　EST vs America/New_York 夏令时不同，跨时区业务常见错误源</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>用户第二方向"业务语义理解"含 API schema 理解与字段语义标注。Cube 作为语义层引擎，其"Agent 数据技能"文档化说明语义层正成为 agent 数据访问的标准接口——用户应跟进。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>v1.7.24 单 bugfix：查询时区校验按 IANA 时区库（如 America/New_York 而非 EST）。同期 docs：agent skills guide（教 agent 如何用 Cube 数据技能）+ best-fit chart type recommendation（教系统如何推荐最适图表类型）。延续 v1.7.21 cube spec CLI（导出语义层规格+分支审阅）+v1.7.22/v1.6.72 LTS postgres-driver UDT 线性时间构建+放弃 decompress。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>三信号：(1) IANA 时区校验——查询输入校验的延续，时区是跨域业务数据精确查询的常见陷阱（EST vs America/New_York 在夏令时不同）。(2) agent skills guide——Cube 把 agent 当一等消费方文档化，与 8/12 Cube MCP 单端点+20 工具（含预聚合管理）一脉相承，语义层从 BI 工具变 Agent 数据技能平台。(3) best-fit chart type——说明 Cube 在"agent 选什么图"上做语义层推荐，与用户"业务语义理解"的"API 返回什么图"问题相关。与 8/19 v1.7.23 的 UDT 线性时间构建共振——都在加固语义层引擎的工业级可靠性。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>商业启示：Cube 的"Agent 数据技能"文档化说明语义层市场正从 BI 仪表盘向 Agent 数据接口迁移——这是 Cube 的增长方向，也是用户"AI for 业务"的语义层选型信号。IANA 时区校验看似小实则是企业级细节——跨时区业务不校验时区是常见数据错误源。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>落地建议：跟进 Cube agent skills guide——把 Cube 作为 agent 数据访问接口试点。跨时区业务查询用 IANA 时区库校验输入（非缩写）。best-fit chart recommendation 可作为 agent 可视化决策的参考——让语义层而非 LLM 选图表类型，减少 LLM 误选。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>本版是单 bugfix+docs，非功能大版本。agent skills guide 是文档非代码，实际 agent 集成仍需工程。best-fit chart recommendation 细节未详述，需读 docs 验证适用性。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://github.com/cube-js/cube/releases/tag/v1.7.24" target="_blank" rel="noopener" class="src-link">Cube v1.7.24 - Validate query timezone against IANA zones</a></li><li><span class="src-id">[2]</span> <a href="https://github.com/cube-js/cube" target="_blank" rel="noopener" class="src-link">cube-js/cube - open-source semantic layer for AI, BI and embedded analytics</a></li></ol></div><div class="modal-foot"><a href="https://github.com/cube-js/cube/releases/tag/v1.7.24" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://github.com/cube-js/cube/releases/tag/v1.7.24</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-github">🐙 GitHub</span></div><h3><a href="https://github.com/aovestdipaperino/tokensave/releases/tag/v7.10.0" target="_blank" rel="noopener">tokensave v7.10.0：解析器 order-independence 消除伪造边，ambiguous_calls 暴露不确定性</a></h3><div class="meta">2026-08-20 · GitHub</div><div class="summary">tokensave v7.10.0（2026-08-19T09:40:19Z 发布）核心：解析器 order-independence——最后一条 order-dependent pick 被移除（#412），score tie 不再按文件枚举序猜一个，而是不产生 edge 并记入 ambiguous_calls（schema v17）。Rust 索引 call edges 22,502→19,309（-14.2%），但其中 71.6% 的消失边指向"不同文件的 private item"——即 Rust 语言无法表达的伪造边被撤回而非事实丢失。新增 Ruby alias/alias_method + attr_reader/writer/accessor 方法节点；graph_root 接受数组实现多项目联邦查询（worktree 自动折叠，round-robin by rank 而非 score）；六个 MCP handler 改用 SQL 谓词下推替代全节点物化（module_api 17,594→2,206 行）。test 由 resolution_order_independence_test.rs 钉住。</div><div class="insight"><strong>🔍 技术视角：</strong>tokensave v7.10.0 是"宁可缺不要错"的确定性原则最硬工程证据。对用户"上百字段宽表 API 字段语义标注"直接可迁移：宽表字段语义标注常面临"多候选 tie"（如字段名重名），tokensave 的"tie 不猜而是记 ambiguous_calls"是正解——把不确定性暴露为数据而非静默猜一个。71.6% 撤回边是伪造边的事实说明"order-dependent pick"是系统性错误源——这与 8/19 Policy Algebra 的"path property 全程 admissible"共振：都在把"一次满足"升级为"全程确定性"。多 root 联邦对应用户多业务 API 跨项目查询场景。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">tokensave v7.10.0 确定性三原则</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">find_best_matches 复数</text><text x="156.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">tie 不猜 不产 edge</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">ambiguous_calls schema v17</text><text x="352.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">候选列表暴露不确定性</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">撤回 71.6% 伪造边</text><text x="548.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">跨文件 private Rust 不可表达</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">dead_code 排除 ambiguous</text><text x="744.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">避免假阳性</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="277.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="352.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">graph_root 数组联邦</text><text x="352.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">多项目 round-robin by rank</text><rect x="473.0" y="208" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="548.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">SQL 谓词下推</text><text x="548.0" y="252" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">六 handler 17,594→2,206 行</text><line x1="427.0" y1="237.0" x2="469.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">宁可缺不要错</tspan>　tie 不猜+记 ambiguous，客户宁要"不确定"不要"猜错"</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">撤回伪造非丢事实</tspan>　71.6% 撤回边指向跨文件 private，是 phantom edge 系统性错误源</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">多 root 联邦=跨业务 API 联邦</tspan>　worktree 折叠+rank 而非 score，对应 MDB-Link 多库场景</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>用户课题第三方向"业务系统精确查询"要求字段语义标注可信。宽表字段重名/多候选是常见问题，tokensave 的"不猜+暴露不确定性"是字段语义标注的可信原则。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>核心：find_best_matches（复数）替代 find_best_match（单数），tie 产生无 edge+记 ambiguous_calls。ambiguous_calls（schema v17）记录每个未解析调用的候选列表（name/kind/file/line/qualified name，cap 默认 25 max 200）。dead_code 排除 ambiguous 候选（避免"拒绝 edge 后报 target 未调用"的假阳性）。graph_root 接受数组，多 root 联邦 round-robin by rank（非 score，因 BM25 跨库不校准），worktree 用 git rev-parse --git-common-dir 折叠。六 handler SQL 谓词下推（NodeFilter）替代 get_all_nodes()。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>三层确定性：(1) order-independence——tie 不按文件序猜，resolution_order_independence_test.rs 钉住（同源码两索引，候选 swap 比较 edge）。(2) 撤回伪造边非丢事实——71.6% 撤回边指向跨文件 private item（Rust 不可表达），即"phantom edge"（#378 报告类）。(3) 暴露不确定性——ambiguous_calls 让模型看到"有选择"而非沉默。与 8/19 Policy Algebra 9 维约束共振：都在把"一次满足几条"升级为"全程 admissible"。与 8/19 Quipu gate 校验共振：都在写入端设 gate 拒绝不可信。多 root 联邦对应 8/15 MDB-Link 多库 schema linking——都管跨源查询。dead_code 排除 ambiguous 候选与 8/19 TDS Sheila"reviewable evidence 为有意输出"共振——都拒绝"事后补充的假阳性"。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>商业启示："宁可缺不要错"是 agent 可信查询的差异化原则——客户宁可 agent 说"不确定哪个字段"也不要猜错语义。ambiguous_calls 把不确定性变数据，让 agent 能"知道有选择"而非沉默猜——这是 TraceSQL 特征归因+LAVA error attribution 的同类思路。多 root 联邦是"跨业务 API 联邦查询"的工程模板。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>落地建议：宽表字段语义标注用"tie 不猜+记 ambiguous"原则——重名字段不强制选一个语义，记录所有候选让下游 agent/人裁决。多业务 API 跨项目查询用 graph_root 数组联邦（worktree 折叠避免重复）。dead_code 类分析排除 ambiguous 候选避免假阳性。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>Rust 索引 -14.2% edge 是撤回伪造非丢事实，但 pub 目标的采样（12/3971）而非全检。ambiguous_calls cap 25/200 可能截断大候选集。多 root 联邦 round-robin by rank 可能丢跨 root 关联（非单图并集）。SQL 谓词下推需 DB 支持 LIKE 元字符转义。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://github.com/aovestdipaperino/tokensave/releases/tag/v7.10.0" target="_blank" rel="noopener" class="src-link">tokensave v7.10.0 - resolver order-independence, ambiguous_calls, multi-root federation</a></li><li><span class="src-id">[2]</span> <a href="https://github.com/aovestdipaperino/tokensave" target="_blank" rel="noopener" class="src-link">aovestdipaperino/tokensave - code intelligence MCP server, 40+ tools, 30+ languages, 9 agent integrations</a></li></ol></div><div class="modal-foot"><a href="https://github.com/aovestdipaperino/tokensave/releases/tag/v7.10.0" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://github.com/aovestdipaperino/tokensave/releases/tag/v7.10.0</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-github">🐙 GitHub</span></div><h3><a href="https://github.com/Canner/WrenAI/releases/tag/wren-v0.13.3" target="_blank" rel="noopener">WrenAI wren-v0.13.3：批量 harden 版本，NUMERIC 精度保留+路径穿越防护+DatabaseTimeoutError 分类</a></h3><div class="meta">2026-08-20 · GitHub</div><div class="summary">WrenAI wren-v0.13.3 + wren-core-py v0.7.5（2026-08-18 发布）批量 harden 版本：context 层 filter non-mapping entries in _load_views_v1（#2604）+ harden description checks for bad MDL rows（#2616）+ harden relationships load 并像 views 一样校验（#2613）；memory 层 reject non-list relationship models（#2605）+ skip non-dict rows（#2586）+ skip unnamed cubes/measures/dimensions（#2665）；wren engine preserve unconstrained PostgreSQL NUMERIC precision（#2655）+ classify bare TimeoutError as DatabaseTimeoutError（#2654）+ bound session-context cache 32 LRU（#2628）+ prevent context upgrade path traversal（#2649）+ validate import paths before force cleanup（#2580）；genbi harden non-dict apps.yml + reject non-object Vercel API JSON；spark apply limit via DataFrame.limit before toPandas（#2574）。8/19 新增 commit fix(memory): validate imported query pair field types（#2656）。</div><div class="insight"><strong>🔍 技术视角：</strong>WrenAI 本版是"语义层也是错误语义层"的工程证据——大量 harden commit 都在处理"脏输入"：bad MDL rows、non-dict entries、non-list models、unnamed cubes/measures/dimensions。这与 8/13 wren-core-py v0.7.4 的"TimeoutError 分类为 DatabaseTimeoutError"一脉相承——语义层为 Agent 而非为 BI 设计错误处理。NUMERIC 精度保留对用户"上百字段宽表 API"直接相关——PostgreSQL NUMERIC 无约束精度若丢失致业务数值错误。路径穿越防护（context upgrade path traversal）是供应链安全加固，与 8/19 Cube 放弃 decompress 同方向。session-context cache 32 LRU 是 serving 侧资源治理。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">WrenAI v0.13.3 四层 harden 架构</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">context 层 harden</text><text x="156.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">filter non-mapping/desc checks/relationships</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">memory 层 harden</text><text x="352.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">reject non-list/skip non-dict/unnamed</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">wren engine harden</text><text x="548.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">NUMERIC 精度/Timeout 分类/LRU 32/path traversal</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">genbi/spark harden</text><text x="744.0" y="124" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">non-dict apps.yml/Vercel JSON/DataFrame.limit</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="277.0" y="208" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="352.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">脏输入防御</text><text x="352.0" y="252" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">语义层为 Agent 容错 非崩</text><rect x="473.0" y="208" width="150" height="58" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/><text x="548.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">8/19 #2656</text><text x="548.0" y="252" fill="#64748b" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">validate imported query pair field types</text><line x1="427.0" y1="237.0" x2="469.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">语义层也是错误语义层</tspan>　大量 harden 说明语义层必须容错坏输入，为 Agent 而非 BI 设计错误处理</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">NUMERIC 精度=数值可信</tspan>　与 LAVA 符号/算术验证共振，业务金额/指标不可丢精度</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">供应链安全加固</tspan>　path traversal+import path 校验，与 Cube 放弃 decompress 同方向</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>用户第二方向"业务语义理解"含 API schema 理解与字段语义标注。WrenAI 作为 AI-native 语义层，其"脏输入处理"工程化是字段语义标注可信的基建——标注常遇坏数据。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>四层 harden：(1) context 层——filter non-mapping entries、harden description checks、harden relationships load（像 views 一样校验）。(2) memory 层——reject non-list relationship models、skip non-dict rows、skip unnamed cubes/measures/dimensions。(3) wren engine——preserve unconstrained PostgreSQL NUMERIC precision、classify bare TimeoutError as DatabaseTimeoutError、bound session-context cache 32 LRU、prevent context upgrade path traversal、validate import paths。(4) genbi/spark——harden non-dict apps.yml、reject non-object Vercel API JSON、apply limit via DataFrame.limit。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>三信号：(1) 脏输入防御——三 layer（context/memory/engine）都加 harden，说明 WrenAI 在生产中遇大量坏 MDL/relationships/models 数据，语义层必须容错而非崩。与 8/13 v0.7.4 TimeoutError 分类共振——都是"为 Agent 设计错误处理"。(2) 数值精度——NUMERIC 精度保留是业务数值可信的底层保证，与 LAVA 符号/算术验证共振——都管数值正确性。(3) 供应链安全——path traversal 防护+import path 校验是供应链加固，与 8/19 Cube 放弃 decompress+8/13 Cube Core 安全 advisory 同方向。session-context cache 32 LRU 与 8/18 TDS Autoscaling 的"agentic traffic 资源治理"共振——都是 serving 侧资源边界。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>商业启示：WrenAI 的批量 harden 说明 AI-native 语义层正从"能跑"向"生产可靠"迁移——这是用户选型的成熟度信号。NUMERIC 精度+路径穿越防护是企业级细节，与 Cube 的 IANA 时区校验同属"企业级正确性"维度。脏输入防御是字段语义标注可信赖的基建——标注遇坏数据不崩是生产要求。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>落地建议：宽表 API 字段语义标注层加脏输入防御——non-dict/non-list/unnamed entries 不崩而是 skip+告警。PostgreSQL NUMERIC 字段保留无约束精度（业务金额/指标不可丢精度）。session-context cache 设 LRU 边界防 serving 侧资源耗尽。context upgrade path 加穿越校验（供应链安全）。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>本版是 harden 非新功能，无新能力。NUMERIC 精度保留细节（是否全保留 vs 截断）需读 commit 验证。32 LRU 是经验值非基准调优。path traversal 防护是已知漏洞类修复，说明曾有暴露。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://github.com/Canner/WrenAI/releases/tag/wren-v0.13.3" target="_blank" rel="noopener" class="src-link">WrenAI wren-v0.13.3 - harden context/memory, NUMERIC precision, path traversal, DatabaseTimeoutError</a></li><li><span class="src-id">[2]</span> <a href="https://github.com/Canner/WrenAI" target="_blank" rel="noopener" class="src-link">Canner/WrenAI - Open-source semantic layer platform for AI-native BI and agentic analytics</a></li></ol></div><div class="modal-foot"><a href="https://github.com/Canner/WrenAI/releases/tag/wren-v0.13.3" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://github.com/Canner/WrenAI/releases/tag/wren-v0.13.3</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-blog"></span><h2>📝 技术博客</h2><span class="count">2 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-blog">📝 技术博客</span></div><h3><a href="https://towardsdatascience.com/scaling-an-integration-pipeline-without-breaking-correctness/" target="_blank" rel="noopener">TDS：企业集成流水线如何在不破坏正确性的前提下扩 16x 吞吐</a></h3><div class="meta">2026-08-20 · Towards Data Science</div><div class="summary">企业数据集成实战复盘：订单/库存/财务/物流/客户记录+遗留 FTP 批处理，20+ 业务系统两端，日均百万事件、月末峰值十倍。16x 吞吐跃升背后是两道不可触碰的正确性铁律：(1) 后到版本不可覆盖先到版本——每实体带源系统 own 的 version 号，写路径对乱序/重传/重投递无感，version check 拒绝 stale；(2) "是否已处理"永不可错——dedup-log 与业务数据同事务提交，下沉到主键约束让 DB 而非业务代码裁决。批大小 50/100/200/500 实测，同实体同分区（keyed by entity ID）保顺序。consumer-side runtime metric 而非洁净集群基准。作者直言"almost everything you do to go faster is also a way to silently break the data，数据错了数周后财务对账才发现，是最坏时机"。发表于 2026-08-19。</div><div class="insight"><strong>🔍 技术视角：</strong>这篇是本周最贴合用户"上百字段宽表 API 精确查询"工程场景的博客。用户通过业务 API 查数，底层是"系统 A 调系统 B 的 API"的集成场景——本文正是该场景的吞吐+正确性实战。两道铁律直接可迁移：(1) version check——业务 API 响应应带 version 号，agent 缓存层对 stale 响应无感（避免用过期宽表字段语义）；(2) dedup 同事务——agent 调 API 的幂等性应下沉到数据层而非业务代码。"consumer-side runtime metric 而非洁净集群基准"与 8/14 DEW On Benchmarking 的"主动基准测试"共振——用真实业务流量而非合成数据评估。批大小实测对应 agent 批量调 API 的并行度权衡。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">企业集成流水线两道正确性铁律</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">20+ 业务系统</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">订单/库存/财务/物流 REST/SOAP/FTP</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">同实体同分区</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">keyed by entity ID 保顺序</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">铁律1 version check</text><text x="548.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">WHERE version&lt;源系统own 拒 stale</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">铁律2 dedup 同事务</text><text x="744.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">主键约束 DB 裁决 非业务代码</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="277.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="352.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">批大小 50/100/200/500</text><text x="352.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">workload-specific 实测</text><rect x="473.0" y="208" width="150" height="58" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/><text x="548.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">consumer-side runtime metric</text><text x="548.0" y="252" fill="#64748b" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">真实业务流量 非合成基准</text><line x1="427.0" y1="237.0" x2="469.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">正确性优先于性能</tspan>　"一切提速也是静默破坏数据的方式"，铁律是 floor，trades only safe because floor holds</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">version 号源系统 own</tspan>　与 Yannick"接口必须携带信息"共振——agent 消费要求 API 带版本</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">dedup 下沉数据层</tspan>　DB 主键约束裁决，消除 query-then-write 高并发间隙</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>用户第三方向"业务系统精确查询"的底层就是业务系统集成。本文是该场景的吞吐+正确性工程实战，两道铁律是"业务数据可信"的工程根基——没有正确性保证的吞吐是灾难。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>两道铁律：(1) upsertWithVersionCheck——UPDATE ... WHERE version &lt; ? 拒绝 stale，updated==0 时 INSERT 新行或丢弃旧版本。version 号由源系统 own（非管道自造，因管道不知源何时真改）。(2) dedup-log 与业务数据同事务——接受记录写 dedup-log+业务数据在同一 DB 事务，commit 一起或不 commit。dedup 检查下沉到主键约束（DB 裁决而非业务代码 query-then-write，消除高并发间隙）。同实体同分区（keyed by entity ID）保顺序，避免跨分区乱序。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>两道铁律是"正确性优先于性能"的工程哲学——"everything below trades against it，and the trades are only safe because this floor holds"。version check 与 8/19 Quipu bitemporal KG 的"bitemporal 不放宽"共振——都管时间维度的正确性，拒绝后到覆盖先到。dedup 同事务与 8/19 Policy Algebra 的"evidence accumulation"共振——都把校验与写入绑定为原子。consumer-side runtime metric 与 8/14 DEW On Benchmarking 的"主动基准测试（决策/工作负载/系统边界三要素）"共振——用真实流量评估。批大小实测对应 agent 批量调 API 的并行度——50/100/200/500 是吞吐与延迟权衡的工程数据点。本文与 8/19 TDS Sheila 的"产品形态贴合业务流"共振——都是从生产实战而非理论推导。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>商业启示：16x 吞吐+两道铁律是"AI for 业务"集成层的硬 ROI——不破坏正确性的扩容直接降本（减少峰值扩容+减少对账纠错人力）。version 号由源系统 own 的设计说明"业务 API 必须携带版本信息"，与 8/17 Yannick"消费者从人变 agent 改变接口必须携带信息"共振——agent 消费场景要求 API 设计升级。consumer-side runtime metric 是 agent 可靠性评估的方法论转移：从洁净基准到真实业务流量。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>落地建议：业务 API 查询层增加 version check——响应带 version 号，agent 缓存层对 stale 响应拒绝覆盖。dedup 下沉到数据层——agent 调 API 的幂等键用 DB 主键约束而非业务代码。批大小实测——agent 批量调宽表 API 的并行度从 50 起步实测，找吞吐-延迟最优点。consumer-side runtime metric——用真实业务查询流量评估 agent 查询可靠性而非合成基准。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>两道铁律需 DB 支持（主键约束、事务），部分宽表 API 后端可能不暴露 version 号。dedup-log 无限增长需 nightly trim。批大小结论是 workload-specific 不可直接套用。月末峰值十倍场景的扩容策略本文未详述。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://towardsdatascience.com/scaling-an-integration-pipeline-without-breaking-correctness/" target="_blank" rel="noopener" class="src-link">How to Scale an Integration Pipeline Without Breaking Correctness</a></li></ol></div><div class="modal-foot"><a href="https://towardsdatascience.com/scaling-an-integration-pipeline-without-breaking-correctness/" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://towardsdatascience.com/scaling-an-integration-pipeline-without-breaking-correctness/</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-blog">📝 技术博客</span></div><h3><a href="https://towardsdatascience.com/kimi-k3s-1m-token-context-window-vs-rag-cost-latency-and-answer-quality/" target="_blank" rel="noopener">TDS：Kimi K3 1M 长上下文 vs RAG 实测——长上下文满分但延迟与配额打穿</a></h3><div class="meta">2026-08-20 · Towards Data Science</div><div class="summary">作者自有 33 篇文章共 127,068 tokens（仅占 Kimi K3 1M 窗口 12%），12 题（易 A/中 B/难 C 三级各 4），同 system prompt 同模型，blind grading 正确性+完整性+grounding。结果反直觉：long_context 12/12 满分；RAG 在 grounded（2.00 平手）与 correctness（1.92 略低）几乎不输，整个 gap 来自 completeness（0.83/2）——RAG 不幻觉但答案不完整（如"13 篇文章链接 GitHub"RAG 答"none"，long_context 列全 13 篇）。延迟发现：单事实题两路接近，跨文章题 long_context 慢 2-3x，语料级题 C3 慢到 273.7s vs 46.3s，因思考 token 多 2-10x（非读 context）。单日配额：long_context 12 题共 1,528,152 input tokens 直接打穿 Kimi 入门 tier 1.5M 日配额。发表于 2026-08-19。</div><div class="insight"><strong>🔍 技术视角：</strong>这篇是"语义层/知识图谱是否仍必要"的最硬实验反证。长上下文在 12% 占用时虽满分，但延迟与成本随语料级问题爆炸（273.7s、单日配额打穿）——证明"它装得下"≠"它用得起"。关键洞察：RAG 的短板不在 grounding（与长上下文平手）而在 completeness——5 chunk 装不下跨文章问题。这为用户"语义层压缩+结构化检索"提供了正解方向：语义层不是为装更多 token，而是为补 RAG 的 completeness gap（把跨文章/跨域信息结构化预聚合，让 RAG 一次取到完整答案）。延迟发现"思考 token 多 2-10x"说明长上下文的瓶颈在推理而非读取，与 8/17 dbt token 压缩的"modeling for the token not the table"共振——压缩 context 也压缩思考成本。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">Kimi K3 1M 长上下文 vs RAG 受控实验三层发现</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">33 篇文章 127K tokens</text><text x="156.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">占 1M 窗口 12%</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">long_context 全量喂入</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">12/12 满分</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">RAG 5 chunk 检索</text><text x="548.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">grounded 2.00 平 correctness 1.92 completeness 0.83</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">延迟瓶颈</text><text x="744.0" y="124" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">C3 273.7s vs 46.3s 思考 token 2-10x</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="277.0" y="208" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="352.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">配额打穿</text><text x="352.0" y="252" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">12 题 1.53M tokens 打穿 1.5M 日配额</text><rect x="473.0" y="208" width="150" height="58" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/><text x="548.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">语义层正解</text><text x="548.0" y="252" fill="#64748b" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">补 completeness 预聚合跨域</text><line x1="427.0" y1="237.0" x2="469.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">装得下≠用得起</tspan>　长上下文质量满分但延迟与配额爆炸，不消灭 RAG/语义层</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">RAG 短板在 completeness</tspan>　不幻觉但答案不完整，语义层补的是完整性而非 grounding</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">压缩思考而非读取</tspan>　语义层省的是 long_context 的思考 token（2-10x），非读取 token</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>用户面临"语义层 vs 长上下文倒"的路线之争——1M 窗口出现后，是否可跳过语义层/知识图谱直接全量喂入？本文是该问题的受控实验答案。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>实验设计：32 文件 33 篇文章 127,068 tokens（tiktoken cl100k_base 计），Moonshot 实计 127,346 input tokens/request（含 system+question）。两路：RAG（5 selected passages）vs long_context（全 32 文件）。12 题三级：A1-A4 单事实、B1-B4 跨文章、C1-C4 语料级。blind grading 三维：correctness/completeness/grounding 各 0-2 分。三处意外：(1) 半数答案空（未注意）；(2) 同调用一次失败一次成功；(3) 单次完整 pass 不 fits 一日（1,528,152 tokens 打穿 1.5M 配额）。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>三层发现：(1) 质量层——long_context 12/12 满分，RAG 的 gap 全在 completeness（0.83/2），grounding 平手（2.00），correctness 略低（1.92）。这颠覆"RAG 会幻觉"预期——RAG 不幻觉但不完整，是"不知道"而非"说错"。(2) 延迟层——单事实题两路接近，跨文章 long_context 慢 2-3x，语料级 C3 273.7s vs 46.3s，因思考 token 多 2-10x。瓶颈在推理非读取。(3) 成本层——12 题 1,528,152 input tokens 打穿 1.5M 日配额。与 8/17 dbt token 压缩共振——Gong MCP 直连 24 万 token 触发 API 天花板是同一问题在更大语料上的重现。与 8/15 Beyond Top-K（表格密集文档 top-k 失效）共振——跨文章问题需结构化预聚合而非 chunk 检索。语义层的价值正是补 completeness gap——把跨文章/跨域信息结构化，让 RAG 一次取完整答案而非 5 碎片。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>商业启示：1M 长上下文不消灭 RAG/语义层市场，反而强化其价值——长上下文的延迟与成本随语料级问题爆炸，企业不可能为每个查询烧 1.5M tokens。语义层/知识图谱的"结构化预聚合"是长上下文的互补而非替代：长上下文管单文档深度，语义层管跨文档/跨域完整性。这是"语义层 vs 长上下文"二元选择的破除——两者解决不同问题。dbt 的 99% 降本与本文的配额打穿是同一 ROI 的两面。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>落地建议：不要因 1M 窗口放弃语义层——语料级问题延迟爆炸+配额打穿证明全量喂入不可扩展。语义层压缩 schema context 的目标不是省读取 token（占比小），而是省思考 token（long_context 思考量 2-10x）+补 completeness（结构化预聚合跨域答案）。对跨业务 API 问题，先用语义层把多 API 字段预聚合为指标/维度，再让 agent 查，而非让 agent 从 5 个 API 响应碎片拼。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>实验规模小（12 题，作者自评），不可直接推广。12% 占用非极端，800K tokens 行为未知（作者明说）。RAG 的 completeness gap 可能因检索器弱而非 RAG 范式本身弱——强检索器可能补齐。long_context 满分部分因作者自评自有文章（高确定性基准）。配额打穿是入门 tier，高 tier 可承受但成本线性增长。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://towardsdatascience.com/kimi-k3s-1m-token-context-window-vs-rag-cost-latency-and-answer-quality/" target="_blank" rel="noopener" class="src-link">Kimi K3's 1M Token Context Window vs. RAG: Cost, Latency and Answer Quality</a></li></ol></div><div class="modal-foot"><a href="https://towardsdatascience.com/kimi-k3s-1m-token-context-window-vs-rag-cost-latency-and-answer-quality/" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://towardsdatascience.com/kimi-k3s-1m-token-context-window-vs-rag-cost-latency-and-answer-quality/</a></div></div></div>
+
+  
+
+  <footer>
+    由 Hermes Agent 自动生成 · 点击卡片查看深度详情 · 2026-08-20
+  </footer>
+
+  <!-- ===== 反馈按钮 + 表单弹层 ===== -->
+  <button class="feedback-fab" onclick="openFeedback()" title="提交反馈">💬</button>
+
+  <div class="modal" id="feedback-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeFeedback()" aria-label="关闭">×</button>
+      <span class="tag tag-product">💬 读者反馈</span>
+      <h2>提交意见 / 反馈</h2>
+      <div class="modal-body">
+        <p style="color:var(--muted);font-size:0.9em;margin-bottom:12px;">
+          你的反馈会帮我改进晨报内容。提交后将打开 GitHub Issue 页面，确认后我会在每天 17:00 处理。
+        </p>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">反馈类型</label>
+        <select id="fb-type" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);margin-bottom:12px;">
+          <option value="内容建议">内容建议（选题/深度/方向）</option>
+          <option value="错误报告">错误报告（链接失效/信息有误）</option>
+          <option value="格式反馈">格式/排版反馈</option>
+          <option value="其他">其他</option>
+        </select>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">你的反馈内容</label>
+        <textarea id="fb-body" rows="5" placeholder="请描述你的意见、建议或发现的问题…"
+          style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);resize:vertical;margin-bottom:12px;"></textarea>
+        <button class="modal-submit" onclick="submitFeedback()">提交反馈 →</button>
+      </div>
+      <div class="modal-foot" style="color:var(--muted);font-size:0.8em;">提交后请在打开的 GitHub 页面点击确认。</div>
+    </div>
+  </div>
+
+  <!-- ===== 架构图放大 lightbox ===== -->
+  <div class="diagram-lightbox" id="diagram-lightbox" onclick="if(event.target===this)closeDiagramZoom()">
+    <div class="diagram-lightbox-inner">
+      <div class="lb-head">
+        <h3 id="lb-title">📊 架构图</h3>
+        <div class="lb-tools">
+          <button type="button" class="lb-btn" onclick="diagramToggleZoom()">🔍 放大/缩小</button>
+          <button type="button" class="lb-close" onclick="closeDiagramZoom()" aria-label="关闭">×</button>
+        </div>
+      </div>
+      <div class="lb-svg" id="lb-svg"></div>
+      <div class="lb-tip">提示：点击「放大/缩小」切换缩放，缩放后可在图内拖动查看细节 · 按 Esc 关闭</div>
+    </div>
+  </div>
+
+  <script>
+    function openDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.add('show'); document.body.style.overflow = 'hidden'; }
+    }
+    function closeDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.remove('show'); document.body.style.overflow = ''; }
+    }
+    function openFeedback() {
+      document.getElementById('feedback-modal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeFeedback() {
+      document.getElementById('feedback-modal').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function submitFeedback() {
+      const type = document.getElementById('fb-type').value;
+      const body = document.getElementById('fb-body').value.trim();
+      if (!body) { alert('请填写反馈内容'); return; }
+      const date = '2026-08-20';
+      const title = '[网页反馈/' + type + '] ' + date;
+      const full = '反馈类型: ' + type + '\n日期: ' + date + '\n\n' + body;
+      // 生成 GitHub Issue 预填链接（不暴露 token，安全）
+      const url = 'https://github.com/hhao9817/agent-daily/issues/new?title=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(full);
+      window.open(url, '_blank');
+      closeFeedback();
+    }
+    /* ===== 架构图放大 ===== */
+    function openDiagramZoom(btn) {
+      const box = btn.closest('.diagram-box');
+      const svg = box.querySelector('.diagram-svg svg') || box.querySelector('svg');
+      if (!svg) return;
+      const title = box.querySelector('h4') ? box.querySelector('h4').textContent : '📊 架构图';
+      document.getElementById('lb-title').textContent = title;
+      const holder = document.getElementById('lb-svg');
+      holder.innerHTML = '';
+      holder.appendChild(svg.cloneNode(true));
+      const lb = document.getElementById('diagram-lightbox');
+      lb.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeDiagramZoom() {
+      document.getElementById('diagram-lightbox').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function diagramToggleZoom() {
+      const svg = document.querySelector('#lb-svg svg');
+      if (!svg) return;
+      svg.classList.toggle('zoomed');
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal.show').forEach(function(m) { m.classList.remove('show'); });
+        document.getElementById('diagram-lightbox').classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+</html>
