@@ -1,0 +1,661 @@
+{
+  "date": "2026-08-21",
+  "banner": "今日速览：多 Agent 企业 BI 平台五阶段流水线 95.3% 准确率+治理记录自训练把昂贵能力压缩为可靠 one-shot+可逆遗忘三态记忆治理知识陈旧+RAG 语料三形态决定架构选择+知识图谱从\"文件柜\"变\"可遍历图\"+MetricFlow Athena 适配器+Chat2DB 通用 JDBC 35 库。",
+  "snapshot": {
+    "summary": "今日情报覆盖学术 4 篇 + 博客 2 篇 + GitHub 2 条，串成\"知识生命周期四阶段治理\"完整链路：采（RAG 语料三形态决定采集架构）→ 验（治理记录自训练把概率能力压缩为确定性 one-shot）→ 忘（可逆遗忘三态记忆防陈旧知识污染决策）→ 查（多 Agent 五阶段 BI 流水线 + 知识图谱可遍历化 + MetricFlow/Chat2DB 引擎迭代）。核心信号：企业 AI 治理从\"模型能力竞赛\"进入\"知识全生命周期工程化\"新阶段——采集端按语料形态分治、验证端用治理记录蒸馏能力、记忆端管理遗忘而非仅保留、查询端多 Agent 编排+图谱遍历+语义层引擎三条线收敛。可逆遗忘与治理记录自训练是本周最值得落地的两个机制，前者解决业务知识时效性，后者解决昂贵推理的可靠复用。",
+    "groups": {
+      "paper": [
+        "多 Agent 企业 BI 平台（2608.18740）：CrewAI 五阶段流水线（NL 解析→数据检索→分析→可视化→报告聚合）经 MCP 生成图表，300 测试用例 95.3% 功能准确率/24s 延迟/4.52 质量分/93% 无幻觉率，比单 agent 基线 +22.6pp 准确率 +20.2% 质量，消融确认 Data Analysis+Report Aggregation 两 agent 驱动质量。四 LLM 后端跨模型验证架构泛化性。",
+        "治理记录自训练（2608.18324）：机器可验证工作流产生治理记录（任务契约→模型尝试→验证器决策→接受输出→目标来源），测试能否用记录蒸馏有界模型把偶发昂贵能力压缩为可靠 one-shot。PlanBench 上 Qwen3-14B thinking 生成 24 个 VAL 验证器接受的计划训练同 checkpoint 非思考执行，80 新案例 VAL 接受从 1→57 零回归，160 新案例 VAL 选择 102 vs 自选 69（配对净 +33 p=0.000002），延迟约 thinking 的 1/56。",
+        "可逆遗忘（2608.18177，引用已核实=0/infl=0）：企业 agent 在非平稳环境（客户/政策/工具/法规变化）中，无差别保留让陈旧知识污染决策造成负迁移与运营风险。提出三态记忆框架 active/dormant/retired + 滞后可逆记忆控制器：累积相关性证据+非对称阈值防状态振荡+shadow mode 测试 reactivation+策略 gate 退休。金融场景例证：一市场体制下有用知识另一体制下有害但条件重现时恢复相关。引用数已 Semantic Scholar 核实=0/influential=0（2026-08-18 新文符合预期）。",
+        "PLSQLBench（2608.15931，引用已核实=0/infl=0）：首个评估 LLM 写可执行 PL/SQL 程序的基准，执行测试测正确性。2865 实例（2594 单轮+271 多轮 978 轮对话），覆盖 Spider 2 企业 schema 复杂任务+Spider 简单任务+MBPP 过程性问题。8 个 LLM 实验揭示反复困难：schema grounding/PL/SQL 方言保真/过程控制流/异常处理/跨轮一致性。工具增强 agent 改善多项但仍有大缺口。引用数已核实=0/influential=0（2026-08-16 新文符合预期）。"
+      ],
+      "blog": [
+        "TDS RAG 语料三形态（Angela Shi, 8/20）：flat pile 单文档 RAG 在企业货架上失效不是因为参数错误，而是语料有三种形态（无关文件堆/合同副本集/索赔文件夹栈），每种要不同架构。三个问题判定形态：有无可过滤字段→是否需去重→是否需跨文档关联。re-ranker 修复不了五种 flat pile 失效。形态错配成本：建错仓库浪费时间且让正确答案由\"从不该一起读的三个文件\"拼出。",
+        "TDS 知识图谱可遍历化（Miodrag Cekikj, 8/20）：持久知识层从\"像文件柜被查阅\"升级为\"像图被遍历\"。退休 query router（wiki-first/evidence-first 混合决策），改为每次查询重建图遍历+bitemporal 边+双阈值实体解析。7x 碎裂因子（149 概念对象 vs 策展图 19）证明 alias-only 实体解析不足。解锁三能力：真实多跳遍历+时间感知关系+矛盾发现而非策展。contradiction register 拒答企业自身未解决的问题，effective-date 隔离防止规则前溯适用。"
+      ],
+      "github": [
+        "MetricFlow v0.212.0（8/19 发布）：新增 Athena 适配器与 SQL 渲染支持 #979；BigQuery 用 TIMESTAMP_TRUNC 替 DATETIME_TRUNC #2078；用户过滤串加括号 #2066；OSI ratio 子指标命名去 dunder 通过 semantic manifest 校验 #2091；group-by item resolver 限结果缓存 #2075；legacy column order 选项 #2065。dbt-metricflow 0.14.0 同步发布。语义层指标引擎持续向多数据源扩展+命名规范化+缓存治理。",
+        "Chat2DB Community v5.3.4（8/20 发布）：通用 JDBC 支持仅靠配置添加 35 个数据库（#2633 十个+#2644 十三个+#2648 十二个，含国产库达 DBeaver 平价）；MySQL ENUM/SET 结果编辑器 #2560；数据源 identity colors+SQL 编辑器水印 #2657；SQL 结果编辑关闭安全 #2627；MCP 设置与重启确定性化；trusted contributor 审核角色定义+Community 贡献者 ownership 对齐。开源 ChatBI 从\"单库对话\"向\"通用数据源治理平台\"演进。"
+      ],
+      "product": [
+        "知识生命周期四阶段治理成型（战略研判）：今日 8 条串成\"采→验→忘→查\"四阶段完整治理链路——RAG 语料三形态（采：按形态分治采集架构，flat pile/合同副本/索赔文件夹各需不同准备）→ 治理记录自训练（验：机器可验证工作流产生治理记录蒸馏有界模型，VAL 选择 102 vs 自选 69 配对 +33 p=2e-6，延迟 1/56）→ 可逆遗忘三态记忆（忘：active/dormant/retired + 滞后控制器非对称阈值防振荡+shadow mode 测试 reactivation，防陈旧知识负迁移）→ 多 Agent 五阶段 BI + 知识图谱可遍历化 + MetricFlow/Chat2DB（查：CrewAI 五阶段 95.3%+图遍历每次重建+语义层引擎多源扩展）。与 8/19-8/20 已成型四层分工映射：8/19 是记忆治理+约束建模+语义暴露+流量管控四层治理，今日补知识全生命周期四阶段——采补语义暴露层上游、验补约束建模层蒸馏机制、忘补记忆治理层遗忘维度、查补语义暴露层多 Agent 编排。三组共振：(1) 治理记录自训练 VAL 验证器+知识图谱 contradiction register+可逆遗忘 shadow mode=\"确定性验证 gate\"共振；(2) RAG 语料三形态分治+知识图谱 bitemporal 边+可逆遗忘非对称阈值=\"形态决定架构\"共振；(3) 多 Agent 五阶段流水线+知识图谱图遍历+MetricFlow/Chat2DB 多源扩展=\"查询编排三线收敛\"共振。最核心战略研判：治理记录自训练是本周最硬数据——把 Qwen3-14B thinking 的 24 个 VAL 接受计划蒸馏为非思考 one-shot 执行，80 案例从 1→57 零回归，证明\"治理记录即监督信号\"可行，为企业 agent 把昂贵推理压缩为可靠复用提供可量化路径。可逆遗忘是本周最贴合用户业务场景的机制——用户业务知识库从\"研发\"转\"业务\"必然面临陈旧知识污染，三态+滞后控制器提供工程化遗忘而非简单删除。RAG 语料三形态对用户\"上百字段宽表 API\"场景直接相关——宽表 API 响应属于\"结构化密集文档\"形态，flat pile chunk+embed 结构性失效需形态分治。知识图谱可遍历化退休 query router 对用户\"语义层 vs 知识图谱\"双路线决策提供关键信号——图被遍历而非被查阅是知识图谱路线的使能器，退休基于关键词的路由改为每次查询重建图遍历是架构级升级。"
+      ]
+    }
+  },
+  "items": [
+    {
+      "tag": "paper",
+      "title": "多 Agent 企业 BI 平台：CrewAI 五阶段流水线 95.3% 准确率，经 MCP 生成可视化",
+      "date": "2026-08-19",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2608.18740",
+      "summary": "提出基于 CrewAI 的会话式 BI 多 agent 框架，五个专业 agent 顺序流水线处理自然语言查询：NL 解析→数据检索分析→经 MCP 生成可视化→交付可执行洞察。平台含多租户数据隔离的 defense-in-depth 安全架构+将会话洞察转为可复用 dashboard 组件的查询参数化机制。300 端到端测试用例跨合成与生产数据集，95.3% 功能准确率/24s 均延迟/4.52 质量分（LLM-as-Judge）/93% 无幻觉率，比单 agent 基线 +22.6pp 准确率 +20.2% 质量提升。四 LLM 后端跨模型+人类专家验证确认架构泛化性与评估器可靠性。消融研究确认 Data Analysis 与 Report Aggregation 两 agent 是输出质量主驱动。",
+      "insight": "架构师视角：这是\"AI for 业务\"会话式 BI 的工程化参考实现——五阶段流水线把 NL→数据→分析→可视化→报告的完整链路 agent 化，消融数据（两 agent 驱动质量）为多 agent 编排的投资优先级提供硬证据。对用户课题直接相关：用户不直连数据库而通过高业务含义 API 查数，该框架的\"数据检索分析 agent\"环节可替换为 API 语义理解+调用，MCP 生成可视化与 Cube MCP 20 工具一脉相承。关键启示：多 agent 顺序流水线比单 agent +22.6pp，但消融确认并非所有 agent 等价贡献——Data Analysis+Report Aggregation 是质量承重墙，查询检索 agent 是准确性承重墙，这与 8/19 TDS Sheila\"每步最简机制\"原则共振：投资应聚焦承重 agent 而非均摊。引用数待核实（Semantic Scholar 限流，8/19 新文预期 0）。",
+      "detail": {
+        "why": "企业会话式 BI 是\"AI for 业务\"最直接的落地形态，该论文提供经 300 测试用例验证的工程化参考实现，且有消融数据指出哪些 agent 真正驱动质量，为多 agent 编排投资优先级提供硬证据。",
+        "mechanism": "CrewAI 五阶段顺序流水线：(1) NL Query Understanding agent 解析自然语言意图→(2) Data Retrieval agent 检索数据→(3) Data Analysis agent 分析→(4) Visualization agent 经 MCP 生成图表→(5) Report Aggregation agent 聚合洞察。defense-in-depth 多租户隔离+查询参数化把会话洞察转为可复用 dashboard 组件。LLM-as-Judge 4.52/5.0 评估+人类专家双重验证。",
+        "deep": "最深层洞察在消融：Data Analysis+Report Aggregation 是质量主驱动，意味着 NL 解析与数据检索虽必要但非质量瓶颈——质量瓶颈在\"理解数据含义\"与\"把分析转为可执行洞察\"两步。这与 8/18 EnterpriseRAG 57 点编排鸿沟共振：instruction adherence collapse 在分析+报告聚合步最严重。对用户\"上百字段宽表 API\"场景：Data Retrieval agent 替换为 API 语义理解+精准调用，宽表字段语义标注质量直接决定 Data Analysis agent 输入质量，进而决定整体质量。query parameterization 转可复用 dashboard 与 Cube pre-aggregation 同构：会话洞察沉淀为可复用资产。",
+        "apply": "落地建议：(1) 五阶段流水线可直接迁移——Data Retrieval agent 替换为用户业务 API 调用层+宽表字段语义标注；(2) 投资优先级按消融聚焦 Data Analysis+Report Aggregation 两 agent，而非均摊五 agent；(3) query parameterization 把高频会话查询沉淀为 dashboard 组件复用降本；(4) LLM-as-Judge+人类专家双重验证可作为评估闭环参考。",
+        "caveats": "局限：(1) 95.3% 准确率在 300 测试用例上，生产长尾可能衰减；(2) 24s 均延迟对实时场景偏慢，需异步或预计算；(3) LLM-as-Judge 评估器可靠性虽经人类专家验证但有循环评估风险；(4) 93% 无幻觉率意味着 7% 幻觉，生产级需 HITL 兜底；(5) 引用数待核实（Semantic Scholar 限流，8/19 新文预期 0）。",
+        "business": "商业启示：会话式 BI 是\"AI for 业务\"最直接的商业化路径——该论文量化了多 agent 编排的 ROI（+22.6pp 准确率+20.2% 质量提升），为企业 BI 平台从\"看数据\"向\"问数据\"转型提供可量化依据。query parameterization 把会话洞察转可复用 dashboard 是\"会话即资产\"的商业模型——高频问询沉淀为组件复用降边际成本。defense-in-depth 多租户隔离是 SaaS 化前提。对用户团队：多 agent 编排投资应聚焦承重 agent（分析+报告聚合），这是 ROI 最高的工程化方向。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.18740",
+            "title": "A Multi-Agent Platform for Automated Enterprise Analytics and Insight Generation"
+          }
+        ],
+        "diagram": {
+          "title": "多 Agent 企业 BI 五阶段流水线",
+          "flow": [
+            {
+              "label": "NL 解析 Agent",
+              "sub": "意图解析",
+              "type": "frontend"
+            },
+            {
+              "label": "数据检索 Agent",
+              "sub": "API 调用/数据检索",
+              "type": "backend"
+            },
+            {
+              "label": "数据分析 Agent",
+              "sub": "质量承重墙①",
+              "type": "backend"
+            },
+            {
+              "label": "可视化 Agent",
+              "sub": "MCP 生成图表",
+              "type": "frontend"
+            },
+            {
+              "label": "报告聚合 Agent",
+              "sub": "质量承重墙②",
+              "type": "backend"
+            },
+            {
+              "label": "查询参数化",
+              "sub": "会话→可复用 dashboard",
+              "type": "database"
+            },
+            {
+              "label": "defense-in-depth",
+              "sub": "多租户隔离",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "消融硬证据",
+              "text": "Data Analysis+Report Aggregation 两 agent 驱动质量，投资应聚焦承重 agent 而非均摊五 agent"
+            },
+            {
+              "label": "MCP 生成可视化",
+              "text": "Visualization agent 经 MCP 生成图表，与 Cube MCP 20 工具一脉相承——语义层作为 Agent 数据技能"
+            },
+            {
+              "label": "API 场景迁移",
+              "text": "Data Retrieval agent 可替换为业务 API 语义理解+调用，宽表字段语义标注质量决定分析输入质量"
+            },
+            {
+              "label": "量化 ROI",
+              "text": "+22.6pp 准确率 +20.2% 质量提升 vs 单 agent，为多 agent 编排投资提供可量化依据"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "治理记录自训练：VAL 验证器蒸馏把昂贵 thinking 压缩为可靠 one-shot，配对净 +33 p=2e-6",
+      "date": "2026-08-18",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2608.18324",
+      "summary": "机器可验证工作流产生治理记录（任务契约→模型尝试→验证器决策→接受输出→目标来源），测试能否用记录蒸馏有界模型把偶发昂贵能力压缩为可靠 one-shot 执行。PlanBench replanning 上 Qwen3-14B thinking 生成 24 个独立 VAL 验证器接受的计划，训练同 checkpoint 非思考执行（无 oracle 目标或更强教师）。80 个未开案例 VAL 接受从 1→57（56 配对增益零回归，thinking 达 30），adapter 全案例 schema-valid 且延迟约 thinking 的 1/56。匹配消融固定源案例/52 候选池/24 目标数/模型/配方/种子仅换目标选择，160 新案例 base/schema 选择/自选/VAL 选择达 1/55/69/102，VAL 超自选配对净 +33（p=0.000002），两难度层均增益。互补 Phi 强教师臂把 Phi-4 从 2→51 接受+35→80 schema-valid。早期合成实验确立可教性/累积学习/构造鲁棒性/停止边界。",
+      "insight": "架构师视角：这是本周最硬的\"治理即监督信号\"证据——治理记录（验证器决策+接受输出+目标来源）不仅是审计回溯设施，更是蒸馏有界模型的监督信号源。VAL 验证器独立于模型 authored，配对净 +33 p=2e-6 统计显著且零回归，证明\"用治理记录把昂贵 thinking 蒸馏为非思考 one-shot\"可行。对用户课题直接相关：用户业务 agent 的昂贵推理（多跳 API 调用+宽表字段语义理解+跨源联邦）可经治理记录蒸馏为可靠复用——把偶发的高成本推理能力压缩为 one-shot 执行，延迟降至 1/56。与 8/19 Policy Algebra path property 共振：path property 的 verifier decision 是治理记录的核心字段，Policy Algebra 管路径全程 admissible，本文管把 admissible 路径蒸馏为复用能力。与 8/19 TDS Sheila\"确定性代码拥有 recurrence threshold 记忆=代码非 LLM\"共振：治理记录是代码化记忆，VAL 接受的计划是确定性可复用资产。引用数待核实（Semantic Scholar 限流，8/18 新文预期 0）。",
+      "detail": {
+        "why": "企业 agent 把昂贵推理（多跳/思考模式）压缩为可靠低成本复用是\"AI for 业务\"规模化的关键瓶颈。该论文用硬数据（配对净 +33 p=2e-6 零回归）证明治理记录可作为蒸馏监督信号，为可验证能力的可靠复用提供可量化路径。",
+        "mechanism": "治理记录五元组（任务契约→模型尝试→验证器决策→接受输出→目标来源）→thinking 模式生成 24 VAL 接受计划→训练同 checkpoint 非思考执行→80 新案例 VAL 接受 1→57（零回归）→匹配消融仅换目标选择→160 新案例 VAL 102 vs 自选 69（配对 +33 p=2e-6）→延迟 1/56 thinking。互补 Phi 强教师臂 2→51/35→80。",
+        "deep": "最深层洞察在\"独立语义选择是 load-bearing\"——matched ablation 固定源案例/候选池/目标数/模型/配方/种子仅换目标选择，VAL 选择 102 vs 自选 69 vs schema 选择 55，证明不是\"有更多候选\"有用而是\"用独立语义标准选\"有用。这与 8/20 tokensave ambiguous_calls\"不确定性暴露为数据而非猜\"共振：VAL 用独立验证器选接受输出而非模型自选，tokensave 用 schema 记录歧义而非猜一个。对企业 agent 场景：用户的业务 API 调用结果可经独立验证器（如数据可信度校验+宽表字段语义校验）产生治理记录，蒸馏为可靠复用——把首次昂贵的 API 语义理解+多跳调用压缩为 one-shot。互补 Phi 强教师臂证明强教师也能蒸馏，但本文核心是\"无更强教师/无 oracle 目标\"的自蒸馏——治理记录本身是教师。",
+        "apply": "落地建议：(1) 为业务 agent 每次昂贵推理（多跳 API+宽表语义理解）产生治理记录（任务契约→尝试→验证器决策→接受输出→来源），积累为蒸馏数据集；(2) 用独立验证器（数据可信度校验+字段语义校验+业务规则校验）做 VAL，非模型自选；(3) thinking 模式生成的接受输出训练非思考 one-shot 执行，延迟降至 1/56；(4) 匹配消融方法论可迁移——固定一切仅换选择标准验证\"独立选择是 load-bearing\"。",
+        "caveats": "局限：(1) 论文明确限定\"bounded, machine-checkable capabilities, not arbitrary planning, enterprise validity, or unrestricted self-improvement\"——只对可机器验证的能力有效，非通用自改进；(2) PlanBench replanning 是结构化任务，业务 API 调用的验证器设计更难；(3) 配对 interface-cure gate 未通过，说明非所有验证维度可蒸馏；(4) 引用数待核实（Semantic Scholar 限流，8/18 新文预期 0）；(5) 停止边界需进一步研究，过度蒸馏可能饱和。",
+        "business": "商业启示：治理记录自训练把\"昂贵推理一次性消费\"变\"治理记录可复用资产\"，这是企业 agent 从\"每次推理都贵\"到\"首次贵后续便宜\"的成本结构转型。VAL 延迟 1/56 thinking 意味着生产部署边际成本降 56 倍。对用户团队：业务 API 语义理解+多跳调用的首次推理成本高，但治理记录蒸馏后可 one-shot 复用——这是\"AI for 业务\"规模化的经济模型。独立验证器选择（非模型自选）配对 +33 p=2e-6 是\"治理质量决定复用质量\"的硬证据。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.18324",
+            "title": "Governance Records as Supervision: Verifier-Selected Self-Training for Structured Workflow Repair"
+          }
+        ],
+        "diagram": {
+          "title": "治理记录自训练蒸馏回路",
+          "flow": [
+            {
+              "label": "任务契约",
+              "sub": "task contract",
+              "type": "backend"
+            },
+            {
+              "label": "thinking 模式",
+              "sub": "Qwen3-14B 生成",
+              "type": "cloud"
+            },
+            {
+              "label": "VAL 验证器",
+              "sub": "独立 authored",
+              "type": "security"
+            },
+            {
+              "label": "治理记录",
+              "sub": "24 接受计划",
+              "type": "database"
+            },
+            {
+              "label": "非思考训练",
+              "sub": "同 checkpoint",
+              "type": "backend"
+            },
+            {
+              "label": "one-shot 执行",
+              "sub": "延迟 1/56",
+              "type": "frontend"
+            },
+            {
+              "label": "80 新案例",
+              "sub": "1→57 零回归",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "独立选择 load-bearing",
+              "text": "matched ablation 仅换选择标准：VAL 102 vs 自选 69 vs schema 55，配对 +33 p=2e-6，证明独立验证器选非模型自选是关键"
+            },
+            {
+              "label": "治理记录即教师",
+              "text": "无 oracle 目标无更强教师，治理记录五元组本身是蒸馏监督信号源"
+            },
+            {
+              "label": "延迟降 56 倍",
+              "text": "thinking→非思考 one-shot，生产边际成本降 56 倍"
+            },
+            {
+              "label": "限定可验证能力",
+              "text": "论文明确只对 bounded machine-checkable capabilities 有效，非通用自改进"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "可逆遗忘：三态记忆 active/dormant/retired + 滞后控制器防陈旧知识污染企业 agent 决策",
+      "date": "2026-08-18",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2608.18177",
+      "summary": " continual learning 传统把遗忘视为失败强调保留已获知识，但企业 agent 在非平稳环境（客户/政策/工具/工作流/法规/市场条件变化）中无差别保留让陈旧知识影响决策造成负迁移与运营风险。提出可逆遗忘概念框架：三操作记忆状态 active/dormant/retired + reactivation 转换可在相关性回归时恢复 dormant 知识。实例化为滞后可逆记忆控制器：累积相关性证据+非对称阈值防状态振荡+shadow mode 测试 reactivation+策略 gate 退休。框架减少陈旧信息影响但不把临时抑制与永久擦除混淆。金融例证：一市场体制下有用知识另一体制下有害但相似条件重现时恢复相关。",
+      "insight": "架构师视角：这是本周最贴合用户业务场景的论文——用户团队从\"AI for 研发\"转\"AI for 业务\"，研发知识库中部分知识在业务语境下陈旧（研发术语≠业务术语，研发 API≠业务 API），无差别保留会污染业务 agent 决策。三态+滞后控制器提供工程化遗忘而非简单删除——dormant 态可 reactivation 解决\"删了又需要\"的恐惧。与 8/19 Quipu bitemporal KG 写入治理共振：Quipu 管 KG 写入的时间维治理（bitemporal+不放宽+lattice），本文管知识的生命周期治理（active/dormant/retired），两者互补——Quipu 管写入时的正确性，可逆遗忘管写入后的时效性。与 8/19 Policy Algebra cost-aware materialization budget 共振：materialization 暴露增长重定向可恢复 outcome，可逆遗忘 dormant 态是\"可恢复的搁置\"。shadow mode 测试 reactivation 与 8/19 TDS Sheila\"人反馈自改进\"共振：reactivation 前先 shadow 验证非直接上线。引用数已 Semantic Scholar 核实=0/influential=0（2026-08-18 新文符合预期）。",
+      "detail": {
+        "why": "用户从研发知识库转业务知识库必然面临陈旧知识污染——研发术语/API/schema 在业务语境下可能有害。该论文提供工程化遗忘框架（三态+滞后控制器），解决\"删了又需要\"与\"留着会污染\"的两难。",
+        "mechanism": "三态 active/dormant/retired + reactivation 转换→滞后可逆记忆控制器：(1) 累积相关性证据判断知识是否仍相关→(2) 非对称阈值（active→dormant 阈值高，dormant→active 阈值低）防状态振荡→(3) shadow mode 测试 reactivation（不直接上线先影子验证）→(4) 策略 gate 退休（retired 需策略审批非自动）。金融例证：市场体制变化让知识相关性变。",
+        "deep": "最深层洞察在\"可逆\"——传统 continual learning 把遗忘当失败，本文把遗忘当治理工具且可逆。非对称阈值是滞后（hysteresis）设计——借鉴磁滞/控制系统，active→dormant 需强证据（高阈值防误搁置），dormant->active 需弱证据（低阈值防漏恢复），两者差形成滞后环防振荡。对用户场景：研发知识库中的 API 字段语义标注在转业务时，部分字段在业务语境下含义变了（如\"user_id\"在研发指内部用户表，在业务指客户身份），这些知识应转 dormant 而非删除——若业务后续需要回研发语境可 reactivation。shadow mode 测试 reactivation 是\"先影子后上线\"的工程化——与 8/17 TDS 持久知识层 contradiction register\"先拒答后验证\"同构。策略 gate 退休确保退役需审批非自动，与 8/19 Policy Algebra approval 维度共振。",
+        "apply": "落地建议：(1) 为业务知识库建三态记忆——研发遗留知识标 dormant 而非删除，业务验证后转 active；(2) 实现滞后控制器——累积相关性证据（如字段被查询频率+业务术语匹配度）+非对称阈值（dormant 转化需高频证据，reactivation 需低频证据）防振荡；(3) reactivation 走 shadow mode 先影子验证再上线；(4) retired 需策略审批非自动删除；(5) 金融场景例证可迁移——业务规则随市场条件变化，知识相关性也变。",
+        "caveats": "局限：(1) 概念框架+实例化但无大规模生产验证（金融例证是说明性非实验性）；(2) 相关性证据累积机制需具体化——用什么信号判断知识相关性？查询频率+术语匹配度+决策影响度？(3) shadow mode 测试 reactivation 的成本与延迟未量化；(4) 非对称阈值需调参，不同业务领域阈值可能不同；(5) retired 态策略 gate 的审批流程需组织设计。引用数=0/infl=0 已核实（2026-08-18 新文符合预期）。",
+        "business": "商业启示：可逆遗忘把\"知识管理\"从\"只进不出\"升级为\"有进有出可恢复\"——企业知识库不是只增长的仓库而是有生命周期的生态系统。对用户团队从研发转业务：研发遗留知识不应直接删除（可能后续需要），也不应全保留（会污染业务决策），三态+滞后控制器提供\"搁置可恢复\"的工程化方案。金融场景的\"市场体制变化让知识相关性变\"直接映射用户业务场景——业务规则随市场/政策/产品变化，知识时效性治理是业务 agent 可靠性的前提。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.18177",
+            "title": "Towards Reversible Forgetting: Managing Obsolete Knowledge in Continual Enterprise AI Agents"
+          }
+        ],
+        "diagram": {
+          "title": "可逆遗忘三态记忆+滞后控制器",
+          "flow": [
+            {
+              "label": "active",
+              "sub": "活跃知识",
+              "type": "database"
+            },
+            {
+              "label": "dormant",
+              "sub": "搁置可恢复",
+              "type": "database"
+            },
+            {
+              "label": "retired",
+              "sub": "策略 gate 退役",
+              "type": "database"
+            },
+            {
+              "label": "滞后控制器",
+              "sub": "非对称阈值",
+              "type": "security"
+            },
+            {
+              "label": "shadow mode",
+              "sub": "reactivation 测试",
+              "type": "backend"
+            },
+            {
+              "label": "相关性证据",
+              "sub": "累积判断",
+              "type": "backend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "非对称阈值防振荡",
+              "text": "active→dormant 高阈值防误搁置，dormant→active 低阈值防漏恢复，滞后环设计借鉴控制系统"
+            },
+            {
+              "label": "shadow mode 先影子",
+              "text": "reactivation 不直接上线先影子验证，与 contradiction register 先拒答后验证同构"
+            },
+            {
+              "label": "策略 gate 退役",
+              "text": "retired 需审批非自动删除，与 Policy Algebra approval 维度共振"
+            },
+            {
+              "label": "金融例证迁移",
+              "text": "市场体制变化让知识相关性变，业务规则随市场/政策变化，知识时效性治理是业务 agent 可靠性前提"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "PLSQLBench：首个评估 LLM 写可执行 PL/SQL 程序的基准，2865 实例揭示过程性数据库编程缺口",
+      "date": "2026-08-16",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2608.15931",
+      "summary": "提出 PLSQLBench，据作者所知首个评估 LLM 写可执行 PL/SQL 程序的基准，正确性经执行测试测量。现有 LLM 评估主要针对通用代码生成或声明式 text-to-SQL，过程性数据库编程被忽视。2865 实例：2594 单轮任务+271 多轮对话 978 轮。基准结合 Spider 2 企业 schema 复杂任务+Spider 简单任务+MBPP 过程性问题，覆盖不同数据库 grounding 与过程性复杂度。8 个 LLM 实验揭示反复困难：schema grounding/PL/SQL 方言保真/过程控制流/异常处理/跨轮一致性。工具增强 agent 改善多项 schema-grounded 评估但仍有大缺口。结果凸显常规代码生成或 text-to-SQL 基准未直接评估的过程性数据库编程能力。",
+      "insight": "架构师视角：这是 text-to-SQL 基准从\"声明式查询\"向\"过程性编程\"的关键扩展——PL/SQL 过程性编程（游标/循环/异常处理/存储过程）比声明式 SQL 更接近业务逻辑封装，是业务系统\"带高业务含义 API\"底层数据库侧的使能技术。对用户课题间接相关：用户通过业务 API 查数而非直连数据库，但业务 API 背后的数据逻辑常以 PL/SQL 存储过程实现——LLM 能否理解+生成 PL/SQL 决定 agent 能否深层数据逻辑交互。与 8/15 ACTS-SQL 树结构纠错共振：ACTS-SQL 管声明式 SQL 纠错，PLSQLBench 揭示过程性 PL/SQL 的反复困难（控制流/异常/跨轮一致性），两者互补覆盖声明式+过程性。与 8/20 Chat2DB 通用 JDBC 35 库共振：Chat2DB 扩数据库覆盖，PLSQLBench 揭示 LLM 在过程性方言上的缺口，说明扩源不等于扩能。引用数已 Semantic Scholar 核实=0/influential=0（2026-08-16 新文符合预期）。",
+      "detail": {
+        "why": "PL/SQL 过程性编程是业务系统数据逻辑封装的常见形态，LLM 能否理解+生成决定 agent 深层数据逻辑交互能力。该基准是首个系统评估，揭示 text-to-SQL 基准未覆盖的过程性缺口。",
+        "mechanism": "2865 实例三层覆盖：(1) Spider 2 企业 schema 复杂任务（高数据库 grounding+高过程复杂度）+(2) Spider 简单任务（中 grounding+低过程）+(3) MBPP 过程性问题（低 grounding+高过程）。执行测试测正确性。8 LLM 实验+工具增强 agent 对比。反复困难维度：schema grounding/PL/SQL 方言保真/过程控制流/异常处理/跨轮一致性。",
+        "deep": "最深层洞察在\"声明式 SQL 正确≠过程性 PL/SQL 正确\"——PL/SQL 的过程控制流（游标循环/条件分支/异常处理）是声明式 SQL 没有的维度，LLM 在这些维度上反复失败说明 text-to-SQL 能力不能直接迁移到过程性编程。对用户场景：业务 API 背后的存储过程（如复杂报表计算+数据清洗+业务规则校验）常以 PL/SQL 实现，agent 若需理解或生成这些逻辑，PL/SQL 能力是瓶颈。工具增强 agent 改善但大缺口仍在——说明当前 tool-use 架构对过程性编程支持不足。跨轮一致性困难与 8/19 多 Agent 五阶段流水线的 Report Aggregation agent 质量驱动共振：多轮对话中的状态保持是 agent 编排的共性问题。",
+        "apply": "落地建议：(1) 评估业务 agent 的 PL/SQL 理解+生成能力用 PLSQLBench 类基准；(2) 工具增强 agent 可改善但需针对性设计过程性编程工具（如游标/循环/异常的专门工具）；(3) 跨轮一致性需会话状态管理——与多 Agent 流水线的 Report Aggregation 同构；(4) schema grounding 困难与宽表字段语义标注共振——先探查后查询原则对 PL/SQL 同样适用。",
+        "caveats": "局限：(1) PL/SQL 是 Oracle 方言，其他数据库过程性 SQL（T-SQL/psql）可能不同；(2) 2865 实例规模适中，生产场景长尾可能更复杂；(3) 工具增强 agent 改善但大缺口说明当前架构不够；(4) 跨轮一致性困难可能需新的会话状态架构；(5) 引用数=0/infl=0 已核实（2026-08-16 新文符合预期），但基准影响力需时间验证。",
+        "business": "商业启示：PL/SQL 过程性编程是企业数据逻辑封装的承重技术——金融/电信/制造业的核心报表+数据清洗+业务规则常以存储过程实现。LLM 在 PL/SQL 上的缺口意味着\"AI for 业务\"不能止于声明式 text-to-SQL，过程性编程能力是深层数据逻辑交互的前提。对用户团队：若业务 API 背后有 PL/SQL 存储过程，agent 的 PL/SQL 能力决定能否深层理解+生成数据逻辑，这是声明式 text-to-SQL 之外的第二个能力维度。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.15931",
+            "title": "PLSQLBench: Benchmarking LLM Systems for Executable Procedural Database Programming"
+          }
+        ],
+        "diagram": {
+          "title": "PLSQLBench 三层覆盖+五困难维度",
+          "flow": [
+            {
+              "label": "Spider 2 企业",
+              "sub": "高 grounding+高过程",
+              "type": "database"
+            },
+            {
+              "label": "Spider 简单",
+              "sub": "中 grounding+低过程",
+              "type": "database"
+            },
+            {
+              "label": "MBPP 过程性",
+              "sub": "低 grounding+高过程",
+              "type": "backend"
+            },
+            {
+              "label": "schema grounding",
+              "sub": "困难①",
+              "type": "security"
+            },
+            {
+              "label": "方言保真",
+              "sub": "困难②",
+              "type": "backend"
+            },
+            {
+              "label": "控制流",
+              "sub": "困难③",
+              "type": "backend"
+            },
+            {
+              "label": "异常处理",
+              "sub": "困难④",
+              "type": "security"
+            },
+            {
+              "label": "跨轮一致性",
+              "sub": "困难⑤",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "声明式≠过程性",
+              "text": "text-to-SQL 正确不等于 PL/SQL 过程性正确，控制流/异常/跨轮是声明式没有的维度"
+            },
+            {
+              "label": "工具增强不够",
+              "text": "工具增强 agent 改善多项但大缺口仍在，当前 tool-use 架构对过程性编程支持不足"
+            },
+            {
+              "label": "方言局限",
+              "text": "PL/SQL 是 Oracle 方言，T-SQL/psql 可能不同，扩源不等于扩能"
+            },
+            {
+              "label": "存储过程场景",
+              "text": "业务 API 背后的存储过程（报表/清洗/校验）常以 PL/SQL 实现，agent 深层交互需此能力"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "TDS：RAG 语料三形态决定架构选择，flat pile/合同副本/索赔文件夹各需不同准备",
+      "date": "2026-08-20",
+      "source": "Towards Data Science",
+      "link": "https://towardsdatascience.com/three-kinds-of-rag-corpus-and-what-it-costs-to-build-for-the-wrong-one/",
+      "summary": "Angela Shi 提出 RAG 语料有三种形态，每种要不同架构。flat pile 单文档 RAG（把每页放向量库+embed 问题+相似度选段落）在 demo 文件夹上有效，在企业货架上失效——不是参数错误，而是相似度搜索返回段落所以从不选文档，答案由\"从不该一起读的三个文件\"拼出。三个问题判定形态：有无可过滤字段→是否需去重→是否需跨文档关联。三种形态：(1) 无关文件堆（无可过滤字段，准备摘要行+目录，分层检索）；(2) 合同副本集（需去重，聚类+代表）；(3) 索赔文件夹栈（需跨文档关联，结构化抽取+实体链接）。re-ranker 修复不了五种 flat pile 失效。形态错配成本：建错仓库浪费时间且让正确答案由错误文件拼出。",
+      "insight": "架构师视角：这是本周对用户\"上百字段宽表 API\"场景最直接的博客——宽表 API 响应属于\"结构化密集文档\"形态，flat pile chunk+embed 结构性失效（与 8/10 Beyond Top-K 表格密集文档 top-k 失效共振）。三种形态分治的核心洞察是\"语料形态决定架构\"而非\"参数调优\"。对用户课题：业务知识库的文档（API 文档+业务规则+数据字典+报表说明）可能同时含三种形态——API 文档是\"无关文件堆\"（每个 API 独立），业务规则是\"合同副本集\"（规则有重复版本需去重），报表说明是\"索赔文件夹栈\"（跨报表关联需实体链接）。re-ranker 修复不了五种失效是\"不要用 re-ranker 当银弹\"的硬论据。与 8/18 dbt token 压缩\"modeling for the token not the table\"共振：语料形态决定怎么准备（摘要/聚类/结构化抽取），token 压缩决定怎么喂——两者都是\"形态先于参数\"。",
+      "detail": {
+        "why": "用户业务知识库含多种文档形态，flat pile chunk+embed 在结构化密集数据上结构性失效。该博客提供三形态分治+三问题判定的工程化决策框架，避免建错仓库的成本。",
+        "mechanism": "三问题判定形态：(1) 有无可过滤字段？→(2) 是否需去重？→(3) 是否需跨文档关联？三种形态对应三种准备：(1) 无关文件堆：无可过滤字段→摘要行+目录→分层检索；(2) 合同副本集：需去重→聚类+代表；(3) 索赔文件夹栈：需跨文档关联→结构化抽取+实体链接。re-ranker 修复不了五种 flat pile 失效。",
+        "deep": "最深层洞察在\"相似度搜索返回段落所以从不选文档\"——flat pile RAG 的根本问题不是检索质量而是检索粒度错配：段落级相似度无法回答文档级问题。三种形态的本质区别是\"文档间关系\"：无关文件堆无关系（每文档独立检索），合同副本集是重复关系（需去重选代表），索赔文件夹栈是关联关系（需跨文档实体链接）。对用户宽表 API 场景：宽表 API 响应字段是\"结构化密集\"形态，每字段是\"段落\"但业务问题常需\"文档\"级（如\"这个 API 返回哪些客户相关字段\"）——flat pile 失效需形态分治。五-PDF 基线（一问题五模型调用+每文档表显示一真答四空）是\"形态错配让浪费可见\"的工程化诊断工具。",
+        "apply": "落地建议：(1) 先用三问题判定业务知识库文档形态——API 文档/业务规则/数据字典/报表说明各属哪种；(2) 按形态分治准备：无关文件堆走摘要+目录分层检索，合同副本集走聚类+代表，索赔文件夹栈走结构化抽取+实体链接；(3) 不要用 re-ranker 当银弹——五种 flat pile 失效 re-ranker 修复不了；(4) 五-PDF 基线可迁移为诊断工具：一问题多 API 调用+每 API 表显示真答与空，让形态错配浪费可见。",
+        "caveats": "局限：(1) 三形态是分类简化，实际企业货架可能混合形态（一个驱动器十年增长通常两形态相邻）；(2) 判定三问题需领域知识，自动化判定难；(3) 五-PDF 基线是小规模诊断，企业规模需扩展；(4) 形态可能随业务变化演化（合同副本集随版本管理变关联形态）；(5) 博客是 Vol.1 #14A 系列，完整架构需跨文章阅读。",
+        "business": "商业启示：RAG 语料三形态分治是\"AI for 业务\"立项的架构决策前提——建错仓库浪费时间且让正确答案由错误文件拼出，这对业务决策直接有害（错误文件拼出的\"正确答案\"比崩溃更危险，与 8/14 TDS OKF 沉默错误共振）。对用户团队：业务知识库建设前先做形态判定，避免 flat pile 一刀切的沉没成本。五-PDF 基线可作为立项前的可行性诊断——用最小成本验证形态是否匹配。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/three-kinds-of-rag-corpus-and-what-it-costs-to-build-for-the-wrong-one/",
+            "title": "Three Kinds of RAG Corpus, and What It Costs to Build for the Wrong One"
+          }
+        ],
+        "diagram": {
+          "title": "RAG 语料三形态分治决策",
+          "flow": [
+            {
+              "label": "三问题判定",
+              "sub": "形态诊断",
+              "type": "security"
+            },
+            {
+              "label": "无关文件堆",
+              "sub": "无可过滤字段",
+              "type": "database"
+            },
+            {
+              "label": "摘要+目录",
+              "sub": "分层检索",
+              "type": "backend"
+            },
+            {
+              "label": "合同副本集",
+              "sub": "需去重",
+              "type": "database"
+            },
+            {
+              "label": "聚类+代表",
+              "sub": "去重选代表",
+              "type": "backend"
+            },
+            {
+              "label": "索赔文件夹栈",
+              "sub": "需跨文档关联",
+              "type": "database"
+            },
+            {
+              "label": "结构化抽取",
+              "sub": "实体链接",
+              "type": "backend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "粒度错配非检索质量",
+              "text": "flat pile 失效根因是段落级相似度无法回答文档级问题，不是检索质量差"
+            },
+            {
+              "label": "re-ranker 非银弹",
+              "text": "五种 flat pile 失效 re-ranker 修复不了，不要用 re-ranker 当银弹"
+            },
+            {
+              "label": "宽表 API 形态",
+              "text": "宽表 API 响应属结构化密集形态，flat pile chunk+embed 结构性失效需形态分治"
+            },
+            {
+              "label": "五-PDF 基线诊断",
+              "text": "一问题五模型调用+每文档表显示一真答四空，让形态错配浪费可见"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "TDS：知识图谱从\"文件柜被查阅\"升级为\"图被遍历\"，退休 query router 每次重建",
+      "date": "2026-08-20",
+      "source": "Towards Data Science",
+      "link": "https://towardsdatascience.com/making-the-knowledge-layer-a-graph-you-actually-traverse/",
+      "summary": "Miodrag Cekikj 提出持久知识层从\"像文件柜被查阅\"升级为\"像图被遍历\"。退休 Part 1 的 query router（wiki-first/evidence-first 混合决策），改为每次查询重建图遍历+bitemporal 边+双阈值实体解析。7x 碎裂因子（21 文档 live 抽取模型提出概念，alias-only 实体解析只能部分合并，149 概念对象 vs 策展图 19）证明 alias 不足。解锁三能力：(1) 真实多跳遍历（非文件柜查阅）；(2) 时间感知关系（bitemporal 边，effective-date 隔离防规则前溯适用）；(3) 矛盾发现而非策展（contradiction register 拒答企业自身未解决的问题）。保险语料六方式设计为破坏检索系统，contradiction register 拒答未决问题，effective-date scoping 防 3 月生效规则适用 2 月损失。",
+      "insight": "架构师视角：这是本周对用户\"语义层 vs 知识图谱\"双路线决策最关键的博客——它证明知识图谱路线的使能器是\"图被遍历而非被查阅\"，而退休基于关键词的 query router 改为每次查询重建图遍历是架构级升级。对用户课题直接相关：用户业务知识库若走知识图谱路线，\"图被遍历\"是必须的——否则只是\"带边的文件柜\"。7x 碎裂因子是\"alias-only 实体解析不足\"的硬证据，双阈值实体解析（embedding 相似度+LLM 裁决）是解决方案。bitemporal 边与 8/19 Quipu bitemporal KG 写入治理共振——两者都管时间维，Quipu 管写入时 bitemporal，本文管检索时 bitemporal 边。contradiction register 拒答与 8/14 Never the Number 结构化弃答共振——两者都\"不可表示=拒答\"。退休 query router 与 8/19 TDS Sheila\"重设人机交接\"共振——两者都退休旧组件换更好架构。与 8/18 可逆遗忘三态记忆共振：dormant 态知识在图遍历时可被遍历到但标记为搁置，reactivation 是边重新激活。",
+      "detail": {
+        "why": "用户\"语义层 vs 知识图谱\"双路线决策需理解知识图谱路线的使能条件——\"图被遍历\"是必须的，否则知识图谱退化为\"带边的文件柜\"。该博客用 7x 碎裂因子+bitemporal+contradiction register 提供工程化使能方案。",
+        "mechanism": "退休 query router→每次查询重建图遍历：(1) bitemporal 边（时间感知关系，effective-date 隔离防规则前溯）→(2) 双阈值实体解析（embedding 相似度+LLM 裁决替代 alias-only，解决 7x 碎裂）→(3) contradiction register（拒答企业自身未决问题）→(4) 真实多跳遍历（非文件柜查阅）。保险语料六方式破坏检索系统验证。",
+        "deep": "最深层洞察在\"retrieval quality 应是系统属性而非问题措辞属性\"——query router 基于关键词标记判断检索方式，导致检索质量依赖问题怎么问；改为每次重建图遍历让检索质量是系统属性。这与 8/19 Policy Algebra\"reliability as path property\"共振：两者都把质量从\"单点\"升级为\"路径/系统\"属性。7x 碎裂因子（149 vs 19）是\"alias-only 实体解析不足\"的量化证据——模型提出的概念远多于策展图，需 embedding+LLM 裁决合并。bitemporal 边与 Quipu bitemporal 互补：Quipu 管写入时双时间（事务时间+有效时间），本文管检索时边的双时间（关系何时有效）。contradiction register\"拒答未决问题\"是\"宁可缺不要错\"原则的知识图谱实现——与 Never the Number 结构化弃答+tokensave ambiguous_calls 三角共振：不确定性暴露为数据而非猜。保险语料六方式破坏检索系统是\"对抗性测试设计\"的工程化参考。",
+        "apply": "落地建议：(1) 若走知识图谱路线，必须实现\"图被遍历\"——退休基于关键词的 query router，改为每次查询重建图遍历；(2) 双阈值实体解析替代 alias-only——embedding 相似度+LLM 裁决解决概念碎裂；(3) bitemporal 边管时间感知关系——业务规则生效日期隔离防止前溯适用；(4) contradiction register 拒答企业自身未决问题——宁可缺不要错；(5) 保险语料六方式破坏检索系统可作为对抗性测试设计参考。",
+        "caveats": "局限：(1) 7x 碎裂因子基于 21 文档小规模，企业规模可能更碎裂；(2) 双阈值实体解析的 embedding+LLM 裁决成本未量化；(3) 每次查询重建图遍历的计算成本可能高于 query router 路由；(4) contradiction register 需策展维护，未决问题识别难；(5) 博客是系列第二篇，完整架构需跨文章阅读（Part 1 的 query router 已退休但理解需读 Part 1）。",
+        "business": "商业启示：知识图谱从\"带边的文件柜\"升级为\"可遍历图\"是该路线从\"演示\"到\"生产\"的使能跨越——7x 碎裂因子量化了\"不遍历的图\"的退化程度。对用户\"语义层 vs 知识图谱\"双路线决策：语义层管\"已定义的\"（指标/维度/业务术语），知识图谱管\"可推理的\"（跨文档实体关联+时间感知关系+矛盾发现）——两者互补，退休 query router 改图遍历让知识图谱路线可行。bitemporal 边对业务规则时效性直接相关（规则何时生效/何时失效），contradiction register 对业务一致性直接相关（企业自身未决的业务规则不应让 agent 编答案）。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/making-the-knowledge-layer-a-graph-you-actually-traverse/",
+            "title": "Making the Knowledge Layer a Graph You Actually Traverse"
+          }
+        ],
+        "diagram": {
+          "title": "知识图谱从文件柜到可遍历图",
+          "flow": [
+            {
+              "label": "退休 query router",
+              "sub": "wiki/evidence 混合决策",
+              "type": "backend"
+            },
+            {
+              "label": "图遍历重建",
+              "sub": "每次查询",
+              "type": "backend"
+            },
+            {
+              "label": "bitemporal 边",
+              "sub": "时间感知关系",
+              "type": "database"
+            },
+            {
+              "label": "双阈值实体解析",
+              "sub": "embedding+LLM 裁决",
+              "type": "security"
+            },
+            {
+              "label": "contradiction register",
+              "sub": "拒答未决问题",
+              "type": "security"
+            },
+            {
+              "label": "7x 碎裂因子",
+              "sub": "149 vs 19 概念",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "检索质量系统属性",
+              "text": "retrieval quality 应是系统属性非问题措辞属性，与 reliability as path property 共振"
+            },
+            {
+              "label": "7x 碎裂证据",
+              "text": "149 概念对象 vs 策展图 19，alias-only 不足需 embedding+LLM 裁决"
+            },
+            {
+              "label": "bitemporal 互补 Quipu",
+              "text": "Quipu 管写入时双时间，本文管检索时边的双时间"
+            },
+            {
+              "label": "宁可缺不要错",
+              "text": "contradiction register 拒答未决问题，与结构化弃答+ambiguous_calls 三角共振"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "MetricFlow v0.212.0：Athena 适配器+BigQuery TIMESTAMP_TRUNC+OSI ratio 子指标命名规范化",
+      "date": "2026-08-19",
+      "source": "GitHub",
+      "link": "https://github.com/dbt-labs/metricflow/releases/tag/v0.212.0",
+      "summary": "dbt-labs/MetricFlow v0.212.0 于 2026-08-19 发布。新增 Athena 适配器与 SQL 渲染支持 #979（延续 8/6 commit 65b9d42 feat: add athena adapter support）。修复：BigQuery 用 TIMESTAMP_TRUNC 替 DATETIME_TRUNC #2078；用户过滤串加括号 #2066；OSI ratio 子指标自动命名去 dunder 通过 semantic manifest name 校验 #2091（延续 8/12 5dded91 修复）。引擎下：恢复 dbt-metricflow 依赖变更 #2055；移除旧 release helpers #2056；简化输出列 orderers #2064+legacy column order 选项 #2065；group-by item resolver 限结果缓存 #2075；百分位配置错误处理更新。dbt-metricflow 0.14.0 同步发布，Python 3.14 支持。",
+      "insight": "架构师视角：MetricFlow 是 dbt Semantic Layer 的指标引擎，本次 v0.212.0 三方向迭代对用户课题直接相关：(1) Athena 适配器让语义层指标定义可跨数据源复用——用户若数据在 Athena（S3 数据湖），指标定义无需重写；(2) BigQuery TIMESTAMP_TRUNC 替 DATETIME_TRUNC 是时间函数方言正确性修复——语义层跨源时方言保真是承重问题；(3) OSI ratio 子指标命名去 dunder 通过 semantic manifest 校验是\"指标命名规范化\"——指标名是业务术语表的承重字段，命名不规范会导致 manifest 校验失败。与 8/19 Cube v1.7.24 IANA 时区校验共振：两者都管时间维正确性（Cube 管时区校验，MetricFlow 管时间截断函数）。与 8/18 dbt Core v1.12 GA Semantic Layer spec 简化共振：MetricFlow 是 Semantic Layer spec 的引擎实现，spec 简化+引擎迭代是同步的。group-by item resolver 限结果缓存与 8/20 tokensave ambiguous_calls 记录歧义共振：两者都管缓存/记录的边界。",
+      "detail": {
+        "why": "MetricFlow 是语义层指标引擎的核心实现，Athena 适配器让指标定义跨数据源复用，命名规范化+方言保真+缓存治理是语义层工业化的承重细节。",
+        "mechanism": "三方向迭代：(1) Athena 适配器+SQL 渲染 #979（跨源复用）；(2) BigQuery TIMESTAMP_TRUNC #2078+用户过滤加括号 #2066+OSI ratio 命名去 dunder #2091（方言保真+命名规范+过滤安全）；(3) group-by resolver 缓存限 #2075+legacy column order 选项 #2065+orderers 简化 #2064（缓存治理+向后兼容+代码简化）。dbt-metricflow 0.14.0+Python 3.14 同步。",
+        "deep": "最深层洞察在\"语义层指标定义跨源复用\"——Athena 适配器让同一指标定义在 BigQuery/Snowflake/Athena 上执行，这是语义层作为\"指标单一真相源\"的使能器。对用户\"上百字段宽表 API\"场景：宽表 API 背后的数据源可能多样（Postgres/Snowflake/Athena），语义层指标定义跨源复用意味着业务 agent 查同一指标不管底层源在哪。OSI ratio 子指标命名去 dunder 是\"命名即契约\"——指标名通过 semantic manifest 校验，命名不规范阻断发布，这是\"指标命名治理\"的工程化。BigQuery TIMESTAMP_TRUNC 替 DATETIME_TRUNC 是\"方言保真\"——TIMESTAMP 是 UTC 无时区，DATETIME 有时区，语义层跨源时方言差异会导致时间计算不一致。",
+        "apply": "落地建议：(1) 评估 MetricFlow 作为业务指标引擎——指标定义跨源复用避免每数据源重写；(2) 指标命名遵循 semantic manifest 校验规则（无 dunder）避免发布阻断；(3) 时间函数用 TIMESTAMP_TRUNC 而非 DATETIME_TRUNC 保方言一致；(4) group-by resolver 缓存限可参考为业务 agent 查询缓存治理；(5) legacy column order 选项用于向后兼容迁移期。",
+        "caveats": "局限：(1) Athena 适配器是新加，生产稳定性需验证；(2) 跨源复用需各源 schema 一致或语义层抽象足够；(3) OSI ratio 子指标命名规范是 MetricFlow 特定，其他语义层引擎可能不同；(4) Python 3.14 支持是新版，旧环境需升级；(5) 缓存限参数需调优，默认值可能不适合高并发。",
+        "business": "商业启示：MetricFlow 跨源指标复用是\"AI for 业务\"指标层的经济模型——指标定义一次跨多数据源执行，避免每源重写的边际成本。对用户团队：业务指标若分散在多数据源（Postgres/Snowflake/Athena），语义层指标定义跨源复用是降本关键。命名规范化是指标治理的工程化——指标名通过 manifest 校验阻断不规范发布，这是\"指标即代码\"的治理实践。",
+        "sources": [
+          {
+            "url": "https://github.com/dbt-labs/metricflow/releases/tag/v0.212.0",
+            "title": "MetricFlow v0.212.0 - Athena adapter, BigQuery TIMESTAMP_TRUNC, OSI ratio sub-metrics"
+          }
+        ],
+        "diagram": {
+          "title": "MetricFlow v0.212.0 三方向迭代",
+          "flow": [
+            {
+              "label": "Athena 适配器",
+              "sub": "跨源指标复用",
+              "type": "database"
+            },
+            {
+              "label": "TIMESTAMP_TRUNC",
+              "sub": "BigQuery 方言保真",
+              "type": "database"
+            },
+            {
+              "label": "OSI ratio 命名",
+              "sub": "去 dunder+manifest 校验",
+              "type": "backend"
+            },
+            {
+              "label": "group-by 缓存限",
+              "sub": "结果缓存治理",
+              "type": "backend"
+            },
+            {
+              "label": "dbt-metricflow 0.14.0",
+              "sub": "同步发布",
+              "type": "external"
+            },
+            {
+              "label": "Python 3.14",
+              "sub": "环境支持",
+              "type": "external"
+            }
+          ],
+          "notes": [
+            {
+              "label": "跨源指标复用",
+              "text": "Athena 适配器让指标定义跨 BigQuery/Snowflake/Athena 复用，语义层作为指标单一真相源"
+            },
+            {
+              "label": "命名即契约",
+              "text": "OSI ratio 子指标命名通过 semantic manifest 校验，命名不规范阻断发布"
+            },
+            {
+              "label": "方言保真承重",
+              "text": "TIMESTAMP 是 UTC 无时区 vs DATETIME 有时区，跨源方言差异导致时间计算不一致"
+            },
+            {
+              "label": "与 Cube IANA 共振",
+              "text": "Cube v1.7.24 管 IANA 时区校验，MetricFlow 管时间截断函数，两者都管时间维正确性"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "Chat2DB v5.3.4：通用 JDBC 35 库+ENUM/SET 编辑器+identity colors，开源 ChatBI 向通用数据源治理演进",
+      "date": "2026-08-20",
+      "source": "GitHub",
+      "link": "https://github.com/OtterMind/Chat2DB/releases/tag/v5.3.4",
+      "summary": "OtterMind/Chat2DB Community v5.3.4 于 2026-08-20 发布。新增 5 项：(1) 通用 JDBC 支持——仅靠配置添加 35 个数据库（#2633 十个+#2644 十三个含国产库+#2648 十二个达 DBeaver 平价）；(2) MySQL ENUM/SET 结果编辑器 #2560；(3) 数据源 identity colors+SQL 编辑器水印 #2657。改进 5 项：SQL 结果编辑关闭安全 #2627；主导航图标更新 #2629；MCP 设置与重启确定性化；工作区导航+Windows 桌面控制+导入导出进度。治理：trusted contributor 审核角色定义+Community 贡献者 ownership 对齐+CI 移除 Community CDN 发布 #2725。",
+      "insight": "架构师视角：Chat2DB v5.3.4 核心信号是\"通用 JDBC 35 库\"——从\"单库对话式 BI\"向\"通用数据源治理平台\"演进，仅靠配置添加数据库（非代码开发）是\"数据源即配置\"的工程化。对用户课题间接相关：用户通过业务 API 查数而非直连数据库，但 Chat2DB 作为开源 ChatBI 参考实现，其\"通用 JDBC 35 库\"架构对理解\"如何让 agent 跨多数据源查数\"有参考价值——配置驱动而非代码驱动。与 8/16 Chat2DB v5.3.3（从原 chat2db 仓库迁移）共振：v5.3.3 是迁移，v5.3.4 是迁移后首个功能大版本，标志 OtterMind 组织化（trusted contributor 角色+ownership 对齐）。与 8/15 PLSQLBench\"PL/SQL 方言保真困难\"共振：Chat2DB 扩 35 库但 PLSQLBench 证明 LLM 在过程性方言上有缺口——扩数据源覆盖不等于扩 LLM 能力。MCP 设置与重启确定性化与 8/19 Cube MCP 单端点共振：两者都管 MCP 的确定性。",
+      "detail": {
+        "why": "Chat2DB 是开源 ChatBI 参考实现，v5.3.4 的\"通用 JDBC 35 库\"是\"数据源即配置\"的工程化信号，对理解 agent 跨多数据源查数的架构有参考价值。",
+        "mechanism": "通用 JDBC 配置驱动添加 35 库（三个 PR 分批：10+13+12 含国产库达 DBeaver 平价）→MySQL ENUM/SET 结果编辑器（类型感知编辑）→identity colors+水印（数据源视觉区分）→SQL 结果编辑关闭安全（防误关丢编辑）→MCP 设置与重启确定性化→trusted contributor 审核角色（组织化治理）。",
+        "deep": "最深层洞察在\"配置驱动扩数据源\"——35 个数据库仅靠配置添加非代码开发，这是\"数据源即配置\"的工程化。对用户场景：用户业务 API 背后的数据源可能多样，若 agent 需跨源查数，配置驱动扩源比代码驱动更可维护。但 PLSQLBench 证明 LLM 在过程性方言（PL/SQL）上有缺口——Chat2DB 扩 35 库覆盖不等于 LLM 能理解 35 库的过程性编程，扩源不等于扩能。identity colors+水印是\"数据源视觉治理\"——多数据源场景下视觉区分防误操作，这是人在回路（HITL）的视觉辅助。MCP 设置与重启确定性化是\"MCP 配置治理\"——与 Cube MCP 单端点共振，两者都管 MCP 的确定性。trusted contributor 角色是开源项目组织化信号——从个人维护到角色治理。",
+        "apply": "落地建议：(1) 参考配置驱动扩数据源架构——业务 API 背后多数据源场景，配置驱动比代码驱动更可维护；(2) 类型感知编辑（ENUM/SET 编辑器）可参考为宽表字段语义标注的类型感知 UI；(3) identity colors 可参考为多业务 API 的视觉区分治理；(4) MCP 设置确定性化可参考为 agent MCP 配置治理；(5) trusted contributor 角色模型可参考为团队 agent 项目的贡献治理。",
+        "caveats": "局限：(1) 通用 JDBC 35 库覆盖不等于 LLM 能理解 35 库的过程性编程（PLSQLBench 证明缺口）；(2) 配置驱动扩源需每库的方言适配配置，配置质量是瓶颈；(3) ENUM/SET 编辑器是 MySQL 特定，其他库类型编辑需扩展；(4) identity colors 是视觉辅助，不替代权限治理；(5) v5.3.4 是迁移后首个大版本，稳定性需生产验证。",
+        "business": "商业启示：Chat2DB 从\"单库对话式 BI\"向\"通用数据源治理平台\"演进是开源 ChatBI 的战略转型——35 库达 DBeaver 平价意味着 ChatBI 不再是\"单库玩具\"而是\"通用数据源工具\"。对用户团队：作为开源 ChatBI 参考实现，Chat2DB 的配置驱动扩源+类型感知编辑+视觉治理是\"AI for 业务\"数据源治理的工程化参考。trusted contributor 角色标志开源项目组织化，可持续性提升。",
+        "sources": [
+          {
+            "url": "https://github.com/OtterMind/Chat2DB/releases/tag/v5.3.4",
+            "title": "Chat2DB Community v5.3.4 - universal JDBC 35 databases, ENUM/SET editors, identity colors"
+          }
+        ],
+        "diagram": {
+          "title": "Chat2DB v5.3.4 通用数据源治理",
+          "flow": [
+            {
+              "label": "通用 JDBC 35 库",
+              "sub": "配置驱动扩源",
+              "type": "database"
+            },
+            {
+              "label": "ENUM/SET 编辑器",
+              "sub": "类型感知编辑",
+              "type": "frontend"
+            },
+            {
+              "label": "identity colors",
+              "sub": "数据源视觉区分",
+              "type": "frontend"
+            },
+            {
+              "label": "MCP 确定性化",
+              "sub": "设置+重启",
+              "type": "backend"
+            },
+            {
+              "label": "trusted contributor",
+              "sub": "审核角色",
+              "type": "security"
+            },
+            {
+              "label": "扩源≠扩能",
+              "sub": "PLSQLBench 缺口",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "数据源即配置",
+              "text": "35 库仅靠配置添加非代码开发，配置驱动扩源比代码驱动更可维护"
+            },
+            {
+              "label": "扩源不等于扩能",
+              "text": "Chat2DB 扩 35 库覆盖但 PLSQLBench 证明 LLM 在过程性方言有缺口，扩源≠扩能"
+            },
+            {
+              "label": "类型感知 UI 参考",
+              "text": "ENUM/SET 编辑器可参考为宽表字段语义标注的类型感知 UI"
+            },
+            {
+              "label": "MCP 配置治理",
+              "text": "MCP 设置与重启确定性化与 Cube MCP 单端点共振，两者都管 MCP 确定性"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
