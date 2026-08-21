@@ -1,0 +1,638 @@
+{
+  "date": "2026-08-22",
+  "banner": "MidTool 提出 tool-use mid-training 范式让模型真正理解 API 语义；Cube v1.7.25 重启 cube validate 语义层校验；TDS 行级 RAG 直击宽表字段语义标注痛点。",
+  "snapshot": {
+    "summary": "今日情报围绕\"让 AI 懂业务并精确查数\"的两大底层能力展开：一是 tool-use/API 语义理解从 post-training 向 mid-training 前移（MidTool），语义缓存驱逐策略有了系统性基线（LLM Cache Eviction）；二是语义层与知识图谱两条路线同步工程化推进——Cube v1.7.25 重启 cube validate 语义层校验+MetricFlow 0.212.0 加 Athena adapter 和 Nuitka 独立二进制嵌入 dbt Fusion，TDS 系列博客给出业务知识库构建的三层决策框架（行级 RAG 检索单元、三类语料形态决定架构、知识层图谱实际遍历+bitemporal edges）。核心信号：业务语义理解的瓶颈不在模型参数而在知识召回机制与语义暴露的工程质量，语义层校验正在成为 Agent 查数可信的基础设施。",
+    "groups": {
+      "paper": [
+        "MidTool（arXiv 2608.20314, 8/20）：首个 tool-use mid-training 数据合成流水线，结合 web/PDF/code + 真实 API/MCP skills/document-grounded workflows 合成监督数据，mid-train Qwen3-4B/8B-Base 后在 BFCL/tau2-Bench/MCP Universe 持续提升——证明 tool use 像 reasoning 一样需要专门 mid-training 而非只靠 post-training",
+        "IAR Inject-Align-Recover（arXiv 2608.20281, 8/20）：三阶段 post-training 框架实现 retrieval-free 文档知识内化——Inject 将文档转为 continuation/rewrite/reconstruction 目标→Align 用 answer-only QA 监督对齐→Recover 与 base 指令模型合并恢复通用能力，8/8 setting 中 7 个全面胜出 Vanilla SFT，domain QA +3.6pp 通用 +12.1pp",
+        "LLM Cache Eviction Policy（arXiv 2608.20280, 8/20）：用 CLEVER 系统对比 7 种驱逐策略×3 语料×3 容量×2 编码器共 18 setting，LFU 是最强默认且无策略超 LFU 0.041pp；更关键的发现是 quality-adjusted 命中率：raw hit 51-60% 但 answer-substitutable 仅 1.1-2.2%，语义缓存的\"命中\"不等于\"答案可替换\"",
+        "Ontology-Mediated Property Graph Queries→GQL（arXiv 2608.20092, 8/20）：首个将 ontology-mediated navigational graph queries 实践重写为 GQL/SQL-PGQ 的技术，DL-Lite 变体适配 property graph，GQL fragment 支持嵌套双向正则路径查询，可在 Cypher 中执行——知识图谱路线终于有了标准化查询语言落地路径"
+      ],
+      "blog": [
+        "TDS《Retrieve One Row from a Table, Not the Whole Table》（8/21）：提出行级 chunk 策略——将表格每行+列头序列化为独立 chunk，让 dispatcher 选择行级或整表级检索单元，直击\"宽表整块塞入 LLM 让模型做过滤\"的痛点，用 Attention 论文 Table 1 可运行验证",
+        "TDS《Three Kinds of RAG Corpus》（8/20）：指出企业文档不是一种东西——无关报告集合/重复合同副本/claim 文件夹是三种不同问题，各自需要不同架构，similarity search 返回 passage 永远选不出 document，决策应在建索引前完成而非调参时",
+        "TDS《Making the Knowledge Layer a Graph You Actually Traverse》（8/20）：退休 Part 1 的 query router，改用 retriever-vs-filter 原则+bitemporal edges+ingest-time contradiction detection+two-threshold entity resolution，知识层从\"文件柜查阅\"变为\"图谱遍历\"，解决 7x 概念碎片化",
+        "TDS《Bayesian Guardrails for AI Decisions》（8/21）：AI 决策不应因\"能预测\"就自动化，需用贝叶斯后验分布量化不确定性，依据 decision cost 降级或弃答——point estimate 让模型显得比实际更确定，自动化放大错误"
+      ],
+      "github": [
+        "Cube v1.7.25（8/21）：重启 cube validate 作为 Cloud data-model check（语义层校验回归！）+ DATE_ADD SQL pushdown + CLI 版本过期提示 + Cubestore QUEUE ADD_AND_RETRIEVE 命令——语义层从\"定义指标\"走向\"校验指标定义\"",
+        "MetricFlow 0.212.0（8/19）：加 Athena adapter（多数据源语义层）+ Nuitka 编译为 macOS/Linux/Windows 独立二进制嵌入 dbt v2 Fusion + BigQuery TIMESTAMP_TRUNC 修复 + filter 字符串加括号防注入 + OSI ratio 子指标名称验证——语义层作为\"可嵌入查询引擎\"的工程化",
+        "tokensave v7.10.0（8/19，GitHub 8/21 push）：解析器 order-independence 消除最后 order-dependent pick + score tie 不猜记 ambiguous_calls schema v17 + 71.6% 撤回边是跨文件 private 伪造边 + 多 root 联邦 round-robin by rank——\"宁可缺不要错\"原则对宽表 API 字段语义标注直接可迁移"
+      ],
+      "product": [
+        "语义层三栈同周活跃形成完整技术栈：Cube（SQL 引擎型+Agent 数据技能平台，v1.7.25 validate 校验语义层定义正确性）+ MetricFlow（指标验证型，0.212.0 嵌入 dbt Fusion 作为可嵌入查询引擎）+ WrenAI（AI-native 型，v0.13.3 四层 harden 容错），三者从不同角度补全\"业务语义暴露给 Agent\"的工程链路",
+        "TDS Enterprise Document Intelligence 系列连续四篇构成业务知识库构建方法论闭环：行级检索单元→语料形态分类决策→知识层图谱遍历+bitemporal→贝叶斯不确定性护栏，从数据结构到决策治理全链路覆盖"
+      ]
+    }
+  },
+  "items": [
+    {
+      "tag": "paper",
+      "title": "MidTool: Mid-training Data Synthesis for Agentic Tool Use",
+      "date": "2026-08-20",
+      "source": "arXiv (cs.AI)",
+      "link": "https://arxiv.org/abs/2608.20314",
+      "summary": "MidTool 提出首个面向 agentic tool use 的 mid-training 数据合成流水线，结合大规模 web/PDF/code 数据与从真实工具 API、MCP skills、document-grounded workflows 合成的监督数据。设计目标是教模型识别 tool affordances、从上下文 ground arguments、组合 tool call workflow、从不完整信息中恢复。在 Qwen3-4B-Base 和 Qwen3-8B-Base 上 mid-train 后，无论 SFT 还是 RL，在 BFCL、tau2-Bench、MCP Universe 上持续提升。核心结论：general tool use 像 reasoning 一样，需要专门 mid-training 而非仅靠 post-training。Semantic Scholar 核实 citationCount=0, influentialCitationCount=0（8/20 新文符合预期）。",
+      "insight": "对用户\"通过业务 API 查数\"课题直接相关：用户上百字段宽表 API 的语义理解和精准调用，瓶颈不在 post-training 的 prompt engineering，而在模型 base 阶段是否\"见过\"足够多的真实 API 调用模式。MidTool 的\"从真实 API 合成监督数据\"方法论可迁移——用户的业务 API 集合本身就是一个 mid-training 语料源。MCP skills 作为合成来源尤其值得关注，与用户 MCP Gateway 治理路线呼应。这是\"让 AI 懂业务 API\"从推理时策略向训练时内化的范式转移。",
+      "detail": {
+        "why": "当前 tool use 能力主要靠 post-training（SFT/RL）注入，但 post-training 数据量和多样性受限，模型对复杂 API schema 的理解仍浅。MidTool 证明 mid-training 阶段用大规模合成数据能系统提升 tool use，这为 enterprise Agent 的 API 理解提供新路径。",
+        "mechanism": "三层数据合成：(1) 大规模 web/PDF/code 作为 base；(2) 从真实 tool APIs + MCP skills + document-grounded workflows 合成 tool-call supervision（affordance recognition + argument grounding + workflow composition + error recovery）；(3) mid-train Qwen3-4B/8B-Base 后再做 SFT+RL follow-up。评估在 BFCL（function calling）、tau2-Bench（多轮 tool 对话）、MCP Universe（MCP 生态）三个 benchmark。",
+        "deep": "关键创新在于将 tool use 视为需要 mid-training 的能力而非仅 post-training。这与 reasoning 领域的 mid-training 趋势一致（math/science mid-training 已证明有效）。对企业场景的启示：如果要建一个真正\"懂业务 API\"的 Agent，仅靠 prompt + few-shot 示例不够，需要在模型层面注入业务 API 的调用模式。用户的上百字段宽表 API 字段语义标注数据，可作为 mid-training 语料。",
+        "apply": "(1) 评估自研/开源模型 mid-training 可行性，用业务 API 调用日志+MCP skill 定义构建合成数据；(2) 先在小模型（4B-8B）上验证，BFCL/tau2-Bench 作为 baseline；(3) MCP skills 作为合成来源与用户 MCP Gateway 路线结合，形成\"治理+训练\"双轨。",
+        "caveats": "mid-training 需要算力和数据工程投入，非小团队可轻易承担；合成数据质量决定上限，低质量 API 示例可能固化错误模式；开源 base 模型 mid-training 后的许可合规需注意；tool use benchmark（BFCL/tau2-Bench）与真实 enterprise API 场景仍有 gap。",
+        "business": "mid-training 范式意味着\"懂业务 API\"的能力可被预置进模型而非仅靠运行时上下文——这改变了 enterprise Agent 的竞争格局：拥有大量真实 API 调用数据的企业可训练出更\"懂业务\"的模型，形成数据护城河。MCP 生态作为合成来源预示\"MCP skill 定义\"本身是高价值训练资产。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.20314",
+            "title": "MidTool: Mid-training Data Synthesis for Agentic Tool Use"
+          },
+          {
+            "url": "https://api.semanticscholar.org/graph/v1/paper/arXiv:2608.20314",
+            "title": "Semantic Scholar: citationCount=0, influentialCitationCount=0 (核实)"
+          }
+        ],
+        "diagram": {
+          "title": "MidTool: tool-use mid-training 流水线",
+          "flow": [
+            {
+              "label": "Web/PDF/Code 数据",
+              "sub": "大规模 base 语料",
+              "type": "database"
+            },
+            {
+              "label": "真实 Tool APIs + MCP Skills",
+              "sub": "合成监督数据源",
+              "type": "external"
+            },
+            {
+              "label": "Document-grounded Workflows",
+              "sub": "工作流合成",
+              "type": "external"
+            },
+            {
+              "label": "MidTool-Mix 合成",
+              "sub": "affordance+arg grounding+composition+recovery",
+              "type": "backend"
+            },
+            {
+              "label": "Mid-train Qwen3-4B/8B",
+              "sub": "模型层能力注入",
+              "type": "backend"
+            },
+            {
+              "label": "SFT + RL Follow-up",
+              "sub": "post-training 对齐",
+              "type": "backend"
+            },
+            {
+              "label": "BFCL/tau2-Bench/MCP Universe",
+              "sub": "三 benchmark 持续提升",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "范式转移",
+              "text": "tool use 从 post-training only → mid-training + post-training，与 reasoning 趋势一致"
+            },
+            {
+              "label": "企业迁移点",
+              "text": "业务 API 调用日志+MCP skill 定义可作为 mid-training 语料源，形成数据护城河"
+            },
+            {
+              "label": "与 MCP Gateway 呼应",
+              "text": "MCP skills 既是治理对象也是训练资产，治理+训练双轨"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "IAR: Inject, Align, Recover — Retrieval-Free Document Knowledge Internalization",
+      "date": "2026-08-20",
+      "source": "arXiv (cs.CL, cs.AI)",
+      "link": "https://arxiv.org/abs/2608.20281",
+      "summary": "IAR（Inject, Align, Recover）提出三阶段 post-training 框架，将固定文档语料转化为模型可用的 parametric knowledge，实现 retrieval-free QA。Inject 将源文档转为 continuation、rewrite、instruction-conditioned reconstruction 三种训练目标；Align 用 answer-only QA 监督对齐注入模型；Recover 将 domain-adapted 模型与 base 指令模型合并恢复通用能力。在 Common Corpus 和 CCI 上，跨 Llama/Phi/Qwen/SmolLM 四个模型族，IAR 在 8 个 dataset-model setting 中 7 个全面胜出 Vanilla SFT，domain QA +3.6pp，通用性能（IFEval/MMLU/MSBench）+12.1pp。Semantic Scholar 因限流未核实（8/20 新文预期 0 引用，标注待核实）。",
+      "insight": "直接关联用户\"业务知识库构建\"方向：当前 RAG 方案在推理时检索文档，但业务知识（指标定义、业务术语、API schema）如果内化进模型参数，可减少推理时检索延迟和上下文窗口占用。IAR 的三阶段分离设计解决了传统 continued pretraining 的灾难性遗忘问题——Inject 注入知识，Align 对齐 QA 行为，Recover 恢复通用能力。对用户场景，业务术语表/指标定义文档可通过 IAR 内化进小模型，作为 Agent 的\"业务常识层\"。",
+      "detail": {
+        "why": "RAG 在推理时依赖检索质量，而企业业务知识（指标定义、术语、规则）相对固定且高频引用，每次检索都消耗延迟和上下文窗口。将这部分\"稳定知识\"内化为 parametric knowledge 可降低推理时负担。",
+        "mechanism": "三阶段分离：(1) Inject——源文档转为 continuation（续写）、rewrite（重写）、instruction-conditioned reconstruction（指令条件重建）三种目标，结构化注入知识；(2) Align——answer-only QA 监督（不给文档只给答案），对齐模型的 QA 行为模式；(3) Recover——将 domain-adapted 模型与 base instruction model merge，恢复 Inject/Align 阶段损失的通用能力。",
+        "deep": "关键创新在于三阶段分离设计避免了传统 continued pretraining 的知识-能力权衡困境。Recover 阶段的模型合并是点睛之笔——不要求单一模型既懂领域又通用，而是通过 merge 获得两者。对用户场景的映射：业务术语表+指标定义+API schema 文档 = Inject 输入；业务 QA 对 = Align 输入；base 模型 = Recover 合并对象。这样 Agent 的\"业务常识\"不需要每次推理时检索。",
+        "apply": "(1) 将业务术语表、指标定义、常用 API schema 整理为固定文档集；(2) 用 IAR 在小模型（Llama/Phi/SmolLM）上实验，domain QA accuracy 作为核心指标；(3) 内化后的模型作为 Agent 的\"业务常识层\"，RAG 降级为补充检索而非主路径。",
+        "caveats": "Recover 阶段 merge 可能损失部分 domain 知识深度；retrieval-free 在文档更新时需重新训练，不适合高频变更场景；IAR 适用于\"稳定业务知识\"而非\"动态业务数据\"；Semantic Scholar 引用数未核实（限流）。",
+        "business": "知识内化范式改变 enterprise Agent 的架构决策：不是所有业务知识都该放 RAG——稳定的术语/规则/定义内化进模型更高效，动态数据才走 RAG。这降低了推理时延迟和上下文成本，但增加了模型更新频率。对\"语义层 vs 知识图谱\"双路线，IAR 提供了第三选项：语义层定义内化为 parametric knowledge。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.20281",
+            "title": "Inject, Align, Recover: Staged Post-Training for Retrieval-Free Document Knowledge Internalization"
+          },
+          {
+            "url": "https://api.semanticscholar.org/graph/v1/paper/arXiv:2608.20281",
+            "title": "Semantic Scholar: 限流未核实（8/20 新文预期 0 引用，标注待核实）"
+          }
+        ],
+        "diagram": {
+          "title": "IAR 三阶段文档知识内化",
+          "flow": [
+            {
+              "label": "固定文档语料",
+              "sub": "业务术语表/指标定义/API schema",
+              "type": "database"
+            },
+            {
+              "label": "Inject 阶段",
+              "sub": "continuation+rewrite+reconstruction",
+              "type": "backend"
+            },
+            {
+              "label": "Align 阶段",
+              "sub": "answer-only QA 监督",
+              "type": "backend"
+            },
+            {
+              "label": "Recover 阶段",
+              "sub": "与 base instruction model merge",
+              "type": "backend"
+            },
+            {
+              "label": "内化模型",
+              "sub": "parametric knowledge 可用",
+              "type": "backend"
+            },
+            {
+              "label": "Agent 业务常识层",
+              "sub": "retrieval-free QA",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "三阶段分离",
+              "text": "Inject 注入/Align 对齐/Recover 恢复，避免灾难性遗忘"
+            },
+            {
+              "label": "RAG 降级",
+              "text": "稳定知识内化进参数，RAG 从主路径变为补充检索"
+            },
+            {
+              "label": "适用边界",
+              "text": "适合稳定业务知识，不适合高频变更动态数据"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "LLM Cache Eviction Policy 系统性研究：命中≠答案可替换",
+      "date": "2026-08-20",
+      "source": "arXiv (cs.DB, cs.LG)",
+      "link": "https://arxiv.org/abs/2608.20280",
+      "summary": "本文用 CLEVER 框架系统性对比 7 种语义缓存驱逐策略（FIFO/LRU/LFU/ARC/GDSF/streaming SISO/semantic-redundancy）×3 有序去重语料×3 缓存容量×2 编码器共 18 个 setting。核心发现：(1) LFU 是最强简单默认，无策略在任一 setting 超 LFU 0.041pp；(2) 更关键——quality-adjusted 命中率：raw hit rate 51-60%，但 cross-encoder 判定 answer-substitutable 仅 1.1-2.2%；(3) 阈值不可跨编码器迁移。语义缓存的\"命中\"不等于\"答案可替换\"。Semantic Scholar 因限流未核实（标注待核实）。",
+      "insight": "直击用户\"业务系统精确查询\"方向中的可信度验证问题。Agent 查业务 API 返回的数据如果用语义缓存加速，\"缓存命中\"只是 embedding 相似，不保证答案语义等价。对用户上百字段宽表 API 场景尤其危险——两个查询 embedding 相似但可能查的是不同字段组合，缓存返回的结果可能语义错误。部署语义缓存前必须先建立 answer-validity 判定机制，而非依赖 raw hit rate。",
+      "detail": {
+        "why": "语义缓存（semantic cache）是 LLM 推理加速常用手段，但驱逐策略选择和命中质量评估缺乏系统性基线。本文首次在统一协议下对比所有主流策略，并暴露了\"命中≠可替换\"的核心问题。",
+        "mechanism": "CLEVER 框架：7 策略×3 语料×3 容量×2 编码器=18 setting。驱逐策略在 cache 满时决定移除哪个 entry。conditional packing 结果解释了为何 geometry-aware 驱逐无效：exact lookup + insert-on-miss 下，新插入 entry 在 hit radius 内无 resident neighbor，驱逐策略收不到新冗余信号。cross-encoder 研究证明阈值不可跨编码器迁移。",
+        "deep": "最深刻的发现不是哪个策略好，而是 quality-adjusted 命中率暴跌——raw 51-60% → answer-substitutable 1.1-2.2%。这意味着大量\"缓存命中\"实际上返回了语义不等价的答案。对用户场景：Agent 查业务 API，如果用语义缓存，两个查询 embedding 相似但可能查的是不同业务字段组合（如\"上月销售额\" vs \"上月利润\"），缓存返回的结果可能完全错误。部署前必须用 cross-encoder 或人工判定 answer-substitutable 阈值。",
+        "apply": "(1) 如果用语义缓存加速 Agent 查数，先用 cross-encoder 建立 answer-validity 基线；(2) LFU 作为默认驱逐策略；(3) 不要跨编码器迁移阈值；(4) 对业务关键查询（金额、计数）禁用缓存或用 exact match only。",
+        "caveats": "评估的 MiniLM median threshold 下 hit rate 本身偏低；不同业务场景的 query 分布可能不同；cross-encoder 判定也有误差；Semantic Scholar 引用数未核实（限流）。",
+        "business": "语义缓存的\"命中≠可替换\"是 enterprise Agent 部署的隐藏风险——看似加速了实则返回了语义错误的结果。对业务数据查询，金额/计数等关键指标必须用 exact match 或禁用缓存。这个发现为\"Agent 查数可信度验证\"提供了量化依据：raw hit rate 是误导性指标。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.20280",
+            "title": "Which Eviction Policy Should an LLM Cache Use? A Systematic Study Across Workloads, Capacities, and Encoders"
+          },
+          {
+            "url": "https://api.semanticscholar.org/graph/v1/paper/arXiv:2608.20280",
+            "title": "Semantic Scholar: 限流未核实（8/20 新文预期 0 引用，标注待核实）"
+          }
+        ],
+        "diagram": {
+          "title": "语义缓存：命中≠答案可替换",
+          "flow": [
+            {
+              "label": "Agent 查询",
+              "sub": "业务 API 查数请求",
+              "type": "frontend"
+            },
+            {
+              "label": "语义缓存查找",
+              "sub": "embedding 相似度匹配",
+              "type": "backend"
+            },
+            {
+              "label": "Raw Hit 51-60%",
+              "sub": "embedding 在 hit radius 内",
+              "type": "backend"
+            },
+            {
+              "label": "驱逐策略",
+              "sub": "LFU 最强默认 (无策略超 0.041pp)",
+              "type": "backend"
+            },
+            {
+              "label": "Cross-encoder 判定",
+              "sub": "answer-substitutable?",
+              "type": "security"
+            },
+            {
+              "label": "Quality-adjusted 1.1-2.2%",
+              "sub": "真实可替换率",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "核心风险",
+              "text": "raw hit 51-60% → answer-substitutable 1.1-2.2%，大量\"命中\"返回语义不等价答案"
+            },
+            {
+              "label": "业务影响",
+              "text": "金额/计数等关键指标查询若用语义缓存，可能返回完全错误结果"
+            },
+            {
+              "label": "部署原则",
+              "text": "先建立 answer-validity 基线，再考虑缓存加速；关键查询用 exact match only"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "Ontology-Mediated Property Graph Queries 重写为 GQL：知识图谱路线标准化",
+      "date": "2026-08-20",
+      "source": "arXiv (cs.DB)",
+      "link": "https://arxiv.org/abs/2608.20092",
+      "summary": "本文首次实现将 ontology-mediated navigational graph queries 实践重写为标准 GQL/SQL-PGQ 查询语言。使用 DL-Lite 变体适配 property graph，GQL fragment 支持嵌套双向正则路径查询（nested two-way regular path queries），可在 Cypher 中执行。长期以来，ontology-based data access 的理论算法已有但从未实现，因为实用图查询语言缺乏表达力。GQL 和 SQL/PGQ 标准化终于打破这一障碍。概念验证原型表明，用 ontology 知识查询图数据\"终于触手可及\"。Semantic Scholar 因限流未核实（标注待核实）。",
+      "insight": "直接支撑用户\"语义层 vs 知识图谱\"双路线中的知识图谱路线。此前知识图谱在企业落地的障碍之一是缺乏标准化查询语言——理论算法存在但无法工程化。GQL/SQL-PGQ 标准化让 ontology-mediated graph queries 有了落地路径。对用户场景，业务知识图谱（业务实体关系、指标血缘、API 调用链）可通过 ontology 定义+GQL 查询，而非依赖自定义图遍历代码。",
+      "detail": {
+        "why": "ontology-based data access（OBDA）理论上允许用 ontology 知识增强图数据查询，但实践一直缺标准化查询语言支撑，导致理论算法无法落地。GQL/SQL-PGQ 标准化打破了这个瓶颈。",
+        "mechanism": "DL-Lite 变体适配 property graph 结构（节点/边/属性映射）；GQL fragment 支持嵌套双向正则路径查询（可在两个方向遍历边）；查询重写技术将 ontology-mediated query 转为 GQL/SQL-PGQ 可执行查询；原型在 Cypher 中执行验证。",
+        "deep": "对用户\"语义层 vs 知识图谱\"决策的关键信号：知识图谱路线终于有了标准化查询语言落地路径。此前知识图谱在企业落地依赖 Neo4j Cypher 或自定义遍历，ontology 层与查询层脱节。GQL 标准化后，业务 ontology（实体类型、关系类型、约束）可定义在标准层，查询用标准 GQL，这降低了知识图谱路线的工程门槛和供应商锁定风险。",
+        "apply": "(1) 评估 GQL/SQL-PGQ 对业务知识图谱的适用性，业务实体关系建模为 property graph；(2) 用 DL-Lite 定义业务 ontology（如\"订单→包含→商品\"\"指标→派生自→源表\"）；(3) GQL 查询替代自定义图遍历代码，降低维护成本。",
+        "caveats": "目前是 proof-of-concept 原型，生产可用性待验证；GQL/SQL-PGQ 标准本身仍在演进；DL-Lite 表达力有限（轻量描述逻辑），复杂业务规则可能超出表达范围；Semantic Scholar 引用数未核实（限流）。",
+        "business": "知识图谱路线的标准化查询语言降低企业落地门槛和供应商锁定风险。对\"语义层 vs 知识图谱\"决策，这补齐了知识图谱路线的工程化短板——语义层有 Cube/MetricFlow 等产品，知识图谱现在有了 GQL 标准查询，两者工程化差距缩小。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.20092",
+            "title": "Rewriting Ontology-Mediated Property Graph Queries into GQL"
+          },
+          {
+            "url": "https://api.semanticscholar.org/graph/v1/paper/arXiv:2608.20092",
+            "title": "Semantic Scholar: 限流未核实（8/20 新文预期 0 引用，标注待核实）"
+          }
+        ],
+        "diagram": {
+          "title": "Ontology-Mediated Graph Query → GQL 重写",
+          "flow": [
+            {
+              "label": "业务 Ontology (DL-Lite)",
+              "sub": "实体/关系/约束定义",
+              "type": "database"
+            },
+            {
+              "label": "Property Graph 数据",
+              "sub": "业务知识图谱存储",
+              "type": "database"
+            },
+            {
+              "label": "Ontology-mediated Query",
+              "sub": "用户/Agent 查询意图",
+              "type": "frontend"
+            },
+            {
+              "label": "查询重写引擎",
+              "sub": "theory → practice 首次实现",
+              "type": "backend"
+            },
+            {
+              "label": "GQL/SQL-PGQ 标准查询",
+              "sub": "嵌套双向正则路径",
+              "type": "backend"
+            },
+            {
+              "label": "Cypher 执行",
+              "sub": "proof-of-concept 验证",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "标准化突破",
+              "text": "GQL/SQL-PGQ 标准化打破 ontology graph query 理论有但实践无的瓶颈"
+            },
+            {
+              "label": "双路线补齐",
+              "text": "知识图谱路线有了标准查询语言，与语义层产品化差距缩小"
+            },
+            {
+              "label": "企业门槛降低",
+              "text": "业务 ontology 定义在标准层，查询用标准 GQL，降低供应商锁定"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "TDS: Retrieve One Row from a Table, Not the Whole Table — 行级 RAG 检索单元",
+      "date": "2026-08-21",
+      "source": "Towards Data Science (Enterprise Document Intelligence Vol.1 #7)",
+      "link": "https://towardsdatascience.com/retrieve-one-row-from-a-table-not-the-whole-table-row-level-chunks-for-rag/",
+      "summary": "TDS Enterprise Document Intelligence 系列提出行级 chunk 策略：当文档中的表格承载答案时，将每个 body row + 列头序列化为独立 chunk，而非将整表作为一块。以汽车保险合同 40 行表格为例——\"车辆盗窃的赔付上限是多少？\"这类问题匹配的单元是一行而非整表。naive 做法索引整表为一个 chunk，导致 LLM 收到 39 行无关事件+1 行答案，被迫做本该 retriever 做的过滤。核心原则：不要选一种尺度，让两种尺度都可用，让 dispatcher 选择。用 Attention Is All You Need Table 1 可运行验证。",
+      "insight": "直击用户\"上百字段宽表 API\"的字段语义标注痛点。宽表 API 返回的每行数据包含上百字段，如果整行塞给 LLM，模型被迫从上百字段中找到答案字段——这正是 TDS 描述的\"让模型做 retriever 该做的过滤\"。行级 chunk 思路可迁移为\"字段级标注\"：将宽表的每个业务字段+其语义描述作为独立检索单元，Agent 查询时只取相关字段而非整行。这与用户\"宽表字段语义标注\"需求直接对应。",
+      "detail": {
+        "why": "当文档答案在表格中时，检索单元的选择决定质量。整表为一个 chunk 要么匹配（LLM 收到全表大部分无关）要么不匹配（相关行被其他行评分平均稀释）。行级 chunk 让检索单元匹配问题单元。",
+        "mechanism": "两步将 parsed table 转为可检索索引：(1) 读取 parser（Docling/Azure Document Intelligence）emit 的表格 shape；(2) 将每个 body row 序列化为独立 chunk（含列头上下文）。dispatcher 根据问题类型选择行级或整表级——\"车辆盗窃赔付上限\"选行级，\"哪些事件被覆盖\"选整表级。",
+        "deep": "对用户宽表 API 场景的迁移：宽表 API 的每行返回上百字段，每个字段有业务语义（如\"月销售额\"\"环比增长率\"\"客户分层\"）。将每个字段+其语义描述（来自字段标注/元数据）作为独立\"行级 chunk\"，Agent 查询时只检索相关字段的语义描述+取值，而非整行上百字段全塞。这降低了 LLM 上下文占用和\"字段误匹配\"风险。dispatcher 选择逻辑：单字段查询走字段级，多字段聚合走行级。",
+        "apply": "(1) 为宽表 API 每个字段建立语义描述 chunk（字段名+业务含义+取值范围+示例值）；(2) Agent 查询时先检索字段级 chunk 确定目标字段，再调 API 取该字段值；(3) 多字段聚合查询走整行；(4) 参考 TDS 的 serialize_table_rows 方法实现。",
+        "caveats": "宽表字段间可能有业务依赖（如\"环比增长率\"依赖\"月销售额\"），字段级检索可能丢失依赖上下文；字段语义描述的质量决定检索质量；dispatcher 判断逻辑需业务规则支撑。",
+        "business": "行级/字段级 chunk 策略降低宽表 API 场景的 LLM 上下文成本和字段误匹配风险。对\"上百字段宽表 API\"的 Agent 查数，这是从\"整行塞入\"到\"精准取字段\"的架构升级，直接提升查询精度和降低 token 成本。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/retrieve-one-row-from-a-table-not-the-whole-table-row-level-chunks-for-rag/",
+            "title": "Retrieve One Row from a Table, Not the Whole Table: Row-Level Chunks for RAG (TDS)"
+          }
+        ],
+        "diagram": {
+          "title": "宽表 API 字段级 chunk 检索（行级 RAG 迁移）",
+          "flow": [
+            {
+              "label": "宽表 API 返回",
+              "sub": "上百字段/行",
+              "type": "external"
+            },
+            {
+              "label": "字段语义标注",
+              "sub": "字段名+业务含义+取值范围+示例",
+              "type": "database"
+            },
+            {
+              "label": "字段级 chunk 序列化",
+              "sub": "每个字段独立可检索单元",
+              "type": "backend"
+            },
+            {
+              "label": "Dispatcher 选择",
+              "sub": "单字段→字段级 / 多字段聚合→行级",
+              "type": "backend"
+            },
+            {
+              "label": "Agent 查询",
+              "sub": "先检索字段描述再取值",
+              "type": "frontend"
+            },
+            {
+              "label": "精准结果",
+              "sub": "只返回相关字段值",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "核心迁移",
+              "text": "行级 chunk → 字段级 chunk：宽表每个字段+语义描述作为独立检索单元"
+            },
+            {
+              "label": "痛点直击",
+              "text": "避免\"整行上百字段全塞 LLM 让模型做过滤\"的低效和误匹配"
+            },
+            {
+              "label": "Dispatcher 双尺度",
+              "text": "单字段查询走字段级，多字段聚合走行级，两种尺度都可用"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "TDS: Three Kinds of RAG Corpus — 语料形态决定架构",
+      "date": "2026-08-20",
+      "source": "Towards Data Science (Enterprise Document Intelligence Vol.1 #14A)",
+      "link": "https://towardsdatascience.com/three-kinds-of-rag-corpus-and-what-it-costs-to-build-for-the-wrong-one/",
+      "summary": "TDS Enterprise Document Intelligence Part IV 开篇指出：企业文档不是一种东西。无关报告集合（shared drive of unrelated reports）、重复合同副本（五千份同一合同）、claim 文件夹（stack of claim folders）是三种不同问题，适合其一的架构对另两者很差。similarity search 返回 passage 永远选不出 document，答案从三个不该一起读的文件拼出。决策应在建索引前完成而非调参时。以保险经纪人 25 万文档场景为例：资深理赔员 1 分钟内从 3 个文件夹 3 个章节找到答案，textbook pipeline 却返回 30 个 cosine 相似 passage 含无关合同和发票。",
+      "insight": "直击用户\"业务知识库构建\"的前置决策。用户从\"AI for 研发\"转型\"AI for 业务\"，业务文档（需求文档、PRD、业务规则、API 文档、指标定义）的形态决定了 RAG 架构选择。不应盲目把所有文档塞入向量库——需先判断语料形态：研发文档可能是\"无关报告集合\"型，业务规则文档可能是\"重复合同副本\"型，claim/工单可能是\"文件夹\"型。每种需要不同检索策略（文档级路由 vs 去重 vs 文件夹内层级检索）。",
+      "detail": {
+        "why": "企业 RAG 失败的根因不是参数错误而是架构选错——把三种不同形态的语料用同一种架构（全塞向量库+cosine similarity）处理。",
+        "mechanism": "三类语料形态：(1) 无关报告集合——文档间无关系，需文档级路由先选文档再检索；(2) 重复合同副本——大量近似副本，需去重+版本管理，只索引权威版本；(3) claim 文件夹——每个文件夹是一个业务实体，需文件夹内层级检索。资深人工分析师的\"1 分钟\"流程：先定文档类型（distribution agreement）→再定零售商（retailer X）→再定版本（2019 master + 2 amendments）→再定章节（section 4）。",
+        "deep": "对用户场景的映射：研发知识库已建成，业务知识库在建。业务文档形态判断：(1) PRD/需求文档多为\"无关报告集合\"——需文档级路由；(2) API 文档/指标定义可能有版本迭代近似副本——需去重+版本管理；(3) 业务工单/claim 是\"文件夹\"型——需按业务实体分组检索。这个分类框架应在建业务知识库索引前完成，而非建完发现检索质量差再调参。",
+        "apply": "(1) 对业务文档做语料形态分类（无关集合/重复副本/实体文件夹）；(2) 每类选择不同检索策略——无关集合用文档级路由+段落级检索，重复副本用去重+版本管理+权威版本索引，实体文件夹用文件夹内层级检索；(3) 参考 TDS 的五 PDF baseline notebook 验证 per-document 表。",
+        "caveats": "三类是简化模型，实际企业可能有混合形态；文档级路由本身需要元数据质量支撑；去重+版本管理需要 document lineage 追踪；文件夹内层级检索需要业务实体标识。",
+        "business": "语料形态决定架构是业务知识库构建的前置决策——做错这个决策，后续调参无效。对从研发转型业务的团队，业务文档形态分析与研发文档不同，需要重新评估而非沿用研发知识库架构。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/three-kinds-of-rag-corpus-and-what-it-costs-to-build-for-the-wrong-one/",
+            "title": "Three Kinds of RAG Corpus, and What It Costs to Build for the Wrong One (TDS)"
+          }
+        ],
+        "diagram": {
+          "title": "三类 RAG 语料形态→三种架构",
+          "flow": [
+            {
+              "label": "业务文档集合",
+              "sub": "PRD/API文档/指标定义/工单",
+              "type": "database"
+            },
+            {
+              "label": "形态分类决策",
+              "sub": "建索引前必做",
+              "type": "backend"
+            },
+            {
+              "label": "无关报告集合",
+              "sub": "→ 文档级路由+段落检索",
+              "type": "backend"
+            },
+            {
+              "label": "重复合同副本",
+              "sub": "→ 去重+版本管理+权威索引",
+              "type": "backend"
+            },
+            {
+              "label": "Claim 文件夹",
+              "sub": "→ 文件夹内层级检索",
+              "type": "backend"
+            },
+            {
+              "label": "精准检索结果",
+              "sub": "架构匹配语料形态",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "前置决策",
+              "text": "语料形态分类应在建索引前完成，做错后续调参无效"
+            },
+            {
+              "label": "人 Analyst 对照",
+              "text": "资深理赔员 1 分钟定类型→定实体→定版本→定章节，RAG 应模仿此流程"
+            },
+            {
+              "label": "研发→业务差异",
+              "text": "业务文档形态与研发文档不同，需重新评估架构而非沿用"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "Cube v1.7.25 + MetricFlow 0.212.0：语义层两栈同周迭代，校验与嵌入双推进",
+      "date": "2026-08-21",
+      "source": "GitHub (cube-js/cube, Transform-Data/MetricFlow)",
+      "link": "https://github.com/cube-js/cube/releases/tag/v1.7.25",
+      "summary": "Cube v1.7.25（8/21）重启 cube validate 作为 Cloud data-model check（语义层定义校验回归）+ DATE_ADD SQL pushdown + CLI 版本过期提示（请求失败时建议更新 CLI）+ Cubestore QUEUE ADD_AND_RETRIEVE 命令。延续 v1.7.24 的 IANA 时区校验+agent skills guide。MetricFlow 0.212.0（8/19）加 Athena adapter（多数据源语义层支持）+ Nuitka 编译为 macOS/Linux/Windows 独立二进制嵌入 dbt v2 Fusion + BigQuery TIMESTAMP_TRUNC 修复 + filter 字符串加括号防注入 + OSI ratio 子指标名称验证。两者从\"定义指标\"走向\"校验定义正确性\"和\"可嵌入查询引擎\"。",
+      "insight": "Cube 重启 cube validate 是语义层从\"定义指标\"走向\"校验指标定义正确性\"的关键信号——语义层不仅要暴露业务语义给 Agent，还要校验暴露的语义是否正确。MetricFlow 的 Nuitka 独立二进制嵌入 dbt Fusion 意味着语义层作为\"可嵌入查询引擎\"而非\"附加服务\"——这对用户\"通过业务 API 查数\"架构有启示：语义层可直接嵌入 Agent 进程而非作为外部服务调用。两栈同周活跃验证语义层路线工程化深度。",
+      "detail": {
+        "why": "语义层在 enterprise Agent 架构中的角色从\"指标定义平台\"演进为\"校验+嵌入\"双角色：Cube 校验语义层定义正确性，MetricFlow 作为可嵌入查询引擎融入 dbt 生态。",
+        "mechanism": "Cube v1.7.25：(1) cube validate 重启为 Cloud data-model check——校验 semantic model 定义是否正确（字段/维度/度量/关系）；(2) DATE_ADD SQL pushdown 下推到 Cubestore；(3) CLI 版本过期提示——API 请求失败时建议更新 CLI；(4) QUEUE ADD_AND_RETRIEVE 优化队列。MetricFlow 0.212.0：(1) Athena adapter 多数据源；(2) Nuitka 编译独立二进制嵌入 dbt v2 Fusion；(3) filter 字符串加括号防注入；(4) OSI ratio 子指标名称验证通过 semantic manifest name validation。",
+        "deep": "对用户场景的双重启示：(1) cube validate 回归——Agent 通过语义层查数前，先校验语义层定义是否正确（字段语义/维度/度量/关系是否自洽），这是\"Agent 查数可信\"的前置保障。用户上百字段宽表 API 的字段语义标注也可借鉴此\"校验\"思路——标注后自动校验是否自洽。(2) MetricFlow Nuitka 嵌入——语义层不再需要独立部署为外部服务，可嵌入 Agent 进程，降低延迟和运维成本。",
+        "apply": "(1) 评估 Cube cube validate 对业务语义层定义的校验能力，作为 Agent 查数前置校验；(2) 评估 MetricFlow Nuitka 二进制嵌入 dbt Fusion 的架构对用户\"语义层嵌入 Agent\"的可行性；(3) 两者结合：Cube 校验定义正确性，MetricFlow 嵌入执行查询。",
+        "caveats": "cube validate 目前校验 Cloud data-model，本地部署的校验能力待确认；MetricFlow Nuitka 二进制仍为 CI pipeline 产物，生产稳定性待验证；Athena adapter 新增，生产用例有限。",
+        "business": "语义层两栈同周迭代验证路线工程化深度：Cube 从\"定义+暴露\"到\"校验+暴露\"，MetricFlow 从\"独立服务\"到\"可嵌入引擎\"。对 enterprise Agent 架构，语义层嵌入降低延迟和运维成本，校验保障查数可信。语义层路线的工程化成熟度持续领先知识图谱路线（但 GQL 标准化正在缩小差距）。",
+        "sources": [
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.7.25",
+            "title": "Cube v1.7.25 Release"
+          },
+          {
+            "url": "https://github.com/Transform-Data/MetricFlow/releases/tag/v0.212.0",
+            "title": "MetricFlow 0.212.0 Release"
+          }
+        ],
+        "diagram": {
+          "title": "语义层两栈：校验+嵌入双推进",
+          "flow": [
+            {
+              "label": "业务语义层定义",
+              "sub": "字段/维度/度量/关系",
+              "type": "database"
+            },
+            {
+              "label": "Cube cube validate",
+              "sub": "Cloud data-model check 校验正确性",
+              "type": "security"
+            },
+            {
+              "label": "校验通过",
+              "sub": "语义定义自洽",
+              "type": "backend"
+            },
+            {
+              "label": "MetricFlow Nuitka 二进制",
+              "sub": "可嵌入 dbt v2 Fusion",
+              "type": "backend"
+            },
+            {
+              "label": "Agent 进程内查询",
+              "sub": "语义层嵌入而非外部服务",
+              "type": "frontend"
+            },
+            {
+              "label": "可信查数结果",
+              "sub": "校验+嵌入双保障",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "Cube 校验回归",
+              "text": "cube validate 重启为 Cloud data-model check，从\"定义\"到\"校验定义正确性\""
+            },
+            {
+              "label": "MetricFlow 嵌入",
+              "text": "Nuitka 编译独立二进制嵌入 dbt Fusion，语义层作为可嵌入查询引擎"
+            },
+            {
+              "label": "双栈信号",
+              "text": "语义层路线工程化深度持续领先，校验+嵌入双推进"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "TDS: Making the Knowledge Layer a Graph You Actually Traverse — 知识层图谱遍历+bitemporal",
+      "date": "2026-08-20",
+      "source": "Towards Data Science",
+      "link": "https://towardsdatascience.com/making-the-knowledge-layer-a-graph-you-actually-traverse/",
+      "summary": "TDS 系列 Part 2 退休了 Part 1 的 query router（基于关键词标记的路由判断），改用四项设计：(1) retriever-vs-filter 原则——检索质量应是系统属性而非问题措辞属性；(2) always-fused retrieval pipeline——关键词+embedding 融合检索；(3) bitemporal edges——边带有效时间戳，支持时间感知查询（如\"3 月 1 日生效的规则不应用于 2 月 20 日的损失\"）；(4) ingest-time contradiction detection——摄入时检测矛盾而非运行时。解决了 Part 1 的 7x 概念碎片化（149 concept objects vs curated 19）和\"检索质量依赖问题措辞\"问题。two-threshold entity resolution（embedding 相似+LLM adjudication）解决碎片化。",
+      "insight": "直接支撑用户\"语义层 vs 知识图谱\"双路线的知识图谱路线。核心洞察\"知识层存储关系但检索时无人遍历——图被当文件柜查阅而非当图遍历\"是知识图谱在企业落地的关键瓶颈。bitemporal edges 对业务场景尤其重要——业务规则有时间有效期（如\"2026 年 Q2 起适用新计算口径\"），Agent 查数必须时间感知。retire query router 改用 retriever-vs-filter 原则，与 TDS 行级 RAG 的 dispatcher 思路一致。",
+      "detail": {
+        "why": "Part 1 部署后暴露两个问题：(1) 7x 概念碎片化——alias-based entity resolution 只能部分合并，149 concept objects vs curated 19；(2) 检索质量依赖问题措辞——router 基于关键词标记判断检索方式，同一问题不同措辞得到不同检索质量。",
+        "mechanism": "四项设计：(1) retriever-vs-filter 原则替代 router——不预测检索方式，而是先检索再过滤，检索质量成为系统属性；(2) always-fused pipeline——关键词+embedding 并行检索融合；(3) bitemporal edges——每条边带 valid_from/valid_to 时间戳，支持时间感知查询；(4) ingest-time contradiction detection——摄入时检测概念矛盾，而非运行时靠 contradiction gate 拦截。two-threshold entity resolution：embedding 相似度阈值+LLM adjudication 双重判定合并概念。",
+        "deep": "对用户\"业务知识图谱\"的直接启示：(1) bitemporal edges——业务规则、指标定义、API schema 都有时间有效期，Agent 查\"上月销售额\"必须用当时有效的计算口径而非当前口径，bitemporal edges 是基础设施；(2) ingest-time contradiction detection——业务知识库构建时即检测矛盾（如两个部门对\"活跃客户\"定义不同），而非等 Agent 查数出错才发现；(3) retriever-vs-filter 原则——不预判检索路径，先广检索再精过滤，降低对问题措辞的敏感度。",
+        "apply": "(1) 业务知识图谱边带 valid_from/valid_to 时间戳，支持\"时间点查询\"；(2) 摄入时检测指标定义/术语矛盾，建立 contradiction register；(3) embedding 相似+LLM adjudication 双阈值做 entity resolution 解决概念碎片化；(4) 关键词+embedding 融合检索替代单一方式。",
+        "caveats": "bitemporal edges 增加图复杂度和存储成本；ingest-time contradiction detection 需要高质量 ontology 定义矛盾规则；LLM adjudication 有成本和延迟；two-threshold 需要调参。",
+        "business": "知识层从\"文件柜查阅\"到\"图谱遍历\"是知识图谱路线在企业落地的关键升级。bitemporal edges 解决业务规则时间有效期问题，ingest-time contradiction detection 前置矛盾发现。对\"语义层 vs 知识图谱\"，知识图谱路线在时间感知和矛盾检测上有语义层不具备的优势。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/making-the-knowledge-layer-a-graph-you-actually-traverse/",
+            "title": "Making the Knowledge Layer a Graph You Actually Traverse (TDS)"
+          }
+        ],
+        "diagram": {
+          "title": "知识层图谱遍历：retire router + bitemporal",
+          "flow": [
+            {
+              "label": "业务知识图谱",
+              "sub": "实体+关系+时间戳",
+              "type": "database"
+            },
+            {
+              "label": "Bitemporal Edges",
+              "sub": "valid_from / valid_to",
+              "type": "database"
+            },
+            {
+              "label": "Always-fused 检索",
+              "sub": "关键词+embedding 并行",
+              "type": "backend"
+            },
+            {
+              "label": "Retriever-vs-Filter",
+              "sub": "先检索再过滤（替代 router）",
+              "type": "backend"
+            },
+            {
+              "label": "Ingest-time 矛盾检测",
+              "sub": "摄入时检测非运行时",
+              "type": "security"
+            },
+            {
+              "label": "Two-threshold Entity Resolution",
+              "sub": "embedding+LLM adjudication",
+              "type": "backend"
+            },
+            {
+              "label": "图谱遍历查询",
+              "sub": "时间感知+多跳+citations",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "核心洞察",
+              "text": "知识层存储关系但检索时无人遍历——图被当文件柜而非当图遍历"
+            },
+            {
+              "label": "Bitemporal 价值",
+              "text": "业务规则有时间有效期，Agent 查数必须时间感知"
+            },
+            {
+              "label": "Router 退休",
+              "text": "retriever-vs-filter 原则：检索质量是系统属性而非问题措辞属性"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
