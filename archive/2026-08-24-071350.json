@@ -1,0 +1,804 @@
+{
+  "date": "2026-08-24",
+  "banner": "Thinkingbox 提出状态化业务工作流 Agent 可靠性评测新范式：单次成功≠可靠性，最强模型 pass@1=65.36% 但 pass^20 仅 25.25%；MemTrapBench 揭示记忆认知陷阱——忠实记忆反而误导推理。TDS 两篇博客直击 Agent 可信度盲区：AI coding 盲点不在难度而在信息缺失、LLM judge 自偏好偏置。GRACE v4.0.5 Graph-RAG 驱动契约化代码生成。",
+  "snapshot": {
+    "summary": "本日学术线聚焦\"业务 Agent 可靠性的测量学转向\"——Thinkingbox（cs.DB/cs.CL）首次提出基于终端后端状态的 507 条 policy-conditioned 业务工作流基准，揭示 pass@1=65.36% 但 pass^20=25.25% 的可靠性鸿沟，直接对应用户\"业务 API 精准调用\"课题；MemTrapBench 揭示记忆认知陷阱——忠实且相关的记忆反而降低当前任务性能 10%+；Inductive Process Discovery 把流程发现从全序提升到偏序，保留并发性。Phantom Gains 审计自改进评测的测量伪影。商业线聚焦 Agent 可信度盲区：TDS Bug Detection 28 次实验证明难度不预测失败、信息缺失才预测失败（12/12 全败于未文档化 API 契约）；TDS LLM Judge 自偏好偏置导致同模型互评高分、漏判 SQL filter 缺失致错误结果流向生产。GitHub 线：WrenAI 8/20-21 三 commits 加固语义层查询路径安全（只接受只读 SELECT），GRACE v4.0.5 Graph-RAG+契约化代码生成 + 内容寻址 lint 缓存。",
+    "groups": {
+      "paper": [
+        "Thinkingbox（2608.19741，cs.DB/cs.CL）：首个状态化业务工作流 Agent 沙箱+基准，507 条 policy-conditioned 跨零售/酒店/车险/数字银行/咨询 IT/HR 场景，MCP 兼容工具会话+完整执行链+终端后端状态评测，最强模型 pass@1=65.36% 但 pass^20 仅 25.25%，揭示\"偶尔成功≠可靠完成\"",
+        "MemTrapBench（2608.20202，cs.AI/cs.DB/cs.LG）：首次系统性评估记忆认知陷阱——忠实记录且语义相关的记忆仍扭曲模型推理或信念（Reasoning Fixation + Belief Distortion），所有记忆框架低于无记忆基线 10%+，提出 AdaptiveMem 推理时缓解方法",
+        "Inductive Process Discovery（2608.20211，cs.DB）：将 Inductive Miner 从全序 trace 提升到偏序 trace，避免高并发下的线性化爆炸，保留递归结构和 soundness-by-construction 保证，从更少观测中学习流程行为",
+        "Phantom Gains（2608.20290，cs.AI）：审计自改进评测的 7 类测量伪影，单次贪心解码在未训练模型上制造能力变化（artifact 0.280），per-problem exact test + FDR 控制修正后发现自训练不显著，强调 transition-level 评测需每统计量独立的 measured null"
+      ],
+      "blog": [
+        "TDS Bug Detection Blind Spots（8/23）：28 次盲评实验证明 AI coding agent 失败不由难度预测而由信息缺失预测——可从代码库推断的 16/16 全成功，依赖未文档化 API 契约的 12/12 全败，reviewer agent 识别风险后仍批准说明判断力缺失比检测力缺失更危险",
+        "TDS The LLM Judge That Kept Agreeing With Itself（8/20）：生产事故复盘——同模型 generator+judge 导致自偏好偏置（self-preference bias），judge 对本模型生成 SQL 放行漏掉的 filter 子句致错误结果流向生产，复现稳定非随机，需异模型校准+人类基线",
+        "TDS Parse the Folder, Not Just the PDFs（8/23）：Enterprise Document Intelligence 系列第四部——case file 是\"关于一个实体的异构文档包\"而非小语料，缺失文档是 first-class 答案，文档间值对比（如出险日期 vs 勘查日期）非检索问题而是完整性检查"
+      ],
+      "github": [
+        "WrenAI 8/20-21 三 commits 加固查询路径：accept only read-only SELECT statements in the query path #2679（Claude Opus 5 协作）+ resolve relationship handles by the model they point at #2661 + normalise model columns in load_models #2614，语义层从\"定义+暴露\"到\"安全查询路径\"加固",
+        "GRACE v4.0.5（osovv/grace-marketplace，239⭐ TS）：Graph-RAG Anchored Code Engineering，契约驱动 AI 代码生成+语义标记+知识图谱，支持 Claude Code/Codex CLI/Kilo Code，v4.0.5 新增内容寻址 lint 缓存（sha256(file+ext)+schema-version）+ 64 个忽略目录+Dart analyzer 容错"
+      ],
+      "product": [
+        "WrenAI 查询路径安全加固：只接受只读 SELECT 语句=语义层作为 Agent 数据接口时安全边界前移，与 Thinkingbox 的\"状态变更副作用\"评测维度形成产品↔学术共振",
+        "GRACE 契约化代码生成：Graph-RAG + 语义标记 + 契约驱动，把 8/22 SBproxy Cedar 策略引擎的\"约束代码化\"理念延伸到代码生成领域，Agent Skills 形态与 Cube MCP 20 工具同构"
+      ]
+    }
+  },
+  "items": [
+    {
+      "tag": "paper",
+      "title": "Thinkingbox: 状态化业务工作流 Agent 可靠性基准——单次成功≠可靠完成",
+      "date": "2026-08-20",
+      "source": "arXiv (cs.DB, cs.CL)",
+      "link": "https://arxiv.org/abs/2608.19741",
+      "summary": "论文提出 Thinkingbox——首个面向状态化业务工作流的 Agent 沙箱+基准。沙箱提供 MCP 兼容的隔离工具会话、完整执行链追踪和基于终端后端状态的结果评测。Thinkingbox-bench 包含 507 条 policy-conditioned 工作流，覆盖零售、酒店、汽车保险、数字银行内部 IT、咨询 IT/HR 支持等场景。每条尝试由任务特定的可执行检查评估——接受有效轨迹但拒绝错误、缺失或额外副作用。关键发现：最强模型 pass@1=65.36%，但 pass^20（20 次中至少一次成功）仅 25.25%，许多失败轨迹显示干净终止和有效的状态变更操作，说明响应或工具调用级信号不是端到端任务完成的清晰代理指标。",
+      "insight": "这是迄今最直接对标用户\"业务 API 精准调用\"课题的学术基准。507 条跨行业 policy-conditioned 工作流正是用户面临的\"通过带高业务含义 API 查数并产生状态变更\"场景的学术镜像。关键洞察\"response/tool-call-level signals are not clear proxies for end-to-end task completion\"直击用户痛点——Agent 看似调用 API 成功但可能产生错误的状态变更或遗漏必需的副作用。pass@1 vs pass^20 的 65.36%→25.25% 鸿沟为用户\"可靠性先于准确率\"的投资策略提供了量化依据：不要只看单次 demo 成功，要看 20 次稳定完成率。MCP 兼容工具会话的设计与用户关注的 MCP Gateway 治理路线直接呼应。终端后端状态评测（而非 LLM judge）为 Agent 可信度验证提供了最硬核的 ground truth 路径。",
+      "detail": {
+        "why": "现有 Agent 基准（SWE-bench、WebArena 等）评估可执行环境中的表现，但完成有后果的工作不仅需要产生合理响应或有效工具调用——Agent 必须在多轮中收集缺失信息、遵循领域策略、协调依赖工具、实现正确的持久状态变更且不产生附带副作用。这正是用户\"业务系统精确查询\"场景的核心挑战。",
+        "mechanism": "沙箱提供 MCP 兼容隔离工具会话（每个 attempt 独立 session）+ 完整执行链追踪 + 基于终端后端状态的 outcome evaluation。507 条工作流均为 policy-conditioned（需遵循领域规则如\"退订需 24h 前提交\"\"VIP 客户需经理审批\"）。评估用 task-specific executable checks：接受有效轨迹但拒绝错误/缺失/额外副作用，部分任务额外检查 final response 的必需属性。",
+        "deep": "pass@1=65.36% vs pass^20=25.25% 的鸿沟说明当前 Agent 的失败模式是\"偶尔找到成功轨迹但无法可靠复制\"——这与 8/14 Deployment Decision Reliability 的 Eρ²→0（难任务上排名不可信）形成共振。\"干净终止+有效状态变更但任务未完成\"的失败模式与 8/18 Never the Number 的\"结构化弃答\"互补：有时 Agent 应该说\"我不能完成\"而不是执行一个看似合理但实际不完整的操作序列。MCP 兼容设计意味着企业可以直接将自己的业务 API 封装为 MCP 工具接入 Thinkingbox 测试，与 SBproxy MCP Gateway 治理路线形成评测↔治理闭环。",
+        "apply": "1）将业务 API 封装为 MCP 工具接入 Thinkingbox 沙箱，测量 pass^20 而非 pass@1 作为 Agent 部署可靠性门槛；2）用终端后端状态检查替代 LLM judge 作为业务 Agent 的可信度验证层；3）把 policy-conditioned 工作流模板化，将企业的领域规则（如审批流、时效约束）编码为可执行 check 而非文档描述；4）对\"干净终止但任务未完成\"的失败模式设计 HITL 交接点。",
+        "caveats": "507 条工作流覆盖 5 个行业但深度有限，可能不代表所有垂直领域特性。pass^20 需 20 次重复执行，生产环境中 agent 的重试成本和副作用累积需要额外考量。终端后端状态评测需要为每个业务场景定制 check 逻辑，工程化成本较高。引用数待核实（Semantic Scholar 限流，8/20 新文预期 0）。",
+        "business": "Thinkingbox 量化了\"单次 demo 成功\"与\"可靠生产部署\"之间的鸿沟——65.36%→25.25% 的衰减意味着约 40% 的场景单次看起来成功但实际不可靠。这对企业 AI for Business 立项的启示：不要用 POC pass@1 作为决策依据，必须用 pass^20 或类似多轮可靠性指标。507 条跨行业 policy-conditioned 工作流为业务 Agent 的\"最小可信工作集\"提供了参考——从零售退换货到保险理赔到银行内部 IT 工单，每个行业的 policy 约束不同但评测框架通用。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.19741",
+            "title": "One Success Isn't Reliability: Thinkingbox, a Sandbox and Benchmark for Agents in Stateful Business Workflows"
+          }
+        ],
+        "diagram": {
+          "title": "Thinkingbox: 状态化业务工作流评测架构",
+          "flow": [
+            {
+              "label": "User Query",
+              "sub": "自然语言业务请求",
+              "type": "frontend"
+            },
+            {
+              "label": "Agent Orchestrator",
+              "sub": "多轮信息收集+策略遵循",
+              "type": "backend"
+            },
+            {
+              "label": "MCP Tool Sessions",
+              "sub": "隔离会话，每 attempt 独立",
+              "type": "external"
+            },
+            {
+              "label": "Business APIs",
+              "sub": "零售/酒店/保险/银行 API",
+              "type": "database"
+            },
+            {
+              "label": "Backend State",
+              "sub": "终端持久状态变更",
+              "type": "database"
+            },
+            {
+              "label": "Executable Checks",
+              "sub": "接受有效轨迹，拒绝错误/缺失/额外副作用",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "pass@1 vs pass^20",
+              "text": "65.36% → 25.25%，单次成功≠可靠完成，约40%场景单次看起来成功但多轮不稳定"
+            },
+            {
+              "label": "MCP 兼容",
+              "text": "沙箱提供 MCP 兼容工具会话，企业可直接封装业务 API 接入测试"
+            },
+            {
+              "label": "状态级评测",
+              "text": "基于终端后端状态而非 LLM judge，为业务 Agent 可信度验证提供硬核 ground truth"
+            },
+            {
+              "label": "Policy-Conditioned",
+              "text": "507 条工作流均含领域规则约束（审批流/时效/权限），模拟真实业务策略"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "MemTrapBench: 记忆认知陷阱——忠实记忆反而误导推理",
+      "date": "2026-08-20",
+      "source": "arXiv (cs.AI, cs.DB, cs.LG)",
+      "link": "https://arxiv.org/abs/2608.20202",
+      "summary": "论文提出 MemTrapBench——首个系统性评估记忆认知陷阱的基准。作者识别出 memory-induced cognitive traps：即使忠实记录且语义相关的记忆，也会扭曲模型推理或信念并降低当前任务性能。基准覆盖两种认知陷阱形式：Reasoning Fixation（推理固着）和 Belief Distortion（信念扭曲）。实验覆盖两个模型家族和五个代表性记忆框架，发现所有记忆策略均低于无记忆基线，最强方法也遭受 10%+ 性能下降。论文提出 AdaptiveMem——推理时指导 LLM 避免记忆陷阱的简单有效方法，在缓解 MemTrapBench 陷阱的同时保持或改善标准记忆基准性能。",
+      "insight": "MemTrapBench 对用户\"业务知识库构建\"方向的启示是颠覆性的——传统假设是\"记忆越多越准确\"，但论文证明忠实且相关的记忆反而降低当前任务性能 10%+。这意味着用户在构建业务知识图谱和语义层时，不能假设\"存了就能用对\"——记忆可能在推理时产生认知陷阱。Reasoning Fixation 对应 Agent 调用业务 API 时被过往调用模式锁定（如总用同一组参数），Belief Distortion 对应 Agent 基于过时业务规则记忆做出错误判断。AdaptiveMem 的\"推理时指导避免陷阱\"与 8/21 TDS Bayesian Guardrails 的\"决策前量化不确定性\"形成共振——两者都是在推理时而非存储时解决可靠性问题。",
+      "detail": {
+        "why": "现有记忆基准（如 LoCoMo、MemoryBench）主要评估信息是否被正确提取、存储和检索，但忽略了检索到的记忆如何重塑模型推理并影响当前任务性能。在业务 Agent 场景中，Agent 基于记忆中的业务知识调用 API——如果记忆本身忠实但推理被误导，将导致精确查询失败。",
+        "mechanism": "Reasoning Fixation：模型过度依赖记忆中的推理路径，即使当前任务需要不同推理策略。Belief Distortion：记忆中的信息扭曲了模型对当前任务事实的判断。AdaptiveMem 在推理时注入指令，指导 LLM 识别并避免特定记忆陷阱模式，不需要修改记忆存储或检索层。",
+        "deep": "\"所有记忆框架低于无记忆基线\"这一结论与 8/20 LLM Cache Eviction 的\"语义缓存命中≠答案可替换\"形成共振——两者都指出记忆/缓存的原始信号（命中率/忠实度）不能作为可信度依据。对用户\"语义层 vs 知识图谱\"双路线而言：语义层的定义是确定性的（不会产生认知陷阱），但知识图谱的记忆检索可能触发 MemTrap——这为双路线选择增加了一个新维度：确定性路线（语义层）在认知陷阱免疫上有结构性优势。AdaptiveMem 的推理时方法与 8/14 GUIDE 的 schema 契约前移形成互补：GUIDE 在 ingest 时校验，AdaptiveMem 在推理时缓解。",
+        "apply": "1）在业务知识图谱检索结果上增加 AdaptiveMem 式的推理时指令（\"以下记忆可能不适用于当前场景，请验证\"）；2）对高频业务 API 调用模式做 Reasoning Fixation 检测——如果 Agent 总是用同一组参数调用某 API，检查是否是记忆固着而非实际需求；3）语义层定义（确定性）作为 Belief Distortion 的对照基准——当 Agent 基于记忆的判断与语义层定义冲突时，以语义层为准。",
+        "caveats": "AdaptiveMem 是推理时方法，增加 prompt 长度和延迟。MemTrapBench 的 cognitive traps 可能不完全覆盖业务场景中的所有记忆失败模式。\"无记忆基线\"在某些场景下意味着丢失必要的上下文，论文的 10%+ drop 是平均值而非所有场景。引用数待核实（Semantic Scholar 限流，8/20 新文预期 0）。",
+        "business": "MemTrapBench 为企业 AI for Business 投资提供了一个反直觉的决策依据：投入更多资源建设业务记忆/知识库并不必然提升 Agent 准确率——如果记忆触发认知陷阱，可能反而降低 10%+。这意味着记忆/知识库的投资需要配套推理时治理（AdaptiveMem 式指令）才能产生 ROI。对选择\"语义层 vs 知识图谱\"的企业，MemTrapBench 增加了一个新评估维度：语义层作为确定性定义层天然免疫认知陷阱，而知识图谱检索需要额外的推理时陷阱缓解机制。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.20202",
+            "title": "MemTrapBench: Benchmarking Cognitive Traps in LLM Memory Use"
+          }
+        ],
+        "diagram": {
+          "title": "MemTrapBench: 记忆认知陷阱与缓解架构",
+          "flow": [
+            {
+              "label": "Business Memory Store",
+              "sub": "业务知识图谱/历史调用记录",
+              "type": "database"
+            },
+            {
+              "label": "Retrieval",
+              "sub": "忠实且语义相关的记忆被检索",
+              "type": "backend"
+            },
+            {
+              "label": "Cognitive Trap Zone",
+              "sub": "Reasoning Fixation / Belief Distortion",
+              "type": "security"
+            },
+            {
+              "label": "AdaptiveMem",
+              "sub": "推理时指令：识别并避免记忆陷阱",
+              "type": "frontend"
+            },
+            {
+              "label": "Task Execution",
+              "sub": "基于校准后推理执行 API 调用",
+              "type": "external"
+            }
+          ],
+          "notes": [
+            {
+              "label": "反直觉发现",
+              "text": "所有记忆框架低于无记忆基线 10%+，忠实记忆≠可靠记忆"
+            },
+            {
+              "label": "两种陷阱",
+              "text": "Reasoning Fixation（推理路径固着）+ Belief Distortion（事实判断扭曲）"
+            },
+            {
+              "label": "AdaptiveMem",
+              "text": "推理时注入指令指导避免陷阱，不需修改存储/检索层，保持标准基准性能"
+            },
+            {
+              "label": "路线启示",
+              "text": "语义层（确定性定义）天然免疫认知陷阱，知识图谱检索需额外推理时治理"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "Inductive Process Discovery: 从全序到偏序的流程发现——保留并发性避免线性化爆炸",
+      "date": "2026-08-20",
+      "source": "arXiv (cs.DB)",
+      "link": "https://arxiv.org/abs/2608.20211",
+      "summary": "论文将 Inductive Miner（IM）流程发现技术从全序 trace 提升到偏序 trace。传统 IM 假设活动 occurrence 是完全有序序列，但这会引入系统性偏差——活动可能有持续时间、事件可能共享粗粒度时间戳、数据可能只约束部分事件对。将此类执行强制序列化会隐藏固有并发性并引入从未被观测到的顺序依赖。论文重新定义了 trace 抽象层和递归投影以直接操作偏序，避免线性化爆炸，保留递归结构和 soundness-by-construction 保证。实验显示该方法避免线性化组合开销、减少对时间戳任意 tie-breaking 的敏感性，并能从更少观测中学习流程行为。",
+      "insight": "这篇论文对用户\"业务知识库构建\"中的流程建模方向有直接方法论价值。用户团队从\"AI for 研发\"转型\"AI for 业务\"，需要理解业务流程——而业务流程的事件日志往往有时间戳粒度粗、活动并发的问题。传统全序流程发现会把\"客服接电话\"和\"系统自动建工单\"这两个并发活动错误地排序为因果依赖。偏序发现保留并发性意味着从更少观测中学习更准确的业务流程模型——这对数据稀疏的新业务线尤其重要。与 8/13 TDS dispatcher 的\"解析步选择\"共振：偏序发现本质上是一种\"不做多余假设\"的解析策略，与 dispatcher 的\"让模型决定最危险\"形成对照——偏序发现说\"不要让数据决定它没有的顺序\"。",
+      "detail": {
+        "why": "业务流程的事件日志（如 CRM 工单流转、ERP 审批链）中，活动往往不是严格顺序的——多个审批可能并行、系统通知和人工操作可能同时发生。强制排序为因果链会引入虚假依赖，导致 Agent 学习错误的业务流程模型。",
+        "mechanism": "重新定义 trace abstraction layer 操作偏序而非序列。recursive projections 直接在偏序上操作，不需要线性化每个偏序。对全序 trace 保守（不改变结果），避免高并发下的线性化组合爆炸，保留 IM 的递归分解和 soundness-by-construction。",
+        "deep": "\"从更少观测中学习\"对用户新业务线流程建模直接可迁移——新业务线事件日志稀疏，偏序发现能在少量数据上学习更准确模型。\"减少对 tie-breaking 的敏感性\"意味着时间戳粒度粗的业务系统（如只精确到秒级或分钟级的日志）不会因任意排序产生不同流程模型。与 8/23 TMI 的\"从计算机操作轨迹归纳符号化任务模型\"互补：TMI 从 GUI 操作轨迹归纳任务，Inductive Process Discovery 从事件日志归纳流程——前者是 UI 层后者是数据层，两者结合可构建完整的业务流程知识图谱。",
+        "apply": "1）对业务系统事件日志（工单/审批/交易）用偏序 IM 而非全序 IM 发现流程模型；2）将发现的流程模型编码为 Agent 的 policy 约束（类似 Thinkingbox 的 policy-conditioned 工作流）；3）对时间戳粗粒度的遗留系统日志，偏序发现可避免 tie-breaking 引入的虚假因果依赖；4）新业务线数据稀疏时用偏序发现从更少观测中学习流程。",
+        "caveats": "偏序发现需要事件日志中有偏序信息（如 start/end timestamp 或并发标记），纯序列日志无法应用。IM 的 soundness-by-construction 保证在偏序扩展后需额外验证。论文的实验在合成数据上验证，真实业务日志的噪声水平可能更高。引用数待核实（Semantic Scholar 限流，8/20 新文预期 0）。",
+        "business": "偏序流程发现降低了企业从遗留系统日志中构建业务流程模型的门槛——不需要完美的全序日志，粗粒度时间戳的偏序信息就足够。\"从更少观测中学习\"直接降低新业务线流程建模的数据门槛，加速 AI for Business 的新场景覆盖。发现准确的流程模型后可编码为 Agent policy 约束，与 Thinkingbox 的 policy-conditioned 评测形成\"发现→约束→评测\"闭环。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.20211",
+            "title": "Inductive Process Discovery from Partially Ordered Event Data"
+          }
+        ],
+        "diagram": {
+          "title": "偏序流程发现 vs 全序流程发现",
+          "flow": [
+            {
+              "label": "Event Log",
+              "sub": "含粗粒度时间戳/并发标记的业务事件",
+              "type": "database"
+            },
+            {
+              "label": "Partial Order Trace",
+              "sub": "保留并发性，不做多余排序假设",
+              "type": "backend"
+            },
+            {
+              "label": "IM Lifting",
+              "sub": "递归分解直接操作偏序",
+              "type": "backend"
+            },
+            {
+              "label": "Process Model",
+              "sub": "soundness-by-construction 流程模型",
+              "type": "cloud"
+            },
+            {
+              "label": "Agent Policy",
+              "sub": "编码为 Agent 行为约束",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "全序→偏序",
+              "text": "传统 IM 强制序列化引入虚假因果，偏序保留并发性避免线性化爆炸"
+            },
+            {
+              "label": "更少观测",
+              "text": "保留并发性意味着从更少事件日志中学习更准确流程模型，降低数据门槛"
+            },
+            {
+              "label": "tie-breaking 不敏感",
+              "text": "粗粒度时间戳的遗留系统日志不会因任意排序产生不同流程模型"
+            },
+            {
+              "label": "与 TMI 互补",
+              "text": "TMI 从 GUI 轨迹归纳任务，偏序 IM 从事件日志归纳流程，结合可建完整业务流程 KG"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "Phantom Gains: 自改进评测的测量伪影审计——单次贪心解码制造虚假能力提升",
+      "date": "2026-08-20",
+      "source": "arXiv (cs.AI)",
+      "link": "https://arxiv.org/abs/2608.20290",
+      "summary": "论文审计自改进（self-improvement）评测中的 7 类测量伪影。在 Qwen3-8B 上进行 3 轮 rank-32 LoRA 自训练，对照冻结控制组走相同管线，作者发现 7 种测量失败——每种在缺乏控制时会反转报告的发现。关键发现：基于单次贪心解码的 ledger 在未训练模型上制造能力变化（artifact 0.280）；\"自然阈值修复\"在复制中不存活；作者用 per-problem exact test + FDR 控制替代，在任何 held-out replicate 上检测到 nothing。审计发现外部 distillation 改善了基础模型很少触及的问题，而三种自训练形式不显著；在基础模型从不触及的更小问题集上证据不足，自训练以远高于测量底线的速率腐蚀基线已解决的问题。",
+      "insight": "Phantom Gains 对用户构建\"AI for 业务\"评测体系有直接方法论价值——如果用单次贪心解码评估 Agent 的业务 API 调用能力，可能在未做任何改进的模型上看到 0.280 的虚假提升率。论文的 per-problem exact test + FDR 控制为业务 Agent 的 A/B 评测提供了统计学严谨性框架。\"自训练腐蚀基线已解决问题\"对用户团队尤其警醒——如果用业务 API 调用数据做 mid-training（与 8/22 MidTool 呼应），可能在提升新场景的同时损害已有场景的可靠性。这与 8/20 ClimbMix 的\"为题配语料高估陷阱\"共振：评测必须在真实分布上做，测量伪影可能完全反转结论。",
+      "detail": {
+        "why": "自改进是否有效越来越不靠平均准确率判断，而靠\"哪些问题 gain 了哪些 lost 了\"的 transition 级分析。但 transition 是两个噪声估计的差，容易产生测量伪影。企业评估 Agent 改进效果时同样面临此问题——\"改进后多通过了几个 case\"可能是测量噪声而非真实提升。",
+        "mechanism": "7 类测量伪影包括：单次贪心解码制造虚假 transition、inference batching artifact、自然阈值不存活于复制、缺少 measured null 等。修正方案：per-problem exact test against pooled baseline under FDR control。关键发现：自训练不显著，distillation 改善的是基础模型少触及的问题集，自训练腐蚀基线已解问题。",
+        "deep": "\"transition-level 评测需每统计量独立的 measured null\"是核心方法论——costs no new experiments，built from baseline replicates。这与 8/14 Deployment Decision Reliability 的 Generalizability Theory 方差分解共振：两者都在说\"排名/提升在噪声面前不可信\"。\"自训练腐蚀基线已解问题\"与 8/23 ConceptGuard 的 context-sensitive unlearning 互补：自训练可能在提升新能力时遗忘已有能力，这与 unlearning 是同一硬币的两面。对用户的\"让 AI 懂业务 API\"课题：如果用 API 调用数据做 mid-training，必须监控已掌握 API 调用的回归率。",
+        "apply": "1）Agent A/B 评测用 per-problem exact test + FDR 控制替代单次贪心解码的 transition 计数；2）mid-training 前后必须测量已有业务 API 调用的回归率，不能只看新 API 覆盖率提升；3）建立 measured null——冻结控制组走相同管线，任何报告的提升都需与 null 对比；4）\"自训练腐蚀基线已解问题\"警示：业务 API 调用的 mid-training 需要混入已有场景数据防遗忘。",
+        "caveats": "论文在单一模型（Qwen3-8B）单一任务上验证，7 类伪影的普适性需更多实验。rank-32 LoRA 的结论可能不适用于全量微调。per-problem exact test 需要足够的 baseline replicates，企业可能没有足够的历史数据。引用数待核实（Semantic Scholar 限流，8/20 新文预期 0）。",
+        "business": "Phantom Gains 为企业\"Agent 改进效果评估\"提供了最严谨的方法论基础——如果用错误的评测方法，可能看到 0.280 的虚假提升率并据此做出错误的投资决策。\"自训练腐蚀基线已解问题\"意味着企业用业务数据做 mid-training 时必须监控已有能力的回归——改进可能不是改进而是\"拆东墙补西墙\"。measured null 方法对企业来说几乎零成本（复用已有 baseline replicates），应作为 Agent 评测的标准实践。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.20290",
+            "title": "Phantom Gains: Auditing Self-Improvement Against a Measured Null"
+          }
+        ],
+        "diagram": {
+          "title": "Phantom Gains: 自改进评测的测量伪影审计",
+          "flow": [
+            {
+              "label": "Agent A vs B",
+              "sub": "改进前后两个版本对比",
+              "type": "backend"
+            },
+            {
+              "label": "Transition Ledger",
+              "sub": "哪些问题 gain/lost",
+              "type": "database"
+            },
+            {
+              "label": "Measured Null",
+              "sub": "冻结控制组走相同管线",
+              "type": "security"
+            },
+            {
+              "label": "7 Artifacts",
+              "sub": "贪心解码/batching/阈值不存活等",
+              "type": "security"
+            },
+            {
+              "label": "Per-Problem Exact Test",
+              "sub": "FDR 控制下逐题检验",
+              "type": "backend"
+            },
+            {
+              "label": "Conclusion",
+              "sub": "自训练不显著/distillation 改善少触及问题",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "0.280 虚假提升",
+              "text": "单次贪心解码在未训练模型上制造 0.280 的能力变化 artifact"
+            },
+            {
+              "label": "measured null 零成本",
+              "text": "复用 baseline replicates 构建 null，不需新实验"
+            },
+            {
+              "label": "自训练腐蚀",
+              "text": "自训练以远高于底线速率腐蚀基线已解问题——拆东墙补西墙"
+            },
+            {
+              "label": "方法论启示",
+              "text": "Agent A/B 评测需 per-problem exact test + FDR + measured null，否则可能完全反转结论"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "TDS: Bug Detection Blind Spots——AI coding 失败不由难度预测而由信息缺失预测",
+      "date": "2026-08-23",
+      "source": "Towards Data Science (Nhu Hoang)",
+      "link": "https://towardsdatascience.com/bug-detection-blind-spots-in-ai-coding-harnesses-gstack-and-beyond/",
+      "summary": "作者在 ky/immer/decimal.js 三个真实生产 bug 上运行 28 次盲评实验，揭示 AI coding agent 的失败模式不是难度而是信息缺失。两个预期最难的 bug（Immer 代理内部+decimal.js 数值边界）在 16 次尝试中全部正确修复。但看似简单的 ky #867（HTTP client 静默丢失 retry option）在 12 次尝试中全部失败——每次修复都通过 84-test retry 套件但实际破坏用户数据。关键洞察：当正确修复可从代码库和 bug 报告推断时，AI 全部成功；当正确修复依赖未文档化的 API 契约时，AI 全部失败。更令人担忧的是 reviewer agent 正确识别了风险但仍然批准了修改。",
+      "insight": "这篇博客对用户\"业务 API 语义理解\"课题有直接启示——Agent 调用业务 API 的失败模式可能不是 API 复杂度而是 API 契约的未文档化部分。用户的上百字段宽表 API 中，字段间的隐式依赖（如字段 A 的值决定字段 B 的含义）就是\"未文档化的 API 契约\"。Agent 可能看似正确调用了 API（参数合法、返回正常）但实际产生了错误的业务语义——就像 ky #867 中修复通过了所有测试但破坏了用户数据。reviewer agent 识别风险后仍批准的发现与 8/20 TDS LLM Judge 的自偏好偏置共振：检测力≠判断力，Agent 能识别风险但不能做正确的停止决策。",
+      "detail": {
+        "why": "如果团队因为 CI 绿色就合并 AI 生成的修复，ky #867 类的 bug 会悄悄混入——它看起来简单、测试通过、但静默破坏用户数据。对业务 Agent 而言，API 调用通过 schema 校验但产生错误业务语义是同样的失败模式。",
+        "mechanism": "28 次盲评实验跨 Claude Haiku 4.5/Sonnet 5/Opus 4.8 和 3 种 agent workflow。难度不预测失败——16/16 可推断的修复全成功，12/12 依赖未文档化契约的修复全败。reviewer agent 正确识别\"会破坏用户数据\"但仍然批准，判断\"问题不太可能发生\"。",
+        "deep": "\"difficulty didn't predict failure—missing information did\"是核心洞察，与 Thinkingbox 的\"response/tool-call-level signals are not clear proxies for end-to-end task completion\"形成完美共振——两者都在说\"看似成功的表面下隐藏着信息缺失导致的系统性失败\"。reviewer agent 的\"检测到风险但仍批准\"与 8/20 TDS Bayesian Guardrails 的\"point estimate 让模型显得比实际更确定\"共振——Agent 的置信度估计在风险面前不可靠。对用户的宽表 API 字段语义标注：Agent 可能正确标注了每个字段的单独语义但遗漏了字段间的隐式依赖契约——这正是\"未文档化的 API 契约\"在用户场景中的映射。",
+        "apply": "1）对业务 API 的字段间隐式依赖（如字段 A 的值域受字段 B 约束）做显式文档化或语义层定义；2）Agent 调用 API 后的校验不能只靠 schema 校验（相当于 retry 套件），需增加业务语义不变式检查；3）reviewer/validator agent 的设计需包含\"识别风险后必须停\"的硬规则，不能依赖判断力——与 8/18 Never the Number 的\"不可表示=拒绝不需置信度\"共振；4）对 AI coding agent 的信任度评估应以\"信息完整性\"而非\"任务难度\"为维度。",
+        "caveats": "28 次实验在 3 个 bug 上进行，样本量有限。Claude 5 系列训练截止可能在 2026-07 bug 修复之前，但作者已排除模型见过修复的可能。ky/immer/decimal.js 都是 JS/TS 库，结论对其他语言生态的适用性需验证。reviewer agent 的判断力缺失可能是 prompt 设计问题而非模型能力问题。",
+        "business": "\"difficulty didn't predict failure—missing information did\"为企业 AI for Business 部署提供了关键的信任评估框架：不要按任务难度分配人/机，要按信息完整性分配。信息完整的简单任务可交给 Agent，信息不完整的看似简单任务必须保留人工。reviewer agent\"检测到但仍批准\"的发现意味着企业的 HITL 设计不能依赖 AI 自检——必须有人工的硬性检查点，特别是在 API 契约不完整的场景下。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/bug-detection-blind-spots-in-ai-coding-harnesses-gstack-and-beyond/",
+            "title": "Bug Detection Blind Spots in AI Coding Harnesses (GStack and Beyond)"
+          }
+        ],
+        "diagram": {
+          "title": "AI Coding 失败模式：信息缺失 > 任务难度",
+          "flow": [
+            {
+              "label": "Bug Report + Codebase",
+              "sub": "可推断的信息",
+              "type": "database"
+            },
+            {
+              "label": "AI Agent",
+              "sub": "尝试修复",
+              "type": "backend"
+            },
+            {
+              "label": "Information Sufficient?",
+              "sub": "判断分支",
+              "type": "security"
+            },
+            {
+              "label": "16/16 Success",
+              "sub": "可从代码库推断 → 全成功",
+              "type": "cloud"
+            },
+            {
+              "label": "12/12 Failure",
+              "sub": "依赖未文档化 API 契约 → 全败",
+              "type": "security"
+            },
+            {
+              "label": "Reviewer Agent",
+              "sub": "识别风险但仍批准",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "信息>难度",
+              "text": "难度不预测失败，信息缺失预测失败——Immer 内部 16/16 全成功 vs ky 简单 bug 12/12 全败"
+            },
+            {
+              "label": "测试通过≠正确",
+              "text": "12 次修复全部通过 84-test retry 套件但实际破坏用户数据"
+            },
+            {
+              "label": "检测≠判断",
+              "text": "reviewer agent 正确识别\"会破坏用户数据\"但判断\"不太可能发生\"后仍批准"
+            },
+            {
+              "label": "业务 API 映射",
+              "text": "宽表 API 字段间隐式依赖=未文档化契约，Agent 可能 schema 合法但业务语义错误"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "TDS: The LLM Judge That Kept Agreeing With Itself——自偏好偏置致 SQL filter 漏判流入生产",
+      "date": "2026-08-20",
+      "source": "Towards Data Science (Priyansh Bhardwaj)",
+      "link": "https://towardsdatascience.com/the-llm-judge-that-kept-agreeing-with-itself/",
+      "summary": "作者复盘一个生产事故：多 agent pipeline 中一个 agent 从自然语言生成 SQL，第二个\"judge\"agent 决定是否自动执行或需人工确认。数周正常后一条本应被拦截的查询被批准执行——查询静默丢失了用户问题明确暗示的 filter 子句，返回完全错误的结果。排查发现 judge 和 generator 用同一模型导致 self-preference bias——judge 对本模型生成的 SQL 更宽松，换用其他模型生成 SQL 后 judge 明显更严格。作者总结了多种 LLM judge 系统性说谎方式：self-preference bias、position bias、verbosity bias 等，并提出校准方法。",
+      "insight": "这篇博客直接对标用户\"业务系统精确查询\"课题中的可信度验证层。用户的 Agent 通过业务 API 查数后需要验证结果可信度——如果用同模型做 generator+judge，self-preference bias 会导致对本模型生成的查询/调用更宽松，漏判 filter/参数缺失。\"静默丢失 filter 子句\"在业务 API 调用中的映射是：Agent 调用宽表 API 时静默丢失了某些必需的查询参数（如时间范围、业务线过滤），返回的看似合理的结果实际是全量数据子集而非用户想要的结果。这与 8/23 TDS Bug Detection 的\"测试通过但数据被破坏\"形成共振——两者都是\"看似成功但实际错误\"的系统性失败。",
+      "detail": {
+        "why": "LLM-as-judge 被广泛用于 Agent pipeline 的自动审批/拦截，但如果 judge 与 generator 同模型，self-preference bias 会系统性放行本模型的错误。在业务查询场景中，这意味着错误的查询/调用会静默流入生产。",
+        "mechanism": "self-preference bias：LLM judge 对本模型或同家族模型生成的输出评分更高。核心驱动是 judge 模型识别\"正确查询的写法风格\"——如果 generator 用同样的风格写查询，judge 的先验偏向批准，与查询实际正确性无关。复现稳定非随机。其他 bias 包括 position bias（位置影响评分）、verbosity bias（更长输出评分更高）。",
+        "deep": "\"复现稳定非随机\"是关键——这不是偶发失误而是结构性偏置，意味着不修复会持续产生同类事故。作者发现换用不同模型生成 SQL 后 judge 变得更严格，抓住了更多本模型 SQL 中的问题——这为\"异模型校准\"提供了实证支持。与 8/21 TDS Bayesian Guardrails 的\"point estimate 让模型显得比实际更确定\"共振：judge 的 approve/flag 二元决策是一种 point estimate，掩盖了不确定性。与 Thinkingbox 的\"终端后端状态评测\"互补：LLM judge 是概率层评测，终端状态检查是确定性层评测——两者应组合使用，judge 做初筛+状态检查做终验。",
+        "apply": "1）业务 API 调用的 generator 和 judge 必须用不同模型家族，避免 self-preference bias；2）judge 的输出不应是二元 approve/flag，应包含置信度和具体风险点描述（与 8/21 Bayesian Guardrails 共振）；3）对 filter/参数缺失这类\"静默错误\"设计专门的 check——不是\"SQL 语法正确\"而是\"是否包含用户问题暗示的所有过滤条件\"；4）建立人类标注的 calibration set，定期测量 judge 的 false approval rate。",
+        "caveats": "博客基于单一生产事故复盘，self-preference bias 的严重程度可能因模型和任务而异。异模型 judge 增加成本和延迟。calibration set 的构建需要人类标注，工程化成本较高。作者提出的缓解方法尚未在更大规模上验证。",
+        "business": "\"同模型 generator+judge 导致系统性漏判\"为企业 AI for Business 部署提供了直接可操作的教训：验证层必须与生成层解耦，用不同模型家族。\"静默丢失 filter 子句致错误结果流向生产\"在业务查询中的后果可能比代码 bug 更严重——业务决策基于错误数据可能造成实际财务损失。judge 的 calibration 应作为 Agent 部署的上线门槛，定期用人类标注的 calibration set 测量 false approval rate。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/the-llm-judge-that-kept-agreeing-with-itself/",
+            "title": "The LLM Judge That Kept Agreeing With Itself"
+          }
+        ],
+        "diagram": {
+          "title": "LLM Judge 自偏好偏置：同模型互评放行错误",
+          "flow": [
+            {
+              "label": "User Question",
+              "sub": "含隐式 filter 暗示的自然语言",
+              "type": "frontend"
+            },
+            {
+              "label": "Generator Agent",
+              "sub": "生成 SQL/API 调用（丢失 filter）",
+              "type": "backend"
+            },
+            {
+              "label": "Judge Agent (同模型)",
+              "sub": "self-preference bias → approve",
+              "type": "security"
+            },
+            {
+              "label": "Execution",
+              "sub": "错误结果流向生产",
+              "type": "database"
+            },
+            {
+              "label": "Fix: 异模型 Judge",
+              "sub": "不同模型家族做 judge",
+              "type": "security"
+            },
+            {
+              "label": "Fix: 状态检查",
+              "sub": "终端后端状态/结果不变式验证",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "self-preference bias",
+              "text": "judge 对本模型风格生成的输出更宽松，与正确性无关"
+            },
+            {
+              "label": "复现稳定",
+              "text": "非随机失误，是结构性偏置，不修复会持续产生同类事故"
+            },
+            {
+              "label": "异模型校准",
+              "text": "换用其他模型生成 SQL 后 judge 明显更严格，抓住更多问题"
+            },
+            {
+              "label": "二元决策风险",
+              "text": "approve/flag 二元决策是 point estimate，应含置信度和具体风险点"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "TDS: Parse the Folder, Not Just the PDFs——Case File 是异构文档包非小语料",
+      "date": "2026-08-23",
+      "source": "Towards Data Science (angela shi)",
+      "link": "https://towardsdatascience.com/parse-the-folder-not-just-the-pdfs-the-relational-tables-rag-needs-on-a-case-file/",
+      "summary": "Enterprise Document Intelligence 系列第四部。作者指出 case file（保险理赔/信贷申请/医疗记录/招聘档案）是\"关于一个实体的异构文档包\"而非小语料——11 个关于一次火灾理赔的 PDF 有 60 页可放入 200K token 窗口，但仍然无法回答两个关键问题：第二张维修发票是否在文件夹中？索赔表上的出险日期与勘查报告日期是否一致？前者是\"缺失文档\"问题——不是检索而是完整性检查；后者是\"跨文档值对比\"——不是搜索而是关系验证。作者提出 case type 预期清单（index what should be there）、缺失文档作为 first-class 答案、文档间值对比的 typed values 需求。",
+      "insight": "这篇博客对用户\"业务知识库构建\"中异构文档管理方向有直接方法论价值。用户的业务场景中存在大量\"关于一个实体的异构文档包\"——如一个客户的合同+发票+对账单+审批记录。传统 RAG 把它当作小语料做向量检索，但关键业务问题不是\"搜索某个 passage\"而是\"文档完整性\"和\"跨文档一致性\"。\"缺失文档是 first-class 答案\"与 8/18 Never the Number 的\"结构化弃答\"共振——Agent 应该能说\"这个文档不在文件夹中\"而不是幻觉一个。\"写给路由器而非读者\"的设计哲学（8/23 已收录 Multi-Document RAG）在这里进一步深化：case type 预期清单是写给完整性检查器而非文档读者的元数据。",
+      "detail": {
+        "why": "case file 的形状决定了它不是小语料——bundle of unlike documents about one entity 的单元是 bundle 而非 passage。两个关键业务问题（缺失文档+跨文档值对比）都不是检索问题，传统 RAG 架构无法处理。",
+        "mechanism": "case type 预期清单：索引\"应该有什么\"而非\"有什么\"。完整性检查：对照清单返回三个列表——present/missing/belong-to-other-case。跨文档值对比：需要 typed values 从每个文档中提取，然后在文档间比较（如出险日期 vs 勘查日期）。答案形状是 case state 而非 passage。",
+        "deep": "\"缺失文档是 first-class 答案\"对用户的业务 API 调用场景有映射：Agent 调用业务 API 后应能识别\"某些必需字段在响应中缺失\"作为 first-class 结果，而非忽略缺失字段继续处理。\"case type 预期清单\"可迁移为\"API response 预期 schema\"——对照检查 API 返回是否包含所有必需字段。文档间值对比的 typed values 与 8/12 Rosetta 的\"值反推列语义\"互补：Rosetta 从值推断列语义，这里从文档中提取 typed values 做跨文档验证。\"least prior art of the three\"说明缺失文档检测和 case state 答案形状是研究空白——可能对用户团队有论文/产品机会。",
+        "apply": "1）对业务文档包（客户档案/合同包/理赔案卷）用 case type 预期清单做完整性检查而非向量检索；2）将 API response schema 定义为\"预期清单\"，Agent 调用后对照检查缺失字段；3）跨文档/跨 API 值对比设计为 typed values 提取+比较的确定性流程，不依赖 LLM 推理；4）\"缺失文档/缺失字段是 first-class 答案\"设计 Agent 的弃答机制——缺失即拒绝而非幻觉填充。",
+        "caveats": "case type 预期清单需要领域专家定义，不同 case type 清单不同，维护成本高。跨文档值对比的 typed values 提取依赖文档解析质量。博客是系列第四部，前序概念（四块砖/loop engineering）需结合理解。火灾理赔案例是虚构的，真实场景的复杂度可能更高。",
+        "business": "\"case file 不是小语料\"为企业文档智能投资提供了关键架构决策依据：传统 RAG 投资在\"检索精度\"上对 case file 场景回报递减——关键问题不是\"找到 passage\"而是\"文档完整性+跨文档一致性\"。case type 预期清单是可编码的领域知识，比向量索引更确定性且可审计。\"缺失文档是 first-class 答案\"在业务场景中的价值：保险理赔中\"缺失勘查报告\"直接决定赔付流程走向，Agent 应能识别并上报而非继续处理。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/parse-the-folder-not-just-the-pdfs-the-relational-tables-rag-needs-on-a-case-file/",
+            "title": "Parse the Folder, Not Just the PDFs: The Relational Tables RAG Needs on a Case File"
+          }
+        ],
+        "diagram": {
+          "title": "Case File: 异构文档包的完整性+一致性检查",
+          "flow": [
+            {
+              "label": "Case Folder",
+              "sub": "11个异构PDF关于一次理赔",
+              "type": "database"
+            },
+            {
+              "label": "Case Type Index",
+              "sub": "预期清单：应该有什么",
+              "type": "backend"
+            },
+            {
+              "label": "Completeness Check",
+              "sub": "present/missing/belong-to-other",
+              "type": "security"
+            },
+            {
+              "label": "Typed Values",
+              "sub": "从每个文档提取类型化值",
+              "type": "backend"
+            },
+            {
+              "label": "Cross-Doc Compare",
+              "sub": "出险日期 vs 勘查日期",
+              "type": "security"
+            },
+            {
+              "label": "Case State Answer",
+              "sub": "答案形状是案件状态非passage",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "不是小语料",
+              "text": "bundle of unlike documents about one entity，单元是 bundle 而非 passage"
+            },
+            {
+              "label": "缺失=一等答案",
+              "text": "缺失文档是 first-class 答案，Agent 应能识别而非幻觉填充"
+            },
+            {
+              "label": "值对比非检索",
+              "text": "跨文档值对比需要 typed values 提取+比较，不是向量搜索"
+            },
+            {
+              "label": "API 映射",
+              "text": "case type index → API response schema 预期清单，对照检查缺失字段"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "WrenAI 查询路径安全加固：只接受只读 SELECT + 关系句柄解析修正",
+      "date": "2026-08-21",
+      "source": "GitHub (Canner/WrenAI)",
+      "link": "https://github.com/Canner/WrenAI",
+      "summary": "WrenAI 在 8/20-21 连续三个 commit 加固查询路径安全：(1) accept only read-only SELECT statements in the query path #2679（Claude Opus 5 协作）——查询路径只接受只读 SELECT 语句，拒绝写入/修改操作；(2) resolve relationship handles by the model they point at #2661——关系句柄解析指向正确的模型，防止语义层关系定义中的引用错误；(3) normalise model columns in load_models #2614（Jax Liu 协作）——模型列加载规范化，防止大小写/命名不一致导致的语义错误。延续 v0.13.3 的四层 harden 方向（context/memory/engine/genbi），进一步在查询路径层加固安全边界。",
+      "insight": "WrenAI 的\"只接受只读 SELECT\"对用户\"语义层作为 Agent 数据接口\"方向有直接产品启示——语义层暴露给 Agent 时必须有安全边界，只读 SELECT 是最低门槛。这与 Thinkingbox 的\"状态变更副作用\"评测维度形成产品↔学术共振：Thinkingbox 评估 Agent 是否产生了错误的状态变更，WrenAI 在工程上阻止 Agent 通过语义层产生状态变更。\"关系句柄解析指向正确模型\"对用户上百字段宽表 API 的字段间语义关系建模有参考——如果关系定义的引用指向错误的模型/表，Agent 会基于错误的语义关系生成查询。",
+      "detail": {
+        "why": "语义层暴露给 Agent 后，Agent 可能生成非只读 SQL（INSERT/UPDATE/DELETE）或利用语义层关系定义中的引用错误绕过预期查询路径。只读 SELECT 限制是 Agent 场景下语义层安全的最低门槛。",
+        "mechanism": "#2679 在查询路径层校验 SQL 语句类型，只接受只读 SELECT，拒绝 DML/DDL。#2661 修正关系句柄解析——当 relationship 指向某个 model 时，解析需正确解析到目标 model 而非当前。#2614 规范化 model columns 加载——统一大小写和命名，防止语义层定义不一致。",
+        "deep": "\"只读 SELECT\"与 8/13 TDS Partha 的 ACL 两阶段（embedding 时注入 ACL levels + 运行时校验）互补：WrenAI 在查询路径层做 SQL 类型校验，Partha 在文档级做 ACL 校验——两者组合形成\"读写权限+行级安全\"双层防护。\"关系句柄解析\"对用户宽表 API 场景：如果 API 响应字段间的关系定义引用指向错误的表/模型，Agent 调用时会基于错误的语义关系理解字段含义——WrenAI 的修正说明这类引用错误是实际存在的问题而非理论风险。",
+        "apply": "1）语义层暴露给 Agent 时在查询路径层增加只读 SELECT 校验；2）语义层的关系定义需验证所有 relationship handles 指向正确的目标 model；3）model columns 加载做大小写/命名规范化，防止不一致；4）\"只读 SELECT + ACL 行级安全\"组合形成 Agent 场景下的双层防护。",
+        "caveats": "只读 SELECT 是最低门槛，不防止\"正确的 SELECT 查错数据\"（如查了正确的表但过滤条件错误）。关系句柄解析修正说明这类 bug 在实际代码中存在，但修正的影响范围需测试验证。Claude Opus 5 协作 commit 的质量需 code review 确认。",
+        "business": "\"只读 SELECT\"是语义层作为 Agent 数据接口的安全底线——企业部署 AI for Business 时，语义层暴露给 Agent 必须有这一层防护。\"关系句柄解析\"修正说明语义层的关系定义质量直接影响 Agent 查询正确性——企业需建立语义层关系定义的 CI 校验。WrenAI 连续在 context/memory/engine/query path 四层 harden 说明开源语义层正在从\"能用\"向\"可用于 Agent 生产环境\"跃迁。",
+        "sources": [
+          {
+            "url": "https://github.com/Canner/WrenAI",
+            "title": "WrenAI - Open Source AI-powered ChatBI and Semantic Layer Engine"
+          }
+        ],
+        "diagram": {
+          "title": "WrenAI 查询路径安全加固",
+          "flow": [
+            {
+              "label": "Agent Query",
+              "sub": "自然语言→SQL 生成",
+              "type": "frontend"
+            },
+            {
+              "label": "Query Path",
+              "sub": "只接受只读 SELECT #2679",
+              "type": "security"
+            },
+            {
+              "label": "Relationship Resolution",
+              "sub": "句柄指向正确 model #2661",
+              "type": "backend"
+            },
+            {
+              "label": "Model Loading",
+              "sub": "columns 规范化 #2614",
+              "type": "database"
+            },
+            {
+              "label": "Semantic Engine",
+              "sub": "wren-core 执行查询",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "只读门槛",
+              "text": "查询路径只接受只读 SELECT，拒绝 DML/DDL，是 Agent 场景安全底线"
+            },
+            {
+              "label": "关系句柄",
+              "text": "relationship handles 指向正确 model，防止语义层关系引用错误"
+            },
+            {
+              "label": "列规范化",
+              "text": "model columns 大小写/命名规范化，防止不一致致语义错误"
+            },
+            {
+              "label": "四层 harden",
+              "text": "context+memory+engine+query path 连续加固，从能用→可用于 Agent 生产"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "GRACE v4.0.5: Graph-RAG 驱动契约化代码生成——内容寻址 lint 缓存+多生态工具链",
+      "date": "2026-08-23",
+      "source": "GitHub (osovv/grace-marketplace)",
+      "link": "https://github.com/osovv/grace-marketplace",
+      "summary": "GRACE（Graph-RAG Anchored Code Engineering）v4.0.5 发布——开源 Agent Skills 平台，用 Graph-RAG + 语义标记 + 知识图谱驱动契约化 AI 代码生成，支持 Claude Code/Codex CLI/Kilo Code 三大 coding agent。v4.0.5 关键改进：内容寻址 lint 缓存（sha256(file content + extension) + schema-version，跨 run 复用分析结果，CI re-run 更快）；默认忽略目录扩展至 64 个（覆盖 Playwright/Allure/Newman/Cucumber/Stryker 等工具输出）；Dart analyzer 容错（SDK 3.10.8+ stdout 前导处理）；per-file 语言分析缓存。239⭐ TypeScript 项目，8/23 密集 5+ commits。",
+      "insight": "GRACE 的\"Graph-RAG + 契约驱动\"组合对用户\"业务知识图谱\"方向有直接参考价值——把知识图谱不只用于检索而是用于约束 Agent 生成的代码/查询的契约符合性。\"语义标记 + 知识图谱\"是 GRACE 的核心，与用户的\"业务语义层 + 知识图谱\"双路线高度对齐——GRACE 证明了 Graph-RAG + 语义标记可以在 Agent 代码生成场景中工程化落地。内容寻址缓存（sha256(file+ext)+schema-version）与 8/20 LLM Cache Eviction 的语义缓存研究形成对照——GRACE 用确定性 hash 做缓存键，语义缓存用 embedding 相似度——前者确定性后者概率性，在代码生成场景中确定性缓存更合适。",
+      "detail": {
+        "why": "AI coding agent 需要在大量代码文件中导航、理解语义关系、遵循编码契约——传统 file-based 检索无法捕获代码间的语义依赖和契约约束。Graph-RAG 把代码间的语义关系建模为图谱，契约驱动确保生成代码符合显式约定。",
+        "mechanism": "Graph-RAG 构建代码语义关系图谱（import/call/inheritance/type dependency）。语义标记在代码上标注契约信息（API 契约/类型约束/业务规则）。Agent 生成代码时查询图谱获取上下文+验证契约符合性。内容寻址 lint 缓存用 sha256(file content + extension) + schema-version 做缓存键，跨 run 复用分析结果。",
+        "deep": "\"契约驱动 + Graph-RAG\"与 8/22 SBproxy Cedar 策略引擎的\"约束代码化\"理念同向——SBproxy 在 API 网关层用 Cedar 策略引擎做调用授权，GRACE 在代码生成层用契约+知识图谱做生成约束。两者都是把约束从文档/配置升级为可编译可验证的代码化形态。\"支持 Claude Code/Codex CLI/Kilo Code\"说明 GRACE 定位为 Agent Skills 平台而非绑定单一 agent——与 Cube MCP 20 工具的\"语义层作为 Agent 数据技能平台\"同构。内容寻址缓存的 schema-version 常量设计意味着缓存失效是显式的（schema 变更时全量失效）而非隐式的（时间过期）——这对代码生成场景中\"分析逻辑变更时必须重新分析所有文件\"是正确的设计。",
+        "apply": "1）参考 GRACE 的 Graph-RAG + 语义标记模式构建业务知识图谱——不只做检索也做约束验证；2）契约驱动思路可迁移到业务 API 调用——定义 API 调用契约（参数约束/返回值不变式/副作用预期），Agent 调用前用知识图谱验证契约符合性；3）内容寻址缓存模式可用于业务知识图谱的解析结果缓存——schema-version 变更时全量失效；4）\"Agent Skills 平台\"定位参考——把语义层/知识图谱封装为可被多 agent 复用的 skill。",
+        "caveats": "GRACE 聚焦代码生成场景，业务 API 调用场景的契约复杂度可能更高（业务规则/权限/时效约束）。239⭐ 项目成熟度和社区活跃度需持续观察。内容寻址缓存在文件变更频繁时缓存命中率可能不高。Dart analyzer 容错说明不同语言生态的工具链差异是实际工程挑战。",
+        "business": "GRACE 的\"Graph-RAG + 契约驱动\"模式为企业\"业务知识图谱\"投资提供了产品化参考——知识图谱不只用于检索（RAG）也用于约束（contract-driven），这扩展了知识图谱的 ROI 范围。\"Agent Skills 平台\"定位意味着企业可以把语义层/知识图谱封装为可被多 agent 复用的 skill，避免每个 agent 重复集成。内容寻址缓存的设计模式可直接迁移到企业的知识图谱解析缓存——确定性 hash 比语义相似度更适合需要精确性的业务场景。",
+        "sources": [
+          {
+            "url": "https://github.com/osovv/grace-marketplace",
+            "title": "GRACE (Graph-RAG Anchored Code Engineering): Open Agent Skills for contract-driven AI code generation"
+          }
+        ],
+        "diagram": {
+          "title": "GRACE: Graph-RAG + 契约驱动代码生成",
+          "flow": [
+            {
+              "label": "Code Files",
+              "sub": "项目代码库",
+              "type": "database"
+            },
+            {
+              "label": "Graph-RAG Engine",
+              "sub": "构建语义关系图谱(import/call/inherit)",
+              "type": "backend"
+            },
+            {
+              "label": "Semantic Markup",
+              "sub": "API契约/类型约束/业务规则标注",
+              "type": "security"
+            },
+            {
+              "label": "Agent Skills",
+              "sub": "Claude Code/Codex CLI/Kilo Code",
+              "type": "frontend"
+            },
+            {
+              "label": "Contract Verification",
+              "sub": "生成前验证契约符合性",
+              "type": "security"
+            },
+            {
+              "label": "Content-Addressed Cache",
+              "sub": "sha256(file+ext)+schema-version",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "Graph-RAG+契约",
+              "text": "知识图谱不只做检索也做约束验证，扩展 KG 的 ROI 范围"
+            },
+            {
+              "label": "Agent Skills 平台",
+              "text": "支持多 coding agent，语义层/KG 封装为可复用 skill"
+            },
+            {
+              "label": "内容寻址缓存",
+              "text": "sha256+schema-version，确定性 hash 比语义相似度更适合精确场景"
+            },
+            {
+              "label": "与 SBproxy 同向",
+              "text": "SBproxy Cedar 在网关层约束调用，GRACE 契约在生成层约束代码，都是约束代码化"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "product",
+      "title": "业务 Agent 可靠性测量学转向：从\"能力评测\"到\"可靠性+测量伪影审计\"",
+      "date": "2026-08-24",
+      "source": "综合研判",
+      "link": "https://arxiv.org/abs/2608.19741",
+      "summary": "本日学术+博客+开源三轨共振指向同一个核心研判：业务 Agent 领域正在从\"能力评测\"（pass@1/准确率）转向\"可靠性+测量伪影审计\"。Thinkingbox 提出 pass^20 作为可靠性指标（65.36%→25.25%鸿沟），MemTrapBench 揭示记忆的认知陷阱（忠实记忆降性能 10%+），Phantom Gains 审计自改进评测的 7 类测量伪影（0.280 虚假提升），TDS Bug Detection 证明信息缺失>难度预测失败（12/12 全败于未文档化契约），TDS LLM Judge 揭示自偏好偏置致错误流入生产。WrenAI 只读 SELECT 和 GRACE 契约驱动是工程层响应——安全边界前移+约束代码化。",
+      "insight": "三轨共振指向一个战略级结论：用户团队\"AI for 业务\"的评测体系必须从\"单次准确率\"升级为\"多轮可靠性+测量伪影审计+信息完整性评估\"。这不是边际优化而是范式转移——继续用 pass@1 评估业务 Agent 会系统性高估能力（Phantom Gains 的 0.280 虚假提升）+ 系统性遗漏失败（Bug Detection 的 12/12 信息缺失全败）+ 系统性放行错误（LLM Judge 的自偏好偏置）。Thinkingbox 的 507 条 policy-conditioned 工作流 + MemTrapBench 的认知陷阱检测 + Phantom Gains 的 measured null 方法论构成\"可靠性评测三件套\"。工程层 WrenAI 只读 SELECT + GRACE 契约驱动是\"安全边界前移+约束代码化\"的产品化响应。",
+      "detail": {
+        "why": "当前业务 Agent 评测普遍用 pass@1/单次准确率/单次 demo 成功作为决策依据，但生产环境的失败模式是\"偶尔成功但不可靠复制\"+\"信息缺失致系统性失败\"+\"同模型互评放行错误\"——这三类失败都无法被 pass@1 捕获。",
+        "mechanism": "Thinkingbox：pass^20 替代 pass@1 做可靠性门槛 + 终端后端状态评测替代 LLM judge。MemTrapBench：记忆认知陷阱检测（Reasoning Fixation+Belief Distortion）+ AdaptiveMem 推理时缓解。Phantom Gains：measured null（冻结控制组走相同管线）+ per-problem exact test + FDR 控制替代 transition 计数。TDS Bug Detection：信息完整性维度替代难度维度做信任分配。TDS LLM Judge：异模型 judge + 置信度+风险点描述替代二元 approve/flag。",
+        "deep": "五条共振链路：(1) Thinkingbox pass^20 + Phantom Gains measured null = \"多轮可靠性+控制组审计\"共振——两者都说不看单次看分布；(2) MemTrapBench 忠实记忆降性能 + TDS LLM Judge 自偏好放行错误 = \"看似正确实则错误\"共振——两者都指出原始信号（记忆忠实度/judge approve）不可信；(3) TDS Bug Detection 信息缺失>难度 + Thinkingbox response-level signals ≠ task completion = \"表面成功隐藏深层失败\"共振——两者都说不看表面看终端状态；(4) WrenAI 只读 SELECT + GRACE 契约驱动 = \"安全边界前移+约束代码化\"工程共振——两者都把约束从文档/配置升级为代码层防护；(5) TDS LLM Judge 异模型校准 + MemTrapBench AdaptiveMem 推理时缓解 = \"推理时治理\"共振——两者都在推理时而非存储/训练时解决可靠性。与 8/23 三件套（TMI 任务模型归纳+Pandora's Router 路由+SBproxy Cedar 授权）形成\"运行时决策链\"→\"可靠性评测链\"的跨日映射：运行时决策链解决\"怎么执行\"，可靠性评测链解决\"怎么验证执行对了\"。",
+        "apply": "1）建立业务 Agent 的 pass^20 评测门槛（参照 Thinkingbox）；2）generator+judge 异模型，judge 输出含置信度+风险点而非二元 approve/flag（参照 TDS LLM Judge）；3）Agent 改进评测用 measured null + per-problem exact test + FDR（参照 Phantom Gains）；4）信任分配按信息完整性而非难度（参照 TDS Bug Detection）；5）记忆/知识图谱检索增加推理时陷阱缓解（参照 MemTrapBench AdaptiveMem）；6）语义层查询路径加只读 SELECT 校验（参照 WrenAI）；7）知识图谱不只做检索也做契约验证（参照 GRACE）。",
+        "caveats": "pass^20 需 20 次重复执行，生产环境中重试成本和副作用累积需考量。measured null 需足够 baseline replicates。异模型 judge 增加成本和延迟。AdaptiveMem 增加 prompt 长度。507 条工作流覆盖度有限。评测范式转移需要组织和文化配合——团队需从\"看 demo 效果\"转向\"看可靠性指标\"。",
+        "business": "评测范式转移是企业 AI for Business 从 POC 到生产的关键拐点——继续用 pass@1 评估会系统性高估能力、低估风险，导致 POC 通过但生产失败。\"可靠性评测三件套\"（pass^20+认知陷阱检测+measured null）为企业提供了可操作的评测升级路径。\"信息完整性>难度\"的信任分配框架直接指导 HITL 设计——信息完整的场景交给 Agent，信息不完整的场景保留人工。\"异模型 judge\"是最低成本最高回报的改进——仅换 judge 模型就能抓住更多错误。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.19741",
+            "title": "Thinkingbox: Stateful Business Workflow Agent Reliability Benchmark"
+          },
+          {
+            "url": "https://arxiv.org/abs/2608.20202",
+            "title": "MemTrapBench: Cognitive Traps in LLM Memory"
+          },
+          {
+            "url": "https://arxiv.org/abs/2608.20290",
+            "title": "Phantom Gains: Auditing Self-Improvement"
+          },
+          {
+            "url": "https://towardsdatascience.com/bug-detection-blind-spots-in-ai-coding-harnesses-gstack-and-beyond/",
+            "title": "Bug Detection Blind Spots in AI Coding Harnesses"
+          },
+          {
+            "url": "https://towardsdatascience.com/the-llm-judge-that-kept-agreeing-with-itself/",
+            "title": "The LLM Judge That Kept Agreeing With Itself"
+          },
+          {
+            "url": "https://github.com/Canner/WrenAI",
+            "title": "WrenAI Query Path Security Hardening"
+          },
+          {
+            "url": "https://github.com/osovv/grace-marketplace",
+            "title": "GRACE: Graph-RAG Anchored Code Engineering"
+          }
+        ],
+        "diagram": {
+          "title": "业务 Agent 可靠性测量学转向：从能力评测到可靠性+审计",
+          "flow": [
+            {
+              "label": "Old: pass@1 / 单次准确率",
+              "sub": "系统性高估能力",
+              "type": "frontend"
+            },
+            {
+              "label": "New: pass^20 / 多轮可靠性",
+              "sub": "Thinkingbox 65%→25%鸿沟",
+              "type": "security"
+            },
+            {
+              "label": "New: 认知陷阱检测",
+              "sub": "MemTrapBench 忠实记忆降性能10%+",
+              "type": "security"
+            },
+            {
+              "label": "New: measured null 审计",
+              "sub": "Phantom Gains 0.280虚假提升",
+              "type": "security"
+            },
+            {
+              "label": "New: 信息完整性评估",
+              "sub": "TDS 12/12信息缺失全败",
+              "type": "backend"
+            },
+            {
+              "label": "New: 异模型judge+置信度",
+              "sub": "TDS self-preference bias",
+              "type": "backend"
+            },
+            {
+              "label": "Engineering: 只读SELECT+契约",
+              "sub": "WrenAI+GRACE 安全边界前移",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "范式转移",
+              "text": "从单次准确率→多轮可靠性+测量伪影审计+信息完整性，非边际优化而是根本转变"
+            },
+            {
+              "label": "三件套",
+              "text": "pass^20+认知陷阱检测+measured null 构成可靠性评测三件套"
+            },
+            {
+              "label": "五条共振",
+              "text": "pass^20+measured null / 忠实记忆+自偏好 / 信息缺失+终端状态 / 只读SELECT+契约 / 异模型+AdaptiveMem"
+            },
+            {
+              "label": "跨日映射",
+              "text": "8/23 运行时决策链(怎么执行) → 8/24 可靠性评测链(怎么验证执行对了)"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
