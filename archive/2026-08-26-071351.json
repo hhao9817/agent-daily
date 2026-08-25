@@ -260,7 +260,7 @@
       "title": "RAD: 关系库异常检测拒绝扁平化，保留多表 schema 与多跳依赖",
       "date": "2026-08-24",
       "source": "arXiv 2608.23468",
-      "link": "https://arxiv.org/abs/2608.23468",
+      "link": "https://arxiv.org/abs/23468",
       "summary": "现有异常检测方法需把多表扁平化为单特征矩阵，这遮蔽了 entity identity、schema 结构、多跳依赖，限制了依赖关系上下文而非孤立特征值的异常检测。RAD（Rule-Augmented Relational Anomaly Detector）结合异构图表示学习与符号规则信号：从 random-forest 路径提取候选规则→精炼为紧凑可解释谓词→注入图模型。在 LANL 网安事件检测+Amazon/H&M 用户流失三场景上，AUROC/AUPRC 平均排名最佳。消融显示直接规则注入+ranking-based 监督是关键，edge reconstruction 非一致有益。引用数待核实（Semantic Scholar 限流，8/24 新文预期 0）。",
       "insight": "RAD 对用户'业务知识图谱'路线直接相关：证明保留关系结构（不扁平化）+符号规则注入图模型优于传统扁平化方法。对用户'上百字段宽表 API'，宽表本身是多表 join 的扁平化结果——RAD 启示应在 join 前的源表上做异常检测，保留 entity identity 与多跳依赖。规则注入图模型与 8/19 Policy Algebra 的 path property 约束注入同向。",
       "detail": {
