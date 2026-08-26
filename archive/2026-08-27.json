@@ -1,0 +1,899 @@
+{
+  "date": "2026-08-27",
+  "banner": "业务 Agent 的\"写入治理\"与\"评估可信\"同日成型：操作型本体把业务动词从语义层延展到可拒绝、可审计的命名动作；自研评分器制造 Agent 记忆伪发现，揭示评估链的可信盲区。",
+  "snapshot": {
+    "summary": "今日情报横跨学术、博客与开源三轨，核心脉络是\"业务 Agent 从读走向写\"与\"评估自身可信度\"两条线。学术侧 Self-Optimizing Enterprise RAG+SQL 把检索/Schema 翻译/事件图推理/模型路由统一为自优化知识 Agent，AgentWeave 证明在 LLM 推理前用确定性路由层把候选工具集收窄 70% 可显著提升 function calling 成功率，VSKI 提出符号层断言真值、神经层提议被验证的 stock-and-flow 审计基底；博客侧 DEW 操作型本体首次把 Palantir Foundry 的\"可取消订单\"模式开源化（命名动作+前置条件+拒绝即一等返回值+写回源系统），dbt 用 92%加投/1%成熟的数据说明信任基础设施是 AI 规模化的瓶颈，TDS 重新厘清\"agent 处理未知未知、automation 处理已知未知\"的判别线；开源侧 Cube v1.7.27 修 schema-compiler extends 破坏父级多阶段指标+SQL 下推优先+COPY FROM STDIN，WrenAI 8/26 四连修 mdl.json fail-loud+宽小数位+截断值标注。整体研判：业务 Agent 基建正从\"语义层（读）\"向\"操作型本体（读+写治理）\"跃迁，与此同步的是评估链自身可信度的审计化。",
+    "groups": {
+      "paper": [
+        "Self-Optimizing Enterprise RAG+SQL Knowledge Agents（8/25 preprint, 引用0）：把企业级 RAG 检索、Schema-aware 查询翻译、事件图推理、自适应模型路由统一为一个自优化知识 Agent 框架，概念涵盖 SQL/Schema/Enterprise IS/Knowledge Extraction，是\"让 AI 真正懂业务数据并精确执行\"四要素的端到端集成范例。",
+        "AgentWeave: Routing Before Reasoning（arXiv 2608.23078, 8/24, 引用0已核实）：在 LLM 推理前插入确定性路由层，用 eligibility/requirement/capability/routing 四类信号构造有界动作空间，冻结 Hammer2.1-1.5b 在 48 道 BFCL V4 多函数任务上把 0/48 提到 6/48（McNemar p=0.03125），工具暴露少 70.18%、输入 token 少 61.70%、延迟低 50.95%——直接呼应\"上百字段宽表 API\"场景下的候选收窄。",
+        "VSKI Whitepaper（Zenodo 22073019, 8/23, 引用0）：自托管平台实现\"符号层断言真值、神经层提议被验证\"，核心形式对象是 stock-and-flow 有向图，每个 tick 上做量守恒断言（会计错/概率凭空/资金消失被构造性拒绝而非事后发现），提供 typed collections/SQL views/全文+向量搜索+event-sourced workflow+records API，业务案例是外卖厨房里双式记账=守恒、队列行为=有趣行为。",
+        "Deterministic, Reproducible, and Wrong（Zenodo 22079951, 8/24, 引用0）：自研确定性评分器（无任何 LLM）在自己的 agent-memory 实验中制造了\"note 被投递后 agent 仍犯错\"的伪发现——评分器在命令任何位置匹配 shell 文本，把 `cat deploy.sh` 误判为执行。重评零额外模型成本即清除所有标记，贡献是\"只在执行位置触发的 shell 匹配器\"+\"agent 所做与 workspace 所示间的 machine-readable contradiction guard\"。",
+        "From Language Models to Agentic AI Survey（Springer s12559-026-10619-1, 8/24, 引用0）：taxonomy 驱动的部署导向综述，用模块化参考架构+四维分类（autonomy/tool use/collaboration/safety-governance）分析单 agent/工具增强/多 agent 框架，强调 access control、human-in-the-loop、policy enforcement 的企业部署约束，为业务 Agent 选型提供结构化 roadmap。"
+      ],
+      "blog": [
+        "DEW《Building an Operational Ontology》（Togo YAMANAKA, 8/26）：把 Palantir Foundry 的 Ontology 开源化为 TypeScript MIT 参考实现（github.com/gura105/operational-ontology）。核心是\"读语义层+写治理动词\"的非对称：无通用 UPDATE 路径（设计性缺席），每个业务决策是命名动作（如 cancelOrder 带 target+params+precondition+effects+write-back），前置条件违反返回 machine-readable 错误码（SHIPPED_ORDER_CANNOT_BE_CANCELLED），拒绝是一等返回值不是异常，每次尝试（应用或拒绝）入审计日志；三态状态权属（source-backed/ontology-owned/derived，无主状态被禁止）；re-index 时要么整体拒绝要么完整覆盖，绝不部分应用；agent 与人走同一治理门，提示词只说意图，业务规则在 ontology 侧强制不可被 prompt 重写动摇。",
+        "dbt《Scaling AI is easy. Trusting it is hard.》（8/26）：92% 企业计划加投 AI 但仅 1% 自认成熟，随 AI 从 copilot 走向 autonomous agent，原有数据弱点被放大为企业级挑战；引用 2026 dbt State of Analytics Engineering Report，强调 trusted data/governance/business context/interoperability 是可靠可解释产出的基础，配套 Enterprise AI Data Maturity Model 框架做能力差距评估——为\"AI for 业务\"立项提供\"信任基础设施\"硬论据。",
+        "TDS《How Does a RAG Reranker Really Work?》（Angela Shi, 8/26, Enterprise Document Intelligence Vol.1 #2D）：给出业务伙伴能复核的\"reranker 机制学\"：reranker 与 embedder 是同一机制（统计 token 关联），仅 conditioning 不同（embedder 各自独立、reranker 在 query-passage pair 上联合）；主导信号是 keyword co-occurrence 而非\"回答\"；三 embedder 把 echo（重复问句词但不回答）排第一，bge reranker 才翻转——说明专业语料（保险/医疗/监管）上 reranker 与 embedder 同样面临 OOV，\"加 cross-encoder\"不是银弹。",
+        "TDS《Is Agentic AI Just Automation?》（8/26）：厘清判别线——automation 处理\"已知未知\"（你知道要查库存），agent 处理\"未知未知\"（你不知道要查什么，得靠发现改变方向）；A320 维护、并购尽调、护肤品召回三案例；200 分支的树仍是树，复杂≠开放；企业多年刻意把开放状态工程化出流程（SOP/审批层级/ERP 规则），移除歧义=移除应对能力——为\"该不该上 agent\"提供决策准则。"
+      ],
+      "github": [
+        "Cube v1.7.27（cube-js/cube, 8/26 发布）：schema-compiler 修复\"cube extends 另一 cube 破坏父级多阶段 measures\"(#11641，与 8/25 query-orchestrator 重构共振)、cubesql 优先 SQL pushdown 而非无限后处理(#11559)、cubestore 内联聚合分区后丢行修复(#11631)、backend-native 客户端断开视为优雅结束(#11649)、新增 COPY FROM STDIN(#11538)——语义层在\"指标定义继承链正确性+查询下推\"上持续加固。同日 LTS v1.6.73/v1.4.5 修 IANA 时区校验。",
+        "WrenAI 8/26 四连修（Canner/WrenAI）：#2668 fix(cube) load/validate like views 并让 mdl.json 失败响亮（fail loud，与 8/25 load/validate 对齐）、#2675 fix(wren) 在 skipped-row 报告里标注截断值、#2657 fix(wren) 保留 MySQL/Doris 宽小数位、#2676 fix(skills) 把 generate-mdl 的 relationships.yml 示例包进必需 key——语义层引擎在\"输入校验+数值精度+配置 schema\"三处收紧，\"fail loud\"是不确定性暴露的工程化。"
+      ],
+      "product": [
+        "业务 Agent 基建进入\"读写分离治理\"阶段：DEW 操作型本体把只读语义层（Cube/MetricFlow/WrenAI 已成熟）升级为可写治理层（命名动作+前置条件+审计日志+写回源系统），Palantir Foundry 的工业级模式被开源 minimal 实现，是\"语义层 vs 知识图谱\"双路线之上的第三条路——读写一体的操作型本体；同时 VSKI 的 stock-and-flow 守恒断言与 Deterministic Reproducible Wrong 的 contradiction guard 共振指向\"评估链自身需被审计\"，dbt 的 1%成熟率数据为信任基建投入提供立项依据。"
+      ]
+    }
+  },
+  "items": [
+    {
+      "tag": "paper",
+      "title": "Self-Optimizing Enterprise RAG+SQL Knowledge Agents：检索/Schema 翻译/事件图推理/模型路由统一自优化框架",
+      "date": "2026-08-25",
+      "source": "Research Square preprint (OpenAlex indexed)",
+      "link": "https://doi.org/10.21203/rs.3.rs-10798738/v1",
+      "summary": "Harshil Lodhiya 提出企业级 RAG+SQL 知识 Agent 的统一自优化框架，把四个此前割裂的能力——统一检索（RAG）、Schema-aware 查询翻译（text-to-SQL）、事件图推理（event graph reasoning）、自适应模型路由（adaptive model routing）——集成进单一自优化闭环。概念域覆盖 SQL/Schema/Enterprise Information System/Active Database/Knowledge Extraction/Executor，直指\"让 AI 真正懂业务数据并精确执行\"的四大要素。OpenAlex 概念标签与用户三大方向（业务知识库/语义理解/精确查询）高度对齐。arXiv 全站今日从本机访问被 reset（export.arxiv.org 与 arxiv.org 均连接重置），本条经 OpenAlex API 核实元数据与概念，摘要未在 OpenAlex 提供，引用数=0（8/25 新文符合预期）。",
+      "insight": "架构师点评：这是本周最贴合用户\"AI for 业务\"全栈场景的一篇——它把用户正纠结的四块（检索/Schema 翻译/事件图/路由）显式地放进一个自优化闭环，而非各自为政。与 8/24 ISC（ingest-time 语义编译为 atomic claims）共振：ISC 在写入侧编译，本文在查询侧统一四能力并自优化。\"事件图推理\"对用户上百字段宽表 API 的字段间隐式依赖建模直接可迁移。局限是 preprint 无摘要无法核实机制细节，需待全文。",
+      "detail": {
+        "why": "用户的三大方向（业务知识库/语义理解/精确查询）在这篇里被作为一个统一 Agent 的四个子系统处理，提供了\"分模块建但又统一优化\"的参照架构。",
+        "mechanism": "统一自优化闭环：检索→Schema-aware 查询翻译→事件图推理→自适应模型路由，四者反馈进自优化器（具体机制待全文）。",
+        "deep": "与 8/24 Beyond the Harness（context 工件 ROI 2-3x）互补：Beyond the Harness 证明 context 工件比调参 ROI 高，本文把四能力统一进 Agent 闭环自优化，两者都指向\"端到端优化 > 单点调参\"。事件图推理维度对用户上百字段宽表 API（字段间有业务事件因果）尤为关键。",
+        "apply": "落地建议：把用户的业务 Agent 拆为检索/翻译/图推理/路由四个可独立优化又共享反馈的子系统，用真实查询历史做自优化信号；宽表 API 场景重点投入事件图推理子模块。",
+        "caveats": "Research Square preprint（非 arXiv/会议），机制细节待全文核实；OpenAlex 无摘要，引用0（8/25 新文符合预期）；arXiv 全站今日不可达，无法交叉核实是否有 arXiv 版本。",
+        "business": "统一自优化框架意味着企业不必为每种能力（检索/SQL/图/路由）分别采购或自建孤立系统，而是用一个闭环持续从真实查询中学——降低集成复杂度，把数据护城河（查询历史）转化为持续优化燃料。对从\"研发知识库\"转\"业务知识库\"的团队，它提供了\"分阶段建子系统但终态统一\"的路线图。",
+        "sources": [
+          {
+            "url": "https://doi.org/10.21203/rs.3.rs-10798738/v1",
+            "title": "Self-Optimizing Enterprise RAG+SQL Knowledge Agents (OpenAlex DOI)"
+          },
+          {
+            "url": "https://api.openalex.org/works/https://doi.org/10.21203/rs.3.rs-10798738/v1",
+            "title": "OpenAlex metadata: concepts=SQL/Schema/Enterprise IS/Knowledge Extraction, cited=0"
+          }
+        ],
+        "diagram": {
+          "title": "Self-Optimizing Enterprise RAG+SQL Knowledge Agent 四能力闭环",
+          "flow": [
+            {
+              "label": "统一检索 RAG",
+              "sub": "检索业务知识库",
+              "type": "database"
+            },
+            {
+              "label": "Schema-aware 查询翻译",
+              "sub": "text-to-SQL/API schema",
+              "type": "backend"
+            },
+            {
+              "label": "事件图推理",
+              "sub": "宽表字段间因果",
+              "type": "database"
+            },
+            {
+              "label": "自适应模型路由",
+              "sub": "按难度选模型",
+              "type": "cloud"
+            },
+            {
+              "label": "自优化器",
+              "sub": "真实查询反馈",
+              "type": "backend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "四能力统一",
+              "text": "检索/翻译/图推理/路由进单一自优化闭环，非各自为政"
+            },
+            {
+              "label": "事件图维度",
+              "text": "对上百字段宽表 API 字段间隐式依赖建模直接可迁移"
+            },
+            {
+              "label": "待全文",
+              "text": "preprint 无摘要，机制细节待全文核实"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "AgentWeave：在 LLM 推理前用确定性路由层把候选工具集收窄 70%，function calling 成功率从 0 提到 12.5%",
+      "date": "2026-08-24",
+      "source": "arXiv 2608.23078 (Semantic Scholar 引用已核实=0)",
+      "link": "https://arxiv.org/abs/2608.23078",
+      "summary": "Singla 等提出 AgentWeave——在 LLM 推理前插入一层确定性路由，用 eligibility/requirement/capability/routing 四类信号构造有界的 model-visible 动作空间，下游模型不变。在冻结的 MadeAgents/Hammer2.1-1.5b + 48 道 BFCL V4 多函数任务上，AgentWeave 达 6/48（12.5%），而 all-tools/deterministic random top-8/semantic top-8 基线均为 0/48；配对成功率差 +12.5pp，10000 次重采样配对 bootstrap 95%CI 为 +4.17~+22.92，exact McNemar p=0.03125。相对 all-tools，工具暴露少 70.18%、输入 token 少 61.70%、平均本地模型延迟低 50.95%。Semantic Scholar 已核实 citationCount=0（8/24 新文符合预期）。arXiv 全站今日从本机不可达（连接重置），本条摘要经 Semantic Scholar paper lookup API 获取并核实。",
+      "insight": "架构师点评：这是本周对用户\"上百字段宽表 API\"最直接可迁移的一篇。用户的核心痛点是宽表 API 上百字段+多个业务 API，全量塞进 prompt 既贵又让模型在相似字段间混淆。AgentWeave 的确定性路由层（eligibility/requirement/capability/routing）正好是\"调 API 前先收窄候选字段/API 集\"的工程模板——路由是独立于推理的可评估阶段。与 8/23 Pandora's Router（VoI 路由）共振但方向相反：Pandora 路由的是专家，AgentWeave 路由的是工具/字段候选。McNemar p=0.03125 在 n=48 上是硬统计证据。局限：绝对成功率仍低（12.5%），作者明确说这是 routing-pressure 研究非 leaderboard 分数。",
+      "detail": {
+        "why": "用户上百字段宽表 API 场景下，全量 schema 进 prompt 导致 token 爆炸+相似字段混淆。AgentWeave 提供了\"推理前确定性收窄候选\"的可量化模板，直接降 token 61.7%+延迟 50.95%。",
+        "mechanism": "确定性 pre-inference 路由层：eligibility（哪些工具可调）+requirement（调用需满足什么）+capability（工具能做什么）+routing（选哪几个进 model-visible 集合）四信号构造有界动作空间，下游 LLM 不变。",
+        "deep": "与 8/24 Beyond the Harness context 工件经济学共振：两者都把优化前移到 LLM 推理之前——Beyond the Harness 蒸馏历史查询为 reference cards，AgentWeave 用确定性路由收窄候选。与 8/22 Bitter Lesson of Tool Calling（PYC 代码式调用优于 JSON）互补：AgentWeave 决定\"调哪些\"，PYC 决定\"怎么调\"。BFCL V4 multiple-function 是真实多工具场景。",
+        "apply": "落地建议：在用户业务 Agent 的 API 调用层前加一个确定性路由子层，用业务规则（哪类查询能调哪类 API/字段集）做 eligibility+requirement 过滤，只把收窄后的候选 schema 交给 LLM；路由逻辑代码化可审计，与 8/26 DEW 操作型本体的\"治理动词\"共振。",
+        "caveats": "绝对成功率 12.5% 仍低（作者自陈这是 routing-pressure 研究非 leaderboard 分数）；n=48 样本小；用 1.5b 小模型，大模型上 all-tools 基线可能非 0；BFCL 任务与用户业务 API 语义距离待验证。",
+        "business": "function calling 在工具/API 丰富场景下的成本与可靠性是 agent 落地的双重瓶颈。AgentWeave 证明\"路由作为独立阶段\"可同时降本（token-61.7%）与提准（0→12.5%），为企业把数百业务 API/字段交给 agent 提供了\"先收窄再推理\"的工程范式，降低大模型部署门槛。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.23078",
+            "title": "AgentWeave: Routing Before Reasoning for Efficient Function Calling in Tool-Rich Language Models"
+          },
+          {
+            "url": "https://api.semanticscholar.org/graph/v1/paper/ARXIV:2608.23078",
+            "title": "Semantic Scholar: citationCount=0 已核实, abstract 已获取"
+          }
+        ],
+        "diagram": {
+          "title": "AgentWeave 确定性路由层：推理前收窄候选动作空间",
+          "flow": [
+            {
+              "label": "全量工具/API/字段集",
+              "sub": "上百候选",
+              "type": "database"
+            },
+            {
+              "label": "确定性路由层",
+              "sub": "eligibility+requirement+capability+routing",
+              "type": "backend"
+            },
+            {
+              "label": "有界 model-visible 动作空间",
+              "sub": "收窄70%",
+              "type": "backend"
+            },
+            {
+              "label": "冻结 LLM 推理",
+              "sub": "Hammer2.1-1.5b 不变",
+              "type": "cloud"
+            },
+            {
+              "label": "函数调用结果",
+              "sub": "0/48→6/48",
+              "type": "external"
+            }
+          ],
+          "notes": [
+            {
+              "label": "路由独立可评估",
+              "text": "路由是独立于推理的阶段，可单独度量与审计"
+            },
+            {
+              "label": "token-61.7%",
+              "text": "输入 token 少 61.70%，延迟低 50.95%"
+            },
+            {
+              "label": "McNemar p=0.03125",
+              "text": "n=48 上硬统计证据，但绝对成功率仍低"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "VSKI Whitepaper：符号层断言真值、神经层提议被验证的 stock-and-flow 审计基底",
+      "date": "2026-08-23",
+      "source": "Zenodo 22073019 (OpenAlex indexed)",
+      "link": "https://doi.org/10.5281/zenodo.22073019",
+      "summary": "VSKI（Vector Semantic Knowledge Index）是自托管平台+VSKI Lab 建模环境，实现一个理念：符号层持有并断言真值，神经层提议并被验证。核心形式对象是 stock-and-flow 有向图，每个 tick 上对量守恒做断言——会计错误、凭空出现的概率质量、消失的资金被构造性拒绝而非事后发现。平台提供 typed collections/SQL views/全文+向量搜索、event-sourced workflow、records API；Lab 提供建模循环：组合系统→逐 tick 运行→fence 并审计 agent 干预→捕获轨迹→声明目标→在同一 harness 内训练替代。两个案例：学术（概率空间作为流网络，守恒=全概率律）与业务（外卖厨房，守恒=双式记账，有趣行为=排队）。",
+      "insight": "架构师点评：VSKI 的\"构造性拒绝而非事后发现\"与 8/26 DEW 操作型本体的\"拒绝是一等返回值\"+8/24 Deterministic Reproducible Wrong 的\"contradiction guard\"三方共振——都在说业务可信度要靠基底断言而非靠模型自觉。stock-and-flow 守恒对用户业务数据可信度验证直接可迁移：金额/数量/状态转移都该有守恒断言。双式记账=守恒是业务语义层最硬的约束代码化。",
+      "detail": {
+        "why": "用户核心课题之一是\"业务数据可信度验证\"。VSKI 给出了\"守恒断言在基底\"的工程基底——不是事后校验而是构造性拒绝，与用户\"上百字段宽表 API 返回值可信度\"需求直接相关。",
+        "mechanism": "stock-and-flow 有向图+每 tick 量守恒断言：符号层断言真值，神经层提议被验证；typed collections+SQL views+全文/向量搜索+event-sourced workflow+records API；Lab 做 fence/审计 agent 干预/轨迹捕获/替代训练。",
+        "deep": "与 8/26 DEW 操作型本体（命名动作+前置条件+拒绝一等返回值）强共振：VSKI 在数据基底层做守恒断言，DEW 在动作层做前置条件断言，两者都是\"构造性拒绝\"。与 8/17 Yannick 语义控制平面的\"执行契约（计算不变量）\"共振：VSKI 的守恒就是一种计算不变量。概率空间案例（守恒=全概率律）是业务语义的形式化锚点。",
+        "apply": "落地建议：在用户业务知识库/API 返回值校验层引入守恒断言（金额守恒=双式记账、状态转移守恒=状态机不变量），用 VSKI 的 stock-and-flow 建模关键业务量；agent 干预经 fence 审计后再提交。",
+        "caveats": "Zenodo whitepaper（非同行评审），具体实现成熟度待评估；业务案例是外卖厨房（队列行为），与企业级 ERP/CRM 复杂度距离待验证；\"自托管\"运维成本未量化。",
+        "business": "\"构造性拒绝而非事后发现\"是数据可信度的范式转变——传统数据质量是事后告警，VSKI 让违规在基底就不可能提交。对业务 Agent 而言，这意味着 agent 调 API 拿到的值在基底就守恒可信，降低 agent 校验负担与误判风险。双式记账=守恒为企业财务场景提供最硬的语义层约束代码化。",
+        "sources": [
+          {
+            "url": "https://doi.org/10.5281/zenodo.22073019",
+            "title": "The VSKI Whitepaper: Auditable Intelligent Systems on a Stock-and-Flow Substrate (Zenodo)"
+          }
+        ],
+        "diagram": {
+          "title": "VSKI：符号层断言真值，神经层提议被验证",
+          "flow": [
+            {
+              "label": "stock-and-flow 有向图",
+              "sub": "业务量+流",
+              "type": "database"
+            },
+            {
+              "label": "符号层断言",
+              "sub": "守恒/不变量",
+              "type": "security"
+            },
+            {
+              "label": "神经层提议",
+              "sub": "agent 干预",
+              "type": "backend"
+            },
+            {
+              "label": "fence+审计",
+              "sub": "逐 tick 验证",
+              "type": "security"
+            },
+            {
+              "label": "构造性拒绝",
+              "sub": "违规不提交",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "构造性拒绝",
+              "text": "会计错/概率凭空/资金消失在基底被拒而非事后发现"
+            },
+            {
+              "label": "双式记账=守恒",
+              "text": "业务语义层最硬约束代码化"
+            },
+            {
+              "label": "三方共振",
+              "text": "VSKI 基底层+DEW 动作层+Contradiction guard 评估层"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "Deterministic, Reproducible, and Wrong：自研评分器制造 Agent 记忆伪发现，评估链自身需被审计",
+      "date": "2026-08-24",
+      "source": "Zenodo 22079951 (OpenAlex indexed)",
+      "link": "https://doi.org/10.5281/zenodo.22079951",
+      "summary": "本文问的是逆问题：当 harness 把一条合法正确的 note 投递进 agent 上下文，且 note 断言 agent 既无法从工作区印证、又无法通过默认行为得出的事，附加\"corroboration affordance\"（让 agent 自己核实声明）是否改变 agent 行为。首轮产生干净标题：note 从两侧确认投递，agent 仍犯 note 要防的错。但该标题是自研确定性评分器（无任何 LLM）的伪发现——评分器在命令任何位置匹配 shell 文本，对 `cat deploy.sh`（读）误判为执行。重评每个保留会话零额外模型成本即清除所有标记。贡献是：outcome 级 provenance-only note 变体的负结果、一条 note 进入 agent stated reasoning 的完整样本（counterfactual 留空）、只在执行位置触发的 shell 匹配器、agent 所做与 workspace 所示间的 machine-readable contradiction guard（不一致时自动 fail 记录）。",
+      "insight": "架构师点评：这是对\"评估链自身可信度\"最硬的一篇。与 8/24 Phantom Gains（测量伪影 0.280 虚假提升）+8/23 TDS LLM Judge（self-preference bias）+8/24 TDS Bug Detection（信息缺失>难度）四方共振——都在说评估器自身的 bug 会系统性地制造或掩盖 agent 能力结论。\"只在执行位置触发的 shell 匹配器\"对用户上百字段宽表 API 场景直接可迁移：API 调用是否真的执行（而非只在文本里出现）必须按执行位置判定。contradiction guard 是\"agent 所做 vs workspace 所示\"的机器可读校验，是业务 Agent 可信度的最后一道闸。",
+      "detail": {
+        "why": "用户的业务 Agent 如果用自研评分/校验逻辑判断\"查询是否成功\"，评分器自身的 bug 会制造伪发现。本文把\"评估器自身需被审计\"做成了可操作的 guard。",
+        "mechanism": "shell 匹配器只在执行位置触发（非命令任何位置）+contradiction guard 在 agent 所做与 workspace 所示间机器可读校验，不一致自动 fail 记录；重评零额外模型成本。",
+        "deep": "与 8/24 Phantom Gains 的 per-problem exact test+FDR 共振：两者都在说评估方法可完全反转结论。与 8/24 TDS Bug Detection 的\"未文档化 API 契约 12/12 全败\"共振：评分器对 `cat deploy.sh` 的误判正是\"未文档化契约\"（读 vs 执行）。\"note 进入 agent stated reasoning 但 counterfactual 留空\"是 agent 可解释性研究的诚实样本。",
+        "apply": "落地建议：用户业务 Agent 的评估/校验层必须配 contradiction guard（agent 声称做了什么 vs 系统实际状态），且任何模式匹配只在\"执行位置\"触发而非文本出现；评估器自身变更需经与 agent 同级的审计。",
+        "caveats": "pilot 规模小，负结果不否定 provenance affordance 整体方向；counterfactual 留空意味着\"note 改变行为\"的因果未确证；自研评分器 bug 是个案，普适性待更多案例。",
+        "business": "评估链可信度是 agent 投资决策的隐性根基——一个有 bug 的评分器会让企业误判 agent 能力（高估或低估），导致投资错配。\"零额外模型成本重评\"意味着评估审计的边际成本极低，企业应把\"评估器审计\"纳入 agent 上线的标准 checklist，与 8/24 dbt 的\"信任基础设施\"立项论据互补。",
+        "sources": [
+          {
+            "url": "https://doi.org/10.5281/zenodo.22079951",
+            "title": "Deterministic, Reproducible, and Wrong: How Our Own Scorer Manufactured an Agent-Memory Finding (Zenodo)"
+          }
+        ],
+        "diagram": {
+          "title": "评估链审计：自研评分器伪发现 → contradiction guard",
+          "flow": [
+            {
+              "label": "自研确定性评分器",
+              "sub": "无 LLM",
+              "type": "backend"
+            },
+            {
+              "label": "命令任何位置匹配 shell",
+              "sub": "bug 源",
+              "type": "security"
+            },
+            {
+              "label": "cat deploy.sh 误判为执行",
+              "sub": "读≠执行",
+              "type": "security"
+            },
+            {
+              "label": "伪发现:note 投递后仍犯错",
+              "sub": "重评清除",
+              "type": "backend"
+            },
+            {
+              "label": "只在执行位置触发匹配器",
+              "sub": "修正",
+              "type": "security"
+            },
+            {
+              "label": "contradiction guard",
+              "sub": "所做 vs 所示",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "评估器自身被审计",
+              "text": "无 LLM 的确定性评分器也能制造伪发现"
+            },
+            {
+              "label": "零成本重评",
+              "text": "重评零额外模型成本即清除所有标记"
+            },
+            {
+              "label": "执行位置触发",
+              "text": "对 API 调用是否真执行按位置判定"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "DEW《Building an Operational Ontology》：Palantir Foundry 的可写治理本体被开源 minimal 化",
+      "date": "2026-08-26",
+      "source": "Data Engineering Weekly (Togo YAMANAKA)",
+      "link": "https://www.dataengineeringweekly.com/p/building-an-operational-ontology",
+      "summary": "用电商并购场景（两套订单系统 status=2 vs 'SHIPPED'）演示\"操作型本体\"：在只读语义层（Customer/Order/Product 对象+链接）之上，增加可写治理层。核心设计：无通用 UPDATE 路径（设计性缺席），每个业务决策是命名动作（如 cancelOrder 带 target+params+precondition+effects+write-back）；前置条件违反返回 machine-readable 错误码（SHIPPED_ORDER_CANNOT_BE_CANCELLED）；拒绝是一等返回值不是异常（Rust/Haskell Result 类型精神）；每次尝试（应用或拒绝）入审计日志。三态状态权属：source-backed（状态 SSoT 在上游，写回上游）/ontology-owned（本体 datastore 是 SSoT）/derived（只算不写），无主状态被禁止。re-index 时要么整体拒绝要么完整覆盖。agent 与人走同一治理门，提示词只说意图，业务规则在 ontology 侧强制不可被 prompt 重写动摇。参考实现 TypeScript MIT（github.com/gura105/operational-ontology）。延续 8/14《What an Ontology for AI Agents Actually Needs》。",
+      "insight": "架构师点评：这是本周对用户\"语义层 vs 知识图谱\"双路线最具颠覆性的一篇——它在两者之上提出第三条路：读写一体的操作型本体。只读语义层（Cube/MetricFlow/WrenAI）已成熟，但\"能否从语义层取消一个订单\"的回答是不能。操作型本体把业务动词（cancelOrder/placeOrder）提升为带前置条件+审计+写回的一等治理对象，拒绝即一等返回值是\"安全治理代码化\"最纯粹的工程化（与 8/26 'Do Not' Is Not Deny 的 CLAUDE.md write-only channel 警告正反对照）。\"无主状态被禁止\"对用户上百字段宽表 API 字段权属界定直接可迁移：每个字段必须声明 source-backed/ontology-owned/derived。agent 走同一门意味着 prompt 重写动摇不了治理。",
+      "detail": {
+        "why": "用户业务 Agent 不能只读不写——业务系统精确查询最终要触发业务动作。操作型本体提供了\"写治理\"的工程模板，填补只读语义层的缺口。",
+        "mechanism": "命名动作（target+params+precondition+effects+write-back）+拒绝即一等返回值+审计日志+三态状态权属+re-index 整体拒绝/完整覆盖+agent 与人走同一治理门。",
+        "deep": "与 8/14 DEW《What an Ontology for AI Agents Actually Needs》（本文是其续篇，专讲写侧）共振。与 8/17 Yannick 语义控制平面\"两份契约\"互补：Yannick 管读侧语义契约+执行契约，DEW 操作型本体管写侧治理动作。与 8/26 VSKI 的 stock-and-flow 守恒断言共振：VSKI 在数据基底守恒，DEW 在动作层前置条件断言。\"拒绝即一等返回值\"与 8/23 SBproxy Cedar 策略引擎的\"暴露拒绝/降级/驳回\"共振。reverse ETL 与 write-back 的区别（无拒绝 vs 有拒绝的治理决策）是关键判别。",
+        "apply": "落地建议：从一个业务操作（如取消订单：一个对象+一个动作+一个前置条件+审计日志+写回）开始建操作型本体，而非全公司建模；把用户上百字段宽表 API 的每个字段声明权属（source-backed/ontology-owned/derived）；agent 调 API 经同一治理门，拒绝码可被 agent 读取恢复解释。",
+        "caveats": "minimal 实现（生产应 quarantine 孤儿而非整体拒绝 re-index）；故意省略 authorization（谁能调哪个动作）与 concurrency/idempotency；前置条件是 validity 规则非 permission；电商场景与企业 ERP/CRM 复杂度距离待验证。",
+        "business": "\"能否从语义层取消订单\"是业务 Agent 从\"只读分析\"走向\"可执行操作\"的临界判别。操作型本体把 Palantir Foundry 的工业级模式开源 minimal 化，降低企业自建可写治理层的门槛。\"拒绝即一等返回值\"让 agent 能读拒绝码并恢复——这是 agent 可靠执行业务动作的前提。对从\"研发知识库\"转\"业务\"的团队，它提供了\"先建一个命名动作\"的最小起步路径。",
+        "sources": [
+          {
+            "url": "https://www.dataengineeringweekly.com/p/building-an-operational-ontology",
+            "title": "Building an Operational Ontology: An E-Commerce Walkthrough (DEW, Togo YAMANAKA)"
+          },
+          {
+            "url": "https://github.com/gura105/operational-ontology",
+            "title": "Operational Ontology 参考实现 (TypeScript MIT)"
+          }
+        ],
+        "diagram": {
+          "title": "操作型本体：读语义层 + 写治理动词的非对称",
+          "flow": [
+            {
+              "label": "只读语义层",
+              "sub": "Customer/Order/Product",
+              "type": "database"
+            },
+            {
+              "label": "命名动作 cancelOrder",
+              "sub": "target+params+precondition+effects",
+              "type": "backend"
+            },
+            {
+              "label": "前置条件检查",
+              "sub": "拒绝已发货",
+              "type": "security"
+            },
+            {
+              "label": "拒绝即一等返回值",
+              "sub": "SHIPPED_ORDER_CANNOT_BE_CANCELLED",
+              "type": "security"
+            },
+            {
+              "label": "审计日志",
+              "sub": "应用或拒绝均记录",
+              "type": "security"
+            },
+            {
+              "label": "写回源系统",
+              "sub": " governed write-back",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "无通用UPDATE",
+              "text": "设计性缺席，每个决策是命名动作"
+            },
+            {
+              "label": "三态权属",
+              "text": "source-backed/ontology-owned/derived，无主被禁止"
+            },
+            {
+              "label": "agent同人门",
+              "text": "prompt 重写动摇不了治理"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "dbt《Scaling AI is easy. Trusting it is hard.》：92%加投/1%成熟，信任基础设施是 AI 规模化瓶颈",
+      "date": "2026-08-26",
+      "source": "dbt Labs Blog",
+      "link": "https://www.getdbt.com/blog/scaling-ai-is-easy-trusting-it-is-hard",
+      "summary": "dbt Labs 指出：未来三年 92% 企业计划加投 AI，但仅 1% 自认 AI 部署成熟。随 AI 从 copilot 走向 autonomous agent，原有数据弱点（数据质量/治理/业务上下文/互操作性）被放大为企业级挑战。引用 2026 dbt State of Analytics Engineering Report 数据，强调 trusted data+governance+business context+interoperability 是可靠可解释产出的基础。配套 Enterprise AI Data Maturity Model 框架做能力差距评估，定位下一步投资方向。越走向 autonomous，基础搞错的成本越高。",
+      "insight": "架构师点评：1%成熟率是\"AI for 业务\"立项最硬的数据之一——与 8/15 dbt《Why Agentics Projects Fail》的 Gartner 40%将取消+8/17 Wayfair 41000 工单 vs Klarna 反面共振。三组数据共同指向\"信任基础设施\"是 agent 投资的隐性瓶颈：不是模型不够强，是数据/治理/业务上下文不够可信。对用户从\"研发知识库\"（已建成）转\"业务知识库\"的转型，1%成熟率说明业务侧信任基建几乎是空白，正是投入机会。Enterprise AI Data Maturity Model 提供了能力差距自评框架。",
+      "detail": {
+        "why": "为\"AI for 业务\"立项提供\"信任基础设施\"硬论据：92%加投 vs 1%成熟的鸿沟说明瓶颈不在模型在基建。",
+        "mechanism": "trusted data+governance+business context+interoperability 四要素 + Enterprise AI Data Maturity Model 自评框架定位差距。",
+        "deep": "与 8/15 dbt《Why Agentics Projects Fail》三支柱（lineage+semantic layer+governance）+Gartner 40%取消共振；与 8/24 VSKI 的\"符号层断言真值\"共振：信任需在基底断言；与 8/26 DEW 操作型本体的\"治理动词\"共振：信任需在动作层强制。",
+        "apply": "落地建议：用 Enterprise AI Data Maturity Model 自评业务侧信任基建差距，优先投 business context（业务术语/字段语义）+governance（治理动词），而非堆模型能力。",
+        "caveats": "dbt 作为数据基建厂商有利益相关（推广其 semantic layer/governance 产品）；1%成熟率是自评数据可能有自谦偏差；框架细节需待配套指南发布。",
+        "business": "1%成熟率意味着市场几乎全部在\"未成熟但已加投\"状态——既是风险（投资可能打水漂）也是机会（信任基建供应商/方法论有巨大空间）。对从研发转业务的团队，业务侧信任基建的空白正是差异化投入点。",
+        "sources": [
+          {
+            "url": "https://www.getdbt.com/blog/scaling-ai-is-easy-trusting-it-is-hard",
+            "title": "Scaling AI is easy. Trusting it is hard. (dbt Labs)"
+          }
+        ],
+        "diagram": {
+          "title": "信任基础设施四要素：AI 规模化的隐性瓶颈",
+          "flow": [
+            {
+              "label": "92%加投 AI",
+              "sub": "但仅1%成熟",
+              "type": "cloud"
+            },
+            {
+              "label": "trusted data",
+              "sub": "数据可信",
+              "type": "database"
+            },
+            {
+              "label": "governance",
+              "sub": "治理",
+              "type": "security"
+            },
+            {
+              "label": "business context",
+              "sub": "业务上下文",
+              "type": "backend"
+            },
+            {
+              "label": "interoperability",
+              "sub": "互操作",
+              "type": "backend"
+            },
+            {
+              "label": "Maturity Model",
+              "sub": "自评差距",
+              "type": "external"
+            }
+          ],
+          "notes": [
+            {
+              "label": "1%成熟",
+              "text": "瓶颈在基建不在模型"
+            },
+            {
+              "label": "越autonomous成本越高",
+              "text": "基础搞错的成本随自治度上升"
+            },
+            {
+              "label": "三组数据共振",
+              "text": "1%成熟+40%取消+Wayfair/Klarna 正反"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "TDS《How Does a RAG Reranker Really Work?》：reranker 与 embedder 同机制不同 conditioning，专业语料同 OOV",
+      "date": "2026-08-26",
+      "source": "Towards Data Science (Angela Shi, Enterprise Document Intelligence Vol.1 #2D)",
+      "link": "https://towardsdatascience.com/how-does-a-rag-reranker-really-work-the-honest-answer-most-data-scientists-wont-give-you/",
+      "summary": "给出业务伙伴能复核的 reranker 机制学：embedder（bi-encoder）各自独立嵌入再 cosine；reranker（cross-encoder）把 query+passage 拼成 [CLS]query[SEP]passage[SEP] 联合 attention 出一个分，比 embedder 慢 30-100 倍。训练信号是 MS MARCO 等(query,passage,relevance)三元组，模型学的不是\"回答\"而是\"哪些 query token 与哪些 passage token 在高 relevance 对里共现\"——本质是 query-passage pair 级 keyword linking。三 embedder（MiniLM/ada-002/text-embedding-3-large）把 echo（重复问句词但不回答）排第一，两 bge reranker 才翻转——说明专业语料（保险/医疗/监管）上 reranker 与 embedder 同样面临 OOV，\"加 cross-encoder\"非银弹。配套 notebook（doc-intel/notebooks-vol1）可自测。",
+      "insight": "架构师点评：对用户上百字段宽表 API 字段语义检索直接相关——字段名/业务术语是高度专业语料，reranker 在 MS MARCO 通用英语上学的 token 共现关联迁移不到业务术语。\"echo 排第一\"说明 embedder 把字段名相似当相关，reranker 才能区分\"问句词重复\"vs\"真回答\"。落地时需在业务语料上 fine-tune reranker 或用业务术语同义词表预处理，而非直接套通用 cross-encoder。",
+      "detail": {
+        "why": "用户业务知识库/RAG 是专业语料，通用 reranker 的 OOV 失效直接威胁检索质量。理解 reranker 机制才能决定\"何时值得加、何时该换更便宜的\"。",
+        "mechanism": "cross-encoder 联合 attention+MS MARCO 三元组训练，学 query-passage token 共现关联（非回答），echo 测试区分 embedder vs reranker。",
+        "deep": "与 8/23 TDS Enterprise RAG 十大纲领的\"结构优先检索\"共振：reranker 是检索后处理，结构化优先才能让 reranker 发挥；与 8/24 ISC ingest-time 编译共振：专业语料需 ingest-time 编译为 atomic claims 而非靠 query-time reranker。\"同机制不同 conditioning\"与 8/26 AgentWeave 的\"同模型不同候选集\"呼应：优化点在条件化而非换模型。",
+        "apply": "落地建议：在业务术语同义词表上预处理 query/passage，或用业务语料 fine-tune cross-encoder；用 echo 测试自检 reranker 是否真在区分；专业语料优先结构化标注而非堆 reranker。",
+        "caveats": "MS MARCO 通用英语，专业语料迁移性有限；bge/MiniLM 具体模型，新模型可能不同；echo 测试是诊断工具非完整评估；notebook 配套但未在用户场景验证。",
+        "business": "\"加 reranker 因为教程这么写\"是常见误区——理解机制后\"何时值得加\"变成可核算的成本-收益决策。专业语料上 reranker 与 embedder 同样失效，意味着企业 RAG 不能靠通用 reranker 兜底，需投入业务语料 fine-tune 或结构化标注，这是\"AI for 业务\"的隐性成本。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/how-does-a-rag-reranker-really-work-the-honest-answer-most-data-scientists-wont-give-you/",
+            "title": "How Does a RAG Reranker Really Work? (TDS, Angela Shi, Enterprise Document Intelligence Vol.1 #2D)"
+          }
+        ],
+        "diagram": {
+          "title": "Reranker 机制：同 token 共现关联，不同 conditioning",
+          "flow": [
+            {
+              "label": "embedder 各自独立",
+              "sub": "两向量 cosine",
+              "type": "backend"
+            },
+            {
+              "label": "reranker 联合 attention",
+              "sub": "[CLS]q[SEP]p[SEP]",
+              "type": "backend"
+            },
+            {
+              "label": "MS MARCO 三元组",
+              "sub": "学 token 共现",
+              "type": "database"
+            },
+            {
+              "label": "echo 排第一",
+              "sub": "embedder 失效",
+              "type": "security"
+            },
+            {
+              "label": "专业语料 OOV",
+              "sub": "同 embedder 失效",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "同机制不同conditioning",
+              "text": "优化点在条件化非换模型"
+            },
+            {
+              "label": "echo测试",
+              "text": "区分问句词重复 vs 真回答"
+            },
+            {
+              "label": "专业语料需fine-tune",
+              "text": "通用 reranker 迁移性有限"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "TDS《Is Agentic AI Just Automation?》：agent 处理未知未知、automation 处理已知未知的判别线",
+      "date": "2026-08-26",
+      "source": "Towards Data Science",
+      "link": "https://towardsdatascience.com/is-agentic-ai-just-automation/",
+      "summary": "作者从航空维护（A320 AIR PACK 1 FAULT）案例出发，厘清 agentic vs automation 的判别线：automation 处理\"已知未知\"（你知道要查库存，只是不知道结果），agent 处理\"未知未知\"（你不知道要查什么，得靠发现改变方向）。A320 维护的 CFDS→TSM→AMOS→MEL→rotations 链是\"复杂 flowchart\"而非 agent（200 分支的树仍是树）。真正的 agent 案例：并购尽调中 agent 读 3000 页合同发现异常 indemnity 条款→追监管备案→追环境调查→追新闻/法院档案，发现谁都没列在 checklist 上的风险；护肤品召回中 agent 发现投诉聚类在潮湿气候+夏季+某零售链，假设冷链/配方稳定性问题，跨制造/物流日志追批次。企业多年刻意把开放状态工程化出流程（SOP/审批层级/ERP 规则），移除歧义=移除应对能力。",
+      "insight": "架构师点评：这条判别线对用户\"该不该上 agent\"的决策直接可用——用户的\"业务系统精确查询\"如果查询模式可枚举（已知未知），automation+语义层就够且更可靠；只有当查询方向需靠发现改变（未知未知）才值得 agent 的不确定性。这与 8/15 dbt《Why Agentics Projects Fail》的\"难任务上 agent 不可靠，止于 workflow 级\"共振。\"移除歧义=移除应对能力\"是对企业过度 SOP 化的警示：业务侧保留一定开放状态是为 agent 留接口。",
+      "detail": {
+        "why": "为\"AI for 业务\"选型提供判别准则：不是所有业务查询都该上 agent，已知未知走 automation 更可靠更便宜。",
+        "mechanism": "判别线=任务是否需要\"发现改变方向\"（未知未知→agent）vs\"可预判要查什么\"（已知未知→automation）。",
+        "deep": "与 8/15 dbt 40%取消+8/17 Wayfair/Klarna 正反共振：Wayfair 41000 工单是已知未知（automation 胜），Klarna 850人替代是误把开放问题当已知未知（agent 不可靠）。与 8/24 Thinkingbox pass^20 鸿沟共振：偶尔成功≠可靠，已知未知用 workflow 更可靠。\"移除歧义=移除应对能力\"与 8/26 DEW 操作型本体\"无主状态被禁止\"形成张力：DEW 要消除歧义（状态权属声明），本文警示过度消除歧义会移除 agent 应对能力——平衡点是\"数据层消除歧义+动作层保留命名动词的开放组合\"。",
+        "apply": "落地建议：把用户业务查询分两类——可枚举查询模式（已知未知）用 automation+语义层+确定性路由（AgentWeave 模板），需发现改变方向的（未知未知）才用 agent；不要为所有业务查询强上 agent。",
+        "caveats": "判别线是定性准则非定量阈值；\"未知未知\"的案例（尽调/召回）偏知识工作，与用户业务数据查询场景距离待验证；作者承认\"可能有 gaps\"。",
+        "business": "判别线直接影响 agent 投资分配——把预算投在真正需\"发现改变方向\"的场景，已知未知场景用更便宜的 automation，避免\"为 agent 而 agent\"的空转。对企业\"移除歧义=移除应对能力\"的警示意味着：别把所有业务流程都 SOP 化到 agent 无接口可入。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/is-agentic-ai-just-automation/",
+            "title": "Is Agentic AI Just Automation? (TDS)"
+          }
+        ],
+        "diagram": {
+          "title": "Agentic vs Automation 判别线：未知未知 vs 已知未知",
+          "flow": [
+            {
+              "label": "已知未知",
+              "sub": "知道要查什么",
+              "type": "backend"
+            },
+            {
+              "label": "automation",
+              "sub": "workflow+语义层",
+              "type": "backend"
+            },
+            {
+              "label": "未知未知",
+              "sub": "不知道要查什么",
+              "type": "external"
+            },
+            {
+              "label": "agent",
+              "sub": "发现改变方向",
+              "type": "cloud"
+            },
+            {
+              "label": "A320维护",
+              "sub": "复杂flowchart非agent",
+              "type": "security"
+            },
+            {
+              "label": "并购尽调",
+              "sub": "真agent",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "200分支仍是树",
+              "text": "复杂≠开放，flowchart 有更便宜技术"
+            },
+            {
+              "label": "移除歧义=移除应对",
+              "text": "过度SOP化让agent无接口"
+            },
+            {
+              "label": "判别准则",
+              "text": "需发现改变方向→agent，否则automation"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "Cube v1.7.27（8/26）：schema-compiler extends 修复+SQL 下推优先+COPY FROM STDIN，LTS 同日修 IANA 时区",
+      "date": "2026-08-26",
+      "source": "GitHub (cube-js/cube)",
+      "link": "https://github.com/cube-js/cube/releases/tag/v1.7.27",
+      "summary": "Cube v1.7.27（2026-08-26）含 1 个 feature + 4 个 bug fix：(1) cubesql 新增 COPY FROM STDIN(#11538)支持批量数据导入；(2) cubesql 优先 SQL pushdown 而非无限后处理(#11559)，把计算下推数据源；(3) cubestore 内联聚合分区后丢行修复(#11631)；(4) schema-compiler 修复\"cube extends 另一 cube 破坏父级多阶段 measures\"(#11641，延续 8/25 query-orchestrator 重构对指标定义继承链的加固）；(5) backend-native 客户端断开视为优雅结束(#11649)。同日发布 LTS v1.6.73/v1.4.5，修 IANA 时区校验(#11575)。此前 v1.7.26（8/24）含 cubestore router planning flags(#11628)+dbt sync CLI(#11612)+Queue fast track(#11618)。",
+      "insight": "架构师点评：#11641 extends 修复是\"指标定义继承链正确性\"的延续——与 8/24 MetricFlow conversion-metrics filter 修复(#2120)共振：两者都修指标定义继承/派生时子定义破坏父定义的问题，这是语义层工程化的核心难点。#11559 SQL pushdown 优先与 8/23 WrenAI 只读 SELECT+查询路径安全共振：下推既是性能（少传输）也是安全（数据源执行自身权限）。COPY FROM STDIN 让 Cube 可批量导入，从\"只查询\"向\"可导入\"延展。LTS 三版本同日修时区是工程严谨。",
+      "detail": {
+        "why": "指标定义继承链正确性是语义层可信的根基——extends 破坏父级 measures 会让 agent 拿到错误聚合值。SQL pushdown 是性能+安全双收益。",
+        "mechanism": "schema-compiler extends 继承链修复+cubesql pushdown 优先+cubestore 聚合分区修复+COPY FROM STDIN 批量导入+client disconnect 优雅结束。",
+        "deep": "与 8/24 MetricFlow #2120（base_metric/base_measure filter 传递）+8/25 Cube #11641（extends 破坏 parent multi-stage measures）+8/25 query-orchestrator 重构五连发共振：本周是\"指标定义继承链正确性\"密集修复周。与 8/26 DEW 操作型本体的\"命名动作+写回\"形成读侧(Cube)+写侧(DEW)互补。LTS 时区校验与 8/17 Yannick 执行契约的\"时间戳精度\"共振。",
+        "apply": "落地建议：升级到 v1.7.27 修复 extends 继承破坏；启用 SQL pushdown 提性能+安全；用 COPY FROM STDIN 做批量导入而非逐条 API；LTS 用户升 v1.6.73/v1.4.5 修时区。",
+        "caveats": "COPY FROM STDIN 是新 feature 需验证安全（注入风险）；pushdown 依赖数据源能力，异构源行为可能不一致；extends 修复需回归测试现有 cube 定义。",
+        "business": "语义层引擎的\"指标继承链正确性\"是 agent 可信查数的根基——继承破坏会让 agent 拿到错误聚合而不自知。Cube 保持周级迭代（v1.7.25→26→27）说明语义层工业活跃度高，与知识图谱开源放缓形成对照，短期语义层路线占优。",
+        "sources": [
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.7.27",
+            "title": "Cube v1.7.27 Release Notes"
+          },
+          {
+            "url": "https://github.com/cube-js/cube/commit/657f4e1",
+            "title": "fix(schema-compiler): cube extends broke parent multi-stage measures #11641"
+          }
+        ],
+        "diagram": {
+          "title": "Cube v1.7.27：指标继承链修复 + SQL 下推 + 批量导入",
+          "flow": [
+            {
+              "label": "schema-compiler extends",
+              "sub": "修继承链#11641",
+              "type": "backend"
+            },
+            {
+              "label": "cubesql pushdown",
+              "sub": "优先下推#11559",
+              "type": "database"
+            },
+            {
+              "label": "cubestore 聚合",
+              "sub": "分区丢行修复#11631",
+              "type": "database"
+            },
+            {
+              "label": "COPY FROM STDIN",
+              "sub": "批量导入#11538",
+              "type": "backend"
+            },
+            {
+              "label": "LTS 时区",
+              "sub": "IANA 校验#11575",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "继承链正确性",
+              "text": "extends 破坏父级 measures 是语义层核心难点"
+            },
+            {
+              "label": "pushdown=性能+安全",
+              "text": "少传输+数据源权限执行"
+            },
+            {
+              "label": "周级迭代",
+              "text": "v1.7.25→26→27 语义层工业活跃"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "WrenAI 8/26 四连修：mdl.json fail-loud+宽小数位保留+截断值标注+SKILL.md 关系键",
+      "date": "2026-08-26",
+      "source": "GitHub (Canner/WrenAI)",
+      "link": "https://github.com/Canner/WrenAI/commit/5cf36cd",
+      "summary": "WrenAI 8/26 四个 commit：(1) fix(cube) #2668 load/validate like views 并让 mdl.json 失败响亮（fail loud，与 8/25 的 load/validate like views 对齐，错误不再静默）；(2) fix(wren) #2675 在 skipped-row 报告里标注截断值（truncated values，暴露数据完整性问题而非隐藏）；(3) fix(wren) #2657 保留 MySQL/Doris 宽小数位（避免精度丢失）；(4) fix(skills) #2676 把 generate-mdl 的 SKILL.md relationships.yml 示例包进必需 key（配置 schema 正确性）。延续 8/25 fix(cube) load/validate like views+mdl.json fail loud #2668 的方向。",
+      "insight": "架构师点评：这四个修复串成\"不确定性暴露为可行动数据\"的工程化——fail loud（#2668 错误不静默）+truncated values 标注（#2675 暴露截断而非隐藏）+宽小数位保留（#2657 防精度丢失）+配置 schema 正确（#2676）。与 8/24 tokensave #442（告知 literal search 什么无法扫描）共振：两者都在\"暴露不确定解析/不完整扫描\"。对用户上百字段宽表 API 直接可迁移：字段值截断、精度丢失、配置 schema 错误都必须 fail loud 标注，而非静默返回错误数据让 agent 误判。",
+      "detail": {
+        "why": "宽表 API 场景下，值截断/精度丢失/配置错误若静默会让 agent 拿到错误数据而不自知。fail loud 是不确定性暴露的工程化。",
+        "mechanism": "mdl.json fail loud+skipped-row 截断值标注+MySQL/Doris 宽小数位保留+SKILL.md relationships.yml 包必需 key。",
+        "deep": "与 8/24 tokensave #442（告知不可扫描）+8/24 'Do Not' Is Not Deny（CLAUDE.md write-only channel）共振：fail loud 是\"可执行控制>自然语言请求\"。与 8/26 Cube #11641 extends 修复共振：两者都修\"定义继承/配置正确性\"。与 8/24 Deterministic Reproducible Wrong 的 contradiction guard 共振：暴露不一致而非掩盖。8/21 refactor(core) aliased-scan 注释修正(#2648)延续代码严谨。",
+        "apply": "落地建议：用户宽表 API 返回值校验层引入 fail loud（值截断/精度丢失/字段缺失时响亮报错而非静默）；在 skipped-row 报告标注截断值让 agent 知道哪些不完整；保留宽小数位防聚合精度误差。",
+        "caveats": "fail loud 可能增加噪声需平衡阈值；宽小数位保留是 MySQL/Doris 特定，其他源待验证；SKILL.md 修复是文档/schema 层非运行时。",
+        "business": "fail loud 是数据可信度的工程化保障——静默错误是 agent 误判的最大来源。对业务 Agent 而言，让错误响亮比让错误\"看起来对\"更安全，降低 agent 基于错误数据做决策的风险。WrenAI 作为语义层引擎在\"不确定性暴露\"上的工程化与 Cube 的指标继承链修复形成双栈共振。",
+        "sources": [
+          {
+            "url": "https://github.com/Canner/WrenAI/commit/5cf36cd",
+            "title": "WrenAI fix(cube): load/validate like views; fail loud on mdl.json #2668"
+          },
+          {
+            "url": "https://github.com/Canner/WrenAI/commit/11184dc",
+            "title": "WrenAI fix(wren): mark truncated values in skipped-row report #2675"
+          }
+        ],
+        "diagram": {
+          "title": "WrenAI 8/26：不确定性暴露为可行动数据",
+          "flow": [
+            {
+              "label": "mdl.json fail loud",
+              "sub": "#2668 错误不静默",
+              "type": "security"
+            },
+            {
+              "label": "截断值标注",
+              "sub": "#2675 暴露不完整",
+              "type": "security"
+            },
+            {
+              "label": "宽小数位保留",
+              "sub": "#2657 防精度丢失",
+              "type": "database"
+            },
+            {
+              "label": "SKILL.md 关系键",
+              "sub": "#2676 配置正确",
+              "type": "backend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "fail loud",
+              "text": "错误响亮而非静默返回错误数据"
+            },
+            {
+              "label": "不确定性暴露",
+              "text": "与 tokensave #442 共振"
+            },
+            {
+              "label": "宽表API可迁移",
+              "text": "截断/精度/缺失都该标注"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "From Language Models to Agentic AI Survey：四维分类(autonomy/tool use/collaboration/safety-governance)的部署导向综述",
+      "date": "2026-08-24",
+      "source": "Springer (s12559-026-10619-1, OpenAlex indexed)",
+      "link": "https://doi.org/10.1007/s12559-026-10619-1",
+      "summary": "Springer 发表的 taxonomy 驱动部署导向综述，把 LLM agent 从被动助手到自主/工具使用/协作系统的演进用模块化参考架构+四维分类（autonomy/tool use/collaboration/safety-governance）统一分析单 agent/工具增强/多 agent 框架。强调设计权衡、能力扩展模式、反复出现的失败模式。评估方法从静态基准走向交互环境中的行为/鲁棒性/接地/运营成本评估。企业及安全关键部署重点：access control、human-in-the-loop oversight、policy enforcement。提供结构化 roadmap 统一概念基础+经验趋势+部署约束。",
+      "insight": "架构师点评：四维分类中 safety-governance 独立成维与 8/26 DEW 操作型本体的\"治理动词\"+8/24 'Do Not' Is Not Deny 的安全治理代码化共振——safety 不再是事后护栏而是架构维度。\"反复出现的失败模式\"与 8/24 Deterministic Reproducible Wrong 的评估器伪发现共振：综述应收录评估链自身失败。access control+human-in-the-loop+policy enforcement 三项与 8/23 SBproxy Cedar 策略引擎+8/19 Policy Algebra 9 维约束共振。对用户\"该选单 agent 还是多 agent\"提供四维决策框架。",
+      "detail": {
+        "why": "为用户业务 Agent 选型提供结构化 roadmap：四维分类让选型从\"单 agent vs 多 agent\"升级为\"autonomy/tool/collaboration/safety 四维定位\"。",
+        "mechanism": "模块化参考架构+四维分类(autonomy/tool use/collaboration/safety-governance)+单/工具增强/多 agent 框架分析+交互环境评估+企业部署三重点(access control/HITL/policy)。",
+        "deep": "与 8/26 DEW 操作型本体(治理动词=access control+policy enforcement)共振；与 8/24 'Do Not' Is Not Deny(safety 代码化)共振；与 8/23 SBproxy Cedar 策略引擎共振。\"反复失败模式\"与 8/24 Deterministic Reproducible Wrong(评估器伪发现)互补。",
+        "apply": "落地建议：用四维分类定位用户业务 Agent 当前位置与目标位置，优先补 safety-governance 维（access control+HITL+policy）；把\"反复失败模式\"纳入上线 checklist。",
+        "caveats": "综述覆盖广但深度有限；四维分类是框架非定量；企业部署三重点是原则非实现；发表在 Springer 但具体期刊/会议待核实（OpenAlex 显示 springer DOI）。",
+        "business": "四维分类让企业 agent 投资从\"买哪个 agent 框架\"升级为\"四维能力定位+差距投资\"。safety-governance 独立成维意味着企业不能再把安全当事后护栏，需作为架构维度前置投入。\"反复失败模式\"清单可避免重复踩坑。",
+        "sources": [
+          {
+            "url": "https://doi.org/10.1007/s12559-026-10619-1",
+            "title": "From Language Models to Agentic AI: A Survey (Springer, OpenAlex)"
+          }
+        ],
+        "diagram": {
+          "title": "Agentic AI 四维分类：部署导向参考架构",
+          "flow": [
+            {
+              "label": "autonomy",
+              "sub": "自主度",
+              "type": "cloud"
+            },
+            {
+              "label": "tool use",
+              "sub": "工具使用",
+              "type": "backend"
+            },
+            {
+              "label": "collaboration",
+              "sub": "协作",
+              "type": "external"
+            },
+            {
+              "label": "safety-governance",
+              "sub": "安全治理",
+              "type": "security"
+            },
+            {
+              "label": "企业部署三重点",
+              "sub": "access control+HITL+policy",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "safety独立成维",
+              "text": "非事后护栏而是架构维度"
+            },
+            {
+              "label": "四维定位",
+              "text": "选型从单/多agent升级为四维定位"
+            },
+            {
+              "label": "反复失败模式",
+              "text": "纳入上线checklist"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "product",
+      "title": "业务 Agent 基建进入\"读写分离治理\"阶段：操作型本体把只读语义层升级为可写治理层",
+      "date": "2026-08-27",
+      "source": "综合研判 (DEW + VSKI + Cube + WrenAI + dbt + 学术)",
+      "link": "https://hhao9817.github.io/agent-daily/",
+      "summary": "今日情报串成\"业务 Agent 基建从读走向写+评估链自身审计化\"双线。读侧：Cube v1.7.27(指标继承链修复+SQL下推)+WrenAI 8/26 四连修(fail loud+截断标注+宽小数位)持续加固只读语义层；写侧：DEW 操作型本体把 Palantir Foundry 的可写治理本体开源 minimal 化（命名动作+前置条件+拒绝一等返回值+写回源系统），填补只读语义层\"能否取消订单\"的缺口，是\"语义层 vs 知识图谱\"之上的第三条路；基底侧：VSKI 的 stock-and-flow 守恒断言（构造性拒绝而非事后发现）+Deterministic Reproducible Wrong 的 contradiction guard 让评估链自身被审计；立项侧：dbt 92%加投/1%成熟为信任基建投入提供硬论据。四组共振：(1)DEW 命名动作+VSKI 守恒断象+Contradiction guard=\"构造性拒绝\"共振；(2)AgentWeave 确定性路由+TDS reranker 同机制不同 conditioning=\"优化在条件化非换模型\"共振；(3)Cube extends 修复+MetricFlow filter 修复=\"指标定义继承链正确性\"共振；(4)WrenAI fail loud+tokensave 不可扫描告知=\"不确定性暴露为可行动数据\"共振。",
+      "insight": "架构师点评：最核心战略研判——业务 Agent 基建正从\"只读语义层\"（Cube/MetricFlow/WrenAI 已成熟）向\"读写一体的操作型本体\"跃迁。DEW 的\"命名动作+前置条件+拒绝一等返回值+写回\"是把业务动词从语义层提升为治理对象，\"拒绝即一等返回值\"让 agent 能读拒绝码并恢复——这是 agent 可靠执行业务动作的前提。VSKI 的\"构造性拒绝\"与 DEW 的\"拒绝一等返回值\"在不同层（数据基底 vs 动作）做同一件事：违规在基底被拒而非事后发现。对用户\"上百字段宽表 API\"场景，三态状态权属（source-backed/ontology-owned/derived，无主被禁止）直接可迁移为字段权属界定方法论。AgentWeave 的\"推理前确定性路由收窄候选70%\"是宽表 API 场景的工程模板。Deterministic Reproducible Wrong 警示：评估链自身的 bug 会制造伪发现，contradiction guard 是最后一道闸。\"语义层 vs 知识图谱\"双路线升级为\"读侧(语义层)+写侧(操作型本体)+基底(守恒断言)\"三层。",
+      "detail": {
+        "why": "用户业务 Agent 不能只读不写，最终要触发业务动作。读写分离治理是\"AI for 业务\"从分析走向执行的必经阶段。",
+        "mechanism": "读侧(语义层 Cube/WrenAI 加固)→写侧(操作型本体 DEW 命名动作+拒绝+写回)→基底(VSKI 守恒断言+Contradiction guard)→立项(dbt 1%成熟)四层串联。",
+        "deep": "与历次研判映射：8/17 Yannick 语义控制平面(读侧两份契约)→8/23 SBproxy Cedar(流量治理)→8/24 Beyond the Harness(context 工件经济学)→8/26 DEW 操作型本体(写侧治理)。\"构造性拒绝\"跨层共振：VSKI 数据基底+DEW 动作层+Contradiction guard 评估层。AgentWeave 路由层与 8/23 Pandora's Router 专家路由互补（路由工具 vs 路由专家）。",
+        "apply": "落地建议：(1)从一个业务动作（如取消订单）建操作型本体最小实现，声明字段三态权属；(2)在 API 调用层前加 AgentWeave 式确定性路由收窄候选；(3)评估层配 contradiction guard+执行位置触发的匹配器；(4)用 dbt Maturity Model 自评业务侧信任基建差距，优先补 business context+governance。",
+        "caveats": "操作型本体 minimal 实现需生产化（quarantine 孤儿 vs 整体拒绝）；VSKI whitepaper 非同行评审；AgentWeave 绝对成功率 12.5% 仍低；dbt 作为厂商有利益相关；评估链审计的普适性待更多案例。",
+        "business": "读写分离治理是业务 Agent 从\"只读分析\"走向\"可执行操作\"的临界跃迁。企业不必一次性建全栈，可从一个命名动作起步（DEW 最小路径）。1%成熟率说明市场几乎全在未成熟但已加投状态——信任基建供应商/方法论有巨大空间。操作型本体的开源 minimal 化降低企业自建可写治理层门槛，是把 Palantir Foundry 工业模式平民化的关键信号。",
+        "sources": [
+          {
+            "url": "https://www.dataengineeringweekly.com/p/building-an-operational-ontology",
+            "title": "DEW Building an Operational Ontology"
+          },
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.7.27",
+            "title": "Cube v1.7.27"
+          },
+          {
+            "url": "https://github.com/Canner/WrenAI/commit/5cf36cd",
+            "title": "WrenAI 8/26 四连修"
+          },
+          {
+            "url": "https://doi.org/10.5281/zenodo.22073019",
+            "title": "VSKI Whitepaper"
+          },
+          {
+            "url": "https://doi.org/10.5281/zenodo.22079951",
+            "title": "Deterministic Reproducible Wrong"
+          },
+          {
+            "url": "https://arxiv.org/abs/2608.23078",
+            "title": "AgentWeave"
+          },
+          {
+            "url": "https://www.getdbt.com/blog/scaling-ai-is-easy-trusting-it-is-hard",
+            "title": "dbt Scaling AI is easy Trusting it is hard"
+          }
+        ],
+        "diagram": {
+          "title": "业务 Agent 读写分离治理：读侧+写侧+基底+立项四层",
+          "flow": [
+            {
+              "label": "读侧 语义层",
+              "sub": "Cube v1.7.27+WrenAI fail loud",
+              "type": "database"
+            },
+            {
+              "label": "写侧 操作型本体",
+              "sub": "DEW 命名动作+拒绝+写回",
+              "type": "backend"
+            },
+            {
+              "label": "基底 守恒断言",
+              "sub": "VSKI stock-and-flow",
+              "type": "security"
+            },
+            {
+              "label": "评估 contradiction guard",
+              "sub": "所做 vs 所示",
+              "type": "security"
+            },
+            {
+              "label": "路由 AgentWeave",
+              "sub": "推理前收窄候选",
+              "type": "backend"
+            },
+            {
+              "label": "立项 dbt 1%成熟",
+              "sub": "信任基建投入",
+              "type": "external"
+            }
+          ],
+          "notes": [
+            {
+              "label": "读写分离治理",
+              "text": "只读语义层→读写一体操作型本体跃迁"
+            },
+            {
+              "label": "构造性拒绝跨层",
+              "text": "VSKI基底+DEW动作+Contradiction评估"
+            },
+            {
+              "label": "从一个命名动作起步",
+              "text": "DEW最小路径：一个对象+一个动作+一个前置条件"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
