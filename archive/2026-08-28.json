@@ -1,0 +1,556 @@
+{
+  "date": "2026-08-28",
+  "banner": "业务 Agent 的\"工具词汇表\"决定推理上限：一篇全程实测文章证明 typed tool 边界 > search box 重试；制造业 87 数据集/92000 列的 book 给出工厂 schema 下 text-to-SQL 失效的诚实架构；Cube 语义层引擎 query-orchestrator LRU 修复+UNION 下推。",
+  "snapshot": {
+    "summary": "今日情报横跨学术、博客与开源三轨，核心脉络是\"业务 Agent 的工具词汇表与治理门设计\"与\"企业级 text-to-SQL 在真实工厂 schema 上的诚实架构\"两条线。学术侧《Agentic AI for Manufacturing Data》以 tier-2 航空供应商（4 站点/2100 人/SAP ECC+MES+Teamcenter+质量系统+过程 historian/87 注册数据集/3600 表/92000 列）为案例给出跨系统查询 Agent 完整架构，直言公开 text-to-SQL 精度不预测工厂 schema 表现；Interpretability Engine Optimization 提出 SEO/AEO/GEO 之前\"机器能否正确解释业务卖什么\"的解读层。博客侧 TDS 三部曲 Part 3 全程实测\"typed tool vs search box\"，证明 Agent 多跳正确率 0.92 vs 固定管线 0.83 vs search-box agent 1.00（后者是 metric 奖励冗长而非真推理），且 naive agent 未如预测那样冲破 contradiction gate。开源侧 Cube v1.7.28/v1.7.29 连发 UNION 下推数据源+LRU orchestrator 释放修复+pre-agg 作业状态 per-entry/data-source 感知，WrenAI #2681 非标量 model/view 名称验证错误。",
+    "groups": {
+      "paper": [
+        "《Agentic AI for Manufacturing Data》：以 tier-2 航空供应商（SAP ECC+MES+Teamcenter+质量系统+过程 historian/87 数据集/3600 表/92000 列）为案例，构建跨源系统直查 Agent 完整架构——问题路由跨超大注册表（远超 context window）、SQL 生成覆盖 HANA/Oracle/PostgreSQL/T-SQL/Trino 五方言、access control 在模型看到 schema 前过滤（因表名列名本身是受控资产）、过程 historian 不走 SQL pattern。",
+        "Interpretability Engine Optimization (IEO)：提出 SEO/AEO/GEO 之前的\"解读层\"——机器能否正确解释业务卖什么。定义三解读对象（product/brand/transaction）、核心操作（structuring/resolving/enriching/validating/representing）、与邻域实践的边界测试，实证审计语料显示解读失败常见、可测、可修正。",
+        "Beyond Sequential Hybrid Retrieval：提出并行而非串行的混合检索框架，打破\"先 dense 后 sparse\"的串行假设，提升 RAG 准确率与可扩展性（preprint，摘要待补）。"
+      ],
+      "blog": [
+        "TDS《Stop Giving Your AI Agent a Search Box...》Part 3 全程实测：八 typed tool（search_evidence/search_knowledge/resolve_entity/traverse/timeline/diff/list_contradictions/get_source）vs 单 search box 的三路消融，Agent 多跳正确率 0.92 vs 固定 0.83 vs search-box 1.00（verbosity trap），naive agent 未冲破 contradiction gate（预测被推翻），escalation 架构=固定管线为默认+Agent 仅在信号触发时介入。",
+        "DEW RSS 确认 8/26《Building an Operational Ontology》为最新一期（8/27 无新文），8/24 为 #284 周刊。"
+      ],
+      "github": [
+        "Cube v1.7.28（8/26）+v1.7.29（8/27）连发：v1.7.28 cubesql UNION 下推数据源 #11651+cubestore-driver EPIPE 不杀查询 #11490；v1.7.29 query-orchestrator isPartitionExist 初始化缺失数据源队列 #11617+server-core 释放 LRU 驱逐的 orchestrator #11661+api-gateway pre-agg 作业状态 per-entry/data-source 感知 #11666+cubestore 每 user websocket 连接数上限 #11667。",
+        "WrenAI #2681（8/27）：fix(wren) 非标量 model/view 名称报告验证错误，延续 8/26 fail-loud 线。"
+      ],
+      "product": [
+        "业务 Agent 的\"工具词汇表经济学\"成型：TDS Part 3 证明 Agent 价值在 tool vocabulary 而非 loop（80 行循环 vs 两篇知识层基建），模型是 per-deployment 旋钮非地基，escalation 架构=固定管线默认+Agent 介入——为用户上百字段宽表 API 场景提供\"何时不该跑 Agent\"的工程判据。"
+      ]
+    }
+  },
+  "items": [
+    {
+      "tag": "paper",
+      "title": "Agentic AI for Manufacturing Data：跨源系统直查 Agent 在真实工厂 schema 上的诚实架构（87 数据集/3600 表/92000 列）",
+      "date": "2026-08-26",
+      "source": "OpenAlex / Zenodo (DOI 10.5281/zenodo.22087584)",
+      "link": "https://doi.org/10.5281/zenodo.22087584",
+      "summary": "本书以一个复合 tier-2 航空供应商为案例（4 站点、2100 员工、加工结构件），构建跨源系统直查 Agent 完整架构。系统景观：SAP ECC 管订单与财务、商业 MES 在两工厂+自建 SQL Server 应用在 2019 收购的两工厂、Teamcenter 持工程 BOM 且制造 BOM 在 SAP 重派生、不合格品在独立质量系统且有自己的 part master、机器遥测在 controls 组拥有的过程 historian 中。全书 16 章数字一致：87 注册数据集、约 3600 表、约 92000 列。Part I（1-4 章）建立问题：为何制造数据抵抗普通方法、Agent 是什么及何时不用、系统景观结构、为何公开 text-to-SQL 精度不预测工厂 schema 表现。Part II（5-9 章）是架构与核心：跨远超 context window 的注册表路由问题、HANA/Oracle/PostgreSQL/T-SQL/Trino 五方言 SQL 生成、过程 historian 为何不走 SQL pattern、模型看到 schema 前过滤的 access control（因表名列名常是受控资产）、记忆与决策节奏。Part III（10-13 章）是建设：实现、无代码 onboarding 数据集、网络不可达互联网的部署、如何知道是否有效。Part IV（14-16 章）覆盖之后的可能、完整 ontology、作为企业能力运行。",
+      "insight": "这本书几乎是对用户课题的\"镜像案例\"——用户场景是不直连数据库、通过高业务含义 API 查数（含上百字段宽表 API），本文的案例是跨 SAP/MES/Teamcenter/质量系统/historian 直查源系统。关键洞察：公开 text-to-SQL 精度不预测工厂 schema 表现（因真实 schema 的表名/列名本身是受控资产+语义密度远超 benchmark），这与用户宽表 API 字段语义标注痛点完全共振。access control 在模型看到 schema 前过滤=表名列名是受控资产，直接对应用户宽表 API 场景中部分字段是业务敏感字段的治理需求。过程 historian 不走 SQL pattern 提示：不是所有业务数据源都能被 SQL 化，用户 API 语义理解需兼容非 SQL 数据源。",
+      "detail": {
+        "why": "这是极少数用真实企业系统景观（非 benchmark）完整阐述跨系统查询 Agent 架构的文献，且直言公开 text-to-SQL benchmark 精度不预测真实 schema 表现——这对用户判断\"benchmark 成果能否迁移到宽表 API 场景\"是关键参考。",
+        "mechanism": "跨远超 context window 的注册表路由问题 → 五方言 SQL 生成（HANA/Oracle/PostgreSQL/T-SQL/Trino）→ 模型看到 schema 前的 access control 过滤 → 过程 historian 非 SQL pattern 的特殊处理 → 记忆与决策节奏适配。全书数字一致（87 数据集/3600 表/92000 列）使第 1 章的图在第 12 章仍成立。",
+        "deep": "核心架构张力在\"路由跨超大注册表\"与\"access control 在模型看到 schema 前过滤\"。前者直接对应用户上百字段宽表 API 场景：不能把所有字段塞进 context window，需先路由到相关子集。后者把 access control 从\"模型生成 SQL 后过滤结果\"前移到\"模型看到 schema 前过滤\"——因为表名列名本身泄露业务语义（如列名=利润率），这是对用户字段级权限治理的直接启示。过程 historian 不走 SQL pattern 提示：用户业务 API 语义理解需兼容非 SQL 数据源（如时序数据库/事件流），不能假设所有数据源都 SQL 化。",
+        "apply": "①用本书的\"注册表路由\"思路组织用户的上百字段宽表 API：先路由到相关字段子集再进 context window。②把 access control 前移到 schema 可见前：对敏感字段名/列名在模型看到前过滤，而非事后过滤结果。③建立\"公开 benchmark 精度≠真实 schema 精度\"的预期管理：不要用 Spider/Bird benchmark 精度承诺业务系统效果。④Part II 的五方言 SQL 生成对用户 API schema 理解有参考：不同源系统的\"方言\"需要适配层。",
+        "caveats": "案例为制造业航空供应商，行业特定性强；跨系统直查 vs 用户\"不直连数据库通过 API 查数\"有架构差异（直查需数据库连接，API 查数需 API schema 理解）；本书 16 章为 book 而非论文，深度但非实验对比型；OpenAlex 无 Semantic Scholar 引用数据（8/26 新 preprint，引用数待核实预期为 0）。",
+        "business": "这本书的商业价值在于它提供了\"跨系统查询 Agent\"的真实 ROI 论证框架——Getting an answer still takes days, because the question crosses four systems and four people, and every crossing costs time。对用户团队从\"AI for 研发\"转型\"AI for 业务\"，本书的\"跨系统直查 Agent\"是企业级业务查询 Agent 的架构蓝图，且其\"公开 text-to-SQL 精度不预测真实 schema\"的论断为内部立项提供了\"为何不能直接用 benchmark 成果\"的硬论据。",
+        "sources": [
+          {
+            "url": "https://doi.org/10.5281/zenodo.22087584",
+            "title": "Agentic AI for Manufacturing Data: Building Intelligent Systems That Query, Reason, and Act"
+          },
+          {
+            "url": "https://openalex.org/W7204099703",
+            "title": "OpenAlex Work W7204099703"
+          }
+        ],
+        "diagram": {
+          "title": "跨源系统直查 Agent 架构（制造场景）",
+          "flow": [
+            {
+              "label": "问题路由",
+              "sub": "跨 87 数据集注册表，远超 context window",
+              "type": "backend"
+            },
+            {
+              "label": "Access Control",
+              "sub": "模型看到 schema 前过滤表名列名（受控资产）",
+              "type": "security"
+            },
+            {
+              "label": "SQL 生成",
+              "sub": "HANA/Oracle/PostgreSQL/T-SQL/Trino 五方言",
+              "type": "backend"
+            },
+            {
+              "label": "过程 Historian",
+              "sub": "非 SQL pattern，需特殊处理",
+              "type": "database"
+            },
+            {
+              "label": "记忆+决策节奏",
+              "sub": "适配工厂决策周期",
+              "type": "backend"
+            },
+            {
+              "label": "源系统群",
+              "sub": "SAP ECC/MES/Teamcenter/质量系统/historian",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "核心约束",
+              "text": "公开 text-to-SQL 精度不预测工厂 schema 表现——benchmark 不等于真实业务系统"
+            },
+            {
+              "label": "数字一致性",
+              "text": "87 数据集/3600 表/92000 列贯穿 16 章，第 1 章图在第 12 章仍成立"
+            },
+            {
+              "label": "access control 前移",
+              "text": "表名列名本身是受控资产，在模型看到 schema 前过滤而非事后过滤结果"
+            },
+            {
+              "label": "非 SQL 数据源",
+              "text": "过程 historian 不走 SQL pattern，用户 API 语义理解需兼容非 SQL 源"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "TDS《Stop Giving Your AI Agent a Search Box》：typed tool vs search box 全程实测，Agent 价值在工具词汇表而非循环",
+      "date": "2026-08-27",
+      "source": "Towards Data Science",
+      "link": "https://towardsdatascience.com/stop-giving-your-ai-agent-a-search-box-and-start-giving-it-typed-tools-hard-bounds-and-a-gate-it-cannot-talk-past/",
+      "summary": "这是知识层三部曲 Part 3，全程实测\"typed tool 边界 > search box 重试\"。核心论点：Agent 的推理受限于其工具的词汇表——给模型 search box + 重试预算，迭代买的是重述猜测；给知识层真实词汇（typed traversal/timelines/diffs/entity resolution/contradiction register），迭代变成导航。设计八个 read-only typed tool（search_evidence/search_knowledge/resolve_entity/traverse/timeline/diff/list_contradictions/get_source），每个返回统一信封（results/source ids/validity metadata/insufficient flag）。Agent 循环仅 80 行代码、无编排框架（刻意为之以保实验 custody）。三路消融：A=固定融合管线、B=search-box agent、C=八工具 agent。结果：C 多跳正确率 0.92 vs A 0.83 vs B 1.00（B 是 verbosity trap——metric 奖励冗长而非真推理）；A 单跳正确率 0.95 vs C 0.70（Agent 在简单问题上过度工作）；naive agent 未如预测冲破 contradiction gate（预测被推翻——指令遵从在 21 文档+1 好提示词下足够）。四模型对比（gpt-4o-mini/gpt-4.1/gpt-5-mini/gpt-5）：gpt-5-mini 是最佳甜点（多跳 0.92/健康 tool-seeking/中等成本），gpt-5 花最多返最少。最终架构：escalation——固定管线为默认，Agent 仅在信号触发时介入（sequential dependency/insufficient flag/contradiction/多时间窗比较/人请求深度）。",
+      "insight": "这篇文章是用户课题的工程模板级文献。核心洞察：①\"Agent 价值在 tool vocabulary 而非 loop\"——80 行循环是便宜部分，两篇知识层基建才是真正投入，这对用户评估\"建 API 语义层 vs 直接上 Agent 框架\"的投入分配是直接指导。②八 typed tool 的设计（每个返回 insufficient flag）对用户上百字段宽表 API 场景直接可迁移：resolve_entity 对应字段实体消歧、traverse 对应字段间依赖导航、timeline 对应字段有效时间窗、list_contradictions 对应字段语义冲突检测。③\"search-box agent 的 1.00 是 verbosity trap\"警示：用 keyword-coverage 评估 Agent 会系统性高估 search-box 类方案，对用户评估宽表 API 查询效果有方法论启示。④escalation 架构（固定管线默认+Agent 介入）为用户\"何时不该跑 Agent\"提供工程判据——大部分流量走固定管线，Agent 仅在多跳/信号触发时介入，这是成本与效果的平衡点。",
+      "detail": {
+        "why": "这是极少数在\"说之前承诺什么会失败，然后发表真实结果（包括推翻自己预测的结果）\"的诚实 Agent 实测文章。预注册预测\"naive agent 会冲破 contradiction gate\"被推翻（指令遵从在 21 文档下足够），但作者指出这不能推广——prompt-compliance 无法像代码路径那样提前验证，composer 的确定性 gate 仍保留为\"系统每次强制\"而非\"模型这次遵从\"。",
+        "mechanism": "八个 typed read-only tool → 统一返回信封（results/source ids/validity metadata/insufficient flag）→ 80 行 bounded 循环（MAX_ROUNDS=8/token budget/wall-clock timeout）→ composer 三功能（grounding check/gate as policy/honesty forwarding）→ escalation 架构（固定管线默认+信号触发 Agent）。工具设计三原则：①小到能放进模型工作注意力（8 个上限）②与知识层语义对齐非检索机制（不说 index/vector/Gremlin）③全部 read-only（Agent 写自己引用的知识库是不同风险类）。",
+        "deep": "三层洞察：①工具词汇表决定推理天花板——search_box(query) 只能重述猜测，typed traversal 能验证\"规则是否适用/版本是否在效/两文档是否冲突\"。这与 8/27 AgentWeave\"确定性路由收窄候选70%\"共振：AgentWeave 在推理前收窄工具集，本文在推理中暴露工具词汇——两者共同指向\"优化在工具条件化非换模型/换循环\"。②verbosity trap 警示评估方法论——search-box agent 在 keyword-coverage metric 上得 1.00 但答案最不精准，因迭代同 query 倒大段 evidence text 正好奖励 keyword 覆盖。这对用户评估宽表 API 查询效果直接相关：不能用 keyword 匹配评估，需用 citation precision + 多跳结构正确性。③governance 的脆弱性转移——固定管线的 gate 依赖检索 surfacing 受控概念，\"客户措辞\"未检索到就产出空答案（q13 \"trace-and-access costs automatically included?\" 友好措辞未触达受控概念，固定管线返回空）；Agent 可主动调 list_contradictions 而非祈祷 index 配合——governance 从\"依赖措辞到达正确 chunk\"升级为\"主动查询\"。④模型是 per-deployment 旋钮非地基——gpt-5-mini 多跳 0.92/健康 tool-seeking/中等成本是甜点，gpt-5 花最多返最少，tool contract model-independent 使换模型是配置非重写。",
+        "apply": "①用八 typed tool 设计模板组织用户的宽表 API 语义层：resolve_entity（字段实体消歧）、traverse（字段间依赖导航）、timeline（字段有效时间窗）、list_contradictions（字段语义冲突检测）。②建立 escalation 架构：简单单跳查询走固定管线（cheaper+better），多跳/sequential dependency/contradiction 走 Agent。③用 composer 而非 prompt 做 governance：prompt-compliance 无法提前验证，composer 的确定性 gate（grounding check+gate as policy+honesty forwarding）是\"系统每次强制\"而非\"模型这次遵从\"。④评估用 citation precision + 多跳结构正确性，不用 keyword-coverage（verbosity trap）。⑤模型选择：多跳重场景用 reasoning model（gpt-5-mini 级），单跳重场景用 fast model（gpt-4.1 级），模型是旋钮非地基。",
+        "caveats": "语料仅 21 文档（作者承认规模限制——magnitude 属更大语料，shape 属此规模可诚实展示）；keyword-coverage 正确性 proxy 是\"deliberately blunt\"，作者明说\"lean on it exactly as hard as it deserves, which is not very\"；naive agent 未冲破 gate 可能因 21 文档+1 好提示词，更大规模/对抗性提示词下可能不成立（作者保留 composer）；citation precision 低且平（0.19-0.29）是 labels 的 fault 非系统问题；模型对比非 leaderboard（21 文档不足以做通用 benchmark）。",
+        "business": "这篇文章的商业价值在于它提供了\"Agent 投入分配\"的硬数据论据：Agent 价值在 tool vocabulary 而非 loop，80 行循环是便宜部分，知识层基建才是真正投入。对用户团队评估\"直接上 Agent 框架 vs 先建 API 语义层\"，这指向后者。escalation 架构（固定管线默认+Agent 介入）为成本控制提供工程模板：大部分流量走便宜固定管线，Agent 仅在多跳信号触发时介入。四模型对比的\"gpt-5-mini 甜点/gpt-5 花最多返最少\"为模型采购提供 per-deployment 而非 per-foundation 的配置思路。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/stop-giving-your-ai-agent-a-search-box-and-start-giving-it-typed-tools-hard-bounds-and-a-gate-it-cannot-talk-past/",
+            "title": "Stop Giving Your AI Agent a Search Box and Start Giving It Typed Tools, Hard Bounds, and a Gate It Cannot Talk Past"
+          },
+          {
+            "url": "https://github.com/mcekikj/persistent-knowledge-layer",
+            "title": "Persistent Knowledge Layer (Part 1 companion repo)"
+          },
+          {
+            "url": "https://github.com/mcekikj/knowledge-graph-fusion",
+            "title": "Knowledge Graph Fusion (Part 2 companion repo)"
+          }
+        ],
+        "diagram": {
+          "title": "Escalation 架构：固定管线默认 + Agent 信号触发介入",
+          "flow": [
+            {
+              "label": "问题输入",
+              "sub": "所有问题先入固定融合管线",
+              "type": "frontend"
+            },
+            {
+              "label": "固定融合管线",
+              "sub": "单跳正确率 0.95，便宜可预测",
+              "type": "backend"
+            },
+            {
+              "label": "Escalation 信号",
+              "sub": "sequential dependency/insufficient flag/contradiction/多时间窗",
+              "type": "security"
+            },
+            {
+              "label": "Agent 循环",
+              "sub": "80 行 bounded，八 typed tool，多跳 0.92",
+              "type": "backend"
+            },
+            {
+              "label": "Composer",
+              "sub": "grounding check+gate as policy+honesty forwarding",
+              "type": "security"
+            },
+            {
+              "label": "模型旋钮",
+              "sub": "gpt-5-mini 多跳甜点/gpt-4.1 单跳快选",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "verbosity trap",
+              "text": "search-box agent 多跳 1.00 是 metric 奖励冗长非真推理——评估不可用 keyword-coverage"
+            },
+            {
+              "label": "gate 未被冲破",
+              "text": "naive agent 预测冲破 gate 被推翻，但 prompt-compliance 无法提前验证，composer 确定性 gate 仍保留"
+            },
+            {
+              "label": "模型是旋钮",
+              "text": "tool contract model-independent，换模型是配置非重写，gpt-5 花最多返最少"
+            },
+            {
+              "label": "工具词汇表",
+              "text": "Agent 价值在 tool vocabulary 非循环——80 行循环便宜，两篇知识层基建才是投入"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "Interpretability Engine Optimization (IEO)：SEO/AEO/GEO 之前的\"机器能否正确解读业务\"层",
+      "date": "2026-08-26",
+      "source": "OpenAlex / Zenodo (DOI 10.5281/zenodo.22104280)",
+      "link": "https://doi.org/10.5281/zenodo.22104280",
+      "summary": "本文提出 Interpretability Engine Optimization (IEO)：结构化、解析、丰富、验证、表示 commerce data 使 AI 系统在检索/比较/推荐/交易前正确解读 offer。现有优化学科——SEO/AEO/GEO 及相关 AI 优化实践——解决业务是否被发现、被提取、被引用、被行动。无一解决先于它们的问题：机器能否正确解读业务卖什么？IEO 定义三解读对象（product/brand/transaction）、核心操作（structuring/resolving/enriching/validating/representing）、与邻域实践的边界测试、工作仪器实现的测量方法。实证审计语料显示解读失败在语料内常见、可测、可修正——修正产生 machine-facing readiness 的大幅提升。IEO 被提出为开放学科：任何人可用任何工具实践，不提出新数据格式/协议/模型/丰富技术，其提案是学科本身：将 commerce data 的机器解读视为一等工程对象。",
+      "insight": "IEO 的\"解读先于检索\"论点与用户业务语义层课题直接共振——用户需在 AI 查询前确保 AI 正确解读业务 API 字段语义。IEO 的三解读对象（product/brand/transaction）可迁移为用户宽表 API 的三解读对象（字段语义/业务实体/查询意图）。核心操作（structuring/resolving/enriching/validating/representing）是一个完整的字段语义标注流水线。\"解读失败常见、可测、可修正\"为用户建立字段语义标注质量度量提供参考。",
+      "detail": {
+        "why": "IEO 把\"机器解读业务\"从\"优化发现\"（SEO/AEO/GEO）前移到\"优化解读\"，是对用户\"业务语义理解\"方向的学科级定义。它提供解读质量的可测方法与工作仪器，而非仅理论。",
+        "mechanism": "三解读对象（product/brand/transaction）→ 核心操作（structuring/resolving/enriching/validating/representing）→ 边界测试（与 SEO/AEO/GEO 区分）→ 测量仪器 → 审计语料实证（失败常见/可测/可修正/修正产生大幅 readiness 提升）。",
+        "deep": "IEO 的\"解读先于检索\"与 8/27 TDS Part 3\"工具词汇表决定推理天花板\"共振：TDS 说 Agent 需 typed tool vocabulary 才能推理，IEO 说 AI 需 structured/validated commerce data 才能解读——两者都把\"语义基建\"前移到\"AI 行动\"之前。IEO 的\"不提出新格式/协议/模型，提案是学科本身\"与 8/26 DEW 操作型本体\"开源 minimal 化\"共振：两者都把治理/解读作为方法论而非工具锁定。三解读对象的 product/brand/transaction 可迁移为用户宽表 API 的字段语义/业务实体/查询意图三维度。",
+        "apply": "①用 IEO 的五核心操作（structuring/resolving/enriching/validating/representing）组织宽表 API 字段语义标注流水线。②用三解读对象（product/brand/transaction）迁移为字段语义/业务实体/查询意图三维度标注。③建立解读质量度量：参考 IEO 的审计语料方法，量化字段语义解读失败率与修正后的 readiness 提升。④把\"解读先于检索\"作为架构原则：在 AI 查询宽表 API 前确保字段语义已被 structured+validated。",
+        "caveats": "preprint（8/26 Zenodo），引用数待核实（Semantic Scholar 未索引，预期 0）；IEO 聚焦 commerce 场景，迁移到内部业务 API 需适配；\"工作仪器实现的测量方法\"细节需读全文（OpenAlex 摘要未覆盖仪器实现细节）；IEO 是\"开放学科\"非工具，落地需自行实现测量仪器。",
+        "business": "IEO 的商业价值在于它把\"业务语义理解\"从工程任务提升为学科级定义，且提供可测方法。对用户团队转型\"AI for 业务\"，IEO 提供\"为何字段语义标注是一等工程对象\"的论据，且\"解读失败常见/可测/可修正/修正产生大幅 readiness 提升\"为内部立项提供 ROI 数据。",
+        "sources": [
+          {
+            "url": "https://doi.org/10.5281/zenodo.22104280",
+            "title": "Interpretability Engine Optimization (IEO): The Missing Optimization Layer in AI Commerce"
+          }
+        ],
+        "diagram": {
+          "title": "IEO：解读先于检索的优化层",
+          "flow": [
+            {
+              "label": "Commerce Data",
+              "sub": "product/brand/transaction 三解读对象",
+              "type": "database"
+            },
+            {
+              "label": "Structuring",
+              "sub": "结构化 offer 数据",
+              "type": "backend"
+            },
+            {
+              "label": "Resolving",
+              "sub": "解析实体与关系",
+              "type": "backend"
+            },
+            {
+              "label": "Enriching",
+              "sub": "丰富语义",
+              "type": "backend"
+            },
+            {
+              "label": "Validating",
+              "sub": "验证解读正确性",
+              "type": "security"
+            },
+            {
+              "label": "Representing",
+              "sub": "表示为 AI 可读",
+              "type": "frontend"
+            },
+            {
+              "label": "AI 行动",
+              "sub": "检索/比较/推荐/交易（在解读之后）",
+              "type": "external"
+            }
+          ],
+          "notes": [
+            {
+              "label": "解读先于检索",
+              "text": "SEO/AEO/GEO 解决被发现/被提取/被引用/被行动，IEO 解决先于它们的\"能否正确解读\""
+            },
+            {
+              "label": "开放学科",
+              "text": "不提出新格式/协议/模型，提案是学科本身——将 commerce data 机器解读视为一等工程对象"
+            },
+            {
+              "label": "实证",
+              "text": "审计语料显示解读失败常见、可测、可修正，修正产生 machine-facing readiness 大幅提升"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "Cube v1.7.28+v1.7.29 连发：UNION 下推数据源+LRU orchestrator 释放修复+pre-agg 作业状态 per-entry 感知",
+      "date": "2026-08-27",
+      "source": "GitHub (cube-js/cube)",
+      "link": "https://github.com/cube-js/cube/releases/tag/v1.7.29",
+      "summary": "Cube 在 8/26-27 连发两版本。v1.7.28（8/26）：cubesql Push UNION down to the data source #11651（UNION 操作下推到数据源，减少引擎层处理）+cubestore-driver 不在 write EPIPE 时失败查询，可读地报告超限消息 #11490（closes #11655）+release lerna-publish.sh 修复。v1.7.29（8/27）：api-gateway pre-agg build job 状态改为 per-entry 和 data-source aware #11666+query-orchestrator isPartitionExist 初始化缺失数据源队列 #11617（感谢 @dochernyshov）+server-core 释放从 LRU 驱逐的 orchestrator #11661+cubestore 每 user cap concurrent websocket connections #11667。另有 8/27 refactor query-orchestrator Rework QueryCache.cacheQueryResult #11672+docs sync Platform API docs for platform-client v0.4.0 #11668。",
+      "insight": "Cube 的 v1.7.28/v1.7.29 延续 8/25-26 query-orchestrator 重构潮，但焦点从\"extends 修复/SQL pushdown 优先\"转向\"orchestrator 生命周期管理\"——LRU 驱逐的 orchestrator 被释放（#11661）修复了内存泄漏类问题，pre-agg 作业状态 per-entry/data-source 感知（#11666）修复了跨数据源状态混淆。UNION 下推（#11651）与 8/26 v1.7.27 的 SQL pushdown 优先 #11559 共振：Cube 持续把 SQL 操作下推到数据源以减少引擎层负载。对用户语义层选型，Cube 的 orchestrator 生命周期管理成熟度是稳定性指标。",
+      "detail": {
+        "why": "Cube 是用户语义层/指标平台方向的核心开源选型之一。v1.7.28/v1.7.29 的 orchestrator 生命周期修复（LRU 释放+pre-agg per-entry 感知）影响高并发下的稳定性与内存管理，UNION 下推影响查询性能。",
+        "mechanism": "v1.7.28：cubesql UNION 下推到数据源 #11651（减少引擎层 UNION 处理）+cubestore-driver EPIPE 不杀查询 #11490。v1.7.29：pre-agg build job 状态 per-entry/data-source aware #11666+isPartitionExist 初始化缺失数据源队列 #11617+LRU 驱逐 orchestrator 释放 #11661+websocket 每 user 连接数上限 #11667。8/27 额外：QueryCache.cacheQueryResult 重构 #11672+Platform API docs sync #11668。",
+        "deep": "三个修复方向：①查询性能——UNION 下推与 v1.7.27 SQL pushdown 优先共振，Cube 持续把 SQL 操作下推到数据源。②orchestrator 生命周期——LRU 驱逐的 orchestrator 被释放修复内存泄漏，pre-agg 作业状态 per-entry/data-source 感知修复跨数据源状态混淆，isPartitionExist 初始化缺失队列修复边界条件。③资源治理——websocket 每 user 连接数上限是多租户/高并发场景的资源隔离。这三方向共同指向\"语义层引擎的稳定性工程\"——从功能正确到生命周期正确。",
+        "apply": "①若用 Cube 做语义层，升级到 v1.7.29 获得 orchestrator 内存管理修复（LRU 释放）+pre-agg 跨数据源状态修复。②关注 UNION 下推对复杂查询性能的影响——含 UNION 的语义层查询性能可能改善。③websocket 每 user 连接数上限对多租户部署需配置调优。",
+        "caveats": "LRU orchestrator 释放修复（#11661）暗示之前版本可能有内存泄漏类问题（orchestrator 被驱逐但未释放）；pre-agg per-entry/data-source 感知修复暗示之前版本跨数据源状态可能混淆；具体影响需看 issue 详情（未抓取 issue 正文）。",
+        "business": "Cube 的 orchestrator 生命周期管理成熟度对用户\"语义层 vs 知识图谱\"双路线中的语义层选型是稳定性指标。v1.7.28/v1.7.29 的修复方向（内存管理/跨数据源状态/资源隔离）指向高并发生产部署的稳定性工程，对用户评估 Cube 生产就绪度有参考。",
+        "sources": [
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.7.29",
+            "title": "Cube v1.7.29 Release"
+          },
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.7.28",
+            "title": "Cube v1.7.28 Release"
+          }
+        ],
+        "diagram": {
+          "title": "Cube v1.7.28/v1.7.29 修复三方向",
+          "flow": [
+            {
+              "label": "查询性能",
+              "sub": "UNION 下推数据源 #11651",
+              "type": "backend"
+            },
+            {
+              "label": "Orchestrator 生命周期",
+              "sub": "LRU 驱逐后释放 #11661+isPartitionExist 初始化 #11617",
+              "type": "backend"
+            },
+            {
+              "label": "Pre-agg 状态",
+              "sub": "per-entry/data-source aware #11666",
+              "type": "backend"
+            },
+            {
+              "label": "资源治理",
+              "sub": "websocket 每 user 连接上限 #11667",
+              "type": "security"
+            },
+            {
+              "label": "数据源群",
+              "sub": "多数据源 pre-agg 与查询",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "UNION 下推",
+              "text": "与 v1.7.27 SQL pushdown 优先共振——持续把 SQL 操作下推到数据源减少引擎层负载"
+            },
+            {
+              "label": "LRU 释放",
+              "text": "orchestrator 被驱逐后释放修复内存泄漏类问题——从功能正确到生命周期正确"
+            },
+            {
+              "label": "pre-agg 感知",
+              "text": "跨数据源状态 per-entry 感知修复状态混淆——多数据源语义层的稳定性工程"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "WrenAI #2681：非标量 model/view 名称报告验证错误，延续 fail-loud 不确定性暴露线",
+      "date": "2026-08-27",
+      "source": "GitHub (Canner/WrenAI)",
+      "link": "https://github.com/Canner/WrenAI/commit/56e007d",
+      "summary": "WrenAI 8/27 提交 fix(wren): report a validation error for non-scalar model/view names #2681。当 model/view 名称不是标量（如含复合表达式或多部分名称）时报告验证错误而非静默接受。这是 8/26 四连修（#2668 mdl.json fail loud+#2675 截断值标注+#2657 宽小数位保留+#2676 SKILL.md 关系键）的延续——持续把不确定性暴露为可行动数据。",
+      "insight": "WrenAI #2681 延续 8/26 的 fail-loud 线：非标量 model/view 名称不静默接受而是报告验证错误。与 8/26 #2668（mdl.json fail loud）+8/24 tokensave #442（告知调用者什么无法扫描）共振——持续把不确定性暴露为可行动数据。对用户语义层选型，WrenAI 的 fail-loud 设计是可观测性指标。",
+      "detail": {
+        "why": "WrenAI 是用户语义层/ChatBI 方向的开源选型之一。#2681 的 fail-loud 设计（非标量名称报告错误而非静默接受）影响语义层定义的可靠性与可调试性。",
+        "mechanism": "model/view 名称非标量时报告验证错误 #2681——延续 8/26 #2668 mdl.json fail loud+#2675 截断值标注+#2657 宽小数位保留+#2676 SKILL.md 关系键的 fail-loud 线。",
+        "deep": "WrenAI 的 fail-loud 线（#2668+#2675+#2657+#2676+#2681）与 tokensave #442（告知调用者什么无法扫描）共振——两者都把\"不确定性/不可扫描/非标量\"暴露为可行动数据而非静默失败。这对用户宽表 API 场景直接相关：字段语义标注的边界条件（非标量名称/截断值/宽小数位）需被暴露而非静默接受，否则下游查询效果不可诊断。",
+        "apply": "①若用 WrenAI 做语义层，升级获得非标量名称验证错误（#2681）+mdl.json fail loud（#2668）+截断值标注（#2675）。②用 fail-loud 设计原则指导宽表 API 字段语义标注：边界条件暴露为可行动数据。③关注 WrenAI 的 fail-loud 线与 Cube 的 orchestrator 生命周期修复的差异——WrenAI 管定义侧不确定性，Cube 管运行侧稳定性。",
+        "caveats": "仅一个 commit（#2681），修复范围较窄；WrenAI 最新 release 仍为 8/18 wren-v0.13.3，#2681 在 main 分支未发版；非标量名称的具体定义需看 PR 详情（未抓取）。",
+        "business": "WrenAI 的 fail-loud 设计对用户语义层选型的可观测性有参考。定义侧不确定性暴露（非标量名称/截断值/宽小数位）与运行侧稳定性（Cube orchestrator 生命周期）是语义层可靠性的两面——WrenAI 管前者，Cube 管后者。",
+        "sources": [
+          {
+            "url": "https://github.com/Canner/WrenAI/commit/56e007d",
+            "title": "WrenAI #2681 fix(wren) validation error for non-scalar model/view names"
+          }
+        ],
+        "diagram": {
+          "title": "WrenAI fail-loud 线：不确定性暴露为可行动数据",
+          "flow": [
+            {
+              "label": "Model/View 定义",
+              "sub": "非标量名称 #2681 验证错误",
+              "type": "backend"
+            },
+            {
+              "label": "mdl.json 加载",
+              "sub": "fail loud #2668",
+              "type": "backend"
+            },
+            {
+              "label": "截断值",
+              "sub": "标注 #2675",
+              "type": "backend"
+            },
+            {
+              "label": "宽小数位",
+              "sub": "保留 #2657",
+              "type": "database"
+            },
+            {
+              "label": "SKILL.md 关系键",
+              "sub": "必需 #2676",
+              "type": "backend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "fail-loud 线",
+              "text": "8/26 四连修+#2681 延续——不确定性暴露为可行动数据而非静默失败"
+            },
+            {
+              "label": "与 tokensave 共振",
+              "text": "tokensave #442 告知调用者什么无法扫描——两者都暴露边界条件"
+            },
+            {
+              "label": "定义侧 vs 运行侧",
+              "text": "WrenAI 管定义侧不确定性，Cube 管运行侧稳定性——语义层可靠性两面"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "Beyond Sequential Hybrid Retrieval：并行混合检索框架打破\"先 dense 后 sparse\"串行假设",
+      "date": "2026-08-26",
+      "source": "OpenAlex / Research Square (DOI 10.21203/rs.3.rs-10785330/v1)",
+      "link": "https://doi.org/10.21203/rs.3.rs-10785330/v1",
+      "summary": "本文提出并行而非串行的混合检索框架，打破\"先 dense 后 sparse\"的串行假设，提升 RAG 准确率与可扩展性。preprint 于 8/26 发布，OpenAlex 无摘要（Research Square preprint）。",
+      "insight": "并行混合检索对用户企业 RAG 方向有参考——串行 dense-then-sparse 是常见默认，并行框架可能改善延迟与准确率。但 preprint 无摘要，技术细节待补。",
+      "detail": {
+        "why": "混合检索（dense+sparse）是企业 RAG 的核心组件，并行 vs 串行的架构选择影响延迟与准确率。",
+        "mechanism": "并行混合检索框架（细节待补，preprint 无摘要）——打破\"先 dense 后 sparse\"串行假设。",
+        "deep": "与 8/27 TDS Part 3 的\"固定融合管线\"（hybrid search+typed traversal 融合）共振：TDS Part 2 把 dense+sparse 融合为单次并行，本文可能提出更通用的并行框架。两者共同指向\"并行融合 > 串行先 dense 后 sparse\"。",
+        "apply": "①评估企业 RAG 的混合检索架构：并行 vs 串行的延迟与准确率权衡。②关注 preprint 全文发布后补充技术细节。",
+        "caveats": "preprint（8/26 Research Square），OpenAlex 无摘要，Semantic Scholar 未索引——技术细节待核实；引用数待核实（预期 0）；无实验数据可引用。",
+        "business": "混合检索架构对企业 RAG 的延迟与成本有直接影响，并行框架若改善延迟可降低企业 RAG 的单位查询成本。",
+        "sources": [
+          {
+            "url": "https://doi.org/10.21203/rs.3.rs-10785330/v1",
+            "title": "Beyond Sequential Hybrid Retrieval: A Parallel Framework for Accurate and Scalable RAG"
+          }
+        ],
+        "diagram": {
+          "title": "并行 vs 串行混合检索",
+          "flow": [
+            {
+              "label": "Query",
+              "sub": "用户查询",
+              "type": "frontend"
+            },
+            {
+              "label": "Dense 检索",
+              "sub": "向量相似度（并行执行）",
+              "type": "backend"
+            },
+            {
+              "label": "Sparse 检索",
+              "sub": "关键词匹配（并行执行）",
+              "type": "backend"
+            },
+            {
+              "label": "融合+Rerank",
+              "sub": "并行结果融合重排",
+              "type": "backend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "并行假设",
+              "text": "打破\"先 dense 后 sparse\"串行默认——并行执行可能改善延迟"
+            },
+            {
+              "label": "细节待补",
+              "text": "preprint 无摘要，技术机制与实验数据待全文发布后核实"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "product",
+      "title": "业务 Agent 的\"工具词汇表经济学\"成型：Agent 价值在 tool vocabulary 而非循环，escalation 架构定义何时该跑 Agent",
+      "date": "2026-08-28",
+      "source": "综合研判（基于 TDS Part 3 + Manufacturing Data Book + Cube/WrenAI 动态）",
+      "link": "https://hhao9817.github.io/agent-daily/",
+      "summary": "今日情报串成\"业务 Agent 工具词汇表经济学\"完整链路——TDS Part 3 证明 Agent 价值在 tool vocabulary 而非 loop（80 行循环便宜，两篇知识层基建才是投入），search-box agent 的 1.00 是 verbosity trap（metric 奖励冗长非真推理），naive agent 未冲破 contradiction gate（预测被推翻但 prompt-compliance 无法提前验证故 composer 确定性 gate 仍保留），escalation 架构=固定管线默认+Agent 仅在信号触发时介入（sequential dependency/insufficient flag/contradiction/多时间窗/人请求深度）。Manufacturing Data Book 给出跨源系统直查 Agent 真实架构（87 数据集/3600 表/92000 列，公开 text-to-SQL 精度不预测工厂 schema）。IEO 把\"机器解读业务\"提升为学科级定义（解读先于检索）。Cube/WrenAI 延续语义层引擎稳定性工程（orchestrator 生命周期+fail-loud 不确定性暴露）。",
+      "insight": "最核心战略研判：业务 Agent 基建正从\"Agent 框架竞赛\"进入\"工具词汇表经济学\"阶段——TDS Part 3 的硬数据证明 Agent 价值在 tool vocabulary 而非 loop，80 行循环是便宜部分，知识层/语义层基建才是真正投入。这对用户团队\"直接上 Agent 框架 vs 先建 API 语义层\"的投入分配直接指导：后者。escalation 架构（固定管线默认+Agent 介入）为成本控制提供工程模板。Manufacturing Data Book 的\"公开 text-to-SQL 精度不预测真实 schema\"为内部立项提供\"为何不能用 benchmark 成果\"的硬论据。IEO 的\"解读先于检索\"与 TDS\"工具词汇表决定推理天花板\"共振——两者都把语义基建前移到 AI 行动之前。",
+      "detail": {
+        "why": "今日三轨情报共同指向\"业务 Agent 的工具词汇表经济学\"——这是用户课题（让 AI 真正懂业务从而精确查询分析）的工程经济学框架。",
+        "mechanism": "TDS Part 3（工具词汇表层：八 typed tool 决定推理天花板，80 行循环便宜，知识层基建是投入，escalation=固定默认+Agent 介入）→ Manufacturing Data Book（真实架构层：跨源系统直查 Agent，87 数据集/3600 表/92000 列，公开 text-to-SQL 不预测真实 schema，access control 前移到 schema 可见前）→ IEO（学科定义层：解读先于检索，三解读对象+五核心操作，解读失败可测可修正）→ Cube/WrenAI（语义层引擎稳定性层：orchestrator 生命周期管理+fail-loud 不确定性暴露）。",
+        "deep": "四层共振：①TDS Part 3\"工具词汇表决定推理天花板\"与 IEO\"解读先于检索\"共振——两者都把语义基建前移到 AI 行动之前。②TDS Part 3\"search-box agent 1.00 是 verbosity trap\"警示评估方法论——不能用 keyword-coverage 评估 Agent，需 citation precision+多跳结构正确性。③Manufacturing Data Book\"公开 text-to-SQL 精度不预测真实 schema\"与 TDS Part 3\"固定管线单跳 0.95 vs Agent 0.70\"共振——benchmark 精度不等于真实业务系统效果，且 Agent 在简单问题上过度工作。④Cube orchestrator 生命周期修复+WrenAI fail-loud 共振——语义层引擎从功能正确走向生命周期正确+不确定性暴露。最核心：业务 Agent 基建从\"框架竞赛\"进入\"工具词汇表经济学\"——投入分配应倾向语义层/知识层基建而非 Agent 框架。",
+        "apply": "①投入分配：倾向 API 语义层/知识层基建而非 Agent 框架（TDS Part 3 硬数据支持）。②escalation 架构：固定管线默认+Agent 仅在多跳/contradiction/sequential dependency 信号触发时介入。③评估方法论：用 citation precision+多跳结构正确性，不用 keyword-coverage（verbosity trap）。④access control 前移：在模型看到 schema/字段前过滤敏感字段名。⑤模型旋钮：多跳用 reasoning model（gpt-5-mini 级），单跳用 fast model（gpt-4.1 级），模型是 per-deployment 配置非地基。⑥用 IEO 五操作（structuring/resolving/enriching/validating/representing）组织字段语义标注流水线。",
+        "caveats": "TDS Part 3 语料仅 21 文档（规模限制，magnitude 属更大语料）；Manufacturing Data Book 是 book 非论文（深度但非实验对比型）；IEO 是 preprint（细节待补）；Cube/WrenAI 修复范围较窄（单 commit/release）。",
+        "business": "业务 Agent 的工具词汇表经济学为用户团队转型\"AI for 业务\"提供投入分配框架：语义层/知识层基建是真正投入，Agent 框架是便宜增量。escalation 架构为成本控制提供模板（固定管线便宜默认+Agent 介入）。\"公开 benchmark 不预测真实 schema\"为内部立项提供预期管理论据。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/stop-giving-your-ai-agent-a-search-box-and-start-giving-it-typed-tools-hard-bounds-and-a-gate-it-cannot-talk-past/",
+            "title": "TDS Part 3: Stop Giving Your AI Agent a Search Box"
+          },
+          {
+            "url": "https://doi.org/10.5281/zenodo.22087584",
+            "title": "Agentic AI for Manufacturing Data"
+          },
+          {
+            "url": "https://doi.org/10.5281/zenodo.22104280",
+            "title": "Interpretability Engine Optimization (IEO)"
+          },
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.7.29",
+            "title": "Cube v1.7.29"
+          },
+          {
+            "url": "https://github.com/Canner/WrenAI/commit/56e007d",
+            "title": "WrenAI #2681"
+          }
+        ],
+        "diagram": {
+          "title": "业务 Agent 工具词汇表经济学四层",
+          "flow": [
+            {
+              "label": "工具词汇表层",
+              "sub": "TDS: 八 typed tool 决定推理天花板，80 行循环便宜",
+              "type": "backend"
+            },
+            {
+              "label": "真实架构层",
+              "sub": "Mfg Book: 跨源直查 Agent，公开 benchmark 不预测真实 schema",
+              "type": "backend"
+            },
+            {
+              "label": "学科定义层",
+              "sub": "IEO: 解读先于检索，三对象+五操作",
+              "type": "backend"
+            },
+            {
+              "label": "引擎稳定性层",
+              "sub": "Cube/WrenAI: orchestrator 生命周期+fail-loud",
+              "type": "backend"
+            },
+            {
+              "label": "Escalation",
+              "sub": "固定管线默认+Agent 信号触发介入",
+              "type": "security"
+            },
+            {
+              "label": "模型旋钮",
+              "sub": "gpt-5-mini 多跳甜点/gpt-4.1 单跳快选",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "投入分配",
+              "text": "语义层/知识层基建是真正投入，Agent 框架是便宜增量——倾向前者"
+            },
+            {
+              "label": "verbosity trap",
+              "text": "search-box agent 1.00 是 metric 奖励冗长非真推理——评估不可用 keyword-coverage"
+            },
+            {
+              "label": "benchmark 不预测",
+              "text": "公开 text-to-SQL 精度不预测真实 schema 表现——不能用 benchmark 承诺业务效果"
+            },
+            {
+              "label": "解读先于检索",
+              "text": "IEO 与 TDS 共振——语义基建前移到 AI 行动之前"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
