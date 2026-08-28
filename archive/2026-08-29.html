@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI for Business 领域每日晨报</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+            --card: #ffffff;
+            --border: #d6dde8;
+            --border-strong: #adbac9;
+            --text: #111827;
+            --muted: #4b5563;
+            --accent: #2563eb;
+            --accent-soft: #dbeafe;
+            --accent2: #059669;
+            --accent2-soft: #d1fae5;
+            --warn: #b45309;
+            --warn-soft: #fef3c7;
+            --red: #dc2626;
+            --red-soft: #fee2e2;
+            --shadow: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+            --shadow-hover: 0 10px 25px -5px rgba(15,23,42,0.1), 0 8px 10px -6px rgba(15,23,42,0.05);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+      padding: 20px;
+      max-width: 920px;
+      margin: 0 auto;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    /* 长英文标识符/URL 在移动端强制换行，避免撑破卡片 */
+    p, li, h1, h2, h3, h4, .summary, .insight, .snap-title, .snap-points li,
+    .modal-sec p, .modal-body, .detail-block, .item, .snapshot, .snapshot-summary {
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    header {
+      text-align: center;
+      padding: 30px 0 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    header h1 {
+      font-size: 1.8em;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    header h1 .grad {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header .date { color: var(--muted); margin-top: 8px; font-size: 0.95em; }
+    .archive-link {
+      display: inline-block; margin-top: 12px; color: var(--accent); text-decoration: none;
+      font-size: 0.85em; border: 1px solid var(--border-strong); background: var(--card);
+      padding: 5px 14px; border-radius: 20px; box-shadow: var(--shadow);
+      transition: all .15s;
+    }
+    .archive-link:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+    /* 今日速览（结构化，按来源分类） */
+    .snapshot {
+      background: linear-gradient(135deg, var(--accent-soft), var(--accent2-soft));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow);
+    }
+    .snapshot-summary {
+      font-size: 0.98em;
+      color: var(--text);
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px dashed var(--border-strong);
+    }
+    .snapshot-summary strong { color: var(--accent); }
+    .snapshot-groups { display: flex; flex-direction: column; gap: 10px; }
+    .snap-group {
+      display: flex;
+      gap: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      box-shadow: var(--shadow);
+    }
+    .snap-bar { width: 5px; border-radius: 3px; flex-shrink: 0; }
+    .snap-bar-paper { background: var(--accent); }
+    .snap-bar-github { background: var(--accent2); }
+    .snap-bar-product { background: var(--warn); }
+    .snap-bar-blog { background: var(--red); }
+    .snap-body { flex: 1; }
+    .snap-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.85em; font-weight: 700; color: var(--text);
+      margin-bottom: 6px;
+    }
+    .snap-title .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-paper { background: var(--accent); }
+    .dot-github { background: var(--accent2); }
+    .dot-product { background: var(--warn); }
+    .dot-blog { background: var(--red); }
+    .snap-title .badge {
+      font-size: 0.7em; font-weight: 600;
+      background: var(--bg); border: 1px solid var(--border-strong);
+      color: var(--muted); padding: 1px 8px; border-radius: 20px;
+    }
+    .snap-points { list-style: none; padding: 0; margin: 0; }
+    .snap-points li {
+      font-size: 0.9em; color: var(--text);
+      padding: 3px 0 3px 18px;
+      position: relative;
+    }
+    .snap-points li::before {
+      content: "▸";
+      position: absolute; left: 2px;
+      color: var(--accent);
+    }
+
+    /* 分类区块 */
+    .section { margin-bottom: 30px; }
+    .section-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 4px; margin-bottom: 14px;
+      border-bottom: 2px solid var(--border);
+    }
+    .section-head .bar { width: 6px; height: 22px; border-radius: 3px; }
+    .section-head h2 { font-size: 1.15em; color: var(--text); flex: 1; }
+    .section-head .count { font-size: 0.8em; color: var(--muted); background: var(--card); border: 1px solid var(--border); padding: 2px 10px; border-radius: 20px; }
+    .bar-paper { background: var(--accent); }
+    .bar-github { background: var(--accent2); }
+    .bar-product { background: var(--warn); }
+    .bar-blog { background: var(--red); }
+
+    .item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: border-color .2s, transform .1s, box-shadow .2s;
+    }
+    .item:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+    .item:active { transform: scale(0.995); }
+    .item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .tag {
+      display: inline-block;
+      font-size: 0.72em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .tag-paper { background: var(--accent-soft); color: var(--accent); }
+    .tag-github { background: var(--accent2-soft); color: var(--accent2); }
+    .tag-product { background: var(--warn-soft); color: var(--warn); }
+    .tag-blog { background: var(--red-soft); color: var(--red); }
+    .detail-hint { font-size: 0.78em; color: var(--accent); opacity: .8; }
+    .item h3 { font-size: 1.1em; margin-bottom: 8px; }
+    .item h3 a { color: var(--text); text-decoration: none; }
+    .item h3 a:hover { color: var(--accent); }
+    .item .meta { color: var(--muted); font-size: 0.82em; margin-bottom: 10px; }
+    .item .summary { font-size: 0.95em; margin-bottom: 10px; color: var(--text); }
+    .item .insight {
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      padding: 8px 12px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.92em;
+      color: var(--text);
+    }
+    .item .insight strong { color: var(--accent); }
+
+    /* ===== 详情弹层（浅色） ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(30,41,59,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      overflow-y: auto;
+      padding: 30px 20px;
+    }
+    .modal.show { display: block; }
+    .modal-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 32px 36px;
+      position: relative;
+      box-shadow: var(--shadow-hover);
+      animation: pop .18s ease;
+    }
+    @keyframes pop { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .modal-close {
+      position: absolute;
+      top: 14px; right: 16px;
+      background: none; border: none;
+      color: var(--muted);
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+    .modal-close:hover { color: var(--text); background: var(--bg); }
+    .modal-content h2 {
+      font-size: 1.4em;
+      color: var(--text);
+      margin: 10px 0 6px;
+      line-height: 1.4;
+      padding-right: 30px;
+    }
+    .modal-content .meta { color: var(--muted); font-size: 0.85em; margin-bottom: 18px; }
+    .modal-body { margin-top: 8px; }
+    .modal-sec {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+    }
+    .modal-sec h4 { font-size: 0.95em; color: var(--accent); margin-bottom: 8px; }
+    .modal-sec p { font-size: 0.93em; color: var(--text); }
+    .modal-sources { background: var(--bg); }
+    .modal-business { background: var(--warn-soft); }
+    .modal-business h4 { color: var(--warn); }
+    .sources-list { list-style: none; padding: 0; margin: 0; }
+    .sources-list li { font-size: 0.88em; color: var(--text); margin-bottom: 6px; padding-left: 4px; }
+    .src-id { color: var(--accent); font-weight: 600; margin-right: 6px; }
+    .src-link { color: var(--accent); text-decoration: none; word-break: break-all; }
+    .src-link:hover { text-decoration: underline; }
+    .diagram-box {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      overflow-x: auto;
+      position: relative;
+    }
+    .diagram-svg svg { display: block; }
+    .diagram-zoom {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.82em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      z-index: 5;
+    }
+    .diagram-zoom:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ===== 架构图放大 lightbox ===== */
+    .diagram-lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.85);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      overflow: auto;
+      padding: 30px;
+    }
+    .diagram-lightbox.show { display: block; }
+    .diagram-lightbox-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .diagram-lightbox-inner .lb-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px;
+    }
+    .diagram-lightbox-inner .lb-head h3 { font-size: 1.1em; color: var(--text); }
+    .diagram-lightbox-inner .lb-tools { display: flex; align-items: center; gap: 8px; }
+    .lb-btn {
+      background: var(--accent-soft); color: var(--accent);
+      border: 1px solid var(--border-strong); border-radius: 8px;
+      padding: 5px 12px; font-size: 0.85em; font-weight: 600; cursor: pointer;
+      transition: all .15s;
+    }
+    .lb-btn:hover { background: var(--accent); color: #fff; }
+    .lb-close {
+      background: none; border: none; color: var(--muted);
+      font-size: 26px; line-height: 1; cursor: pointer; padding: 4px 8px; border-radius: 8px;
+    }
+    .lb-close:hover { color: var(--text); background: var(--bg); }
+    .diagram-lightbox-inner .lb-svg {
+      overflow: auto;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .diagram-lightbox-inner .lb-svg svg {
+      max-width: 100%;
+      height: auto;
+      transition: transform .15s ease;
+      transform-origin: center center;
+    }
+    .diagram-lightbox-inner .lb-svg svg.zoomed { transform: scale(1.6); cursor: grab; }
+    .diagram-lightbox-inner .lb-svg svg.zoomed:active { cursor: grabbing; }
+    .diagram-lightbox-inner .lb-tip { text-align: center; color: var(--muted); font-size: 0.8em; margin-top: 10px; }
+    .modal-foot {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .modal-link { color: var(--accent); font-size: 0.88em; text-decoration: none; word-break: break-all; }
+    .modal-link:hover { text-decoration: underline; }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8em;
+      padding: 30px 0 10px;
+      border-top: 1px solid var(--border);
+      margin-top: 30px;
+    }
+    .empty { color: var(--muted); text-align: center; padding: 40px; }
+    /* ===== 反馈按钮 + 提交按钮 ===== */
+    .feedback-fab {
+      position: fixed; bottom: 24px; right: 24px;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; color: #fff; font-size: 24px; cursor: pointer;
+      box-shadow: var(--shadow-hover);
+      z-index: 9000; transition: transform .15s;
+    }
+    .feedback-fab:hover { transform: scale(1.1); }
+    .modal-submit {
+      width: 100%; padding: 12px; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; font-size: 1em; font-weight: 600; cursor: pointer;
+    }
+    .modal-submit:hover { opacity: 0.9; }
+    @media (max-width: 600px) {
+      .modal-content { padding: 24px 18px; }
+      body { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🤖 <span class="grad">AI for Business</span> 每日晨报</h1>
+    <div class="date">业务知识库 · 业务语义理解 · API 精确查询 | 2026-08-29</div>
+    <a class="archive-link" href="archive/index.html">📚 历史晨报归档</a>
+  </header>
+
+  <div class="snapshot"><div class="snapshot-summary"><strong>📌 今日速览</strong><br>今日情报显示"让 AI 懂业务"正从"模型能力竞赛"全面转向"系统化工程治理"。学术线：ERF-SQL 证明部署就绪可工程化测量（版本化语义契约为唯一接口+AST 策略守卫+企业就绪指数六维评分，恢复 13-16 精度点），Meta-Books 把组织文档重构为 typed 依赖链接知识图谱（与 RAG 互补：重构源内容而非检索），ECKM 工业知识管理分类法提出五 AI 范式×三知识过程。商业线：dbt 指出 AI 试点卡在 context gap（不可靠 SQL/捏造指标/无护栏/计算成本失控，需机器可读治理），TDS 两篇博客从 accountability 与 HITL 吞吐量两侧补全。GitHub：Cube v1.7.30 修复冷缓存双重竞态+refresh key cache 三 bug（跨数据源条目碰撞+ping-pong renew+dead memo branch），SocratiCode #119 Ollama 连接池有界化。三线共振指向：企业 text-to-SQL 的护城河不是模型而是语义契约+策略守卫+可信缓存基础设施。</div><div class="snapshot-groups"><div class="snap-group"><span class="snap-bar snap-bar-paper"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-paper"></span>📄 学术论文<span class="badge">3 项</span></div><ul class="snap-points"><li>ERF-SQL：企业部署就绪框架，版本化语义契约为 schema 与模型唯一接口，Policy-Aware Query Guard 重写 AST，EntSQL-450 评测套件含活角色策略+脱敏规则，四个生产 LLM 在 Spider 下丢 19-23 精度点，pipeline 恢复 13-16 点+拦截 97% 不安全生成+漂移韧性 0.55→0.86，~0.9s 延迟代价</li><li>Meta-Books：把组织文档（手册/入职/流程文档）重构为 typed 依赖链接知识图谱——concept/procedure/example/controversy/reflective 五类节点，prerequisite-of/illustrates/contradicts/applies-to 四类边，每节点带 depth layer/role classification/engagement time 教学元数据，支持跨源整合，区别于 RAG 的检索增强而是源内容重构</li><li>ECKM 工业知识管理分类法：五 AI 范式（perceptive/dialogic/interpretive/structural/contextual）×三知识过程（capture/structuring/transfer），蓝领体力工作被 LLM 低估，集体默会知识抵抗编码的边界，独立编排层由 autonomous agents+知识图谱+RAG+AR 实现</li></ul></div></div><div class="snap-group"><span class="snap-bar snap-bar-github"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-github"></span>🐙 开源项目<span class="badge">2 项</span></div><ul class="snap-points"><li>Cube v1.7.30（8/28）：fix(query-orchestrator) Dual race in cold-cache renewal path #11674；同日 #11607 修复 refresh key cache 三 bug——跨引擎/数据源条目碰撞（同一 SQL prod/staging/Cube Store 共享一个 entry）+scheduler/loader renewal key ping-pong+PreAggregationLoadCache memo 100% miss 四年未命中</li><li>SocratiCode #119（8/28）：fix(embeddings) bound Ollama connection pool——Node 默认 fetch pool 无 per-origin cap，并发 embed 堆叠 socket 无上限，改用 bounded undici Agent，OLLAMA_MAX_CONNECTIONS 默认 4，invalid value 拒绝加载而非 clamp</li></ul></div></div><div class="snap-group"><span class="snap-bar snap-bar-product"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-product"></span>🏢 业界动态<span class="badge">2 项</span></div><ul class="snap-points"><li>企业 text-to-SQL 部署进入"语义契约+策略守卫+可信缓存"三件套阶段：ERF-SQL 的 versioned semantic contract 与 Cube 的 refresh key cache identity 修复从两侧指向同一原则——缓存/契约的身份必须确定性可计算，跨数据源/引擎共享身份是 bug 非特性</li><li>HITL 从"泛化审批 gate"进化为"风险路由"：TDS 案例证明 blast radius+table sensitivity+semantic distance+resample consistency 四信号比'是否写操作'二元判断更可靠，rubber-stamp fatigue 是泛化 gate 的必然失败模式</li></ul></div></div><div class="snap-group"><span class="snap-bar snap-bar-blog"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-blog"></span>📝 技术博客<span class="badge">3 项</span></div><ul class="snap-points"><li>dbt《Why Your AI Pilot Stalled at the Context Gap》：AI 试点失败四因——不可靠 SQL（选错值非语法错）/捏造或误读指标定义/无护栏无审计/计算成本失控；解法是机器可读计算式治理非大文档；消费者从人变 agent 改变治理要求</li><li>TDS《Agentic AI Rewriting the Analytics Stack》：语义层是 AI 理解 metrics/definitions/relationships/org context 的业务感知抽象；AI 能理解业务但不能承担业务决策后果；智能变充裕时独立思考变稀缺；delegate 机械工作 save energy for judgment</li><li>TDS《Human-in-the-Loop Without Killing Throughput》：真实 text-to-SQL 部署案例——'clean up test rows'被理解为 DELETE；风险路由四信号（blast radius 真实行数非 EXPLAIN/table sensitivity 静态 allowlist/semantic distance 与已批准查询 embedding 距离/resamples 一致性非 token confidence）；rubber-stamp fatigue 警示泛化审批 gate 第三周失效</li></ul></div></div></div></div>
+
+  <div class="section"><div class="section-head"><span class="bar bar-paper"></span><h2>📄 学术论文</h2><span class="count">3 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-paper">📄 论文</span></div><h3><a href="https://doi.org/10.17148/ijarcce.2026.15842" target="_blank" rel="noopener">ERF-SQL: Beyond Benchmark Accuracy — Enterprise Deployment and Readiness Framework for Text-to-SQL</a></h3><div class="meta">2026-08-27 · OpenAlex (IJARCCE 2026.15842)</div><div class="summary">论文指出企业试点 text-to-SQL 反复发现同一问题：Spider 85% 精度的模型仍被安全审查/审计/风控拒绝——生成的查询忽略行级访问策略、暴露脱敏列、schema 变更下静默崩溃、跑无界扫描、无证据链。作者论证问题是架构性非语言性：缺的不是更好的模型而是模型周围的系统，其中 vocabulary/policies/budgets 机器可读且强制确定性。ERF-SQL 系统：版本化语义契约成为 schema 与模型唯一接口；Policy-Aware Query Guard 在执行前重写每个候选查询的 AST；不确定答案路由到澄清或人工审查；行为按六就绪维度评分聚合为 gated Enterprise Readiness Index。EntSQL-450 评测套件含活角色策略+脱敏规则，四个生产 LLM 在 naive baseline 下相对 Spider 丢 19-23 精度点，实现 pipeline 恢复 13-16 点+执行前拦截 97% 不安全生成+漂移韧性 0.55→0.86，约 0.9s 延迟代价。</div><div class="insight"><strong>🔍 技术视角：</strong>这是用户"业务系统精确查询"课题的最直接论文。ERF-SQL 的'版本化语义契约= schema 与模型唯一接口'与用户的'通过业务 API 查数非直连 DB'约束完全同构——API schema/字段语义标注就是那个 versioned semantic contract。Policy-Aware Query Guard 的 AST 重写对应 API 调用参数的确定性强制（行级访问策略=字段级权限治理）。EntSQL-450 的'活角色策略+脱敏规则'评测设计为用户立项提供评测方法论模板——必须在真实权限/脱敏下测非裸 Spider benchmark。97% 拦截率+0.55→0.86 漂移韧性是部署就绪可工程化测量的硬数字。与 8/28 dbt context gap 四因（不可靠 SQL/捏造指标/无护栏/成本失控）精确映射：ERF-SQL 的语义契约管'捏造指标'+AST guard 管'不可靠 SQL'+Enterprise Readiness Index 管'无护栏'。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">ERF-SQL 企业部署就绪框架</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">用户自然语言查询</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">业务问题</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">版本化语义契约</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">schema-模型唯一接口</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">LLM 生成候选查询</text><text x="548.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">vocabulary/policies 机器可读</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Policy-Aware Query Guard</text><text x="744.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">AST 重写+行级策略+脱敏+扫描边界</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="179.0" y="208" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="254.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">执行或路由 HITL</text><text x="254.0" y="252" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">不确定→澄清/人审</text><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Enterprise Readiness Index</text><text x="450.0" y="252" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">六维 gated 评分</text><line x1="329.0" y1="237.0" x2="371.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="571.0" y="208" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="646.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">业务数据源</text><text x="646.0" y="252" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">受控访问</text><line x1="525.0" y1="237.0" x2="567.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">唯一接口</tspan>　版本化语义契约是 schema 与模型间唯一接口，模型不直接看原始 schema</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">AST 强制</tspan>　Policy-Aware Query Guard 在执行前重写每个候选查询 AST，强制行级访问策略+脱敏+扫描边界</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">硬数字</tspan>　EntSQL-450 上恢复 13-16 精度点+拦截 97% 不安全生成+漂移韧性 0.55→0.86，~0.9s 延迟</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>首次给出'text-to-SQL 部署就绪可工程化测量非仅希望'的完整框架+硬数字，直接回应用户'AI for 业务精确查询'的核心焦虑。EntSQL-450 评测套件设计（活角色策略+脱敏规则）为内部立项提供评测方法论。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>三层：(1) Versioned Semantic Contract——schema 与模型间唯一接口，vocabulary/policies/budgets 机器可读；(2) Policy-Aware Query Guard——执行前重写候选查询 AST 强制行级访问策略+脱敏+扫描边界；(3) Enterprise Readiness Index——六维度评分聚合 gated 决策，不确定路由澄清/HITL。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>核心洞察是'问题架构性非语言性'——这与 8/27 TDS Part 3 的'tool vocabulary 决定推理天花板'+8/26 Beyond the Harness 的'context 工件经济学'共振：三者都把确定性基建前移到 AI 行动之前。ERF-SQL 的'版本化语义契约'是把 API schema/字段语义标注提升为版本化可治理资产——与 Cube 的 cube spec CLI 分支审阅（8/18 已收录）同构。0.55→0.86 漂移韧性提升是 schema 变更下不静默崩溃的量化——对用户上百字段宽表 API 字段语义变更场景直接相关。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>对业务/产品决策的启示：text-to-SQL/业务查询 AI 的采购评估不能只看 benchmark 精度，必须问'行级访问策略如何强制''schema 变更下漂移韧性多少''有无 AST 级 guard''就绪指数如何量化'。ERF-SQL 的'语义契约为唯一接口'为数据产品/SaaS 提供差异化定位——'机器可读治理'比'更高精度'是更强的销售论据。企业内部立项可把 EntSQL-450 评测方法论作为内部评测套件设计模板。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>(1) 把 API schema/字段语义标注版本化为唯一接口，模型不直接看原始 API 定义；(2) 在 API 调用层建 AST 等价的参数级 Policy Guard，执行前强制字段级权限+数据脱敏；(3) 建 EntSQL-450 式评测套件含真实权限/脱敏规则，不用裸 benchmark 成果；(4) 建六维就绪指数 gated 决策，不确定路由 HITL。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>EntSQL-450 是作者自建评测套件，可能偏向自家系统强项；97% 拦截率在真实业务 schema 未知分布下待验证；0.9s 延迟在高频查询场景需权衡；Semantic Scholar 未索引（8/27 新文预期 0 引用，引用待核实）；论文来自 IJARCCE 非顶会，但框架设计与硬数字有工程参考价值。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://doi.org/10.17148/ijarcce.2026.15842" target="_blank" rel="noopener" class="src-link">Beyond Benchmark Accuracy: An Enterprise Deployment and Readiness Framework for Large Language Model-Based Text-to-SQL Systems</a></li></ol></div><div class="modal-foot"><a href="https://doi.org/10.17148/ijarcce.2026.15842" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://doi.org/10.17148/ijarcce.2026.15842</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-paper">📄 论文</span></div><h3><a href="https://doi.org/10.34190/eckm.27.1.5120" target="_blank" rel="noopener">Meta-Books: Restructuring Organisational Knowledge for Agentic AI Reasoning</a></h3><div class="meta">2026-08-25 · OpenAlex (ECKM 2026)</div><div class="summary">论文指出组织持有大量 AI 系统无法作为知识访问的知识资本——手册/入职文档/流程文档/积累的专业知识在结构上与 AI 推理不兼容：无可遍历的依赖结构、无角色分类可遵守、无关系上下文可浮现。Meta-Books 作为知识管理设计回应：把常规组织文档转换为 typed 依赖链接知识图谱。源内容分解为五类 typed 知识对象——concept/procedure/example/controversy/reflective insight——由 prerequisite-of/illustrates/contradicts/applies-to 等语义边连接。每节点带教学元数据：depth layer/role classification/engagement time/prerequisite links。区别于 RAG 的是 meta-books 重构源内容本身让 dependency/context/role 对 AI 在推理点可见，支持跨源整合让知识节点跨文档迁移。</div><div class="insight"><strong>🔍 技术视角：</strong>这是'语义层 vs 企业知识图谱'双路线的第三选项——不是二选一而是'用知识图谱重构源内容让 AI 推理点可见'。Meta-Books 的'重构源内容非检索增强'与 8/27 IEO'解读先于检索'+8/26 TDS One Document Type'同构文档 schema 在人脑中非文档中'共振：三者都把语义基建前移到 AI 行动之前。五类 typed 节点（concept/procedure/example/controversy/reflective）对用户业务知识库构建直接可迁移——业务术语/流程/案例/争议/反思五分类是业务知识图谱的节点类型设计模板。'contradicts'边对业务规则冲突建模直接相关。'role classification'对用户字段级权限场景的'哪些角色可见哪些知识'直接可迁移。与 8/27 Manufacturing Data Book 的'access control 在模型看到 schema 前过滤'共振：role classification 在推理点可见=access control 在结构层嵌入。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">Meta-Books 源内容重构 vs RAG 检索增强</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">组织文档</text><text x="156.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">手册/入职/流程</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">分解为 typed 节点</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">concept/procedure/example/controversy/reflective</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">语义边连接</text><text x="548.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">prerequisite-of/illustrates/contradicts/applies-to</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">教学元数据</text><text x="744.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">depth/role/time/prerequisite</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="277.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="352.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">跨源整合</text><text x="352.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">节点跨文档迁移</text><rect x="473.0" y="208" width="150" height="58" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/><text x="548.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">AI 推理点可见</text><text x="548.0" y="252" fill="#64748b" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">dependency/context/role</text><line x1="427.0" y1="237.0" x2="469.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">重构非检索</tspan>　Meta-Books 重构源内容本身让 dependency/context/role 对 AI 在推理点可见，区别于 RAG 的检索增强</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">五类节点</tspan>　concept/procedure/example/controversy/reflective insight——业务知识图谱节点类型设计模板</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">role classification</tspan>　每节点带角色分类，对应字段级权限治理，与 access control 在结构层嵌入共振</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>首次明确区分'RAG 检索增强'与'源内容重构'两条路线，并为后者提供完整节点/边类型设计模板。直接回应用户'业务知识库构建'方向的知识图谱建模需求。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>源文档→分解为五类 typed 节点（concept/procedure/example/controversy/reflective）→由四类语义边（prerequisite-of/illustrates/contradicts/applies-to）连接→每节点带教学元数据（depth/role/time/prerequisite）→支持跨源整合节点跨文档迁移。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>核心洞察是'组织知识在结构上与 AI 推理不兼容'——这与 8/14 VAKRA multi-hop 衰减+8/17 EnterpriseRAG 57 点鸿沟共振：三者都指向'裸文档不可直接被 AI 推理'。Meta-Books 的'contradicts 边'与 8/27 IEO'五操作 structuring/resolving/enriching/validating/representing'中的 validating 共振：知识图谱在结构层嵌入矛盾检测。'depth layer'对用户宽表 API 字段的'核心字段 vs 衍生字段 vs 上下文字段'分层直接可迁移。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>对业务决策的启示：'AI for 业务'的知识库投资应从'建索引让 AI 检索'升级为'重构源内容让 AI 推理'——前者是 RAG 快路，后者是 Meta-Books 深路。核心业务知识（业务术语/规则/流程）建议走重构路线形成知识资产护城河，非核心走 RAG 快路。五类节点设计模板为知识产品化提供差异化定位。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>(1) 业务知识库构建时把业务文档分解为五类 typed 节点；(2) 用 prerequisite-of 建字段间依赖、contradicts 建业务规则冲突、applies-to 建字段到业务流程的映射；(3) 每节点带 role classification 对应字段级权限；(4) 评估'检索增强'vs'源内容重构'两条路线——前者快后者深，核心业务知识建议重构。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>ECKM 会议论文非 arXiv，Semantic Scholar 未索引（引用待核实，8/25 新文预期 0）；'contradicts'边依赖人工或半自动标注，业务知识库规模大时标注成本需评估；'cross-source integration'的跨文档节点迁移在真实多源业务文档下冲突解决机制未详述。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://doi.org/10.34190/eckm.27.1.5120" target="_blank" rel="noopener" class="src-link">Meta-Books: Restructuring Organisational Knowledge for Agentic AI Reasoning</a></li></ol></div><div class="modal-foot"><a href="https://doi.org/10.34190/eckm.27.1.5120" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://doi.org/10.34190/eckm.27.1.5120</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-paper">📄 论文</span></div><h3><a href="https://doi.org/10.34190/eckm.27.2.5093" target="_blank" rel="noopener">A Taxonomy and Reference Architecture for AI-Enabled Industrial Knowledge Management</a></h3><div class="meta">2026-08-25 · OpenAlex (ECKM 2026)</div><div class="summary">论文指出工业运行的知识从未被写下——散落在个别员工、不兼容系统中，人员换岗或退休时风险急化。现有 AI 方法集中于文档化白领工作，蓝领体力工作被 LLM 低估，且把 AI 当单一未分化能力，实践者无原则基础选技术。论文提出五 AI 范式分类法——perceptive/dialogic/interpretive/structural/contextual——每个由其对三知识过程（capture/structuring/transfer）之一的贡献定义，集体默会知识抵抗编码的边界被标记。独立编排层由 autonomous agents+知识图谱+RAG+AR 实现。</div><div class="insight"><strong>🔍 技术视角：</strong>这为用户'AI for 业务'提供了 AI 能力分类框架——不是所有业务知识都用一种 AI。五范式×三过程矩阵让选型有原则基础：业务文档结构化用 structural、业务对话用 dialogic、业务感知（API/数据感知）用 perceptive、业务解读用 interpretive、业务上下文用 contextual。'集体默会知识抵抗编码的边界'对用户业务知识库构建的直接警示：不是所有业务知识都能文档化，有些必须留 HITL。'独立编排层由 autonomous agents+知识图谱+RAG+AR 实现'与 Meta-Books 的'知识图谱重构源内容'+ERF-SQL 的'语义契约唯一接口'三方共振：编排层是知识图谱+RAG+语义契约的集成层。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">AI-Enabled 工业知识管理五范式×三过程矩阵</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">工业知识</text><text x="156.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">散落/不兼容/换岗风险</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">五 AI 范式</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">perceptive/dialogic/interpretive/structural/contextual</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">三知识过程</text><text x="548.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">capture/structuring/transfer</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">集体默会知识边界</text><text x="744.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">抵抗编码→留 HITL</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">编排层</text><text x="450.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">autonomous agents+KG+RAG+AR</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">AI 非单一能力</tspan>　五范式分类让业务知识选型有原则基础，避免一种 AI 搞定一切</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">默会知识边界</tspan>　集体默会知识抵抗编码，这些知识留 HITL 不强制自动化</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">编排层集成</tspan>　autonomous agents+KG+RAG+AR 四技术集成编排层</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>提供 AI 能力选型的原则框架，避免'一种 AI 搞定所有业务知识'的误区。集体默会知识边界为知识库构建范围划定提供理论依据。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>五 AI 范式（perceptive/dialogic/interpretive/structural/contextual）×三知识过程（capture/structuring/transfer）矩阵+集体默会知识抵抗编码边界标记+独立编排层（autonomous agents+KG+RAG+AR）。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>核心洞察是'AI 不是单一未分化能力'——这与 8/27 TDS Agentic vs Automation'agent 处理未知未知 automation 处理已知未知'+8/19 From Language Models to Agentic AI Survey'四维分类'共振：三者都反对'一种 AI 搞定一切'。'集体默会知识抵抗编码'与 8/27 IEO'解读失败常见可测可修正'+8/26 DEW'无主状态被禁止'形成张力：有些知识无法编码必须留权属声明。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>对业务决策的启示：'AI for 业务'立项前应做知识资产分类——哪些可结构化（structural AI）、哪些需对话（dialogic）、哪些是感知（perceptive）、哪些是解读（interpretive）、哪些是上下文（contextual）。集体默会知识的'留 HITL'决策为'哪些业务知识不自动化'提供理论依据，避免过度自动化风险。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>(1) 业务知识库构建前用五范式×三过程矩阵分类知识资产；(2) 标记集体默会知识边界，这些知识留 HITL 不强制编码；(3) 编排层集成 KG（Meta-Books 重构）+RAG（检索增强）+语义契约（ERF-SQL）+AR（业务感知）。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>ECKM 会议论文，Semantic Scholar 未索引（引用待核实）；五范式分类的边界在真实业务中可能模糊（一个业务知识可能跨多范式）；AR（增强现实）对用户纯软件场景相关度低。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://doi.org/10.34190/eckm.27.2.5093" target="_blank" rel="noopener" class="src-link">A Taxonomy and Reference Architecture for AI-Enabled Industrial Knowledge Management</a></li></ol></div><div class="modal-foot"><a href="https://doi.org/10.34190/eckm.27.2.5093" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://doi.org/10.34190/eckm.27.2.5093</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-product"></span><h2>🏢 业界动态</h2><span class="count">1 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-product">🏢 业界动态</span></div><h3><a href="https://doi.org/10.17148/ijarcce.2026.15842" target="_blank" rel="noopener">企业 text-to-SQL 进入"语义契约+策略守卫+可信缓存"三件套阶段</a></h3><div class="meta">2026-08-29 · 综合研判（ERF-SQL + dbt context gap + Cube cache identity）</div><div class="summary">今日三线情报共振指向企业 text-to-SQL 部署进入新阶段：护城河不是模型而是语义契约+策略守卫+可信缓存三件套。学术线 ERF-SQL 给出'versioned semantic contract + Policy-Aware Query Guard + Enterprise Readiness Index'框架+硬数字（恢复 13-16 精度点+拦截 97%+漂移韧性 0.55→0.86）。商业线 dbt 用'context gap 四因'把失败模式商业语言化。GitHub 线 Cube v1.7.30 修复 refresh key cache identity——缓存身份确定性是可信查询基础设施。三线共振：ERF-SQL 语义契约管'捏造指标'+AST guard 管'不可靠 SQL'+Cube cache identity 管'可信缓存'+HITL 风险路由管'业务数据可信度验证'。</div><div class="insight"><strong>🔍 技术视角：</strong>这是对用户'业务系统精确查询'课题的最高层研判：'让 AI 懂业务'不是模型能力问题而是系统工程问题。三件套对应三大方向：(1) 语义契约=业务知识库构建+业务语义理解（版本化 API schema/字段语义标注）；(2) 策略守卫=业务系统精确查询（AST 级参数强制+字段级权限）；(3) 可信缓存=业务数据可信度验证（缓存 identity 确定性+风险路由 HITL）。这与 8/27'工具词汇表经济学'+8/26'context 工件经济学'+8/28 ERF-SQL'部署就绪可工程化'形成跨日共振：企业 text-to-SQL 的投入分配应从'选更强模型'重定向到'建语义契约+策略守卫+可信缓存基础设施'。Meta-Books 的'源内容重构'与 ECKM'五范式分类'为语义契约的内容构建提供方法论。TDS HITL 风险路由为策略守卫的 HITL 设计提供工程模板。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">企业 text-to-SQL 三件套（语义契约+策略守卫+可信缓存）</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">业务知识</text><text x="156.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">Meta-Books 五类节点重构</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">语义契约</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">versioned API schema 唯一接口</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">LLM 生成</text><text x="548.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">候选查询/API 调用</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">策略守卫</text><text x="744.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">AST guard+字段权限+风险路由</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="277.0" y="208" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">可信缓存</text><text x="352.0" y="252" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">identity 确定性+跨源隔离</text><rect x="473.0" y="208" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="548.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">业务数据</text><text x="548.0" y="252" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">受控访问+审计</text><line x1="427.0" y1="237.0" x2="469.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">护城河非模型</tspan>　护城河是语义契约+策略守卫+可信缓存系统工程，非模型精度</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">四层升级</tspan>　语义层 vs KG 双路线升级为语义契约+知识图谱重构+策略守卫+可信缓存四层</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">投入重定向</tspan>　投入从选更强模型重定向到建三件套基础设施</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>跨学术+商业+GitHub 三线共振指向企业 text-to-SQL 部署的范式转移，为用户立项投入分配提供最高层研判。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>三件套：语义契约（versioned API schema/字段语义标注为唯一接口）+策略守卫（AST 级参数强制+字段级权限+扫描边界）+可信缓存（identity 确定性+跨数据源隔离+风险路由 HITL）。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>核心研判是'护城河不是模型而是系统工程'——与 8/27'工具词汇表经济学'+8/26'context 工件经济学'+8/14'编排+评测基建'跨日共振：四方共振指向同一范式转移。ERF-SQL 的'问题架构性非语言性'是这一转移的学术表述，dbt 的'context gap'是商业表述，Cube cache identity 是基础设施表述。'语义层 vs 企业知识图谱'双路线升级为'语义契约（读侧）+知识图谱重构（内容侧）+策略守卫（写侧）+可信缓存（运行侧）'四层。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>对业务决策的启示：AI for 业务的立项 ROI 评估应从'模型精度'转向'三件套完备度'。采购评估问'语义契约如何版本化''策略守卫如何强制''缓存 identity 如何计算''HITL 如何风险路由'。三件套是差异化定位——'机器可读治理+可信缓存+风险路由'比'更高精度'是更强销售论据。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>(1) 投入分配从'选更强模型'重定向到'建语义契约+策略守卫+可信缓存'；(2) 语义契约用 Meta-Books 五类节点重构业务知识；(3) 策略守卫用 ERF-SQL AST guard+TDS 风险路由四信号；(4) 可信缓存用 Cube refreshKeyIdentity 模式（identity 含数据源/引擎维度）。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>综合研判非单一来源，三线共振是观察非因果证明；ERF-SQL 硬数字在用户真实业务 schema 未知分布下待验证；三件套投入成本高，非核心业务可走 RAG 快路+泛化 gate 慢路。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://doi.org/10.17148/ijarcce.2026.15842" target="_blank" rel="noopener" class="src-link">Beyond Benchmark Accuracy: Enterprise Deployment and Readiness Framework for Text-to-SQL</a></li><li><span class="src-id">[2]</span> <a href="https://www.getdbt.com/blog/why-your-ai-pilot-stalled-at-the-context-gap" target="_blank" rel="noopener" class="src-link">Why Your AI Pilot Stalled At The Context Gap</a></li><li><span class="src-id">[3]</span> <a href="https://github.com/cube-js/cube/releases/tag/v1.7.30" target="_blank" rel="noopener" class="src-link">Cube v1.7.30 Release</a></li><li><span class="src-id">[4]</span> <a href="https://towardsdatascience.com/human-in-the-loop-without-killing-throughput/" target="_blank" rel="noopener" class="src-link">Human-in-the-Loop Without Killing Throughput</a></li></ol></div><div class="modal-foot"><a href="https://doi.org/10.17148/ijarcce.2026.15842" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://doi.org/10.17148/ijarcce.2026.15842</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-github"></span><h2>🐙 开源项目</h2><span class="count">2 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-github">🐙 GitHub</span></div><h3><a href="https://github.com/cube-js/cube/releases/tag/v1.7.30" target="_blank" rel="noopener">Cube v1.7.30: 冷缓存双重竞态 + refresh key cache 三 bug 修复</a></h3><div class="meta">2026-08-28 · GitHub (cube-js/cube)</div><div class="summary">Cube v1.7.30（8/28）修复 query-orchestrator 冷缓存续期路径双重竞态 #11674。同日 #11607 修复 refresh key cache 三个长期 bug：(1) PreAggregationLoadCache memo 100% miss 四年——refresh key 查询用 H2=md5([sql,params]) 存但用 H3=md5([sql,params,options]) 查，options 移入 tuple 时只更新 store 侧（#3061 回归），memo 从未命中；(2) scheduler/loader renewal key ping-pong——cube refreshKey 与 pre-agg invalidateKeyQuery 同 SQL 时双方用不同 renewalKey 写同一 entry 互相标 stale 无限循环；(3) 跨引擎/数据源条目碰撞——identity=[sql,params] 缺 external/dataSource 维度，prod/staging/Cube Store 同 SQL 共享一个 entry 谁先跑谁 serve 所有。修复给 refresh key 一个身份 [sql,params,!!external,dataSource||'default'] 一处计算（QueryCache.refreshKeyIdentity）一处应用（cacheRefreshKeyResult）。</div><div class="insight"><strong>🔍 技术视角：</strong>这是语义层引擎缓存基础设施的正确性修复，与 ERF-SQL'版本化语义契约为唯一接口'共振——Cube 的 refresh key cache identity 修复与 ERF-SQL 的 semantic contract versioning 都指向同一原则：缓存/契约的身份必须确定性可计算。'跨数据源/引擎共享 identity 是 bug 非特性'对用户上百字段宽表 API 场景直接相关：API 调用缓存的 identity 必须包含数据源/引擎维度，否则 prod/staging 共享缓存是安全隐患。'memo 100% miss 四年'警示：缓存正确性的回归可能长期潜伏——与 8/24 Deterministic Reproducible Wrong'自研评分器制造伪发现'共振：基础设施 bug 可能系统性制造伪结果。'ping-pong renewal'与 8/27 Cube v1.7.29 LRU 驱逐 orchestrator 释放 #11661 共振：两者都修缓存生命周期的竞态。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">Cube refresh key cache identity 修复（三 bug → 一 identity）</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">refresh key query</text><text x="156.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">SELECT FLOOR(EXTRACT...)</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">refreshKeyIdentity()</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">[sql,params,!!external,dataSource]</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">cacheRefreshKeyResult()</text><text x="548.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">cacheKey=renewalKey=memo key</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">PreAggregationLoadCache</text><text x="744.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">memo 命中</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">跨数据源隔离</text><text x="450.0" y="252" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">prod/staging/CubeStore 独立</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">memo 四年 100% miss</tspan>　H2 存 H3 查，options 移入 tuple 时只更新 store 侧，#3061 回归</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">ping-pong renewal</tspan>　scheduler/loader 用不同 renewalKey 写同一 entry 互相标 stale 无限循环</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">跨数据源碰撞</tspan>　identity 缺 external/dataSource，prod/staging 共享 entry 谁先跑谁 serve 所有</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>语义层引擎缓存基础设施的三个长期 bug 修复，'memo 100% miss 四年'显示缓存正确性回归可长期潜伏。跨数据源 identity 碰撞对用户 API 查数缓存直接相关。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>refresh key identity 从 [sql,params] 升级为 [sql,params,!!external,dataSource||'default']，一处计算（refreshKeyIdentity）一处应用（cacheRefreshKeyResult），cacheKey=renewalKey=memo key 统一。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>核心洞察是'缓存身份必须确定性可计算且跨数据源隔离'——这与 ERF-SQL'versioned semantic contract 唯一接口'+8/27 WrenAI #2681'非标量名称验证错误 fail-loud'共振：三者都指向'身份/契约的确定性是正确性前提'。'memo 100% miss 四年'与 8/24 Deterministic Reproducible Wrong 共振：基础设施 bug 系统性制造伪结果（这里是无效率而非伪发现）。'ping-pong renewal'与 8/27 v1.7.29 LRU 释放共振：缓存生命周期竞态是语义层引擎可靠性密集修复区。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>对业务决策的启示：语义层/缓存基础设施的正确性是 AI for 业务可信查询的隐基——'memo 100% miss 四年'意味着四年间所有依赖该缓存的查询都走了低效路径，是隐形成本。采购语义层引擎时问'缓存 identity 如何计算''跨数据源如何隔离''命中率如何监控'。'跨数据源 identity 碰撞'是安全隐患（prod/staging 共享缓存），安全审查应纳入。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>(1) API 调用缓存 identity 必须包含数据源/引擎维度；(2) 缓存 key 计算与查找必须走同一 helper；(3) 定期审计缓存命中率——100% miss 是 bug 信号非正常；(4) refreshKey 与 invalidateKeyQuery 同 SQL 时需防 ping-pong。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>修复涉及 #3061 回归（四年前引入），说明缓存正确性回归可长期潜伏；修复本身需验证不引入新 identity 不一致；跨数据源隔离后缓存内存占用增加需权衡。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://github.com/cube-js/cube/releases/tag/v1.7.30" target="_blank" rel="noopener" class="src-link">Cube v1.7.30 Release</a></li><li><span class="src-id">[2]</span> <a href="https://github.com/cube-js/cube/pull/11607" target="_blank" rel="noopener" class="src-link">fix(query-orchestrator): key refresh key cache entries consistently</a></li></ol></div><div class="modal-foot"><a href="https://github.com/cube-js/cube/releases/tag/v1.7.30" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://github.com/cube-js/cube/releases/tag/v1.7.30</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-github">🐙 GitHub</span></div><h3><a href="https://github.com/giancarloerra/SocratiCode" target="_blank" rel="noopener">SocratiCode #119: Ollama 连接池有界化（undici Agent bounded）</a></h3><div class="meta">2026-08-28 · GitHub (giancarloerra/SocratiCode)</div><div class="summary">SocratiCode 8/28 修复 #119：Ollama client 用 Node 默认 fetch pool 无 per-origin 连接上限，并发 embed 从多 server 进程或重叠 tool call 堆叠 socket 到 Ollama 无限。修复：client 通过 fetch override 供应 bounded undici Agent，超 cap 请求在 agent 排队而非开连接，pool 在 client 重建时 drain，resetOllamaClient 暴露同一 drain。OLLAMA_MAX_CONNECTIONS 配置 cap（默认 4），invalid value 拒绝加载而非 clamp。undici 6.28 加入依赖，engines.node 升至 18.17.0。同时修复 Phase F speedup 断言 flake——不同 test block 间隔分钟测时序改为同 block 测+retry 吸收负载 spike。</div><div class="insight"><strong>🔍 技术视角：</strong>这是本地化代码智能 MCP 服务器的基础设施加固，与 8/27 Cube v1.7.29 websocket 每 user 连接上限 #11667 共振：两者都修'每客户端/每 origin 连接无上限'导致资源耗尽。对用户'AI for 业务'的本地部署场景（Ollama 本地 embed 业务知识）直接相关：并发 embed 调用无连接上限会耗尽 socket。'invalid value 拒绝加载而非 clamp'与 8/27 WrenAI #2681'非标量名称验证错误 fail-loud'共振：两者都选'拒绝而非静默修正'——fail-loud &gt; silent clamp。SocratiCode 的'40m+ LOC codebase intelligence+hybrid semantic search+polyglot dependency graphs'对用户研发知识库已建成现转型业务的场景有参考——代码智能→业务智能的方法论可迁移。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">Ollama 连接池有界化（bounded undici Agent）</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">并发 embed 请求</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">多 server/重叠 tool call</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Ollama client</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">fetch override</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">bounded undici Agent</text><text x="548.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">OLLAMA_MAX_CONNECTIONS=4</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">超 cap 排队</text><text x="744.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">非开新连接</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Ollama 本地</text><text x="450.0" y="252" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">socket 有界</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">Node 默认无 cap</tspan>　Node 默认 fetch pool 无 per-origin 连接上限，并发堆叠 socket 无限</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">fail-loud 配置</tspan>　invalid value 拒绝加载而非 clamp，与 WrenAI fail-loud 共振</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">pool drain</tspan>　client 重建时 drain pool，resetOllamaClient 暴露同一 drain</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>本地 embed 基础设施连接池加固，与 Cube websocket 连接上限共振。fail-loud 配置验证设计有参考价值。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>Ollama client fetch override 供应 bounded undici Agent，OLLAMA_MAX_CONNECTIONS 默认 4，超 cap 排队，pool 重建时 drain，invalid value 拒绝加载。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>核心洞察是'Node 默认 fetch pool 无 per-origin cap'是隐式资源耗尽源——这与 8/17 TDS Autoscaling'agentic traffic 突发+重试无情'共振：agent 场景的并发模式与传统请求不同，默认连接池假设不成立。'invalid value 拒绝加载而非 clamp'与 WrenAI fail-loud 共振：fail-loud 是不确定性暴露的最佳实践。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>对业务决策的启示：本地化 AI 部署（Ollama/embed）的基础设施加固是隐形成本——连接池无上限在并发场景耗尽资源导致静默性能退化。fail-loud 配置验证是运维最佳实践——invalid value 拒绝加载比 silent clamp 更早暴露问题。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>(1) 本地 Ollama embed 部署设连接上限；(2) 配置验证选 fail-loud 非 silent clamp；(3) 并发 embed 场景监控 socket 使用；(4) 测试时序 flake 用同 block 测+retry。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>SocratiCode 是 40m+ LOC 企业级代码智能工具，与用户'业务智能'课题相关度中低但方法论可迁移；Ollama 连接池修复是运维细节非架构创新。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://github.com/giancarloerra/SocratiCode" target="_blank" rel="noopener" class="src-link">SocratiCode GitHub Repository</a></li></ol></div><div class="modal-foot"><a href="https://github.com/giancarloerra/SocratiCode" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://github.com/giancarloerra/SocratiCode</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-blog"></span><h2>📝 技术博客</h2><span class="count">2 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-blog">📝 技术博客</span></div><h3><a href="https://www.getdbt.com/blog/why-your-ai-pilot-stalled-at-the-context-gap" target="_blank" rel="noopener">Why Your AI Pilot Stalled at the Context Gap (dbt Blog)</a></h3><div class="meta">2026-08-28 · dbt Blog</div><div class="summary">dbt 指出 agentic AI 项目卡在 pilot 阶段的根因是 context gap——AI agent 被剥夺了做明智决策所需的治理上下文。四种常见失败：(1) 写不可靠 SQL——语法对但选错值；(2) 捏造或误读指标定义——无足够上下文用 stale/missing/fabricated metrics，缺 review 加剧；(3) 无护栏无审计链——无辅助过程检查 agent 工作，无记录可验证结论如何达成；(4) 计算成本因低效工作上升——agent 用更多计算完成任务吃掉利润。解法是机器可读计算式治理非大文档——'历史上数据消费者是人，现在变 AI agent'。dbt+Fivetran 合并交付 trusted Open Data Infrastructure for AI at scale。</div><div class="insight"><strong>🔍 技术视角：</strong>这是 ERF-SQL'问题架构性非语言性'的商业版本——dbt 用四种失败模式把'context gap'具象化。'不可靠 SQL 选错值非语法错'对用户上百字段宽表 API 场景直接相关：字段名相似的宽表 API 下 agent 选错字段比语法错更危险。'捏造指标定义'与 ERF-SQL'版本化语义契约为唯一接口'共振：指标定义必须版本化机器可读。'无护栏无审计'与 ERF-SQL'Policy-Aware Query Guard+Enterprise Readiness Index'共振。'计算成本失控'与 8/17 TDS Autoscaling'agentic traffic 打破两代 autoscaling'共振。'消费者从人变 agent 改变治理要求'与 8/14 Never the Number'消费者是 agent 非人时可靠性先于准确率'共振——三角共振指向同一范式转移。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">dbt Context Gap 四因与机器可读治理</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">AI Pilot</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">高期望</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Context Gap 四因</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">不可靠SQL/捏造指标/无护栏/成本失控</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">机器可读治理</text><text x="548.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">vocabulary/policies 机器可读</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">dbt 平台</text><text x="744.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">semantic layer+governance+audit</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">可信 AI agent</text><text x="450.0" y="252" fill="#64748b" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">governed context</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">选错值非语法错</tspan>　不可靠 SQL 是语法对但选错值，宽表 API 字段名相似场景更危险</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">机器可读治理</tspan>　治理必须计算式机器可读非大文档，强制确定性非自然语言请求</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">消费者变 agent</tspan>　数据消费者从人变 AI agent 改变治理要求——可靠性先于准确率</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>dbt 作为语义层/指标平台头部厂商，其'context gap'四因框架为 AI for 业务立项失败模式提供商业语言版本，与 ERF-SQL 学术框架互补。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>context gap 四因：不可靠 SQL（选错值）/捏造指标（stale/missing/fabricated）/无护栏无审计/成本失控。解法：机器可读计算式治理（vocabulary/policies 机器可读+强制确定性）。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>核心洞察是'治理必须机器可读计算式非大文档'——这与 8/19 Policy Algebra'reliability as path property'+8/22 SBproxy Cedar 策略引擎+8/26 'Do Not' Is Not Deny'481 个 CLAUDE.md 4-16% 安全规则有匹配内置控制'共振：四方共振指向'安全治理必须代码化非自然语言化'。dbt+Fivetran 合并的'Open Data Infrastructure for AI'与 8/14 dbt ODI'运动/转换/元数据/激活连续体'+8/17 dbt Core v1.12 Semantic Layer spec 简化共振：dbt 把语义层定位为 AI 的数据基础设施层。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>对业务决策的启示：AI for 业务立项的 ROI 评估必须纳入'context gap 四因'风险成本——不可靠 SQL 的业务损失+捏造指标的决策风险+无审计的合规风险+成本失控的利润侵蚀。'机器可读治理'是采购评估维度：问厂商'指标定义如何版本化''护栏如何代码化''审计链如何生成'。dbt+Fivetran 合并指向'数据基础设施+AI 治理'一体化趋势。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>(1) AI for 业务立项前评估四失败模式风险；(2) 指标定义版本化机器可读（与 ERF-SQL 语义契约同构）；(3) 建审计链记录 agent 决策路径；(4) 监控计算成本，agent 低效查询是利润侵蚀隐源。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>dbt 是语义层/指标平台厂商，观点有商业立场（推销 dbt 平台+Fivetran 合并）；'机器可读治理'的具体实现细节未给（指向 dbt 平台 demo）；四失败模式是常识性框架非新研究，但商业语言表述有传播价值。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://www.getdbt.com/blog/why-your-ai-pilot-stalled-at-the-context-gap" target="_blank" rel="noopener" class="src-link">Why Your AI Pilot Stalled At The Context Gap</a></li></ol></div><div class="modal-foot"><a href="https://www.getdbt.com/blog/why-your-ai-pilot-stalled-at-the-context-gap" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://www.getdbt.com/blog/why-your-ai-pilot-stalled-at-the-context-gap</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-blog">📝 技术博客</span></div><h3><a href="https://towardsdatascience.com/human-in-the-loop-without-killing-throughput/" target="_blank" rel="noopener">Human-in-the-Loop Without Killing Throughput (TDS, 8/28)</a></h3><div class="meta">2026-08-28 · Towards Data Science</div><div class="summary">作者分享真实 text-to-SQL agent 部署案例：三周后有人让 agent'clean up test rows in promotions table'，agent 理解'clean up'为 DELETE，因非 SELECT 已 gated HITL 被拦截。泛化'非 SELECT 走 HITL'gate 的失败模式是 rubber-stamp fatigue——中位审批等 15 分钟+审查者批量 skim 5-6 查询+第三周开始盲批。作者团队改为风险路由：四信号评分——(1) blast radius 真实行数非 EXPLAIN 估算（planner 估算在倾斜列/相关谓词下不可靠）；(2) table sensitivity 静态 allowlist（billing/auth/监管留存表有 floor risk score）；(3) semantic distance 与已批准查询 embedding 距离（与 50 条已批准相似 vs 语义新颖不同风险）；(4) resamples 一致性（非 token confidence，LLM 对自身不确定性校准差）。阈值下立即执行，阈值上走 ticket 模型非 hang。</div><div class="insight"><strong>🔍 技术视角：</strong>这是用户'业务数据可信度验证'方向最直接的工程实战。四信号风险路由对用户上百字段宽表 API 场景直接可迁移：blast radius 改为'API 返回行数+字段数'，table sensitivity 改为'业务域 allowlist'，semantic distance 改为'与历史已批准 API 调用 embedding 距离'，resamples 一致性改为'多次采样 API 参数一致性'。'rubber-stamp fatigue'是泛化 HITL gate 的必然失败模式——与 8/27 DEW'agent 与人走同一治理门'形成张力：DEW 要 agent 主动查询而非被动依赖检索触达，TDS 要风险路由非泛化 gate。'LLM 对自身不确定性校准差故不用 token confidence 用 resamples'与 8/21 TDS Bayesian Guardrails'point estimate 让模型显得比实际更确定'共振：两者都指出 LLM 自评 confidence 不可信。'EXPLAIN 估算不可靠改真实行数'对用户宽表 API 场景直接相关：API 字段基数估算在宽表下更不可靠。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">风险路由四信号 HITL（替代泛化 gate）</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Agent 动作</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">API 调用/SQL</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">风险路由四信号</text><text x="352.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">blast radius/table sensitivity/semantic distance/resamples</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">阈值下立即执行</text><text x="548.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">无人审</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">阈值上走 ticket</text><text x="744.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">非 hang UI</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">人审有价值子集</text><text x="450.0" y="252" fill="#64748b" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">高 blast+高 sensitivity+新颖+不一致</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">rubber-stamp fatigue</tspan>　泛化 gate 第三周盲批——人注意力是有限资源，花在不需要的审查上就没了</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">真实行数非 EXPLAIN</tspan>　planner 估算在倾斜列/相关谓词下不可靠，agent 生成的查询恰是这种</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">resamples 非 token confidence</tspan>　LLM 对自身不确定性校准差，多次采样一致性更可靠</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>真实 text-to-SQL 部署案例的风险路由工程实战，四信号设计可直接迁移到用户 API 查数场景。rubber-stamp fatigue 是泛化 HITL 的必然失败模式有警示价值。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>风险路由四信号：blast radius（真实行数非 EXPLAIN）+table sensitivity（静态 allowlist floor score）+semantic distance（与已批准 embedding 距离）+resamples 一致性（非 token confidence）。阈值下立即执行，阈值上走 ticket 模型。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>核心洞察是'泛化 gate 第三周失效'——这与 8/26 'Do Not' Is Not Deny'4.4% 匹配率+8/19 Policy Algebra path property 共振：确定性 gate &gt; 自然语言请求 &gt; 泛化人审。'blast radius 真实行数非 EXPLAIN'对用户宽表 API 直接相关：API 返回字段数+行数比 planner 估算更可靠。'resamples 一致性非 token confidence'与 8/21 Bayesian Guardrails 共振：LLM 自评不可信，多次采样一致性是更可靠信号。'ticket 模型非 hang'对用户体验直接相关——escalated action 给用户 ticket 号非 hang UI。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>对业务决策的启示：HITL 不是'是否要人审'而是'哪些 agent 动作真正需要人注意力'。风险路由把人注意力从'所有写操作'收窄到'高 blast radius+高 table sensitivity+语义新颖+采样不一致'子集，让人注意力投在真正有价值的审查上。这对 AI for 业务的运营成本（人审工时）直接降本。ticket 模型改善用户等待体验。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>(1) 业务 API 查数 HITL 从'泛化 gate'改为风险路由四信号；(2) blast radius 用 API 实际返回行数+字段数；(3) table sensitivity 建业务域 allowlist（billing/auth/监管表 floor score）；(4) semantic distance 建已批准 API 调用 embedding index；(5) resamples 一致性替代 token confidence；(6) escalated 走 ticket 模型非 hang。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>单篇博客无第三方验证；四信号权重需在真实业务数据上调参；'静态 allowlist 不可纯学习'是作者主观判断但与监管表需求一致；resamples 增加 API 调用成本需权衡。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://towardsdatascience.com/human-in-the-loop-without-killing-throughput/" target="_blank" rel="noopener" class="src-link">Human-in-the-Loop Without Killing Throughput</a></li></ol></div><div class="modal-foot"><a href="https://towardsdatascience.com/human-in-the-loop-without-killing-throughput/" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://towardsdatascience.com/human-in-the-loop-without-killing-throughput/</a></div></div></div>
+
+  
+
+  <footer>
+    由 Hermes Agent 自动生成 · 点击卡片查看深度详情 · 2026-08-29
+  </footer>
+
+  <!-- ===== 反馈按钮 + 表单弹层 ===== -->
+  <button class="feedback-fab" onclick="openFeedback()" title="提交反馈">💬</button>
+
+  <div class="modal" id="feedback-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeFeedback()" aria-label="关闭">×</button>
+      <span class="tag tag-product">💬 读者反馈</span>
+      <h2>提交意见 / 反馈</h2>
+      <div class="modal-body">
+        <p style="color:var(--muted);font-size:0.9em;margin-bottom:12px;">
+          你的反馈会帮我改进晨报内容。提交后将打开 GitHub Issue 页面，确认后我会在每天 17:00 处理。
+        </p>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">反馈类型</label>
+        <select id="fb-type" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);margin-bottom:12px;">
+          <option value="内容建议">内容建议（选题/深度/方向）</option>
+          <option value="错误报告">错误报告（链接失效/信息有误）</option>
+          <option value="格式反馈">格式/排版反馈</option>
+          <option value="其他">其他</option>
+        </select>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">你的反馈内容</label>
+        <textarea id="fb-body" rows="5" placeholder="请描述你的意见、建议或发现的问题…"
+          style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);resize:vertical;margin-bottom:12px;"></textarea>
+        <button class="modal-submit" onclick="submitFeedback()">提交反馈 →</button>
+      </div>
+      <div class="modal-foot" style="color:var(--muted);font-size:0.8em;">提交后请在打开的 GitHub 页面点击确认。</div>
+    </div>
+  </div>
+
+  <!-- ===== 架构图放大 lightbox ===== -->
+  <div class="diagram-lightbox" id="diagram-lightbox" onclick="if(event.target===this)closeDiagramZoom()">
+    <div class="diagram-lightbox-inner">
+      <div class="lb-head">
+        <h3 id="lb-title">📊 架构图</h3>
+        <div class="lb-tools">
+          <button type="button" class="lb-btn" onclick="diagramToggleZoom()">🔍 放大/缩小</button>
+          <button type="button" class="lb-close" onclick="closeDiagramZoom()" aria-label="关闭">×</button>
+        </div>
+      </div>
+      <div class="lb-svg" id="lb-svg"></div>
+      <div class="lb-tip">提示：点击「放大/缩小」切换缩放，缩放后可在图内拖动查看细节 · 按 Esc 关闭</div>
+    </div>
+  </div>
+
+  <script>
+    function openDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.add('show'); document.body.style.overflow = 'hidden'; }
+    }
+    function closeDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.remove('show'); document.body.style.overflow = ''; }
+    }
+    function openFeedback() {
+      document.getElementById('feedback-modal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeFeedback() {
+      document.getElementById('feedback-modal').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function submitFeedback() {
+      const type = document.getElementById('fb-type').value;
+      const body = document.getElementById('fb-body').value.trim();
+      if (!body) { alert('请填写反馈内容'); return; }
+      const date = '2026-08-29';
+      const title = '[网页反馈/' + type + '] ' + date;
+      const full = '反馈类型: ' + type + '\n日期: ' + date + '\n\n' + body;
+      // 生成 GitHub Issue 预填链接（不暴露 token，安全）
+      const url = 'https://github.com/hhao9817/agent-daily/issues/new?title=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(full);
+      window.open(url, '_blank');
+      closeFeedback();
+    }
+    /* ===== 架构图放大 ===== */
+    function openDiagramZoom(btn) {
+      const box = btn.closest('.diagram-box');
+      const svg = box.querySelector('.diagram-svg svg') || box.querySelector('svg');
+      if (!svg) return;
+      const title = box.querySelector('h4') ? box.querySelector('h4').textContent : '📊 架构图';
+      document.getElementById('lb-title').textContent = title;
+      const holder = document.getElementById('lb-svg');
+      holder.innerHTML = '';
+      holder.appendChild(svg.cloneNode(true));
+      const lb = document.getElementById('diagram-lightbox');
+      lb.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeDiagramZoom() {
+      document.getElementById('diagram-lightbox').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function diagramToggleZoom() {
+      const svg = document.querySelector('#lb-svg svg');
+      if (!svg) return;
+      svg.classList.toggle('zoomed');
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal.show').forEach(function(m) { m.classList.remove('show'); });
+        document.getElementById('diagram-lightbox').classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+</html>
