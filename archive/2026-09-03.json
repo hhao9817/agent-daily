@@ -1,0 +1,1060 @@
+{
+  "date": "2026-09-03",
+  "banner": "Text-to-SQL 从“精度竞赛”进入“业务知识承载与意图漂移”阶段；语义层引擎密集修生命周期正确性；结构化输出的 schema 合规≠数据正确成为新共识。",
+  "snapshot": {
+    "summary": "今日情报覆盖学术+博客+开源三线共振：学术侧 BIRD-History 提出 history-driven text-to-SQL benchmark（历史 SQL 日志承载业务逻辑/数据约定/分析实践，1393 任务+11 库+细粒度知识标注，解决“用户查询隐含领域知识”缺口）、MaP-SQL 用可复用结构化记忆替代 listwise selector 微调（NL→schema elements/SQL operations/expected outputs 三维记忆蒸馏，免微调定位偏置）、TIDE-Bench 揭示对话式 text-to-SQL 在 chain ambiguity+intent drift 下精度断崖（1542 样本+chain identification 与 drift recognition-resolution 双指标）、Relational-Core Graph Analytics 论证列存关系引擎+图查询语言可匹配甚至超越原生图引擎且 scale 过内存图引擎崩溃点（node/edge 属性图是关系表的重编码非更真实模型）；博客侧 dbt 实测“为 token 而非为表建模”（Gong 转录本 20x 压缩+$360K/年节省+dbt MCP server 替代原始 API 直连）、TDS 揭示结构化输出五大失败模式存活于 constrained decoding（enum hallucination/confident fabrication/cross-field contradiction/distributional collapse/array hallucination，schema 合规≠数据正确）、TDS 论证 RAG 复杂度应被挣得（架构复杂度须对应已观测的检索失败模式，BM25 在专业域仍是竞争基线）、Anthropic 发布 Enterprise Frontier Safeguards（客户控制数据存储+跨会话/账户滥用检测+自动监测无 Anthropic 人工审查）；开源侧 Cube v1.7.31+v1.7.32 密集修复（window/多参数聚合下推+nested multi-fact join 折叠为单 scan+refresh key cache 一致性+interval refresh keys 本地计算+tesseract calendar 粒度崩溃修复+rolling_window compose+raw time dimension 时区一次性转换+Interactive priority 保留）、WrenAI v0.13.4 查询路径安全化（只接受只读 SELECT+autocommit 防失败语句污染连接+view 升级拒绝映射到同一目标+model columns 规范化+query pair 字段类型验证）、OpenMetadata 2.0.1 维护版（MCP 加固+连接器可靠性 MLflow/BigQuery/Tableau/DB2/Trino/Glue/OpenLineage+搜索/lineage 修复+安全依赖清理）、tokensave v7.11.0 per-repo git hooks（不再全局占用 core.hooksPath）。",
+    "groups": {
+      "paper": [
+        "BIRD-History：history-driven text-to-SQL benchmark——历史 SQL 查询日志承载业务逻辑/数据约定/分析实践等 schema 与 NL 问题均未显式记录的领域知识，1393 任务跨 11 库，每任务标注哪些历史查询含相关知识+哪些 SQL 子句编码该知识，填补“用户查询隐含领域知识”缺口",
+        "MaP-SQL：用可复用结构化记忆替代 listwise selector 微调——从训练数据蒸馏 NL→schema elements/SQL operations/expected outputs 三维记忆，检索后作为显式决策准则评估候选，推理时重排序+缓解定位偏置，免微调且记忆可跨问题复用",
+        "TIDE-Bench：对话式 text-to-SQL 在 chain ambiguity+intent drift 下的评测——514 anchor SQL 构造 1542 样本，chain ambiguity（欠规范问题触发分层澄清含条件依赖）+intent drift（用户撤回并替换已提交请求元素）两种模式，引入 chain identification 与 drift recognition-resolution 专用指标",
+        "Relational-Core Graph Analytics：列存关系引擎+图查询语言（ClickGraph/DeltaGraph）匹配甚至超越原生图引擎且 scale 过内存图引擎崩溃点——node/edge 属性图非更真实的连接数据模型而是关系表已有关系的重编码，查询时重建是纯开销，Cypher 直接翻译到原生关系 schema 在 ClickHouse/Databricks 上执行"
+      ],
+      "blog": [
+        "dbt《Model for the token, not the table》：Gong 通话转录本从原始 API 直连 8300 tokens/call→经 warehouse-native AI 函数压缩至 500-1000 tokens 结构化摘要（20x 压缩、74x 更少 tokens、99% 更便宜），dbt MCP server 替代原始 API 直连，JOIN CRM/product/billing，content filter before pulling，$470K→$110K/年（100 人销售团队）+$685K→$165K/年（always-on agent workflow）",
+        "TDS《Your JSON Is Valid but Your Data Is Wrong》：constrained decoding 解决了语法问题但制造了“schema 合规即数据正确”的盲区——五大失败模式存活：enum hallucination（有效 enum 语义错）/confident fabrication（自由文本字段编造值，elephant 当 receipt）/cross-field contradiction（字段各自有效组合矛盾，positive+score 0.1）/distributional collapse（收敛于安全默认 0.95/medium）/array hallucination（编造数组项而非返回空），Lee et al. 测得结构化输出致 3-9 点精度衰减，数学推理超 15 点",
+        "TDS《A RAG That Says Not in This Document Has to Show Four Kinds of Evidence》：诚实“未找到”须被构建而非寄望——四块砖各贡献一种证据（parsing 关系表聚合 pages_total/pages_with_text/cross_refs_total/objects_registered + retrieval + structured output + routing），false negative（未提取真实 token）是 silent 错误，no-answer verdict 须附 defense（63 页解析 63 有文本 0 未解析交叉引用）",
+        "TDS《Why RAG Complexity Should Be Earned》：架构复杂度须对应已观测的检索失败模式而非架构默认——检索与生成是概念上分离的操作，若证据未进入 context window 则生成层无法恢复，BM25 在专业域仍是竞争基线，agentic RAG 在迭代/多跳/依赖中间证据时才有意义",
+        "Anthropic《Enterprise Frontier Safeguards》：EFS 结合 ZDR 隐私+前沿安全防护——数据存客户控制云基础设施（S3/Azure Blob/GCS），跨会话/账户滥用检测（凭证窃取/网络攻击/生物化学能力），自动监测信号直送客户，无 Anthropic 人工审查，与 100+客户含 Goldman/Morgan Stanley/Citi/BofA/Wells Fargo 等合作设计"
+      ],
+      "github": [
+        "Cube v1.7.31+v1.7.32（8/31-9/1 连续两版）：v1.7.31 cubesql push down window functions + multi-argument aggregates #11684 + tesseract fold nested multi-fact join legs into one scan #11643 + expression measures 排除 nested group merging #11707 + query-orchestrator refresh key cache entries consistently #11607 + interval refresh keys 本地计算（flag）#11614 + cubestore performance toggles 默认开启 #11600；v1.7.32 tesseract calendar sql granularities 崩溃修复 #11709 + grain.include compose rolling_window #11639 + view raw time dimension timezone 仅转换一次 #11712 + query-orchestrator 保留 Interactive priority on user query paths #11715",
+        "WrenAI wren-v0.13.4（9/2）：查询路径安全化——只接受只读 SELECT 语句 #2679 + autocommit 防失败语句污染连接 #2683 + 拒绝映射两个 view 到同一目标的 v1 view 升级 #2696 + load_models 规范化 model columns #2614 + 验证 imported query pair 字段类型 #2656 + fail loud on mdl.json #2668 + 截断值标注 skipped-row report #2675 + 保留 MySQL/Doris 宽小数位 #2657 + 非标量 model/view 名称验证错误 #2681",
+        "OpenMetadata 2.0.1（9/2 维护版）：MCP 加固 + 连接器可靠性（MLflow Unity Catalog model version 解析+3.x model signatures 提取+registry 分页、BigQuery policy tag 读取 impersonation、Tableau mirrored columns 去重、DB2 SQLAlchemy 2.0 适配+CLI driver 一次初始化、Trino unnamed/quoted ROW fields 反射、Glue 重复列致分区键丢全表修复+custom databaseName 丢 schema 修复、OpenLineage Kafka SSL/password）+ UI polish（Context Center/Explore）+ 搜索/lineage 修复 + 安全依赖清理",
+        "tokensave v7.11.0（8/30）：per-repository git hooks——tokensave githooks on --local 安装 post-commit/post-checkout/post-merge 到仓库自身 hook 目录且不写任何 git config，解决原全局占用 core.hooksPath 覆盖所有仓库默认 hook 的问题，additive writing 保留已有 husky/pre-commit/hand-written hooks，core.hooksPath 生效时报告而非伪成功安装"
+      ],
+      "product": [
+        "业务 Agent 从“模型精度竞赛”进入“业务知识承载+意图漂移治理+结构化输出语义校验”阶段——BIRD-History 的历史 SQL 日志作为业务知识载体+MaP-SQL 的可复用结构化记忆+TIDE-Bench 的意图漂移评测共同指向“text-to-SQL 的护城河不是模型而是业务知识基建与对话状态治理”；dbt 的 20x token 压缩经济学+TDS 五大失败模式+Anthropic EFS 客户控制数据共同指向“可信不是靠更强模型而是靠分层语义基建+语义校验+数据主权”；Cube/WrenAI/OpenMetadata 三栈密集修生命周期正确性与查询路径安全化是语义层引擎从功能正确走向生命周期正确+安全隔离的工程化信号"
+      ]
+    }
+  },
+  "items": [
+    {
+      "tag": "paper",
+      "title": "BIRD-History：历史 SQL 日志驱动的 Text-to-SQL 基准（业务逻辑/数据约定/分析实践知识标注）",
+      "date": "2026-08-29",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2608.29345",
+      "summary": "BIRD-History 是一个 history-driven text-to-SQL benchmark，针对现有系统在“用户查询隐含领域知识”（business logic、data conventions、analytical practices）时表现断崖的缺口设计。这些知识既不被 schema 捕获也不在 NL 问题中显式声明，但历史 SQL 查询日志是其宝贵来源。benchmark 含 1393 任务跨 11 库，每任务标注哪些历史查询含相关知识以及哪些 SQL 子句编码该知识。这填补了“标准 benchmark 精度高但真实业务场景断崖”的关键评测缺口。",
+      "insight": "这篇论文直击用户“AI for 业务”核心痛点——业务数据查询的精度瓶颈不在 SQL 生成能力，而在于查询是否承载了只有历史查询日志才记录的业务逻辑与分析约定。这对用户“不直连数据库而是通过高业务含义 API 查数”的场景尤其相关：API 的历史调用模式本身就是业务知识的载体，可类比 BIRD-History 的历史 SQL 日志。",
+      "detail": {
+        "why": "现有 text-to-SQL benchmark（BIRD/Spider）在标准任务上精度已达 80%+，但真实业务查询常因隐含领域知识而断崖。BIRD-History 首次系统化评测“历史查询日志作为业务知识来源”的能力，是用户“为何 benchmark 精度不等于真实业务效果”的硬论据，也为业务知识库构建提供了新数据源范式。",
+        "mechanism": "1393 任务跨 11 库，每任务：(1) 一个 underspecified NL question（隐含业务逻辑/数据约定/分析实践）；(2) ground-truth 标注哪些历史查询含相关知识；(3) 标注哪些 SQL 子句编码该知识。评测系统须先从历史日志检索相关知识再据此生成 SQL，衡量 history-driven grounding 能力。",
+        "deep": "关键创新在把“领域知识”从抽象概念操作化为“历史 SQL 查询日志中的可检索模式”。这与 Meta-Books（8/29 已收录）的 typed 依赖链接知识图谱互补——BIRD-History 从查询行为侧抽取知识，Meta-Books 从文档结构侧重构知识。两者都指向“AI for Business 需要把业务知识从隐式变显式”。对用户上百字段宽表 API，历史成功调用的参数组合+返回字段使用模式就是“API 语义的历史知识载体”。",
+        "apply": "用户可先收集内部 API 历史调用日志（哪些参数组合+哪些返回字段被实际使用+对应的业务问题），构建 API 调用历史索引。新查询来时先检索相似历史调用作为 context，再生成 API 调用。这是“业务知识库构建”方向最直接的工程化路径。BIRD-History 的标注模板（哪些子句含知识）可迁移为“API 调用哪些参数/字段含业务知识”的标注规范。",
+        "caveats": "历史 SQL 日志本身可能有质量问题（错误查询、过时逻辑、临时性探索查询），需治理后才能作为知识源。1393 任务规模相对 BIRD（12075+）仍小，11 库覆盖有限。引用数待核实（Semantic Scholar 限流，8/29 新文预期 0）。历史知识有时效性——8/21 已收录的可逆遗忘三态（active/dormant/retired）机制需配套使用。",
+        "business": "BIRD-History 为“为何不能直接用 benchmark 成果上生产”提供了第三个硬论据（前两个：8/28 Manufacturing Data Book 的“公开精度不预测真实 schema”+8/27 TDS Part 3 的“固定管线 0.95 vs Agent 0.70”）。它把“业务知识”从口号变为可评测的工程对象，为企业 agent 投资决策提供“先建历史知识索引再上 agent”的方法论。这对用户团队转型“AI for 业务”是立项基石——历史 API 调用日志的价值被重新定义。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.29345",
+            "title": "BIRD-History: A Benchmark for History-Driven Text-to-SQL with Fine-Grained Knowledge Annotations"
+          }
+        ],
+        "diagram": {
+          "title": "BIRD-History：历史 SQL 日志驱动的 Text-to-SQL 业务知识承载链",
+          "flow": [
+            {
+              "label": "用户业务问题",
+              "sub": "隐含业务逻辑/数据约定/分析实践",
+              "type": "frontend"
+            },
+            {
+              "label": "历史 SQL 日志检索",
+              "sub": "哪些历史查询含相关知识",
+              "type": "database"
+            },
+            {
+              "label": "知识子句定位",
+              "sub": "哪些 SQL 子句编码该知识",
+              "type": "backend"
+            },
+            {
+              "label": "SQL 生成",
+              "sub": "基于历史知识 grounding",
+              "type": "backend"
+            },
+            {
+              "label": "业务数据库",
+              "sub": "11 库 1393 任务",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "核心缺口",
+              "text": "标准 benchmark 精度高但真实业务查询因隐含领域知识断崖——business logic/data conventions/analytical practices 不在 schema 也不在 NL 问题中"
+            },
+            {
+              "label": "知识载体",
+              "text": "历史 SQL 查询日志是隐含领域知识的宝贵来源——每任务标注哪些历史查询含知识+哪些子句编码知识"
+            },
+            {
+              "label": "对用户启示",
+              "text": "API 历史调用日志（参数组合+返回字段使用模式）是 API 语义的历史知识载体，可类比构建 API 调用历史索引"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "MaP-SQL：用可复用结构化记忆替代 Listwise Selector 微调（NL→Schema/SQL/Output 三维记忆蒸馏）",
+      "date": "2026-09-01",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2609.00834",
+      "summary": "MaP-SQL 提出 fine-tuning-free 的 listwise selector：用从训练数据蒸馏的可复用结构化记忆替代微调选择行为。记忆编码 NL 如何映射到 schema elements、SQL operations、expected outputs 三维。给定新问题，检索相关记忆作为显式决策准则 listwise 评估候选查询，再用推理时重排序缓解定位偏置。这把 selector 从“学进模型参数的行为”变为“可跨问题复用的显式知识资产”。",
+      "insight": "这篇论文是“把隐式选择能力外化为显式可复用记忆资产”的范式转移，与用户“业务知识库构建”方向高度契合。记忆的三维（NL→schema elements/SQL operations/expected outputs）正是用户宽表 API 场景所需：NL→API 字段语义/NL→API 操作语义/NL→API 返回结构。",
+      "detail": {
+        "why": "现有 generate-execute-select 管线中 listwise selector 须微调，成本高且选择行为焊在模型参数中不可解释不可复用。MaP-SQL 把选择准则外化为结构化记忆，不仅免微调，更让选择逻辑成为可审计、可治理、可跨问题复用的知识资产——这正契合用户“业务语义理解”方向对“API 语义可治理”的要求。",
+        "mechanism": "从训练数据蒸馏三维记忆：(1) NL→schema elements（问题映射到哪些表/列/字段）；(2) NL→SQL operations（问题映射到哪些 SQL 操作 join/group/filter）；(3) NL→expected outputs（问题映射到期望输出形状）。新问题来时检索相关记忆，记忆作为显式决策准则评估多个候选查询，推理时重排序缓解 listwise 定位偏置。",
+        "deep": "核心创新在“记忆即决策准则”而非“记忆即检索增强”。与 8/27 Self-Optimizing Enterprise RAG+SQL 的“四能力统一自优化”互补——Self-Optimizing 把检索/Schema 翻译/事件图推理/模型路由统一进闭环，MaP-SQL 把选择准则单独抽为可复用记忆。两者都指向“把隐式能力外化为显式资产”。对用户宽表 API：NL→API 字段语义（哪些字段回答此问题）+NL→API 操作语义（调用哪些 API+参数组合）+NL→API 返回结构（期望返回哪些字段）三维记忆可直接迁移。",
+        "apply": "用户可为高频业务问题构建三维记忆表：(1) 此类问题对应宽表 API 哪些字段；(2) 此类问题调用哪些 API+什么参数；(3) 此类问题期望返回什么结构。记忆存为结构化 JSON/YAML 而非微调模型。新查询来时先检索相似记忆作为选择准则评估候选 API 调用。这与 BIRD-History 的历史日志检索互补——BIRD-History 从行为侧，MaP-SQL 从知识结构侧。",
+        "caveats": "记忆蒸馏本身需高质量训练数据，蒸馏质量决定上限。listwise 选择仍需多候选生成，成本非零。记忆维护有生命周期问题（业务逻辑变更时记忆需更新）。引用数待核实（Semantic Scholar 限流，9/1 新文预期 0）。定位偏置缓解是推理时策略，引入额外延迟。",
+        "business": "MaP-SQL 的“记忆即资产”范式把 AI 能力从“模型黑箱参数”变为“可治理知识资产”，这对企业 agent 投资决策意义重大——能力可审计、可移交、不绑死特定模型。三维记忆蒸馏为“业务语义理解”方向提供了工程化模板：把隐式 API 调用知识外化为结构化可复用资产。这与 8/29 dbt context gap 的“机器可读计算式治理”共振——治理对象从文档变为可执行记忆。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2609.00834",
+            "title": "Replacing Training with Memory: Listwise Selection for Text-to-SQL"
+          }
+        ],
+        "diagram": {
+          "title": "MaP-SQL：可复用结构化记忆替代 listwise selector 微调",
+          "flow": [
+            {
+              "label": "训练数据",
+              "sub": "NL-SQL 对",
+              "type": "database"
+            },
+            {
+              "label": "记忆蒸馏",
+              "sub": "NL→schema/operations/outputs 三维",
+              "type": "backend"
+            },
+            {
+              "label": "结构化记忆库",
+              "sub": "可复用可审计资产",
+              "type": "database"
+            },
+            {
+              "label": "新问题检索",
+              "sub": "检索相关记忆",
+              "type": "backend"
+            },
+            {
+              "label": "Listwise 评估",
+              "sub": "记忆作决策准则+重排序",
+              "type": "backend"
+            },
+            {
+              "label": "最佳候选",
+              "sub": "免微调选择",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "范式转移",
+              "text": "选择准则从“学进模型参数的行为”变为“可跨问题复用的显式知识资产”——可审计可治理不绑死模型"
+            },
+            {
+              "label": "三维记忆",
+              "text": "NL→schema elements（哪些字段）/SQL operations（哪些操作）/expected outputs（期望输出形状）"
+            },
+            {
+              "label": "用户迁移",
+              "text": "宽表 API 场景：NL→API 字段语义/NL→API 操作语义（调用哪些 API+参数）/NL→API 返回结构三维记忆可直接迁移"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "Relational-Core Graph Analytics：列存关系引擎上的图查询（node/edge 属性图是性能税非更真实模型）",
+      "date": "2026-09-01",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2609.01525",
+      "summary": "论文论证图分析不需要专用图引擎：列存关系引擎（ClickHouse/Databricks Delta）前端配图查询语言（Cypher）可匹配甚至超越原生图引擎，且 scale 过内存图引擎崩溃点。核心论点：node/edge 属性图非更真实的连接数据模型，而是关系表已有关系的重编码，查询时重建是纯开销。ClickGraph/DeltaGraph 将 Cypher 直接翻译到原生关系 schema（表/列/外键如已存在）就地执行。",
+      "insight": "这篇论文对用户“语义层 vs 企业知识图谱”双路线决策提供了重要工程视角——图查询能力不必绑死图数据库，可在关系层上用图查询语言实现。这意味着用户可在已有关系型数据资产上获得图查询能力，而不必先迁移到图数据库。",
+      "detail": {
+        "why": "用户纠结“语义层 vs 企业知识图谱”双路线，其中知识图谱路线常被等同于“需引入图数据库”。这篇论文论证图分析可在列存关系引擎上用图查询语言实现，打破了“图分析=图数据库”的绑定，为双路线融合提供工程路径——图查询语言层可架在关系层之上。",
+        "mechanism": "ClickGraph（ClickHouse 后端）和 DeltaGraph（Databricks Delta 后端）将 Cypher 查询直接翻译到原生关系 schema——表/列/外键如已存在——就地执行于列存引擎。不重建 node/edge 属性图中间表示。关键论点：(1) node/edge 属性图是关系表已有关系的重编码；(2) 查询时重建是纯开销；(3) 列存引擎在分析型图查询上可匹配原生图引擎；(4) 关系引擎 scale 过内存图引擎崩溃点。",
+        "deep": "这与 8/17 已收录的 DEW 五分类（ontology 管 concept 语法+KG 持 evidence+semantic layer 管 metric 计算+context graph 管决策切片）形成重要补充——论文证明 KG 的 evidence 持有不必用图数据库，可用关系表+图查询语言层。与 8/17 Yannick 的“语义控制平面”两份契约（语义契约 Apache Ossie+执行契约 GoogleSQL+Substrait）呼应：关系引擎是执行契约，图查询语言是语义契约的一种。对用户：不必在“语义层引擎（Cube/WrenAI）vs 图数据库（Neo4j）”二选一，可“关系层（已有宽表 API 数据）+图查询语言层（业务概念遍历）”融合。",
+        "apply": "用户可评估宽表 API 返回数据的关系结构（哪些字段是外键关联）是否足以支撑业务概念遍历，若是则可用图查询语言层（如 Cypher 翻译）替代引入图数据库。这降低了知识图谱路线的基建成本——不需新数据存储，只需图查询语言翻译层。可与 Cube 语义层并行：Cube 管指标计算，图查询语言层管概念关系遍历。",
+        "caveats": "论文聚焦分析型图查询，事务型图查询（频繁写入+即时遍历）可能仍需图数据库。Cypher 到关系 schema 的翻译需关系结构良好（外键明确），杂乱关系结构需先治理。列存引擎的 join 性能在深度多跳遍历上可能不如原生图引擎的指针跳转。引用数待核实（Semantic Scholar 限流，9/1 新文预期 0）。ClickGraph/DeltaGraph 成熟度需评估。",
+        "business": "这篇论文把“知识图谱路线”的入门门槛从“引入图数据库”降为“图查询语言层架在关系层”，对用户双路线决策影响重大——可先在已有关系数据资产上验证图查询价值再决定是否引入图数据库。这与 8/29 dbt context gap 的“interoperability 不复制数据到专有 silo”共振。企业数据基建已有大量关系型资产，图查询语言层可激活其图分析能力而不迁移。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2609.01525",
+            "title": "Relational-Core Graph Analytics: Querying graphs at SQL scale, and why the node/edge model is a performance tax, not a truer picture of connected data"
+          }
+        ],
+        "diagram": {
+          "title": "Relational-Core：列存关系引擎上的图查询（node/edge 是重编码非更真实模型）",
+          "flow": [
+            {
+              "label": "Cypher 图查询",
+              "sub": "图查询语言层",
+              "type": "frontend"
+            },
+            {
+              "label": "翻译到原生关系 schema",
+              "sub": "表/列/外键如已存在",
+              "type": "backend"
+            },
+            {
+              "label": "列存关系引擎",
+              "sub": "ClickHouse / Databricks Delta",
+              "type": "database"
+            },
+            {
+              "label": "就地执行",
+              "sub": "不重建 node/edge 中间表示",
+              "type": "cloud"
+            },
+            {
+              "label": "业务关系数据",
+              "sub": "已有关系表",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "核心论点",
+              "text": "node/edge 属性图非更真实的连接数据模型——是关系表已有关系的重编码，查询时重建是纯开销"
+            },
+            {
+              "label": "工程启示",
+              "text": "图分析能力可在列存关系引擎上用图查询语言实现，不必绑死图数据库——打破知识图谱路线=图数据库的绑定"
+            },
+            {
+              "label": "双路线融合",
+              "text": "用户可“关系层（已有宽表 API 数据）+图查询语言层（业务概念遍历）”融合，不必在语义层引擎 vs 图数据库二选一"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "TIDE-Bench：对话式 Text-to-SQL 在 Chain Ambiguity 与 Intent Drift 下的评测",
+      "date": "2026-08-30",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2608.29543",
+      "summary": "TIDE-Bench 针对对话式 text-to-SQL 中“用户意图在多轮间展开与漂移”的评测缺口设计。两种模式：chain ambiguity（欠规范问题触发分层澄清含条件依赖）和 intent drift（用户撤回并替换已提交请求元素）。基于 514 anchor SQL 构造 1542 样本，引入 chain identification 与 drift recognition-resolution 专用指标，超越仅评 execution accuracy 的现有 benchmark。",
+      "insight": "这篇论文直击用户业务场景中“对话式数据查询”的真实痛点——业务用户常先问一个模糊问题，再分层澄清，且会中途改主意。现有 text-to-SQL benchmark 只评单轮执行精度，完全错过对话状态管理这一业务系统精确查询的关键能力。",
+      "detail": {
+        "why": "现有 text-to-SQL benchmark 评 execution accuracy（单轮正确性），但真实业务对话中用户意图在多轮间展开（chain ambiguity）与漂移（intent drift），这是业务系统精确查询分析的真实场景。TIDE-Bench 首次系统化评测对话状态管理能力，填补“单轮精度高但多轮对话断崖”的缺口。",
+        "mechanism": "514 anchor SQL（源自 BIRD）构造 1542 样本。chain ambiguity：欠规范问题触发分层澄清，后续问题依赖前序澄清答案（条件依赖）。intent drift：用户撤回并替换已提交请求元素（如先问'按地区'再改'按产品'）。引入 chain identification（识别澄清链结构）与 drift recognition-resolution（识别漂移并重新解析）专用指标。",
+        "deep": "与 BIRD-History（隐含领域知识）互补——BIRD-History 管“查询隐含什么知识”，TIDE-Bench 管“查询如何在多轮间演化”。两者共同指向“业务查询的非功能性维度比 SQL 生成更决定真实效果”。对用户宽表 API 场景：业务用户常先问模糊问题（'上个月销售情况'）再分层澄清（'按区域'→'华东区'→'不含退货'），且会改主意（'不对，按产品线'）。API 调用须维护对话状态：已确认的澄清参数+被撤回的参数。chain ambiguity 的条件依赖意味着不能独立解析每轮，须维护澄清上下文图。",
+        "apply": "用户业务 Agent 须实现对话状态管理：维护已确认参数集+被撤回参数标记+条件依赖链。TIDE-Bench 的 chain identification 与 drift recognition-resolution 指标可作为内部评测套件设计模板。chain ambiguity 的条件依赖可用 8/27 DEW 操作型本体的“前置条件”机制治理——参数 B 的依赖参数 A 须先确认。",
+        "caveats": "1542 样本规模适中，chain ambiguity 与 intent drift 的模式覆盖可能不全（真实业务对话更杂乱）。基于 BIRD anchor SQL 构造，可能继承 BIRD 的领域偏置。对话状态管理的工程实现复杂度高（状态序列化+条件依赖图+撤回回滚）。引用数待核实（Semantic Scholar 限流，8/30 新文预期 0）。",
+        "business": "TIDE-Bench 为企业 agent 投资决策提供了“单轮精度≠对话效果”的硬论据——业务用户不会一次问对问题，对话状态管理是业务系统精确查询分析的必备能力。这对用户“AI for 业务”转型是方法论提醒：评测不能只看单轮 SQL/API 调用精度，须评多轮对话状态管理。与 8/28 dbt context gap 的“agent 消费数据是连续非间歇”共振——连续消费意味着对话状态须跨轮维护。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.29543",
+            "title": "Evaluating LLMs on Conversational Text-to-SQL under Chain Ambiguity and Intent Drift (TIDE-Bench)"
+          }
+        ],
+        "diagram": {
+          "title": "TIDE-Bench：对话式 text-to-SQL 的意图展开与漂移",
+          "flow": [
+            {
+              "label": "用户多轮对话",
+              "sub": "模糊→澄清→改主意",
+              "type": "frontend"
+            },
+            {
+              "label": "Chain Ambiguity",
+              "sub": "分层澄清含条件依赖",
+              "type": "backend"
+            },
+            {
+              "label": "Intent Drift",
+              "sub": "撤回并替换已提交元素",
+              "type": "backend"
+            },
+            {
+              "label": "对话状态管理",
+              "sub": "已确认参数+撤回标记+依赖链",
+              "type": "database"
+            },
+            {
+              "label": "SQL/API 调用",
+              "sub": "基于对话状态生成",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "评测缺口",
+              "text": "现有 benchmark 只评单轮 execution accuracy，完全错过对话状态管理——业务用户分层澄清+改主意是真实场景"
+            },
+            {
+              "label": "两种模式",
+              "text": "chain ambiguity（条件依赖分层澄清）+intent drift（撤回替换已提交元素）——1542 样本+chain identification 与 drift recognition-resolution 双指标"
+            },
+            {
+              "label": "用户迁移",
+              "text": "业务 Agent 须维护对话状态：已确认参数集+被撤回参数标记+条件依赖链，可借 DEW 操作型本体前置条件机制治理"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "dbt《Model for the token, not the table》：为 AI 上下文建模而非直连原始 API（20x 压缩+$360K/年节省）",
+      "date": "2026-08-17",
+      "source": "dbt Blog",
+      "link": "https://www.getdbt.com/blog/model-for-the-token-not-the-table",
+      "summary": "dbt 内部案例：Gong 通话转录本从原始 API 直连（8300 tokens/call，单账户 30 calls 约 240K tokens）改为经 Fivetran 入 Snowflake→dbt 模型用 warehouse-native AI 函数（Snowflake Cortex/Vertex batch/Databricks AI Functions）压缩为 500-1000 tokens 结构化摘要（20x 压缩、74x 更少 tokens、99% 更便宜）→经 dbt MCP server 服务。对比官方 Gong MCP（重新合成无原始）/Gong API wrapper（重）RAW 文本+高 API 压力）vs dbt MCP server（content filter+JOIN CRM/billing+governed metrics+determinism）。成本：100 人销售团队 $470K→$110K/年（省 $360K），always-on agent workflow $685K→$165K/年（省 $520K）。",
+      "insight": "这篇博客直击用户“上百字段宽表 API”场景的核心经济模型——原始 API 直连作为 AI 上下文层是错配（API 不是为高频消费设计），正确路径是先入仓建模压缩再经 MCP server 服务。这对用户“不直连数据库而是通过 API 查数”的约束有微妙转换：不是直接调 API 给 agent，而是 API 数据入仓→建模压缩→MCP server 暴露压缩形态。",
+      "detail": {
+        "why": "用户的核心约束是“不直连数据库而是通过高业务含义 API 查数（部分为上百字段宽表 API）”。这篇博客揭示了一个关键经济错配：transactional API 不是为高频 AI 上下文消费设计的，直连会撞 API rate ceiling 且 token 成本失控。dbt 的解法是“API 数据入仓→建模压缩→MCP server 暴露”——这把用户约束从“必须调 API”转化为“API 数据经治理压缩后服务”。",
+        "mechanism": "Fivetran 持续将 Gong 转录本入 Snowflake（call 结束即触发，无需新基建）→dbt 模型调用 warehouse-native AI 函数生成结构化摘要（交易相关点/命名实体/情感/行动项/异议类型，10000 token 转录本→500-1000 token 摘要不丢 agent 所需信号）→dbt MCP server 将压缩形态服务给 AI client（text_to_sql/execute_sql/query_metrics 工具，看起来像另一个建模好的表）→content filter（WHERE topic='pricing'）在拉取前过滤+JOIN CRM/product/billing。三层服务：metadata/brief/snippet/full transcript 按问题所需层级。",
+        "deep": "核心洞察是“数据建模从为 BI 转向为 AI”——dbt 同样能 transform 数据给 AI 如同给 BI。这与 8/27 dbt Scaling AI 的“Analytics Development Lifecycle 四阶 Build/Test/Deploy/Operate”+8/28 dbt context gap 的“机器可读计算式治理”三角共振：Scaling AI 管方法论，context gap 管治理，本文管 token 经济学。对用户宽表 API：宽表 API 返回的 100+ 字段不必全进 agent context，可入仓→按业务问题建模压缩为所需字段子集+结构化摘要→MCP server 暴露。compression 是 one-time cost per call（batch 低成本）而 savings repeat on every read——batch job 在首个有意义 agent session 即回本。三层服务（metadata/brief/snippet/full）是“按问题所需层级”的 context engineering——与 8/28 TDS Part 3 的 typed tool 八种决定推理天花板呼应：不同问题类型用不同粒度数据层。",
+        "apply": "用户可评估宽表 API 是否已有数据入仓副本，若有则用 dbt 建模压缩+MCP server 暴露替代直连 API；若无则可建 Fivetran 式管道入仓。压缩用 warehouse-native AI 函数（Snowflake Cortex/Vertex batch/Databricks AI Functions，batch 定价远低于 interactive API）。建模按业务问题类型设计字段子集+结构化摘要。三层服务（metadata/brief/snippet/full）按问题所需层级——简单问题用 brief，复杂问题用 snippet/full。content filter 在拉取前过滤是 token 经济学关键。",
+        "caveats": "压缩有信息损失风险——须确保压缩保留 agent 所需信号（交易相关点/命名实体等），本文称 500-1000 token 摘要不丢信号但需验证。warehouse-native AI 函数质量决定压缩质量。压缩是 batch 一次性但查询频繁时仍累积成本。MCP server 暴露 compressed form 须确保 determinism（governed definitions 计算）。文章基于 dbt 内部 Gong 案例，其他 API 的可迁移性需验证。压缩+JOIN 需仓库有相关数据（CRM/product/billing）。",
+        "business": "这篇博客是“AI for 业务”token 经济学最硬 ROI 数据——$360K/年（100 人团队）+$520K/年（always-on agent）节省。它把“数据建模”的价值从 BI 延展到 AI 上下文工程，重新定义了数据团队在 AI 时代的角色：不是直连 API 给 agent，而是建模压缩后经 MCP server 服务。这对用户团队转型是方法论指导——研发知识库已建成，业务数据建模压缩+MCP 暴露是下一个投入方向。与 8/16 dbt IDC 报告 58.7 FTEs+$1.75M/年共振——数据基建的 ROI 在 AI 时代有新度量维度。",
+        "sources": [
+          {
+            "url": "https://www.getdbt.com/blog/model-for-the-token-not-the-table",
+            "title": "Model for the token, not the table"
+          }
+        ],
+        "diagram": {
+          "title": "dbt：为 token 而非为表建模（API 数据入仓→压缩→MCP server 暴露）",
+          "flow": [
+            {
+              "label": "Gong API",
+              "sub": "原始转录本 8300 tokens/call",
+              "type": "external"
+            },
+            {
+              "label": "Fivetran 入仓",
+              "sub": "持续入 Snowflake",
+              "type": "cloud"
+            },
+            {
+              "label": "dbt 模型压缩",
+              "sub": "warehouse-native AI 函数 20x",
+              "type": "backend"
+            },
+            {
+              "label": "dbt MCP server",
+              "sub": "暴露压缩形态+content filter+JOIN",
+              "type": "backend"
+            },
+            {
+              "label": "AI Agent",
+              "sub": "按问题所需层级消费",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "经济错配",
+              "text": "transactional API 不是为高频 AI 上下文消费设计——直连撞 rate ceiling 且 token 成本失控（8300 tokens/call，30 calls 约 240K tokens/账户）"
+            },
+            {
+              "label": "正确路径",
+              "text": "API 数据入仓→warehouse-native AI 函数压缩→MCP server 暴露压缩形态——20x 压缩、74x 更少 tokens、99% 更便宜"
+            },
+            {
+              "label": "ROI 硬数据",
+              "text": "100 人销售团队 $470K→$110K/年（省 $360K）+always-on agent workflow $685K→$165K/年（省 $520K）——compression 一次成本 savings 每次读取重复"
+            },
+            {
+              "label": "用户迁移",
+              "text": "宽表 API 100+ 字段不必全进 context，入仓→按业务问题建模压缩为字段子集+结构化摘要→MCP server 暴露三层服务 metadata/brief/snippet/full"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "TDS《Your JSON Is Valid but Your Data Is Wrong》：结构化输出五大失败模式存活于 Constrained Decoding",
+      "date": "2026-09-01",
+      "source": "Towards Data Science",
+      "link": "https://towardsdatascience.com/your-json-is-valid-but-your-data-is-wrong-five-failure-modes-llm-structured-outputs-wont-catch",
+      "summary": "文章揭示 constrained decoding（Outlines/SGLang/XGrammar）解决了 JSON 语法问题但制造了“schema 合规即数据正确”的盲区。五大失败模式存活：enum hallucination（有效 enum 语义错）、confident fabrication（自由文本字段编造值，elephant 当 receipt）、cross-field contradiction（字段各自有效组合矛盾，positive+score 0.1）、distributional collapse（收敛于安全默认 0.95/medium）、array hallucination（编造数组项而非返回空）。Lee et al. 测得结构化输出致 3-9 点精度衰减，数学推理超 15 点。BAML 基准：unconstrained 93.63% vs constrained 91.37%。",
+      "insight": "这篇博客直击用户“业务系统精确查询”方向的核心风险——若 agent 通过 function calling 调用宽表 API，constrained decoding 保证调用参数 schema 合规但不保证语义正确。五大失败模式是业务数据可信度验证的盲区，须在 schema 校验之上加语义校验层。",
+      "detail": {
+        "why": "用户的核心课题之一是“API 语义理解与精准调用、function calling/tool-use”。function calling 依赖 constrained decoding 保证调用参数 schema 合规，但文章揭示 schema 合规≠数据正确。这对用户“业务系统精确查询”方向是关键风险提示——agent 可能生成 schema 合规但语义错误的 API 调用（如调对 API+对参数类型但值错），导致返回错误业务数据。",
+        "mechanism": "五大失败模式：(1) enum hallucination——grammar 从 [low,normal,high,urgent] 选有效值但不按输入上下文加权，routine 选 urgent 或 critical 选 low；(2) confident fabrication——自由文本字段编造值，BAML 提交大象照片当 receipt 返回完整 schema 合规 expense report 而非拒绝，constrained decoding 消除模型拒绝/表达不确定能力；(3) cross-field contradiction——字段隔离校验，sentiment=positive+score=0.1 或 start=2026-03-15+end=2026-03-10，无单字段校验器能捕获；(4) distributional collapse——收敛于安全默认（0.95/medium/general），作者分类管线 confidence 三周 flatline 在 0.98；(5) array hallucination——[] 是低概率 token 序列，schema 要求 array 时编造项而非返回空。Lee et al.：结构化输出致 open-weight 模型 3-9 点衰减，数学推理超 15 点。Tam et al.：格式越严推理越差。BAML：unconstrained+post-hoc parsing 93.63% vs constrained 91.37%——always-valid JSON 比 sometimes-broken JSON 更不准。",
+        "deep": "核心洞察是“constrained decoding 不是免费的”——它花模型注意力在留在格式内而非答对，且消除模型拒绝/表达不确定能力。这与 8/29 TDS RAG 工具箱的“六阶梯 dispatcher”+8/27 TDS Part 3 的“typed tool”共振：两者都在说“结构化是手段非目的，语义正确才是目的”。对用户宽表 API 调用：constrained decoding 保证调对 API+参数类型对，但不保证：(1) 调对 API 但选错参数值（enum hallucination）；(2) 编造宽表字段值（confident fabrication）；(3) 多参数组合矛盾（cross-field contradiction，如 start_date>end_date）；(4) 收敛于安全默认参数（distributional collapse）；(5) 编造返回字段而非空（array hallucination）。须在 schema 校验之上加：值分布监控+跨字段一致性校验+拒绝能力+空数组接受+枚举按上下文加权。",
+        "apply": "用户业务 Agent 的 function calling 须在 constrained decoding 之上加语义校验层：(1) enum 按输入上下文加权（不只 grammar 选有效值）；(2) 自由文本字段加拒绝能力（输入不支持时返回不确定而非编造）；(3) 跨字段一致性校验（start<end、sentiment 与 score 一致）；(4) 值分布监控（confidence flatline 告警）；(5) 空数组接受（不强制编造项）。可参考文章的 root cause+detection 表设计校验规则。这是“业务数据可信度验证”方向的工程模板。",
+        "caveats": "文章聚焦 LLM 结构化输出，未直接评测 function calling 场景（但机制相同）。BAML 基准基于 function-calling 任务可迁移。Lee et al. 的 3-9 点衰减是 open-weight 模型，闭源模型可能更鲁棒。五大失败模式非穷尽，真实业务可能有更多。语义校验层增加延迟与工程复杂度。文章是 TDS 博客非同行评审，但数据引用 Lee et al./Tam et al./BAML 可核实。",
+        "business": "这篇博客把“constrained decoding 解决了语法”从“solution”重新定位为“制造了新盲区”——schema 合规即数据正确的假设是生产事故的温床。对企业 agent 投资决策：function calling 须配套语义校验层，否则 agent 会以 schema 合规的姿态输出错误业务数据。与 8/29 ERF-SQL 的“Policy-Aware Query Guard 执行前重写 AST”+8/27 GRID 的“grammar-constrained decoding RBAC 编译进文法”共振——三者都在说“语法约束不够，须加语义/策略约束”，但本文进一步指出“语法约束本身制造了语义盲区”。这是用户“业务系统精确查询”方向的必读风险清单。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/your-json-is-valid-but-your-data-is-wrong-five-failure-modes-llm-structured-outputs-wont-catch",
+            "title": "Your JSON Is Valid but Your Data Is Wrong: Five Failure Modes LLM Structured Outputs Won't Catch"
+          }
+        ],
+        "diagram": {
+          "title": "结构化输出五大失败模式（schema 合规≠数据正确）",
+          "flow": [
+            {
+              "label": "Constrained Decoding",
+              "sub": "schema 合规近 100%",
+              "type": "backend"
+            },
+            {
+              "label": "五大失败模式盲区",
+              "sub": "结构合规语义错",
+              "type": "security"
+            },
+            {
+              "label": "Enum Hallucination",
+              "sub": "有效 enum 语义错",
+              "type": "backend"
+            },
+            {
+              "label": "Confident Fabrication",
+              "sub": "编造值不拒绝",
+              "type": "backend"
+            },
+            {
+              "label": "Cross-field Contradiction",
+              "sub": "字段组合矛盾",
+              "type": "backend"
+            },
+            {
+              "label": "语义校验层",
+              "sub": "值分布+跨字段+拒绝+空数组",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "核心盲区",
+              "text": "constrained decoding 解决语法但制造“schema 合规即数据正确”的假设——schema 校验只查类型不查语义正确性"
+            },
+            {
+              "label": "精度代价",
+              "text": "Lee et al. 结构化输出致 3-9 点衰减（数学推理超 15 点）；BAML unconstrained 93.63% vs constrained 91.37%——always-valid JSON 比 sometimes-broken 更不准"
+            },
+            {
+              "label": "用户风险",
+              "text": "function calling 调宽表 API：constrained decoding 保证调对 API+参数类型对，但不保证参数值对/不编造/组合不矛盾/不收敛安全默认/不编造返回字段"
+            },
+            {
+              "label": "校验模板",
+              "text": "enum 按上下文加权+自由文本加拒绝+跨字段一致性+值分布监控+空数组接受"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "TDS《A RAG That Says Not in This Document》：诚实“未找到”须附四种证据",
+      "date": "2026-09-02",
+      "source": "Towards Data Science",
+      "link": "https://towardsdatascience.com/a-rag-that-says-not-in-this-document-has-to-show-four-kinds-of-evidence",
+      "summary": "文章论证 RAG 系统最有用的答案有时是“该文档中没有”，但模型倾向无论如何作答，故诚实“未找到”须被构建而非寄望。四种证据支撑可辩护的 no-answer verdict：(1) parsing 关系表聚合（pages_total/pages_with_text/cross_refs_total/objects_registered）；(2) retrieval；(3) structured output；(4) routing。关键：false negative（未提取真实 token）是 silent 错误——no-answer verdict 看起来正确但实际错（答案在那里，管线没看到）。CMO 案例：63 页解析 63 有文本 0 未解析交叉引用。",
+      "insight": "这篇博客直击用户“业务数据可信度验证”方向的核心——agent 说“查不到”时如何证明它真查过而非偷懒。四种证据框架可直接迁移到业务 API 查询场景：agent 说“此 API 无此数据”时须附 defense（查了哪些字段/哪些参数组合/覆盖了多少记录/有无未解析字段）。",
+      "detail": {
+        "why": "用户“业务系统精确查询”方向的痛点之一是 agent 的可信度——agent 说“查不到”时，用户无法判断它是真查过还是偷懒。这篇博客提供“诚实未找到须附四种证据”的框架，把 no-answer 从“失败”变为“可辩护的事实”。这对业务数据可信度验证是关键——no-answer 也须可审计。",
+        "mechanism": "四块砖各贡献一种证据：(1) parsing——关系表聚合（line_df/page_df/image_df/toc_df/cross_ref_df/object_registry），输出 parse_coverage 含 pages_total/pages_with_text/images_total/toc_entries/cross_refs_total/objects_registered，须额外检查 image 文本（OCR）+table 单元格（column-aware sweep）+未解析交叉引用（cross_ref_df 中 target 不在 object_registry 的行）；(2) retrieval；(3) structured output——引用 quote/page number/confidence；(4) routing。CMO April 2025 案例：63 页 63 有文本 426 image registrations 9 TOC entries 76 in-body cross-references 0 unresolved。",
+        "deep": "核心洞察是“no-answer 的成本不对称”——false positive（提取噪声）可下游恢复，false negative（未提取真实 token）是 silent 错误。这与 8/29 TDS RAG 工具箱的“六阶梯 dispatcher 使大部分 token-saving tricks 不必要”+8/27 TDS Part 3 的“contradiction gate 预注册预测”共振：两者都在说“不确定性须被暴露而非掩盖”。对用户宽表 API 场景：agent 说“此 API 无此数据”时须附四种证据——(1) 查了哪些字段（field_coverage 聚合）；(2) 用了哪些参数组合（parameter sweep）；(3) 覆盖了多少记录（record_coverage）；(4) 有无未解析/未访问的字段或参数空间（unresolved fields/parameters）。false negative 是 silent 错误——数据在 API 但管线没查到（如数据在 image 嵌入文本或 table 单元格而非 line_df）。",
+        "apply": "用户业务 Agent 须实现 no-answer defense 框架：agent 返回“查不到”时附证据报告——查了哪些 API+哪些字段+哪些参数组合+覆盖多少记录+有无未解析字段/参数。这把 no-answer 从“黑箱”变为“可审计事实”。parse_coverage 聚合模板可迁移为 api_coverage 聚合（fields_queried/parameters_swept/records_scanned/unresolved_fields）。三种 no-answer 须额外检查的迁移：(1) image 文本→API 返回的非结构化字段；(2) table 单元格→宽表字段交叉引用；(3) 未解析交叉引用→API 字段间隐含关联。",
+        "caveats": "文章基于 Enterprise Document Intelligence 系列的 PDF 场景，业务 API 场景的迁移需验证。四种证据框架是设计原则非即开即用代码。parse_coverage 聚合本身有成本（须维护 field/parameter 索引）。no-answer defense 增加 agent 响应延迟与复杂度。文章是 TDS 博客非同行评审，但配套 doc-intel/notebooks-vol1 GitHub 可运行。",
+        "business": "这篇博客把“agent 诚实”从口号变为工程框架——no-answer 须附四种证据才能可辩护。这对企业 agent 可信度是关键设计原则：no-answer 与 yes-answer 须同等可审计。与 8/29 ERF-SQL 的“Enterprise Readiness Index 六维 gated 评分”+8/29 TDS HITL 的“resamples 一致性非 token confidence”共振——三者都在说“可信度须可验证非自评”。对用户“业务数据可信度验证”方向是直接可迁移的工程模板。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/a-rag-that-says-not-in-this-document-has-to-show-four-kinds-of-evidence",
+            "title": "A RAG That Says Not in This Document Has to Show Four Kinds of Evidence"
+          }
+        ],
+        "diagram": {
+          "title": "诚实“未找到”须附四种证据（no-answer defense 框架）",
+          "flow": [
+            {
+              "label": "用户查询",
+              "sub": "业务问题",
+              "type": "frontend"
+            },
+            {
+              "label": "四块砖四种证据",
+              "sub": "no-answer defense",
+              "type": "backend"
+            },
+            {
+              "label": "Parsing 聚合",
+              "sub": "pages/fields/coverage",
+              "type": "database"
+            },
+            {
+              "label": "Retrieval",
+              "sub": "证据检索",
+              "type": "backend"
+            },
+            {
+              "label": "Structured Output",
+              "sub": "quote/page/confidence",
+              "type": "backend"
+            },
+            {
+              "label": "Routing",
+              "sub": "路由证据",
+              "type": "backend"
+            },
+            {
+              "label": "可辩护 no-answer",
+              "sub": "附 defense 非黑箱",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "成本不对称",
+              "text": "false positive（提取噪声）可下游恢复，false negative（未提取真实 token）是 silent 错误——no-answer 看起来正确但实际错"
+            },
+            {
+              "label": "四种证据",
+              "text": "parsing 关系表聚合+retrieval+structured output（quote/page/confidence）+routing——CMO 案例 63 页 63 有文本 0 未解析交叉引用"
+            },
+            {
+              "label": "用户迁移",
+              "text": "agent 返回“查不到”须附 api_coverage 证据：fields_queried/parameters_swept/records_scanned/unresolved_fields——把 no-answer 从黑箱变为可审计事实"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "TDS《Why RAG Complexity Should Be Earned》：架构复杂度须对应已观测的检索失败模式",
+      "date": "2026-08-31",
+      "source": "Towards Data Science",
+      "link": "https://towardsdatascience.com/why-rag-complexity-should-be-earned",
+      "summary": "文章论证 RAG 架构复杂度（query rewriting/routing/multi-pass retrieval/reflection/corrective retrieval/agent/reranking）应是对已观测检索失败模式的响应而非架构默认。检索与生成是概念上分离的操作——若证据未进入 context window 则生成层无法恢复。BM25 在专业域仍是竞争基线（lexical 精确匹配携带信息）。agentic RAG 在迭代/多跳/依赖中间证据时才有意义，当证据已存在于可检索单元但未进入 context 时问题在检索子系统而非推理层。",
+      "insight": "这篇博客为用户“业务系统精确查询”方向的架构选型提供了关键方法论——复杂度（query rewriting/agent loop/reranking）须有失败模式证据支撑，而非默认堆叠。对用户宽表 API 场景：先验证基础检索（API 字段语义匹配）是否工作，再决定是否加 agent/reranking 层。",
+      "detail": {
+        "why": "用户在“AI for 业务”转型中面临架构选型压力——是否上 agentic RAG/query rewriting/reranking。这篇博客提供“复杂度应被挣得”的方法论：先独立评测检索子系统是否工作，再决定是否加复杂度。这避免“架构默认堆叠”的常见反模式——看起来 sophisticated 但根本问题在检索层。",
+        "mechanism": "核心区分检索与生成为概念上分离的操作。根本诊断问题：“回答查询所需的证据是否在检索候选集中？”——这应在修改推理/生成层之前回答。若证据排 top-k 之外，生成层无法恢复（LM 可能基于通用模式产出看似正确的答案）。BM25 在专业域（lexical 精确匹配携带信息）仍是竞争基线。复杂度对应失败模式：检索本身工作但检索失败→检索子系统问题；迭代/多跳/依赖中间证据→agentic RAG 有意义。",
+        "deep": "核心洞察是“检索与生成的失败模式须分离”——端到端答案精度无法识别哪个子系统导致错误结果。这与 8/29 TDS RAG 工具箱的“六阶梯 dispatcher”+8/27 TDS Part 3 的“工具词汇表决定推理天花板”+8/29 ERF-SQL 的“EntSQL-450 四 LLM 损失 19-23 点”四方共振：四者都在说“先诊断根因再选手段”。对用户宽表 API：先验证“API 字段语义匹配+字段检索”是否工作（类似 BM25 在专业域的竞争力），再决定是否加 agent loop/query rewriting/reranking。商业合同案例：“若供应商反复违反 SLA 适用哪些终止条款”——若终止条款排 top-k 之外，agent loop 无用，问题在检索层。",
+        "apply": "用户业务 Agent 架构选型应：(1) 先独立评测检索子系统（API 字段/业务概念检索召回率）；(2) 诊断失败模式——证据未进入 context→检索层问题→改进检索；迭代/多跳→考虑 agentic；(3) BM25/lexical 在专业业务域（字段名/术语精确匹配）可能是竞争基线，不必默认上 embedding；(4) 复杂度（query rewriting/agent loop/reranking）须有失败模式证据支撑。这是“业务系统精确查询”方向的架构决策框架。",
+        "caveats": "文章聚焦 RAG 检索子系统，业务 API 场景的检索（API 字段/概念匹配）机制不同但原则可迁移。BM25 竞争力的论据主要在文档检索域，API 场景需验证。独立评测检索子系统需评测套件（类似 8/29 ERF-SQL EntSQL-450）。agentic RAG 的“迭代/多跳/依赖中间证据”判定标准需具体化。文章是 TDS 博客非同行评审，但引用 BM25 公式与经验证据可核实。",
+        "business": "这篇博客把“RAG 架构选型”从“默认堆叠 sophisticated 组件”纠偏为“复杂度须被挣得”的方法论——这对企业 agent 投资决策是成本控制指导：先诊断根因再选手段，避免在检索层问题上堆推理层复杂度（增加延迟/token/非确定性）。与 8/28 TDS Part 3 的“80 行循环便宜两篇知识层基建是投入”共振——两者都说“先建基础再上复杂度”。对用户“AI for 业务”转型是架构选型的决策框架：先验证基础检索再上 agent。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/why-rag-complexity-should-be-earned",
+            "title": "Why RAG Complexity Should Be Earned"
+          }
+        ],
+        "diagram": {
+          "title": "RAG 复杂度应被挣得（检索与生成失败模式分离）",
+          "flow": [
+            {
+              "label": "检索失败",
+              "sub": "证据未入 context",
+              "type": "backend"
+            },
+            {
+              "label": "诊断根因",
+              "sub": "检索子系统问题？",
+              "type": "backend"
+            },
+            {
+              "label": "证据在 top-k 外",
+              "sub": "改进检索层",
+              "type": "database"
+            },
+            {
+              "label": "迭代/多跳",
+              "sub": "agentic RAG 有意义",
+              "type": "backend"
+            },
+            {
+              "label": "BM25 专业域基线",
+              "sub": "lexical 精确匹配",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "核心区分",
+              "text": "检索与生成是概念上分离的操作——端到端答案精度无法识别哪个子系统导致错误，须分离评测失败模式"
+            },
+            {
+              "label": "诊断问题",
+              "text": "“回答查询所需证据是否在检索候选集中？”——应在修改推理/生成层之前回答，若证据排 top-k 外生成层无法恢复"
+            },
+            {
+              "label": "BM25 竞争力",
+              "text": "BM25 在专业域（lexical 精确匹配携带信息）仍是竞争基线——不必默认上 embedding，agentic RAG 须迭代/多跳/依赖中间证据才有意义"
+            },
+            {
+              "label": "用户迁移",
+              "text": "先独立评测 API 字段/业务概念检索召回率，再决定是否加 agent loop/query rewriting/reranking——复杂度须有失败模式证据支撑"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "Anthropic《Enterprise Frontier Safeguards》：客户控制数据+跨会话滥用检测+自动监测无人工审查",
+      "date": "2026-09-01",
+      "source": "Anthropic",
+      "link": "https://www.anthropic.com/news/enterprise-frontier-safeguards",
+      "summary": "Anthropic 发布 Enterprise Frontier Safeguards（EFS），结合 ZDR 隐私与前沿安全防护。数据存客户控制云基础设施（S3/Azure Blob/GCS）客户管理加密密钥/访问策略/审计日志。跨会话/账户滥用检测（凭证窃取/网络攻击/生物化学能力）——自动监测分析滚动窗口流量，信号直送客户。无 Anthropic 人工审查。与 100+客户合作设计含 Goldman/Morgan Stanley/Citi/BofA/Wells Fargo 等系统重要性银行。EFS 将分阶段推出今年秋季。",
+      "insight": "这篇博客对用户“业务数据可信度验证”方向的企业级治理有重要参考——EFS 的“数据主权（客户控制存储）+跨会话检测（而非单次交互）+自动监测无人工审查”三原则是企业 agent 安全治理的标杆。对用户不直连数据库而是通过 API 查数的约束，数据主权原则尤其相关：业务数据须在用户控制的基础设施内。",
+      "detail": {
+        "why": "用户“AI for 业务”转型涉及业务数据安全治理。EFS 是前沿模型厂商对企业级数据主权的标杆设计——数据存客户控制云+客户管理密钥/策略/审计+无厂商人工审查。这对用户“不直连数据库通过 API 查数”的约束有治理参考：业务数据须在用户控制的基础设施内，厂商只运营检测。",
+        "mechanism": "EFS 三原则：(1) 数据存储——数据存客户控制云基础设施（S3/Azure Blob/GCS），客户管理加密密钥/访问策略/审计日志；(2) 跨会话/账户滥用检测——最复杂的滥用涉及跨多会话与账户，须存数据有意义时间以跨时间/账户关联，自动监测分析滚动窗口流量检测凭证窃取/网络攻击/生物化学能力；(3) 无 Anthropic 人工审查——自动监测信号直送客户，客户的人接手，无 Anthropic 员工人工审查。支持 Claude Code/Claude Enterprise/Claude Platform/Bedrock/Agent Platform on AWS/Google Agent Platform/Microsoft Foundry。与 100+客户含美国系统重要性银行合作设计。",
+        "deep": "核心洞察是“安全检测须跨会话/账户关联而非单次交互”——单次交互自动分析后即时丢弃数据无法检测跨会话滥用。这与 8/27 DEW 操作型本体的“审计日志+写回源系统”+8/19 SBproxy 的“统一 API+MCP+agent 流量治理网关”共振：三者都在说“治理须跨请求持续”。对用户业务 Agent：API 调用治理须跨调用会话关联——检测异常调用模式（如凭证窃取导致突然高频调用某宽表 API）须存调用日志有意义时间。数据主权原则（客户控制存储）对用户不直连数据库约束是天然契合——业务数据在用户控制的基础设施，agent 调 API 是在用户治理门内。EFS 的“split custody”（客户持数据 Anthropic 运营检测）是 split responsibility 治理范式。",
+        "apply": "用户业务 Agent 安全治理可参考 EFS 三原则：(1) 数据主权——业务数据/API 调用日志存用户控制基础设施，非厂商；(2) 跨会话检测——API 调用日志存有意义时间以跨会话/账户关联检测异常模式；(3) 自动监测信号送用户团队而非厂商审查。这与 8/29 ERF-SQL 的“Policy-Aware Query Guard 执行前重写 AST”+8/27 GRID 的“hash-chained per-token 审计轨迹 100% 篡改检测”互补——EFS 管数据主权+跨会话检测，ERF/GRID 管执行前/生成时约束。三者构成企业 agent 安全治理栈。",
+        "caveats": "EFS 是 Anthropic 厂商方案，绑定 Claude/Fable 模型生态，非通用标准。分阶段推出今年秋季，细节待完善。跨会话检测需存数据有意义时间与 ZDR 隐私有张力（EFS 的解法是客户控制存储）。100+客户合作设计含金融业，其他行业适用性需验证。自动监测的误报率与召回率未披露。文章是厂商发布非同行评审，但合作客户名单（Goldman/Morgan Stanley 等）可核实。",
+        "business": "EFS 把“前沿模型企业级安全”从“厂商持数据做监测”范式转为“客户持数据厂商运营检测”范式——这对受监管行业（金融/医疗/政府）是 unlock：原本因数据主权无法用前沿模型的场景可用了。与 8/29 dbt context gap 的“Fivetran+dbt 合并 Open Data Infrastructure for AI at scale”+8/17 Yannick 的“便携数据+不可移动含义”共振——三者都在说“数据主权+开放基建防锁死”。对用户“AI for 业务”转型是治理参考：业务数据在用户控制基础设施+agent 调 API 在治理门内+跨会话异常检测。",
+        "sources": [
+          {
+            "url": "https://www.anthropic.com/news/enterprise-frontier-safeguards",
+            "title": "Developing Enterprise Frontier Safeguards with our customers"
+          }
+        ],
+        "diagram": {
+          "title": "Anthropic EFS：客户控制数据+跨会话滥用检测+无人工审查",
+          "flow": [
+            {
+              "label": "客户控制云",
+              "sub": "S3/Azure Blob/GCS",
+              "type": "cloud"
+            },
+            {
+              "label": "数据存储",
+              "sub": "客户管理密钥/策略/审计",
+              "type": "security"
+            },
+            {
+              "label": "自动监测",
+              "sub": "滚动窗口跨会话/账户",
+              "type": "backend"
+            },
+            {
+              "label": "滥用检测",
+              "sub": "凭证窃取/网络攻击",
+              "type": "security"
+            },
+            {
+              "label": "信号送客户",
+              "sub": "无 Anthropic 人工审查",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "三原则",
+              "text": "数据主权（客户控制存储）+跨会话/账户检测（存数据有意义时间关联）+无厂商人工审查（信号送客户团队）"
+            },
+            {
+              "label": "安全检测须跨会话",
+              "text": "最复杂滥用涉及跨多会话与账户——单次交互自动分析后即时丢弃数据无法检测跨会话滥用"
+            },
+            {
+              "label": "用户迁移",
+              "text": "API 调用治理须跨调用会话关联——存调用日志有意义时间检测异常模式（凭证窃取致突然高频调宽表 API），数据主权契合不直连数据库约束"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "Cube v1.7.31+v1.7.32：语义层引擎密集修生命周期正确性（window 下推+nested join 折叠+calendar+rolling_window）",
+      "date": "2026-09-01",
+      "source": "GitHub",
+      "link": "https://github.com/cube-js/cube/releases/tag/v1.7.32",
+      "summary": "Cube 连续两版（v1.7.31 8/31+v1.7.32 9/1）密集修复。v1.7.31：cubesql push down window functions+multi-argument aggregates #11684，tesseract fold nested multi-fact join legs into one scan #11643，expression measures 排除 nested group merging #11707，query-orchestrator refresh key cache entries consistently #11607，interval refresh keys 本地计算（flag）#11614，cubestore performance toggles 默认开启 #11600。v1.7.32：tesseract calendar sql granularities 崩溃修复 #11709，grain.include compose rolling_window #11639，view raw time dimension timezone 仅转换一次 #11712，query-orchestrator 保留 Interactive priority on user query paths #11715。",
+      "insight": "Cube 两版密集修复延续 8/24-30 的语义层引擎可靠性链——从功能正确走向生命周期正确+时序正确性。对用户“语义层 vs 知识图谱”双路线，Cube 作为语义层引擎选项的工程成熟度信号：window 下推+nested join 折叠提升查询性能，calendar/rolling_window/timezone 修复时序正确性，refresh key cache 一致性修复缓存生命周期。",
+      "detail": {
+        "why": "用户评估“语义层 vs 知识图谱”双路线，Cube 是语义层引擎的核心选项。连续两版密集修复是工程成熟度信号——尤其 window/aggregate 下推+nested join 折叠是查询性能，calendar/rolling_window/timezone 是时序正确性，refresh key cache 是缓存生命周期。这延续 8/24 v1.7.26 tesseract pre-agg+filter 注入→8/26-27 v1.7.27-29 SQL 下推+LRU 释放→8/28 v1.7.30 cold-cache 双竞态→今日 v1.7.31-32 window 下推+nested join 折叠+calendar 的可靠性链。",
+        "mechanism": "v1.7.31：(1) cubesql push down window functions+multi-argument aggregates #11684——将窗口函数与多参数聚合下推到数据源执行减少引擎开销；(2) tesseract fold nested multi-fact join legs into one scan #11643——将多事实 join 的多腿折叠为单 scan 减少往返；(3) expression measures 排除 nested group merging #11707——防止表达式度量被错误合并进嵌套分组；(4) refresh key cache entries consistently #11607——延续 v1.7.30 refresh key cache identity 修复，确保缓存条目一致；(5) interval refresh keys 本地计算（flag）#11614——interval 类型刷新键本地计算减少数据源往返；(6) cubestore performance toggles 默认开启 #11600。v1.7.32：(1) tesseract calendar sql granularities 崩溃修复 #11709——calendar 日历粒度 SQL 致每查询崩溃；(2) grain.include compose rolling_window #11639——时间粒度 include 与 rolling_window 正确组合；(3) view raw time dimension timezone 仅转换一次 #11712——防止重复时区转换；(4) 保留 Interactive priority on user query paths #11715——用户查询路径保留 Interactive 优先级。",
+        "deep": "三组共振：(1) window/aggregate 下推+nested join 折叠+interval refresh keys 本地计算=“计算下推减少引擎开销”共振（延续 8/27 v1.7.29 SQL pushdown 优先）；(2) calendar 崩溃修复+rolling_window compose+timezone 一次转换=“时序正确性”共振——calendar/rolling_window/timezone 是时间维度计算的三个 correctness 坑；(3) refresh key cache consistently+Interactive priority 保留=“生命周期正确性”共振（延续 8/28 v1.7.30 cold-cache 双竞态+refresh key identity）。对用户：Cube 作为语义层引擎的时序正确性（calendar/rolling_window/timezone）对业务指标计算（如“上月环比”“滚动 7 日均值”）是关键——时序错则指标错。window 下推对宽表 API 场景（窗口函数在数据源执行而非引擎内存）是性能关键。",
+        "apply": "用户选型 Cube 作语义层引擎时关注：window/aggregate 下推对宽表查询性能（窗口函数在数据源执行）；calendar/rolling_window 对业务时间指标正确性（上月环比/滚动均值）；refresh key cache 对缓存一致性（v1.7.30+31 两版修复 identity+consistency）；Interactive priority 对用户查询 vs 后台刷新的优先级隔离。若用户业务指标含日历粒度（周/月/季）或滚动窗口，v1.7.32 的 calendar+rolling_window 修复是必须升级版本。",
+        "caveats": "calendar sql granularities 崩溃是严重 bug（每查询崩溃）——若用户业务指标含日历粒度且在 v1.7.31 以下须立即升级。rolling_window compose 是时间窗口计算正确性关键。timezone 一次转换防止重复转换致时区错。interval refresh keys 本地计算是 flag（默认关闭），需手动开启评估。cubestore performance toggles 默认开启可能有回归风险。两版发布间隔仅 1 天，稳定性需观察。",
+        "business": "Cube 连续两版密集修复延续语义层引擎从功能正确走向生命周期正确+时序正确性的工程化信号。这对用户“语义层 vs 知识图谱”双路线决策是工程成熟度数据点——语义层引擎（Cube）在时序正确性+缓存生命周期+查询下推上持续迭代，是生产可用信号。与 8/28 v1.7.30 cold-cache 双竞态+8/27 v1.7.29 LRU 释放形成“缓存/生命周期正确性”连续修复链——语义层引擎的可靠性是逐版本累积的。window 下推对宽表 API 查询性能有直接经济价值。",
+        "sources": [
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.7.31",
+            "title": "Cube v1.7.31 Release"
+          },
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.7.32",
+            "title": "Cube v1.7.32 Release"
+          }
+        ],
+        "diagram": {
+          "title": "Cube v1.7.31+v1.7.32：语义层引擎生命周期+时序正确性修复",
+          "flow": [
+            {
+              "label": "cubesql 下推",
+              "sub": "window+multi-arg aggregates",
+              "type": "backend"
+            },
+            {
+              "label": "tesseract",
+              "sub": "nested join 折叠+calendar+rolling_window",
+              "type": "backend"
+            },
+            {
+              "label": "query-orchestrator",
+              "sub": "refresh key cache+Interactive priority",
+              "type": "backend"
+            },
+            {
+              "label": "cubestore",
+              "sub": "performance toggles 默认开",
+              "type": "database"
+            },
+            {
+              "label": "interval refresh keys",
+              "sub": "本地计算 flag",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "三组共振",
+              "text": "计算下推（window/aggregate+nested join 折叠+interval 本地计算）+时序正确性（calendar+rolling_window+timezone 一次转换）+生命周期正确性（refresh key cache consistently+Interactive priority）"
+            },
+            {
+              "label": "严重 bug",
+              "text": "v1.7.32 calendar sql granularities 崩溃每查询——若业务指标含日历粒度且在 v1.7.31 以下须立即升级"
+            },
+            {
+              "label": "可靠性链",
+              "text": "延续 8/24-30 v1.7.26-30 语义层引擎从功能正确走向生命周期正确+时序正确性的工程化信号"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "WrenAI wren-v0.13.4：查询路径安全化（只读 SELECT+autocommit+view 升级拒绝）",
+      "date": "2026-09-02",
+      "source": "GitHub",
+      "link": "https://github.com/Canner/WrenAI/releases/tag/wren-v0.13.4",
+      "summary": "WrenAI wren-v0.13.4 查询路径安全化七项修复：(1) 只接受只读 SELECT 语句 #2679；(2) autocommit 防失败语句污染连接 #2683；(3) 拒绝映射两个 view 到同一目标的 v1 view 升级 #2696；(4) load_models 规范化 model columns #2614；(5) 验证 imported query pair 字段类型 #2656；(6) fail loud on mdl.json #2668；(7) 截断值标注 skipped-row report #2675+保留 MySQL/Doris 宽小数位 #2657+非标量 model/view 名称验证错误 #2681。",
+      "insight": "WrenAI v0.13.4 的查询路径安全化（只读 SELECT+autocommit+view 升级拒绝）延续 8/26 fail-loud 线，对用户“业务系统精确查询”方向的写/读隔离治理有直接参考——只读 SELECT 在查询路径强制，autocommit 防失败污染，view 升级拒绝映射冲突。这是语义层引擎定义侧的安全化。",
+      "detail": {
+        "why": "用户“业务系统精确查询”方向关注写/读分离治理——查询路径须只读，写操作须走治理门。WrenAI v0.13.4 的只读 SELECT+autocommit+view 升级拒绝是查询路径安全化的三项关键：只读防误写，autocommit 防失败污染，view 升级拒绝防映射冲突。延续 8/26 #2668 fail loud+#2675 截断标注+#2657 宽小数位+#2676 关系键 fail-loud 线。",
+        "mechanism": "七项修复：(1) 只接受只读 SELECT 语句 #2679——查询路径强制只读，非 SELECT 拒绝（防误写/恶意写）；(2) autocommit 防失败语句污染连接 #2683——失败语句不毒化连接状态，每语句独立提交；(3) 拒绝映射两个 view 到同一目标的 v1 view 升级 #2696——防 view 升级致映射冲突（两个 view 指同一目标）；(4) load_models 规范化 model columns #2614——model columns 名称规范统一；(5) 验证 imported query pair 字段类型 #2656——imported query 对的字段类型须一致；(6) fail loud on mdl.json #2668——mdl.json 解析失败大声报错非静默；(7) 截断值标注 skipped-row report #2675+保留 MySQL/Doris 宽小数位 #2657+非标量 model/view 名称验证错误 #2681（8/27 已收录故不重复但同版）。",
+        "deep": "核心是“查询路径安全化”三原则：(1) 只读——只接受 SELECT，写操作在查询路径不可达（与 8/27 DEW 操作型本体的“命名动作+前置条件+写回源系统”写侧治理互补——DEW 管写侧治理动作，WrenAI 管读侧只读强制）；(2) 隔离——autocommit 防失败语句污染连接（失败不传播）；(3) 拒绝冲突——view 升级拒绝映射冲突（防两个 view 指同一目标致歧义）。这与 8/29 ERF-SQL 的“Policy-Aware Query Guard 执行前重写 AST 强制行级访问”+8/27 GRID 的“RBAC 编译进文法 mask 层不可达”共振：三者都在说“安全在路径层强制非依赖模型遵从”，但 WrenAI 是“只读强制+隔离+拒绝冲突”最简形式。对用户：业务 API 查询路径须只读强制（防 agent 误写），调用失败须隔离（autocommit 防毒化），view/字段映射冲突须拒绝（防歧义）。",
+        "apply": "用户业务 Agent 调用宽表 API 须：(1) 查询路径只读强制——只接受查询类 API 调用，写类 API 走治理门（类似 WrenAI 只读 SELECT）；(2) 调用失败隔离——单次调用失败不毒化后续调用状态（类似 autocommit）；(3) 字段/view 映射冲突拒绝——同一业务概念映射到多个 API 字段/view 须拒绝并报错（类似 view 升级拒绝）。fail loud on mdl.json 对用户 API schema 定义文件有参考——解析失败大声报错非静默。",
+        "caveats": "只读 SELECT 是查询路径限制，不影响 WrenAI 的写能力（写走其他路径）。autocommit 是连接级隔离，跨连接的事务一致性需其他机制。view 升级拒绝是 v1→v2 迁移保护，新部署无此问题。fail loud 增加配置错误暴露但可能增加噪音。截断值标注+宽小数位保留是数据保真。非标量名称验证是定义侧质量。版本号 0.13.x 表明 WrenAI 仍在快速迭代期。",
+        "business": "WrenAI v0.13.4 的查询路径安全化三原则（只读+隔离+拒绝冲突）是企业 agent 调用业务 API 的安全治理最低标准。这对用户“业务系统精确查询”方向是工程模板：查询路径只读+失败隔离+映射冲突拒绝。与 Cube v1.7.31-32 的“生命周期+时序正确性”形成语义层引擎两面——Cube 管运行侧正确性，WrenAI 管定义侧+查询路径安全化。两者都是语义层引擎从功能正确走向安全隔离的工程化信号。",
+        "sources": [
+          {
+            "url": "https://github.com/Canner/WrenAI/releases/tag/wren-v0.13.4",
+            "title": "WrenAI wren-v0.13.4 Release"
+          }
+        ],
+        "diagram": {
+          "title": "WrenAI v0.13.4：查询路径安全化（只读+隔离+拒绝冲突）",
+          "flow": [
+            {
+              "label": "查询路径",
+              "sub": "只读 SELECT 强制",
+              "type": "security"
+            },
+            {
+              "label": "autocommit",
+              "sub": "失败不毒化连接",
+              "type": "backend"
+            },
+            {
+              "label": "view 升级",
+              "sub": "拒绝映射冲突",
+              "type": "backend"
+            },
+            {
+              "label": "load_models",
+              "sub": "columns 规范化",
+              "type": "database"
+            },
+            {
+              "label": "fail loud",
+              "sub": "mdl.json 解析失败报错",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "三原则",
+              "text": "只读（只接受 SELECT 写走其他路径）+隔离（autocommit 防失败毒化连接）+拒绝冲突（view 升级拒绝映射到同一目标）"
+            },
+            {
+              "label": "fail-loud 线",
+              "text": "延续 8/26 #2668 fail loud+#2675 截断标注+#2657 宽小数位+#2676 关系键 fail-loud 线——不确定性暴露非静默"
+            },
+            {
+              "label": "用户迁移",
+              "text": "业务 API 查询路径只读强制+调用失败隔离（autocommit 式）+字段/view 映射冲突拒绝——agent 调宽表 API 的安全治理最低标准"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "OpenMetadata 2.0.1：MCP 加固+连接器可靠性+搜索/lineage 修复（维护版）",
+      "date": "2026-09-02",
+      "source": "GitHub",
+      "link": "https://github.com/open-metadata/OpenMetadata/releases/tag/2.0.1-release",
+      "summary": "OpenMetadata 2.0.1 维护版聚焦连接器可靠性、UI polish（Context Center/Explore）、数据治理与质量正确性、搜索与 lineage 修复、MCP 加固、安全依赖清理。连接器：MLflow Unity Catalog model version 解析+3.x signatures 提取+registry 分页、BigQuery policy tag impersonation、Tableau mirrored columns 去重、DB2 SQLAlchemy 2.0 适配+CLI driver 一次初始化、Trino unnamed/quoted ROW fields、Glue 重复列致分区键丢全表+custom databaseName 丢 schema、OpenLineage Kafka SSL/password。REST API array-root schemas 解析。",
+      "insight": "OpenMetadata 2.0.1 的 MCP 加固延续 8/28-29 AI-assistant shell+glossary 游标分页的 AI 化线——元数据/治理层正成为 AI agent 数据探索入口。连接器可靠性修复对用户多源业务数据治理是基础设施——MLflow/BigQuery/Tableau/DB2/Trino/Glue/OpenLineage 覆盖主流数据源。",
+      "detail": {
+        "why": "用户“业务知识库构建”方向需元数据/治理层——OpenMetadata 是核心选项。2.0.1 维护版的 MCP 加固+连接器可靠性+搜索/lineage 修复延续 8/28-29 AI-assistant shell+glossary 游标分页的 AI 化线。对用户：元数据/治理层不仅管人类数据探索，更成为 AI agent 数据探索入口（MCP 加固+Context Center/Explore UI polish）。",
+        "mechanism": "维护版聚焦六方面：(1) 连接器——MLflow Unity Catalog model version 解析+search filter 转义 #30856/#31387，3.x model signatures 提取+registry 分页 #32093；BigQuery policy tag 读取 honor impersonation #31249；Tableau mirrored upstream columns 去重 #30928；DB2 sqlalchemy-ibmi SQLAlchemy 2.0 适配 #30731+CLI driver 一次初始化 #32151；Trino unnamed+quoted ROW fields reflection #31402；Glue 重复列致分区键丢全表 #32105+custom databaseName 丢 schema #32399；OpenLineage Kafka SSL+password #320；(2) REST API array-root schemas 解析 #31698；(3) UI polish Context Center+Explore；(4) 数据治理与质量正确性；(5) 搜索+lineage 修复；(6) MCP 加固；(7) 安全依赖清理。",
+        "deep": "核心是“连接器可靠性是元数据治理的基础”——MLflow/BigQuery/Tableau/DB2/Trino/Glue/OpenLineage 覆盖主流数据源，每个连接器的正确性直接影响元数据完整性。这与 8/28-29 AI-assistant shell 迁入 OSS app-mode+glossary 游标分页形成“元数据/治理层 AI 化”连续线——AI-assistant shell 让 agent 数据探索入口，glossary 游标分页替代 infinite scroll 是“为 agent 而非为人设计接口”，MCP 加固是 agent 调用元数据 API 的安全/可靠性。对用户：业务知识库（元数据/治理层）不仅管人类探索，更须为 agent 探索设计接口（MCP+glossary pagination+Context Center）。连接器可靠性（Glue 重复列致丢全表+custom databaseName 丢 schema）是数据治理的基础——连接器错则元数据错则 agent 探索错。",
+        "apply": "用户选型 OpenMetadata 作元数据/治理层时关注：MCP 加固对 agent 调用元数据 API 的安全/可靠性；连接器可靠性（用户数据源 MLflow/BigQuery/Tableau/DB2/Trino/Glue/OpenLineage 覆盖情况）；glossary 游标分页（8/29）对 agent 检索业务术语表的接口设计；Context Center UI polish 对人类+agent 双模式数据探索。若用户宽表 API 返回数据需入元数据目录，连接器可靠性是基础。",
+        "caveats": "维护版无新功能，聚焦正确性与可靠性。连接器修复是逐个数据源的，用户数据源覆盖需核实。MCP 加固细节未在 release notes 详述。2.0.1 是 2.0.0-rc2（8/13）→2.0.0（8/24）→2.0.1（9/2）的快速迭代，稳定性需观察。安全依赖清理是常规维护。Context Center/Explore UI polish 是人类界面，agent 接口是 MCP。",
+        "business": "OpenMetadata 2.0.1 延续元数据/治理层从人类工具向 AI agent 数据探索入口的转型——MCP 加固+glossary 游标分页（8/29）+AI-assistant shell（8/28）三步形成“为 agent 而非为人设计元数据接口”线。这对用户“业务知识库构建”方向是选型信号：元数据/治理层须支持 agent 探索接口（MCP+pagination+Context Center）。连接器可靠性是数据治理基础——连接器错则元数据错则 agent 探索错。与 Cube（语义层运行侧）+WrenAI（语义层定义侧+查询路径安全）形成“元数据治理/语义层引擎”三栈。",
+        "sources": [
+          {
+            "url": "https://github.com/open-metadata/OpenMetadata/releases/tag/2.0.1-release",
+            "title": "OpenMetadata 2.0.1 Release"
+          }
+        ],
+        "diagram": {
+          "title": "OpenMetadata 2.0.1：MCP 加固+连接器可靠性+搜索/lineage 修复",
+          "flow": [
+            {
+              "label": "连接器",
+              "sub": "MLflow/BigQuery/Tableau/DB2/Trino/Glue/OpenLineage",
+              "type": "external"
+            },
+            {
+              "label": "元数据目录",
+              "sub": "正确性+完整性",
+              "type": "database"
+            },
+            {
+              "label": "MCP 加固",
+              "sub": "agent 调用元数据 API",
+              "type": "backend"
+            },
+            {
+              "label": "Context Center/Explore",
+              "sub": "人类+agent 双模式",
+              "type": "frontend"
+            },
+            {
+              "label": "glossary 游标分页",
+              "sub": "agent 检索业务术语",
+              "type": "backend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "AI 化线",
+              "text": "延续 8/28 AI-assistant shell 迁入 OSS+8/29 glossary 游标分页——元数据/治理层从人类工具向 AI agent 数据探索入口转型"
+            },
+            {
+              "label": "连接器可靠性",
+              "text": "MLflow Unity Catalog model version/BigQuery policy tag impersonation/Tableau mirrored columns/DB2 SQLAlchemy 2.0/Trino ROW fields/Glue 重复列致丢全表——连接器错则元数据错则 agent 探索错"
+            },
+            {
+              "label": "三栈",
+              "text": "OpenMetadata（元数据治理）+Cube（语义层运行侧）+WrenAI（语义层定义侧+查询路径安全）形成 AI for Business 语义基建三栈"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "tokensave v7.11.0：per-repository git hooks（不再全局占用 core.hooksPath）",
+      "date": "2026-08-30",
+      "source": "GitHub",
+      "link": "https://github.com/aovestdipaperino/tokensave/releases/tag/v7.11.0",
+      "summary": "tokensave v7.11.0 引入 per-repository git hooks：tokensave githooks on --local 安装 post-commit/post-checkout/post-merge 到仓库自身 hook 目录且不写任何 git config，解决原全局占用 core.hooksPath 覆盖所有仓库默认 hook 的问题。additive writing 保留已有 husky/pre-commit/hand-written hooks。core.hooksPath 生效时报告而非伪成功安装。init 默认 offer hooks（终端 yes/非 TTY 静默）。",
+      "insight": "tokensave v7.11.0 的 per-repo git hooks 解决了全局占用 core.hooksPath 的反模式——这对用户研发知识库（已建成）+业务知识库（转型中）的多仓库场景有直接参考：不同仓库需不同 tooling，全局 hook 占用是错误答案。核心原则是“资源隔离+失败大声报而非伪成功”。",
+      "detail": {
+        "why": "用户有研发知识库（已建成）+正转型业务知识库，多仓库场景下不同仓库需不同 tooling。tokensave v7.11.0 的 per-repo git hooks 解决全局占用 core.hooksPath 覆盖所有仓库默认 hook 的反模式——这对多仓库场景的 tooling 隔离有直接参考。核心原则“资源隔离+失败大声报而非伪成功”与 WrenAI fail-loud 线共振。",
+        "mechanism": "tokensave githooks on --local 安装三个 hooks（post-commit/post-checkout/post-merge）到仓库自身 hook 目录（.git/hooks），不写任何 git config（不碰 core.hooksPath）。additive writing：仓库已有 husky/pre-commit/hand-written post-commit 保留所有内容+加 marked tokensave section，removal 删 tokensave 写的保留其他。无 chaining preamble：local hook 是文件本身，forwarder 会自调用。hook 目录从 --git-common-dir 解析（linked worktrees 共享主 checkout hook 目录）。core.hooksPath 生效时 git 从该处解析所有 hook 无 fallback，hooks 写了也不运行——报告而非伪成功安装。init offer hooks 默认终端 yes/非 TTY 静默，--git-hook/--no-git-hook 预先决定。全局 hooks 已装时 skip offer（双装会每 commit 跑两次 sync）。",
+        "deep": "核心原则三：(1) 资源隔离——per-repo 而非全局，不同仓库不同 tooling（与 8/27 WrenAI websocket 每 user 连接上限多租户资源隔离+8/28 Cube 跨引擎/数据源条目碰撞修复 identity 含数据源维度共振）；(2) additive 不破坏——保留已有 hooks（与 8/16 dbt-core v2.0 import_ctes DBT01 lint rule 不破坏已有 CTE 共振）；(3) 失败大声报而非伪成功——core.hooksPath 生效时报告而非伪安装成功（与 WrenAI fail-loud 线+8/29 SocratiCode #119 Ollama invalid value 拒绝加载而非 clamp 共振）。对用户：多仓库 tooling 隔离（研发知识库+业务知识库不同 hook 需求）+资源隔离原则（不同仓库不同配置）+失败大声报（配置冲突时报告非伪成功）。",
+        "apply": "用户多仓库场景（研发知识库+业务知识库）可参考 per-repo git hooks 模式：不同仓库不同 tooling 配置，不全局占用。additive writing 保留已有 hooks 是迁移友好设计。失败大声报（core.hooksPath 冲突报告）是配置质量保障。这对用户 AI agent 研发工具链（如 SocratiCode/tokensave 等 MCP server）的多仓库部署有直接参考。",
+        "caveats": "per-repo hooks 不写 git config 意味着不自动生效于新 clone（需每 clone 安装）。additive writing 的 marked section 在冲突时可能复杂。core.hooksPath 生效时报告而非安装是正确行为但可能困惑用户。--git-common-dir 解析对 linked worktrees 正确但对 submodules 可能不同。v7.11.0 是 8/19 v7.10.0 后的迭代，tokensave 仍活跃。",
+        "business": "tokensave v7.11.0 的 per-repo git hooks 是多仓库 tooling 隔离的工程范式——资源隔离+additive 不破坏+失败大声报三原则。这对用户研发知识库+业务知识库多仓库场景的 tooling 部署有直接参考。与 WrenAI fail-loud+SocratiCode invalid 拒绝非 clamp 形成“资源有界+invalid 拒绝非 clamp+失败大声报”共振——工程基建的质量保障原则在多项目一致。",
+        "sources": [
+          {
+            "url": "https://github.com/aovestdipaperino/tokensave/releases/tag/v7.11.0",
+            "title": "tokensave v7.11.0 Release"
+          }
+        ],
+        "diagram": {
+          "title": "tokensave v7.11.0：per-repo git hooks（资源隔离+additive+失败大声报）",
+          "flow": [
+            {
+              "label": "githooks on --local",
+              "sub": "装到仓库自身 hook 目录",
+              "type": "backend"
+            },
+            {
+              "label": "不写 git config",
+              "sub": "不碰 core.hooksPath",
+              "type": "security"
+            },
+            {
+              "label": "additive writing",
+              "sub": "保留已有 husky/pre-commit",
+              "type": "backend"
+            },
+            {
+              "label": "core.hooksPath 冲突",
+              "sub": "报告非伪成功安装",
+              "type": "security"
+            },
+            {
+              "label": "多仓库隔离",
+              "sub": "不同仓库不同 tooling",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "三原则",
+              "text": "资源隔离（per-repo 不全局）+additive 不破坏（保留已有 hooks）+失败大声报（core.hooksPath 冲突报告非伪成功）"
+            },
+            {
+              "label": "反模式修复",
+              "text": "原全局占用 core.hooksPath 覆盖所有仓库默认 hook——多仓库不同 tooling 需求是错误答案"
+            },
+            {
+              "label": "用户迁移",
+              "text": "研发知识库+业务知识库多仓库不同 hook 需求——per-repo 隔离+additive 迁移友好+失败大声报配置质量保障"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "product",
+      "title": "业务 Agent 从“模型精度竞赛”进入“业务知识承载+意图漂移治理+结构化输出语义校验”阶段",
+      "date": "2026-09-03",
+      "source": "综合研判",
+      "link": "https://hhao9817.github.io/agent-daily/",
+      "summary": "今日 11 条情报串成“业务 Agent 从模型精度竞赛进入业务知识承载+意图漂移治理+结构化输出语义校验”完整链路。学术线：BIRD-History（历史 SQL 日志承载业务逻辑/数据约定/分析实践知识）+MaP-SQL（可复用结构化记忆替代微调，NL→schema/operations/outputs 三维）+TIDE-Bench（对话 chain ambiguity+intent drift 评测）+Relational-Core（图查询不绑死图数据库）。博客线：dbt 20x token 压缩经济学+TDS 五大失败模式+TDS no-answer 四证据+TDS 复杂度应被挣得+Anthropic EFS 数据主权。开源线：Cube v1.7.31-32 生命周期+时序正确性+WrenAI v0.13.4 查询路径安全化+OpenMetadata 2.0.1 MCP 加固+tokensave per-repo 隔离。",
+      "insight": "最核心战略研判：业务 Agent 的护城河正从“模型精度”转向“业务知识承载+意图漂移治理+结构化输出语义校验”三维。BIRD-History+MaP-SQL 指向“业务知识承载”（历史日志+结构化记忆替代隐式模型参数），TIDE-Bench 指向“意图漂移治理”（对话状态管理），TDS 五大失败模式指向“结构化输出语义校验”（schema 合规≠数据正确）。dbt 20x 压缩是 token 经济学，Anthropic EFS 是数据主权治理。Cube/WrenAI/OpenMetadata 三栈是语义层引擎+元数据治理的工程化。",
+      "detail": {
+        "why": "用户“AI for 业务”转型三大方向（业务知识库构建+业务语义理解+业务系统精确查询）的护城河不是模型精度而是系统工程。今日 11 条情报从学术+博客+开源三线共振指向三维护城河：业务知识承载（BIRD-History+MaP-SQL）+意图漂移治理（TIDE-Bench）+结构化输出语义校验（TDS 五大失败模式）。",
+        "mechanism": "三线共振链路：BIRD-History（学术线：历史 SQL 日志承载业务逻辑/数据约定/分析实践，1393 任务+11 库+细粒度知识标注，解决“用户查询隐含领域知识”缺口）→ MaP-SQL（学术线：可复用结构化记忆替代 listwise selector 微调，NL→schema elements/SQL operations/expected outputs 三维蒸馏，记忆即决策准则非模型参数）→ TIDE-Bench（学术线：对话式 text-to-SQL chain ambiguity+intent drift 评测，1542 样本+chain identification 与 drift recognition-resolution 双指标，单轮精度≠对话效果）→ Relational-Core（学术线：列存关系引擎+图查询语言匹配原生图引擎，node/edge 是重编码非更真实模型，图分析不绑死图数据库）→ dbt 20x 压缩（博客线：Gong 转录本 API 直连 8300 tokens→warehouse-native AI 压缩 500-1000 tokens，dbt MCP server 替代原始 API 直连，$360K+$520K/年节省）→ TDS 五大失败模式（博客线：constrained decoding schema 合规≠数据正确，enum hallucination/confident fabrication/cross-field contradiction/distributional collapse/array hallucination，Lee et al. 3-9 点衰减）→ TDS no-answer 四证据（博客线：诚实“未找到”须附四种证据 parsing/retrieval/structured output/routing，false negative 是 silent 错误）→ TDS 复杂度应被挣得（博客线：架构复杂度须对应已观测检索失败模式，BM25 专业域竞争基线，agentic 须迭代/多跳才有意义）→ Anthropic EFS（博客线：客户控制数据+跨会话滥用检测+无人工审查，数据主权+split custody）→ Cube v1.7.31-32（开源线：window 下推+nested join 折叠+calendar+rolling_window+timezone+refresh key cache 生命周期+时序正确性）→ WrenAI v0.13.4（开源线：只读 SELECT+autocommit+view 升级拒绝+fail loud 查询路径安全化）→ OpenMetadata 2.0.1（开源线：MCP 加固+连接器可靠性+搜索/lineage 修复，元数据治理 AI 化）→ tokensave v7.11.0（开源线：per-repo git hooks 资源隔离+additive+失败大声报）。",
+        "deep": "五组共振：(1) BIRD-History 历史日志+MaP-SQL 结构化记忆+TIDE-Bench 对话状态=\"业务知识承载+意图漂移治理\"共振（学术三线指向 text-to-SQL 护城河从模型精度转向业务知识+对话状态）；(2) TDS 五大失败模式+TDS no-answer 四证据+TDS 复杂度应被挣得=\"语义校验+可审计+诊断根因\"共振（TDS 三篇指向结构化输出质量与 RAG 架构方法论）；(3) dbt 20x 压缩+Anthropic EFS 数据主权+Cube interval refresh keys 本地计算=\"数据主权+本地计算+token 经济学\"共振（数据在用户控制基础设施+计算就近+token 成本可控）；(4) Cube calendar+rolling_window+timezone+WrenAI 只读+autocommit+view 升级拒绝=\"时序正确性+查询路径安全化\"共振（语义层引擎从功能正确走向生命周期+时序+安全）；(5) OpenMetadata MCP 加固+glossary 游标分页（8/29）+AI-assistant shell（8/28）=\"元数据治理 AI 化\"共振（元数据层从人类工具向 agent 探索入口转型）。对用户“语义层 vs 知识图谱”双路线：Relational-Core 的“图查询不绑死图数据库”+Cube/WrenAI 语义层引擎+OpenMetadata 元数据治理=三栈可并行而非二选一——关系层（宽表 API 数据）+图查询语言层（业务概念遍历）+语义层引擎（指标计算）+元数据治理（agent 探索入口）四层各司其职。",
+        "apply": "用户“AI for 业务”转型三维护城河落地建议：(1) 业务知识承载——收集内部 API 历史调用日志构建调用历史索引（BIRD-History 范式）+为高频业务问题构建三维记忆表 NL→API 字段/操作/返回结构（MaP-SQL 范式）；(2) 意图漂移治理——业务 Agent 实现对话状态管理维护已确认参数+撤回标记+条件依赖链（TIDE-Bench 范式）；(3) 结构化输出语义校验——function calling 之上加值分布监控+跨字段一致性+拒绝能力+空数组接受+枚举上下文加权（TDS 五大失败模式 范式）。token 经济学：API 数据入仓→warehouse-native AI 压缩→MCP server 暴露（dbt 范式）。数据主权：业务数据在用户控制基础设施+跨会话异常检测（Anthropic EFS 范式）。四层分工：关系层（宽表 API 数据）+图查询语言层（业务概念遍历）+语义层引擎（指标计算 Cube/WrenAI）+元数据治理（agent 探索入口 OpenMetadata）。",
+        "caveats": "三维护城河的工程实现复杂度高——业务知识承载需历史日志治理+记忆维护生命周期，意图漂移治理需对话状态序列化+条件依赖图+撤回回滚，结构化输出语义校验需值分布监控+跨字段校验+拒绝能力。token 经济学（dbt 20x 压缩）需 API 数据入仓基建+warehouse-native AI 函数。数据主权（Anthropic EFS）是厂商方案绑定 Claude 生态。四层分工需评估各层成熟度（Relational-Core ClickGraph/DeltaGraph 成熟度待评估，Cube/WrenAI 0.13.x 快速迭代期，OpenMetadata 2.0.x 快速迭代期）。",
+        "business": "今日 11 条情报共同指向“业务 Agent 护城河从模型精度转向业务知识承载+意图漂移治理+结构化输出语义校验”三维——这对用户“AI for 业务”转型是战略方向指导：投入分配应向三维护城河倾斜而非模型选型。dbt 的 $360K+$520K/年节省是 token 经济学最硬 ROI 数据。BIRD-History 的“历史日志承载业务知识”重新定义了内部 API 调用日志的价值。TDS 五大失败模式是 function calling 的必读风险清单。Anthropic EFS 的数据主权是受监管行业 unlock 前沿模型的关键。四层分工（关系+图查询+语义层+元数据治理）为“语义层 vs 知识图谱”双路线提供了精确架构定义——不是二选一而是四层各司其职。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2608.29345",
+            "title": "BIRD-History"
+          },
+          {
+            "url": "https://arxiv.org/abs/2609.00834",
+            "title": "MaP-SQL"
+          },
+          {
+            "url": "https://arxiv.org/abs/2608.29543",
+            "title": "TIDE-Bench"
+          },
+          {
+            "url": "https://arxiv.org/abs/2609.01525",
+            "title": "Relational-Core Graph Analytics"
+          },
+          {
+            "url": "https://www.getdbt.com/blog/model-for-the-token-not-the-table",
+            "title": "dbt: Model for the token, not the table"
+          },
+          {
+            "url": "https://towardsdatascience.com/your-json-is-valid-but-your-data-is-wrong-five-failure-modes-llm-structured-outputs-wont-catch",
+            "title": "TDS: Your JSON Is Valid but Your Data Is Wrong"
+          },
+          {
+            "url": "https://towardsdatascience.com/a-rag-that-says-not-in-this-document-has-to-show-four-kinds-of-evidence",
+            "title": "TDS: A RAG That Says Not in This Document"
+          },
+          {
+            "url": "https://towardsdatascience.com/why-rag-complexity-should-be-earned",
+            "title": "TDS: Why RAG Complexity Should Be Earned"
+          },
+          {
+            "url": "https://www.anthropic.com/news/enterprise-frontier-safeguards",
+            "title": "Anthropic: Enterprise Frontier Safeguards"
+          },
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.7.32",
+            "title": "Cube v1.7.31+v1.7.32"
+          },
+          {
+            "url": "https://github.com/Canner/WrenAI/releases/tag/wren-v0.13.4",
+            "title": "WrenAI v0.13.4"
+          },
+          {
+            "url": "https://github.com/open-metadata/OpenMetadata/releases/tag/2.0.1-release",
+            "title": "OpenMetadata 2.0.1"
+          },
+          {
+            "url": "https://github.com/aovestdipaperino/tokensave/releases/tag/v7.11.0",
+            "title": "tokensave v7.11.0"
+          }
+        ],
+        "diagram": {
+          "title": "业务 Agent 三维护城河：知识承载+意图漂移+语义校验",
+          "flow": [
+            {
+              "label": "业务知识承载",
+              "sub": "BIRD-History+MaP-SQL",
+              "type": "database"
+            },
+            {
+              "label": "历史日志索引",
+              "sub": "API 调用历史",
+              "type": "backend"
+            },
+            {
+              "label": "三维记忆表",
+              "sub": "NL→字段/操作/返回",
+              "type": "backend"
+            },
+            {
+              "label": "意图漂移治理",
+              "sub": "TIDE-Bench 对话状态",
+              "type": "backend"
+            },
+            {
+              "label": "结构化输出语义校验",
+              "sub": "TDS 五大失败模式",
+              "type": "security"
+            },
+            {
+              "label": "四层分工",
+              "sub": "关系+图查询+语义层+元数据",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "最核心研判",
+              "text": "业务 Agent 护城河从模型精度转向业务知识承载+意图漂移治理+结构化输出语义校验三维——投入应向三维倾斜而非模型选型"
+            },
+            {
+              "label": "五组共振",
+              "text": "业务知识承载（BIRD-History+MaP-SQL+TIDE-Bench）+语义校验可审计诊断根因（TDS 三篇）+数据主权本地计算 token 经济学（dbt+EFS+Cube）+时序安全（Cube+WrenAI）+元数据 AI 化（OpenMetadata）"
+            },
+            {
+              "label": "双路线定义",
+              "text": "语义层 vs 知识图谱非二选一——四层各司其职：关系层（宽表 API 数据）+图查询语言层（业务概念遍历）+语义层引擎（指标计算）+元数据治理（agent 探索入口）"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
