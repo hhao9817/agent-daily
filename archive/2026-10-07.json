@@ -1,0 +1,618 @@
+{
+  "date": "2026-10-07",
+  "banner": "EvoOntology 提出\"自进化本体层\"MCP server 动态桥接 agent-数据鸿沟；EIO-Agents 为 agent 评估定义语义契约层；FLINT 用 lookup agent+模板检索+FK 链 schema linking 把生产金融库 text-to-SQL 从<50%拉起——语义层/本体/知识图谱三路线在\"让 AI 懂业务\"上同周共振。",
+  "snapshot": {
+    "summary": "今日情报呈现一条清晰主线：\"让 AI 真正懂业务\"的三个技术层——业务语义层（EvoOntology 自进化本体 MCP / Semantic Layer Induction 自动从原始遥测诱导业务语义层 / EIO-Agents 为评估定义语义契约）——在 arXiv 同周集中爆发，且都强调\"非手写、可演化、可验证\"。生产侧 FLINT 证明通用 text-to-SQL 在不透明整数键的金融库跌至<50%，必须靠 lookup agent + 外键链 schema linking 才能拉回；Argo-Bench 用 8100 万订单 ERP 模拟器揭示最强模型也只 34.8% 任务达 95 分——企业级数据 agent 远未到生产可用。开源侧 OpenSPG（2265⭐，蚂蚁/OpenKG 的 SPG 语义增强知识图谱引擎）与 EvoOntology 官方代码库构成\"知识图谱 + 本体层\"落地的两块基石。安全侧 MLLMs Fail to Refuse 揭示 tool-use 模式下拒绝失败率上升 68.7%，直指用户\"上百字段宽表 API 调用\"的安全盲点。",
+    "groups": {
+      "paper": [
+        "EvoOntology（人大 ruc-datalab, 9/14）：自进化本体 MCP server = schema 层 + content 层 + tool 层；builder agent 自动构建本体 + 自演化循环（attribution-guided 类型编辑 + backbone-conditional 配对评估才接受）；在三个 data-agent benchmark、四个 LLM 上持续超过强基线与现有语义层方案，桥接 agent-data gap。直接回应用户\"语义层 vs 知识图谱\"之争——它是\"可演化本体层\"第三路线。",
+        "EIO-Agents（10/6）：定义\"AI agent 评估缺失的语义层\"。Evaluation Intelligence Ontology 提供 typed evidence + versioned behavioral predicates + evidence contracts + claims + witness rules + proof status + 可计算 metrics/findings/controls + PASS/REVIEW/BLOCK 决策；Portable Evaluation Record 是 content-addressed 的可重导出/可解释/可验证评估记录。对用户业务 agent 可信度验证是范式级框架。",
+        "Semantic Layer Induction from Raw Telemetry（9/17）：两阶段语义抽象——LLM 推理+行业知识识别高层业务特征，结构化管线（数据精炼+混合检索+多级过滤+语义聚类+canonical naming）导出细粒度业务节点；人工语义质量 50→80+，维护工作量降 80%，过滤 74% 噪声，LLM-as-Judge Cohen's kappa 0.87。无标注/无人工规则的自动业务语义层诱导，直接对应用户\"业务术语表自动化\"诉求。",
+        "FLINT / From Benchmarks to Production（10/2）：生产金融库 text-to-SQL 通用方法<50%（不透明整数键 vs 人读字符串）；三组件补齐——lookup agent 动态把自然语言概念解析为 reference table 约束、embedding 检索结构相似查询模板、FK 链遍历剪枝大 schema。已生产部署于金融数据检索服务。",
+        "Argo-Bench（10/1）：210 任务、8100 万订单外卖平台模拟器→235 表/75 亿行 ERP 仓库（Oracle E-Business Suite schema）；最强 14 模型仅 34.8% 任务≥95 分、均分 59.5；任务不止 text-to-SQL 而是封号/发激励/补薪等后果型动作，grader 按模拟器后果评分。企业级数据 agent benchmark 新标杆。",
+        "DBRAG（10/6）：多表 RAG 框架——离线表索引检索候选表+用查询相关行富化摘要+LLM 重排+program-aided reasoner 选表并在全量内容上执行，保持 prompt 上下文紧凑；Spider/GeoQuery/ATIS 上改进。Semantic Scholar 核实 citationCount=0（10/6 新文预期）。"
+      ],
+      "blog": [
+        "MLLMs Fail to Refuse when Using Tools Agentically（10/7, ArXiv AI 源）：agentic tool-using MLLM 在三个安全 benchmark 上拒绝失败率相对上升最高 68.7%，10 万+响应分析提出两类原因。直指用户\"通过业务 API 调数\"场景的安全盲点——agent 进入 tool-use 模式后安全护栏显著退化。",
+        "Agent in a Bottle / BOTTLED benchmark（10/6, ArXiv AI 源）：agent 能否把通用能力\"装瓶\"成低成本可复用方案？强 zero-shot 性能不能可靠转化为 bottling 能力（48/60 run 低于自身零样本下界）；但可省巨额成本——Opus 5 在查询-商品相关性分类上以约 1/657 成本保留 82% macro-F1。对用户重复性 API 查询批处理的成本经济学有直接启示。"
+      ],
+      "github": [
+        "OpenSPG/openspg（2265⭐, 蚂蚁集团+OpenKG）：SPG（Semantic-Enhanced Programmable Graph）知识图谱引擎，基于语义增强的可编程图——在传统 KG 之上引入逻辑规则、类型约束与可编程推理，面向企业级业务知识图谱构建。对用户\"业务知识图谱\"路线是中文生态最成熟的开源基座之一。",
+        "ruc-datalab/EvoOntology（EvoOntology 论文官方代码）：自进化本体 MCP server 实现，schema/content/tool 三层 + builder agent + 自演化循环，在三个 data-agent benchmark 上超越现有语义层方案。是\"本体层 vs 语义层\"之争的第三路线参考实现。",
+        "KnowledgeXLab/LeanRAG（259⭐, AAAI 2026）：Knowledge-Graph-Based Generation with Semantic Aggregation and Hierarchical Retrieval——用知识图谱做语义聚合+层级检索的 RAG，对用户\"GraphRAG 路线\"是经过 AAAI 评审的可参考实现。"
+      ],
+      "product": [
+        "Semantic Scholar API 全程 429 限流（与 9/5 运行记录一致），仅 DBRAG(2610.07622) 成功核实 citationCount=0/influentialCitationCount=0（10/6 新文符合预期）；EvoOntology/EIO-Agents/FLINT/Argo-Bench/Semantic Layer Induction 标注\"引用待核实（Semantic Scholar 限流，9-10 月新文预期 0）\"。",
+        "GitHub API 对未认证请求 IP 级限流（60.249.25.136），仓库 star/desc 数据来自先前已成功的 search 查询（OpenSPG 2265⭐ / LeanRAG 259⭐ / EvoOntology 由论文 code 链接确认存在）。"
+      ]
+    }
+  },
+  "items": [
+    {
+      "tag": "paper",
+      "title": "EvoOntology: A Self-Evolving Ontology Layer for Data Agents",
+      "date": "2026-09-14",
+      "source": "arXiv (人民大学 ruc-datalab)",
+      "link": "https://arxiv.org/abs/2609.15779",
+      "summary": "针对 data agent 的\"agent-data gap\"（异构数据在 agent 之外、agent 仅能通过通用工具访问列名/路径），提出 EvoOntology——一个自进化本体 MCP server，含 schema 层、content 层、tool 层，使 agent 能在运行时主动查询与交互本体。引入 builder agent 自主构建本体，以及一个自演化循环：通过 attribution-guided 类型编辑提案，仅在 backbone-conditional 配对评估通过后才接受。在三个主流 data-agent benchmark、四个 LLM 上持续超越强基线与现有 semantic-layer 方案。代码开源于 ruc-datalab/EvoOntology。",
+      "insight": "这是本周最贴合用户课题的论文。它直接回应\"语义层 vs 企业知识图谱\"两条路线之争，给出第三条：可演化的本体层。关键洞察有三：(1) 手写语义层不 scale、直接探索原始数据不可靠——本体必须是 agent 可查询的活跃层而非静态注入 prompt；(2) 自演化用 attribution-guided edit + paired eval，本质是\"每个本体变更都要证明自己比旧版本好才接受\"，这正是用户业务术语频繁变更场景需要的可控演化；(3) MCP server 形态意味着本体层是独立服务，可被多 agent/多场景复用。对用户\"上百字段宽表 API\"场景：本体层可封装宽表字段语义+取值约束+调用顺序，builder agent 可从 API 调用日志自动归纳字段语义，避免人工逐字段标注。",
+      "detail": {
+        "why": "用户转型\"AI for 业务\"的核心难题就是让 AI 懂业务语义。EvoOntology 把\"业务语义\"从静态文档变成 agent 可查询、可演化的活跃层，且用 MCP 标准化——这是从\"知识库\"走向\"知识服务\"的关键一步。它同时是用户\"语义层 vs 知识图谱\"双路线研究的第三选项。",
+        "mechanism": "三层 MCP server：schema 层（列名/路径/类型/约束）、content 层（值域/枚举/示例）、tool 层（查询/编辑/验证接口）。Builder agent 自主探索数据源构建初始本体。自演化循环：agent 调用失败时 attribution 引擎定位归因→提议类型化编辑（加约束/改描述/补示例）→在两个 backbone 上配对评估（同一任务两版本对比）→通过才接受。这保证编辑不破坏既有能力。",
+        "deep": "核心创新在于\"自演化的可控性\"。很多系统怕自动修改知识库会引入错误，EvoOntology 的解法是 backbone-conditional paired evaluation——用不同模型交叉验证一个本体编辑是否真有改善，相当于\"本体编辑的回归测试\"。这与 9/5 记录的 EvoSafeHarness（fresh-context 对抗审查拒绝过拟合）思路同源：变更必须经对抗验证。对用户业务场景，这意味着业务术语/字段语义的演化可以安全自动化，不必每次人工评审。注意它仍是 benchmark 验证，生产环境的\"本体演化失控\"风险（漂移、冲突、死代码）需额外治理。",
+        "apply": "立即可借鉴：(1) 用 MCP server 形态封装业务 API 的字段语义+取值约束+调用契约，而非写进 prompt；(2) 实现 attribution-guided 编辑——agent 调用失败时自动归因到缺失/错误的字段语义并提议修正；(3) 配对评估用两个不同模型交叉验证本体编辑有效性。先在 1-2 个高频宽表 API 上试点 builder agent 自动归纳字段语义，人工抽检接受率。",
+        "caveats": "benchmark 验证非生产验证；自演化在长周期可能积累冲突/冗余本体项，需配 garbage collection；backbone-conditional eval 假设有≥2 个可用 backbone，对小团队有成本；宽表 API 字段间隐式依赖（如字段A取值依赖字段B）当前本体模型未必能表达。",
+        "business": "把业务语义维护从\"DBA/数据团队手工写文档\"变成\"agent 使用中自动沉淀+可控演化\"，直接降低 AI for 业务的运营成本，是让业务团队而非技术团队成为语义owner的产品化路径。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2609.15779",
+            "title": "EvoOntology: A Self-Evolving Ontology Layer for Data Agents"
+          },
+          {
+            "url": "https://github.com/ruc-datalab/EvoOntology",
+            "title": "EvoOntology 官方代码库 (ruc-datalab)"
+          }
+        ],
+        "diagram": {
+          "title": "EvoOntology 自进化本体 MCP 架构",
+          "flow": [
+            {
+              "label": "Data Agent",
+              "sub": "业务查询请求",
+              "type": "frontend"
+            },
+            {
+              "label": "MCP Server",
+              "sub": "本体层(schema+content+tool)",
+              "type": "backend"
+            },
+            {
+              "label": "Builder Agent",
+              "sub": "自动构建初始本体",
+              "type": "backend"
+            },
+            {
+              "label": "自演化循环",
+              "sub": "attribution→edit→paired eval→accept",
+              "type": "backend"
+            },
+            {
+              "label": "异构数据源",
+              "sub": "宽表API/表/文件",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "活跃层非静态注入",
+              "text": "本体是 agent 运行时可查询的 MCP 服务，不是塞进 prompt 的静态文本"
+            },
+            {
+              "label": "可控演化",
+              "text": "每次本体编辑需 backbone-conditional 配对评估通过才接受，等价于本体编辑的回归测试"
+            },
+            {
+              "label": "MCP 复用",
+              "text": "本体服务可被多 agent/多场景复用，是\"知识库→知识服务\"的关键"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "EIO-Agents: The Missing Semantic Layer for AI Agent Evaluation",
+      "date": "2026-10-06",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2610.07675",
+      "summary": "指出 AI agent 评估缺乏共享语义标准：分数/trace/judge 输出被用来证明 readiness，却不说明证据支持什么声明、能确立什么、如何导向决策。提出 EIO-Agents 开放规范，两层：Evaluation Intelligence Ontology (EIO) 提供 typed evidence、versioned behavioral predicates、evidence contracts、claims、witness rules、proof status、可计算 metrics/findings/controls + PASS/REVIEW/BLOCK 决策；Portable Evaluation Record (PER) 是 content-addressed 的可重导出/可解释/可验证评估记录系统。",
+      "insight": "这篇把\"语义层\"概念从\"数据查询\"扩展到\"评估可信度\"，对用户业务 agent 的\"业务数据可信度验证\"方向是范式补充。核心论点：分数只是摘要、jury 只是解释、trace 只是记录——都不定义证据的含义与证明力。EIO 用 ontology 给评估证据本身一个语义契约。对用户\"上百字段宽表 API 查数后做分析\"场景：agent 返回的数据对不对、能不能据此做业务决策，需要一个可审计的证据-决策链，而非一个置信度分数。",
+      "detail": {
+        "why": "用户课题第三方向明确含\"业务数据可信度验证\"。当前普遍做法是看 agent 自报置信度或 LLM-as-Judge，但二者都无法回答\"这个结论基于哪些证据、证据能证明什么、 limitations 是什么\"。EIO 提供缺失的语义契约层。",
+        "mechanism": "EIO 层：typed evidence（证据有类型）+ versioned behavioral predicates（行为谓词可版本化）+ evidence contracts（证据契约：声明证据能/不能支持什么）+ claims + witness rules（证人规则：何种证据组合可作证一 claim）+ proof status + recurrence + 可计算 metrics/findings/controls + PASS/REVIEW/BLOCK 决策。PER 层：content-addressed（内容寻址，防篡改）+ 可重导出 + 可解释 + 可验证。",
+        "deep": "关键创新是\"证据契约\"与\"proof status\"。传统评估默认\"分数高=可信\"，EIO 强制声明\"这份证据只能证明X不能证明Y\"，并用 proof status 显式标注已证/未证/矛盾。这对业务 agent 的高杠杆决策（如封号、调价、放款）是必要的：必须能说\"我们基于这N条证据得出了这个决策，证据的边界是这些\"。content-addressed PER 让评估本身可被独立第三方重算验证。局限：规范尚新，缺乏生产采用数据；实施成本在于要为每个业务域定义 behavioral predicates 与 witness rules。",
+        "apply": "不必全套采用，可借鉴两件：(1) 给业务 agent 的每次数据查询结果附\"证据契约\"——声明数据来源API+字段+时间窗+已知局限；(2) 关键决策用 PASS/REVIEW/BLOCK 三态而非连续分数，REVIEW 自动升级人工。先在 1 个高风险业务流程试点。",
+        "caveats": "开放规范非已落地产品；predicate/witness rule 设计高度领域化，初期工作量大；content-addressed PER 对现有 trace 系统是重构；引用待核实（Semantic Scholar 限流，10/6 新文预期0）。",
+        "business": "让\"AI 辅助业务决策\"从黑箱分数走向可审计证据链，是合规/风控/审计部门接受 AI 进业务流程的前提——这块标准化谁先做，谁就在\"可信业务 agent\"赛道占位。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.07675",
+            "title": "EIO-Agents: The Missing Semantic Layer for AI Agent Evaluation"
+          }
+        ],
+        "diagram": {
+          "title": "EIO-Agents 评估语义契约两层架构",
+          "flow": [
+            {
+              "label": "Agent 执行",
+              "sub": "tool calls/queries/code",
+              "type": "frontend"
+            },
+            {
+              "label": "EIO 语义层",
+              "sub": "typed evidence+contracts+claims+witness+proof",
+              "type": "backend"
+            },
+            {
+              "label": "决策",
+              "sub": "PASS/REVIEW/BLOCK",
+              "type": "security"
+            },
+            {
+              "label": "PER 记录",
+              "sub": "content-addressed 可重算",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "分数≠证据",
+              "text": "score 摘要/jury 解释/trace 记录，都不定义证据含义与证明力"
+            },
+            {
+              "label": "证据契约",
+              "text": "显式声明证据能证明X不能证明Y，proof status 标注已证/未证/矛盾"
+            },
+            {
+              "label": "可独立验证",
+              "text": "PER content-addressed，第三方可重算验证评估"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "Semantic Layer Induction from Raw Telemetry via Hierarchical LLM and RAG Abstraction",
+      "date": "2026-09-17",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2609.19615",
+      "summary": "端到端自动化从应用原始日志构建业务语义层。两阶段语义抽象：阶段一用 LLM 推理+行业特定知识识别高层业务特征；阶段二结构化管线（数据精炼+混合检索+多级过滤+语义聚类+canonical naming）导出细粒度业务节点。生产规模遥测评估：人工语义质量 50→80+/100，维护工作量降80%，过滤74%噪声，LLM-as-Judge Cohen's kappa 0.87。无需标注训练数据或人工规则工程。",
+      "insight": "这是\"业务语义层自动化构建\"的直接解。用户课题第二方向（业务语义理解：语义层/指标平台/业务术语表）的核心痛点是语义层要人工维护、不 scale。此文证明可从原始数据自动诱导出业务语义层且质量可观（50→80）。对用户\"不直连数据库、通过 API 查数\"场景：API 返回的原始字段（尤其上百字段宽表）可视为\"原始遥测\"，同样适用此诱导管线产出字段语义+业务节点+canonical name。",
+      "detail": {
+        "why": "语义层/指标平台的最大成本是人工维护字段语义与指标定义。此文给出无标注、无人工规则的自动诱导路径，且生产规模验证质量可达80分+维护降80%，直接对应用户\"业务术语表自动化\"诉求。",
+        "mechanism": "两阶段：(1) LLM 推理+行业知识库识别高层业务特征（如\"这是订单事件\"\"这是支付事件\"）；(2) 结构化管线——数据精炼清洗噪声→混合检索（稠密+稀疏）召回相关历史语义→多级过滤→语义聚类把同义字段归簇→canonical naming 产出规范名。LLM-as-Judge 做质量评估闭环。",
+        "deep": "创新在\"分层\"与\"无监督\"。高层特征用 LLM 的领域知识（行业 ontology）做弱监督，细粒度节点用检索+聚类做无监督归纳，两者衔接避免纯 LLM 幻觉也避免纯统计无语义。canonical naming 解决\"同义不同名\"——这正是宽表 API 字段命名的典型混乱。Cohen's kappa 0.87 表明 LLM-as-Judge 在此任务上足够可靠做质量闭环。局限：评估是生产规模但单一遥测域，跨域泛化未证；canonical naming 对跨语言/跨业务线同名字段未必鲁棒。",
+        "apply": "直接迁移：把宽表 API 返回字段当\"原始遥测\"，跑两阶段管线——LLM+行业知识识别业务实体类型，检索+聚类把上百字段归并为canonical字段组并命名。先用 LLM-as-Judge 抽样评估质量再全量。维护降80%的数据可作 ROI 论证。",
+        "caveats": "单一遥测域验证；LLM-as-Judge 自偏好风险（9/5 记录的 self-preference 共振）；canonical naming 对业务术语歧义（如\"客户\"在不同业务线含义不同）需人工复核；引用待核实（限流，9/17 新文预期0）。",
+        "business": "把语义层/指标平台的构建从\"数月人工\"压缩到\"自动化管线+少量人工复核\"，是让语义层从\"大企业专属\"走向\"中小团队可用\"的成本拐点。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2609.19615",
+            "title": "Semantic Layer Induction from Raw Telemetry via Hierarchical LLM and RAG Abstraction"
+          }
+        ],
+        "diagram": {
+          "title": "业务语义层自动诱导两阶段管线",
+          "flow": [
+            {
+              "label": "原始遥测/API字段",
+              "sub": "上百字段宽表",
+              "type": "database"
+            },
+            {
+              "label": "阶段一",
+              "sub": "LLM+行业知识→高层业务特征",
+              "type": "backend"
+            },
+            {
+              "label": "阶段二",
+              "sub": "精炼+检索+过滤+聚类+canonical命名",
+              "type": "backend"
+            },
+            {
+              "label": "业务语义层",
+              "sub": "canonical字段+业务节点",
+              "type": "cloud"
+            },
+            {
+              "label": "LLM-as-Judge",
+              "sub": "质量闭环 kappa0.87",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "无监督诱导",
+              "text": "无需标注/无需人工规则，从原始数据自动产出语义层"
+            },
+            {
+              "label": "canonical naming",
+              "text": "解决宽表同义不同名字段归并"
+            },
+            {
+              "label": "质量闭环",
+              "text": "LLM-as-Judge kappa0.87 足够做自动质量评估"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "From Benchmarks to Production: A Text-to-SQL System for Complex Financial Data (FLINT)",
+      "date": "2026-10-02",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2610.03524",
+      "summary": "通用 text-to-SQL 在 Spider/BIRD（浅 schema、人读列值）上强，但在生产金融库（概念存为不透明整数键而非人读字符串）跌至<50%，因简单查询也需多 join + 谓词引用不透明 ID。提出 FLINT：lookup agent 动态把自然语言概念解析为 reference table 约束、embedding 检索结构相似查询模板、FK 链遍历剪枝大 schema。在两个生产金融 schema 共359问上超越多个 SOTA（同 LLM）。已生产部署于金融数据检索服务。",
+      "insight": "这是\"benchmark→production\"落差的硬数据。用户课题第三方向是\"业务系统精确查询\"，FLINT 证明通用方法在生产金融库直接腰斩，必须领域特化。三组件都直击用户痛点：lookup agent 解析业务术语→ID（宽表 API 字段值常是编码）；模板检索复用历史查询（API 调用模式重复性高）；FK 链 schema linking 剪枝上百字段。已生产部署意味着方案经得起真实流量。",
+      "detail": {
+        "why": "用户\"通过业务 API 精确查数\"与金融 text-to-SQL 生产部署同构：业务概念编码化、字段多、需多步解析。FLINT 是少有的\"已生产部署\"的 text-to-SQL 系统，工程参考价值高。",
+        "mechanism": "(1) Lookup agent：动态把自然语言概念（如\"信用卡金卡客户\"）解析为 reference table 的具体约束（card_type_id=3），而非靠列名相似度；(2) Embedding 检索：从专家编纂的紧凑模板库检索结构相似查询模板，复用 join/filter 结构；(3) Schema linking：沿外键链遍历剪枝大 schema 到相关子集，不靠名字相似度。",
+        "deep": "核心洞察是\"生产库的语义不在列名里而在 reference table 和外键拓扑里\"。通用方法假设列值人读、列名语义清晰，生产库恰恰相反——值是ID、列名是缩写。lookup agent 相当于给 agent 一个\"业务术语→ID\"的实时翻译器，模板库是\"组织级查询记忆\"，FK 链遍历是\"用关系拓扑而非字面相似度定位表\"。三者组合把<50%拉到超越SOTA。局限：模板库需专家初始化（冷启动成本）；lookup agent 对新业务术语仍需 reference table 维护；359问规模小。",
+        "apply": "三组件可分别借鉴：(1) 为高频业务术语建 reference table + lookup agent 实时解析；(2) 把历史成功的 API 查询编排成模板库供检索复用；(3) 用 API 字段间引用关系（若 API 暴露）做 schema linking 剪枝宽表。先在1个金融/订单类 API 试点。",
+        "caveats": "359问小规模；模板库专家初始化冷启动；lookup agent 依赖 reference table 维护；金融域特异性，迁移到非金融业务需重做 reference table；引用待核实（限流，10/2新文预期0）。",
+        "business": "证明\"通用 text-to-SQL 拿来查业务库\"会失败——业务语义层（reference table+模板+FK拓扑）不是锦上添花而是生产可用性的前提。这对用户\"不直连DB走API\"的路线是背书：API 语义层正是业务版的 reference table。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.03524",
+            "title": "From Benchmarks to Production: A Text-to-SQL System for Complex Financial Data (FLINT)"
+          }
+        ],
+        "diagram": {
+          "title": "FLINT 生产 text-to-SQL 三组件",
+          "flow": [
+            {
+              "label": "自然语言查询",
+              "sub": "\"金卡客户上月消费\"",
+              "type": "frontend"
+            },
+            {
+              "label": "Lookup Agent",
+              "sub": "业务术语→reference table ID约束",
+              "type": "backend"
+            },
+            {
+              "label": "模板检索",
+              "sub": "embedding 找结构相似历史查询",
+              "type": "database"
+            },
+            {
+              "label": "Schema Linking",
+              "sub": "FK链遍历剪枝大schema",
+              "type": "backend"
+            },
+            {
+              "label": "生产金融库",
+              "sub": "不透明整数键",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "生产落差",
+              "text": "通用方法在生产金融库<50%，因值是ID非人读字符串"
+            },
+            {
+              "label": "三组件补齐",
+              "text": "lookup agent解析术语+模板复用+FK链剪枝"
+            },
+            {
+              "label": "已生产部署",
+              "text": "金融数据检索服务真实流量验证"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "Argo-Bench: Evaluating Data Agents on Enterprise-Scale Workflows",
+      "date": "2026-10-01",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2610.02122",
+      "summary": "210 个数据科学/分析任务，基于纽约市外卖平台模拟（8100万2024订单、真实经济/欺诈/激励模式）导出 ERP 仓库（235表/75亿行，Oracle E-Business Suite schema）。任务不止 text-to-SQL——agent 要封欺诈号、分配骑手激励预算、发补薪等后果型动作，grader 按模拟器后果评分。每任务有可执行参考解。14 个前沿/开源模型中，最强仅 34.8% 任务≥95分、均分59.5。",
+      "insight": "这是企业级数据 agent 的现实校准。Spider/BIRD 是\"单表查+生成SQL\"，Argo-Bench 是\"235表导航+统计+后果型业务动作\"，更接近用户\"AI for 业务\"真实复杂度。34.8% 的数字是对\"agent 已能替代业务分析师\"乐观预期的冷水。关键设计：模拟器 ground-truth 对 agent 不可见，agent 必须先导航仓库重建事实再行动——这恰是用户\"通过 API 查数后做业务决策\"的结构。",
+      "detail": {
+        "why": "现有 text-to-SQL benchmark（Spider/BIRD）在企业场景失效：单表、公共数据、答案键还常错。Argo-Bench 用模拟器+ERP schema+后果型动作补上\"企业级\"维度，是衡量用户课题进展的合适标尺。",
+        "mechanism": "模拟器生成真实规模业务世界（8100万订单+经济/欺诈/激励逻辑）→导出为 Oracle E-Business Suite schema 的 ERP 仓库（235表/75亿行）→模拟器 ground-truth 状态对 agent 不可见→agent 必须导航仓库重建事实→执行后果型业务动作→grader 在模拟器中按后果评分。每任务有仅用仓库可解的参考解。",
+        "deep": "创新在\"后果型评分\"与\"ground-truth 隔离\"。传统 benchmark 评\"SQL对不对\"，Argo-Bench 评\"动作在业务世界里产生了什么后果\"——封错号、发错激励都会被模拟器扣分。ground-truth 隔离逼 agent 做真正的信息导航而非查表。34.8% 揭示：即使最强模型在\"理解业务→导航数据→正确行动\"链上也远未可靠。局限：模拟器是外卖域，跨域泛化未证；235表虽大但仍单一 ERP schema；任务设计可能偏某些 agent 范式。",
+        "apply": "(1) 用作自评标尺——把自己 agent 在 Argo-Bench 上跑分作为\"企业级数据 agent\"成熟度基线；(2) 借鉴后果型评分思想：业务 agent 的评测不应只看查数对错，要看下游业务后果；(3) 模拟器+ground-truth隔离模式可迁移到用户自己的业务域做内部 eval。",
+        "caveats": "单一外卖域；Oracle E-Business Suite schema 特定；34.8% 可能随模型迭代改善；模拟器构建成本高；引用待核实（限流，10/1新文预期0）。",
+        "business": "给\"AI for 业务\"设定现实预期：企业级数据 agent 离生产可用还远。投入应优先在\"业务语义导航\"与\"后果型验证\"而非单纯追求 SQL 准确率。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.02122",
+            "title": "Argo-Bench: Evaluating Data Agents on Enterprise-Scale Workflows"
+          }
+        ],
+        "diagram": {
+          "title": "Argo-Bench 后果型企业级评测",
+          "flow": [
+            {
+              "label": "模拟器",
+              "sub": "8100万订单+经济/欺诈/激励",
+              "type": "backend"
+            },
+            {
+              "label": "ERP仓库",
+              "sub": "235表/75亿行 Oracle schema",
+              "type": "database"
+            },
+            {
+              "label": "Agent",
+              "sub": "导航仓库→重建事实→行动",
+              "type": "frontend"
+            },
+            {
+              "label": "后果型动作",
+              "sub": "封号/激励/补薪",
+              "type": "security"
+            },
+            {
+              "label": "Grader",
+              "sub": "模拟器后果评分",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "不止text-to-SQL",
+              "text": "任务是企业后果型业务动作，按模拟器后果评分"
+            },
+            {
+              "label": "ground-truth隔离",
+              "text": "模拟器真相对agent不可见，逼真实信息导航"
+            },
+            {
+              "label": "现实校准",
+              "text": "最强模型仅34.8%任务≥95分，企业级远未成熟"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "DBRAG: Multi-Table Retrieval-Augmented Generation for Complex Database Queries",
+      "date": "2026-10-06",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2610.07622",
+      "summary": "多表数据库问答的 RAG 框架。离线构建表索引→检索候选表并用查询相关行富化摘要→LLM 重排候选→program-aided reasoner 选表并在全量内容上执行操作，保持初始 prompt 上下文紧凑。Spider/GeoQuery/ATIS 上改进表检索与多表问答。Semantic Scholar 核实 citationCount=0, influentialCitationCount=0（10/6 新文符合预期）。",
+      "insight": "多表场景的表检索+重排是用户\"通过宽表 API 查数\"的镜像问题：API 返回宽表相当于\"单表但字段极多\"，DBRAG 的\"行富化摘要+LLM 重排\"可迁移为\"字段富化摘要+LLM 重排定位相关字段\"。引用数已核实为0（新文）。",
+      "detail": {
+        "why": "用户宽表 API 的字段定位问题与多表检索同构——都是从大候选集中选相关子集。DBRAG 的检索-重排-执行管线是成熟范式参考。",
+        "mechanism": "离线表索引（含表摘要）→查询时检索候选表→用查询相关行富化候选表摘要→LLM 重排→reasoner 选最终表集并在全量内容执行（避免把全表塞 prompt）。",
+        "deep": "关键设计是\"行富化摘要\"——不只给表名/列名，还抽样查询相关行让 LLM 判断相关性。对宽表 API：可给字段抽样代表性取值而非仅字段名做相关性判断。program-aided reasoner 保持 prompt 紧凑是 token 经济学。局限：单表假设 loosened 但仍假设表结构清晰；行抽样可能漏少数关键行；Spider/GeoQuery/ATIS 是相对小基准。",
+        "apply": "迁移为宽表字段检索：离线建字段索引（字段名+类型+代表值）→查询时检索候选字段→用代表值富化字段摘要→LLM 重排定位相关字段子集→只把子集字段描述塞 prompt。",
+        "caveats": "小基准；行抽样代表性风险；引用0（新文）；多表假设表结构已知，宽表 API 字段语义可能不全。",
+        "business": "宽表 API 字段定位的检索-重排范式，降低上百字段宽表的 prompt token 成本与定位错误率。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.07622",
+            "title": "DBRAG: Multi-Table Retrieval-Augmented Generation for Complex Database Queries (citationCount=0, 已核实)"
+          }
+        ],
+        "diagram": {
+          "title": "DBRAG 多表/宽表检索-重排-执行管线",
+          "flow": [
+            {
+              "label": "离线索引",
+              "sub": "表/字段摘要+代表值",
+              "type": "database"
+            },
+            {
+              "label": "检索候选",
+              "sub": "行/值富化摘要",
+              "type": "backend"
+            },
+            {
+              "label": "LLM重排",
+              "sub": "定位相关子集",
+              "type": "backend"
+            },
+            {
+              "label": "Reasoner执行",
+              "sub": "全量内容上操作",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "值富化",
+              "text": "不只给字段名，抽样代表值辅助判断相关性"
+            },
+            {
+              "label": "prompt紧凑",
+              "text": "只塞重排后子集，不全量塞宽表"
+            },
+            {
+              "label": "引用已核实",
+              "text": "Semantic Scholar citationCount=0（10/6新文）"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "MLLMs Fail to Refuse when Using Tools Agentically（tool-use 模式安全退化）",
+      "date": "2026-10-07",
+      "source": "ArXiv AI 博客订阅源",
+      "link": "https://arxiv.org/abs/2610.03938",
+      "summary": "发现 agentic tool-using MLLM 在三个安全 benchmark 上拒绝能力显著退化——所有顶级开源/闭权重模型在 tool-using 设置下安全性低于非 tool 设置，相对拒绝失败率上升最高 68.7%。基于 10 万+响应分析提出两类可能原因。直击\"agent 进入工具调用模式后安全护栏失效\"的盲点。",
+      "insight": "对用户\"通过业务 API 调数\"场景是直接安全警示：agent 一旦进入 function calling/tool-use 模式，对有害请求（如越权查敏感字段、超量拉数）的拒绝能力大幅下降。68.7% 的退化意味着不能假设\"模型有安全对齐就够\"——tool-use 是一个独立的安全失效面。",
+      "detail": {
+        "why": "用户课题第三方向含\"业务 API 语义理解与精准调用\"，而 tool-use 调用的安全前提是模型仍会拒绝越权请求。此文证明该前提脆弱。",
+        "mechanism": "对比同模型在非 tool vs tool-using 设置下的拒绝率，三个安全 benchmark，10 万+响应，统计相对拒绝失败率增幅。提出两类原因（基于响应模式分析）。",
+        "deep": "关键在于\"tool-use 改变了模型的拒绝行为\"——可能是 tool 的存在让模型进入\"执行\"心态压过\"评估\"心态，或 tool 描述本身被对抗利用。这对 function calling 业务 agent 是系统性风险：你以为模型会拒绝\"查所有客户的身份证号\"，但 tool-use 模式下它可能直接调 API。需在工具层（而非仅模型层）加权限边界。",
+        "apply": "(1) 不依赖模型自拒绝，在 API/tool 层硬编码权限白名单（哪些字段可查/哪些不可查/单次行数上限）；(2) 对敏感 API 调用加二次确认或人工 review gate；(3) 定期用安全 probe 测试 tool-use 模式下拒绝率。",
+        "caveats": "MLLM 特指多模态，纯文本 agent 退化率可能不同；68.7% 是相对增幅非绝对；原因分析为推测；引用待核实（限流，10/7新文预期0）。",
+        "business": "tool-use 是业务 agent 的安全新边界——合规/风控必须把权限控制从模型层下沉到 API/tool 层，这是\"可信业务 agent\"的工程底线。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.03938",
+            "title": "MLLMs Fail to Refuse when Using Tools Agentically"
+          }
+        ],
+        "diagram": {
+          "title": "Tool-use 模式安全退化与防线",
+          "flow": [
+            {
+              "label": "业务请求",
+              "sub": "含潜在越权",
+              "type": "frontend"
+            },
+            {
+              "label": "Agent(tool-use模式)",
+              "sub": "拒绝率退化68.7%",
+              "type": "backend"
+            },
+            {
+              "label": "Tool层权限白名单",
+              "sub": "字段级硬限制",
+              "type": "security"
+            },
+            {
+              "label": "Review Gate",
+              "sub": "敏感调用二次确认",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "tool-use独立安全面",
+              "text": "进入工具调用模式后模型拒绝能力显著退化"
+            },
+            {
+              "label": "权限下沉",
+              "text": "不靠模型拒绝，tool层硬编码字段权限"
+            },
+            {
+              "label": "定期probe",
+              "text": "用安全probe测tool-use拒绝率"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "OpenSPG/openspg — 蚂蚁集团/OpenKG 语义增强可编程知识图谱引擎",
+      "date": "2026-10-07",
+      "source": "GitHub",
+      "link": "https://github.com/OpenSPG/openspg",
+      "summary": "OpenSPG 是蚂蚁集团联合 OpenKG 推出的知识图谱引擎，基于 SPG（Semantic-Enhanced Programmable Graph）——在传统知识图谱之上引入语义类型系统、逻辑规则与可编程推理，面向企业级业务知识图谱构建与产业落地。当前 2265 stars。中文生态中最成熟的企业级 KG 开源基座之一。",
+      "insight": "对用户\"业务知识图谱\"路线是中文生态首选开源基座。SPG 的\"语义增强+可编程\"特性区别于纯 RDF/属性图——它把业务规则与推理逻辑编入图结构，让 KG 不只是事实存储而是可执行的业务知识层。与 EvoOntology 的\"本体 MCP\"可形成互补：OpenSPG 做业务事实与规则的图存储，EvoOntology 做 agent 可查询的活跃语义层。",
+      "detail": {
+        "why": "用户要研究\"语义层 vs 企业知识图谱\"两条路线，OpenSPG 是 KG 路线在中文/蚂蚁生态的标杆实现，star 数与产业背书使其值得作为路线对照基线。",
+        "mechanism": "SPG = 语义类型系统（实体类型/关系类型/属性约束）+ 逻辑规则（业务规则编入图）+ 可编程推理（图上可执行推断）。基于此构建企业业务知识图谱，支持图查询与推理。",
+        "deep": "与纯 RDF/属性图 KG 的差异在于\"可编程推理\"——业务规则不是外置应用层逻辑，而是图结构的一部分，图本身可推断新事实。这与 9/5 记录的\"过程图组织行为 vs 知识图组织事实\"呼应：OpenSPG 可承载事实层，过程图（如 Procedural Graphs）承载行为层。对用户：用 OpenSPG 存业务实体/关系/规则，用 EvoOntology MCP 让 agent 查询，用语义层（指标平台）做查询——三层互补。",
+        "apply": "作为 KG 路线技术选型对照基线：评估 OpenSPG 的语义类型系统能否表达用户宽表 API 的字段语义与业务规则；与 EvoOntology 本体层做集成 PoC（OpenSPG 存图+EvoOntology 暴露给 agent）。",
+        "caveats": "蚂蚁/中文生态特化，国际社区与生态弱于 Neo4j/LabelStudio；2265 star 量级中等；产业落地案例多在金融风控，跨域需验证；GitHub API 限流未取最新 commit 活跃度。",
+        "business": "中文/金融场景的 KG 开源标杆，适合国内业务团队做 KG 路线 PoC，降低自研成本与国际 KG 栈的合规/本地化摩擦。",
+        "sources": [
+          {
+            "url": "https://github.com/OpenSPG/openspg",
+            "title": "OpenSPG: Knowledge Graph Engine (Ant Group/OpenSG, 2265 stars)"
+          }
+        ],
+        "diagram": {
+          "title": "OpenSPG 语义增强可编程知识图谱",
+          "flow": [
+            {
+              "label": "业务事实/规则",
+              "sub": "实体/关系/属性",
+              "type": "database"
+            },
+            {
+              "label": "SPG类型系统",
+              "sub": "语义类型+约束",
+              "type": "backend"
+            },
+            {
+              "label": "可编程推理",
+              "sub": "图上推断新事实",
+              "type": "backend"
+            },
+            {
+              "label": "Agent/EvoOntology",
+              "sub": "查询活跃语义层",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "可编程推理",
+              "text": "业务规则编入图结构，图本身可推断"
+            },
+            {
+              "label": "中文生态标杆",
+              "text": "蚂蚁/OpenKG背书，国内KG路线首选基座"
+            },
+            {
+              "label": "三层互补",
+              "text": "OpenSPG存图+EvoOntology暴露+语义层查询"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "ruc-datalab/EvoOntology + KnowledgeXLab/LeanRAG — 本体层与 GraphRAG 两类开源参考实现",
+      "date": "2026-10-07",
+      "source": "GitHub",
+      "link": "https://github.com/ruc-datalab/EvoOntology",
+      "summary": "EvoOntology 是同名论文官方代码：自进化本体 MCP server（schema/content/tool 三层 + builder agent + 自演化循环），在三个 data-agent benchmark 超越现有语义层方案。LeanRAG（KnowledgeXLab, 259⭐, AAAI 2026）是 Knowledge-Graph-Based Generation with Semantic Aggregation and Hierarchical Retrieval——用 KG 做语义聚合+层级检索的 RAG，经 AAAI 评审。",
+      "insight": "两个项目分别代表用户\"语义层/本体\"与\"知识图谱/GraphRAG\"两条路线的开源参考实现。EvoOntology 是\"可演化本体层\"新范式且含 MCP，LeanRAG 是\"KG+层级检索\"的学术验证版本。一起构成双路线技术选型的对照基线。",
+      "detail": {
+        "why": "用户明确要研究两条路线且需对比，这两个 repo 是两条路线各自有论文/会议背书的可运行参考实现，比纯概念对照更可落地评估。",
+        "mechanism": "EvoOntology：MCP server 三层 + builder agent + 自演化（attribution→edit→paired eval→accept）。LeanRAG：KG 语义聚合 + 层级检索（先粗后细的图检索）。",
+        "deep": "EvoOntology 的 MCP 化是趋势信号——语义层正从\"prompt 注入\"走向\"独立服务\"，与 9/5 记录的 Cube/OpenMetadata MCP 化共振。LeanRAG 的\"语义聚合\"解决 GraphRAG 的冗余/矛盾实体问题，层级检索解决大图检索成本。两者可组合：LeanRAG 的 KG 检索 + EvoOntology 的本体作为 KG 的 schema/约束层。",
+        "apply": "双路线 PoC：跑 EvoOntology 在用户 data-agent benchmark 上做本体层基线；跑 LeanRAG 在用户业务文档/数据上做 GraphRAG 基线；对比两路线在\"字段语义定位准确率\"\"维护成本\"\"agent 可查询性\"三维度。",
+        "caveats": "EvoOntology README 主分支路径未确认（404 on main，可能在 master/分支）；LeanRAG AAAI 2026 接收但完整复现需论文细节；两者 benchmark 与用户业务域不同；GitHub 限流未取最新活跃度。",
+        "business": "两条路线都有可运行开源实现，意味着 PoC 成本大幅降低——可在一两周内跑出双路线基线对比，而非各自从零搭建。",
+        "sources": [
+          {
+            "url": "https://github.com/ruc-datalab/EvoOntology",
+            "title": "EvoOntology 官方代码 (ruc-datalab)"
+          },
+          {
+            "url": "https://github.com/KnowledgeXLab/LeanRAG",
+            "title": "LeanRAG: KG-Based Generation with Semantic Aggregation (AAAI 2026, 259 stars)"
+          }
+        ],
+        "diagram": {
+          "title": "本体层 vs GraphRAG 双路线开源对照",
+          "flow": [
+            {
+              "label": "EvoOntology路线",
+              "sub": "MCP本体层+自演化",
+              "type": "backend"
+            },
+            {
+              "label": "LeanRAG路线",
+              "sub": "KG+语义聚合+层级检索",
+              "type": "backend"
+            },
+            {
+              "label": "对照维度",
+              "sub": "定位准确率/维护成本/可查询性",
+              "type": "security"
+            },
+            {
+              "label": "用户业务域",
+              "sub": "宽表API/业务文档",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "MCP化趋势",
+              "text": "语义层从prompt注入走向独立MCP服务"
+            },
+            {
+              "label": "双路线可组合",
+              "text": "LeanRAG检索+EvoOntology本体约束"
+            },
+            {
+              "label": "PoC成本低",
+              "text": "两路线都有可运行实现，一两周可出对比"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
