@@ -43,23 +43,63 @@
         "caveats": "原型基于特定 DataBrain 平台，通用性待验证；仪表盘组装的『可检视』依赖人工浏览器检视，规模化需自动化断言；论文未给出与无治理基线的定量对比（准确率/成本），引用数待核实。",
         "business": "商业启示：企业买 NL2BI 产品的评估清单应新增『治理 Hooks 是否确定性实现』——审批/审计/恢复若在 prompt 层实现则等于没有。对厂商，受治理运行时是差异化卖点：Gartner 预测 40% agentic AI 项目将取消，治理缺失是主因之一。",
         "sources": [
-          {"url": "https://arxiv.org/abs/2610.06914", "title": "Text2Dashboard: A Governed Agent Architecture for Natural-Language Dashboard Generation over Enterprise DataBrain (arXiv 2610.06914)"}
+          {
+            "url": "https://arxiv.org/abs/2610.06914",
+            "title": "Text2Dashboard: A Governed Agent Architecture for Natural-Language Dashboard Generation over Enterprise DataBrain (arXiv 2610.06914)"
+          }
         ],
         "diagram": {
           "title": "Text2Dashboard 受治理管线：模型提议 vs 确定性执行",
           "flow": [
-            {"label": "NL 分析请求", "sub": "自然语言", "type": "frontend"},
-            {"label": "实体解析", "sub": "术语→数据实体", "type": "backend"},
-            {"label": "元数据发现", "sub": "schema 约束选表列", "type": "database"},
-            {"label": "read-only SQL", "sub": "强制只读", "type": "security"},
-            {"label": "确定性 Hooks", "sub": "审批/审计/检查点", "type": "security"},
-            {"label": "仪表盘组装", "sub": "typed tools", "type": "backend"},
-            {"label": "三层验证", "sub": "静态+preflight+浏览器", "type": "cloud"}
+            {
+              "label": "NL 分析请求",
+              "sub": "自然语言",
+              "type": "frontend"
+            },
+            {
+              "label": "实体解析",
+              "sub": "术语→数据实体",
+              "type": "backend"
+            },
+            {
+              "label": "元数据发现",
+              "sub": "schema 约束选表列",
+              "type": "database"
+            },
+            {
+              "label": "read-only SQL",
+              "sub": "强制只读",
+              "type": "security"
+            },
+            {
+              "label": "确定性 Hooks",
+              "sub": "审批/审计/检查点",
+              "type": "security"
+            },
+            {
+              "label": "仪表盘组装",
+              "sub": "typed tools",
+              "type": "backend"
+            },
+            {
+              "label": "三层验证",
+              "sub": "静态+preflight+浏览器",
+              "type": "cloud"
+            }
           ],
           "notes": [
-            {"label": "架构分工", "text": "模型只提议动作，确定性软件控制执行与恢复——治理不依赖模型遵从"},
-            {"label": "验证纵深", "text": "静态检查（合规）→ 动态 preflight（试运行）→ 浏览器检视（渲染人审）三层递进"},
-            {"label": "用户映射", "text": "read-only SQL 强制 ≈ 用户『只走受控业务 API』约束的 SQL 版实现"}
+            {
+              "label": "架构分工",
+              "text": "模型只提议动作，确定性软件控制执行与恢复——治理不依赖模型遵从"
+            },
+            {
+              "label": "验证纵深",
+              "text": "静态检查（合规）→ 动态 preflight（试运行）→ 浏览器检视（渲染人审）三层递进"
+            },
+            {
+              "label": "用户映射",
+              "text": "read-only SQL 强制 ≈ 用户『只走受控业务 API』约束的 SQL 版实现"
+            }
           ]
         }
       }
@@ -80,23 +120,62 @@
         "caveats": "论文对『结构化交互』的具体 UI/协议形态着墨需读全文确认；歧义点识别本身依赖领域标注质量，冷启动成本高；与对话式澄清的用户接受度对比数据待核实。",
         "business": "商业启示：BI 产品的下一代交互不是更聪明的对话，而是更精确的口径选择器。指标平台厂商（dbt/Cube/Looker）的『一次定义处处一致』正是 structured disambiguation 的产品化——业务术语表+指标口径库是数据产品的护城河资产。",
         "sources": [
-          {"url": "https://arxiv.org/abs/2610.09396", "title": "ARCS: Towards Precise Text-to-SQL via Structured Disambiguation (arXiv 2610.09396)"},
-          {"url": "https://arxiv.org/abs/2610.02739", "title": "Beyond Correctness: Resolving Underspecification in Agentic Text-to-SQL (arXiv 2610.02739)"}
+          {
+            "url": "https://arxiv.org/abs/2610.09396",
+            "title": "ARCS: Towards Precise Text-to-SQL via Structured Disambiguation (arXiv 2610.09396)"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.02739",
+            "title": "Beyond Correctness: Resolving Underspecification in Agentic Text-to-SQL (arXiv 2610.02739)"
+          }
         ],
         "diagram": {
           "title": "歧义治理双路径：对话式澄清 vs 结构化消解",
           "flow": [
-            {"label": "业务查询", "sub": "含静默歧义", "type": "frontend"},
-            {"label": "歧义检测", "sub": "领域/数据特定", "type": "backend"},
-            {"label": "旧路径:对话澄清", "sub": "低效+认知负担", "type": "external"},
-            {"label": "新路径:结构化消解", "sub": "显式受约束选项", "type": "security"},
-            {"label": "口径注册表", "sub": "时间/区域/金额", "type": "database"},
-            {"label": "精确 SQL/API 调用", "sub": "口径显式声明", "type": "cloud"}
+            {
+              "label": "业务查询",
+              "sub": "含静默歧义",
+              "type": "frontend"
+            },
+            {
+              "label": "歧义检测",
+              "sub": "领域/数据特定",
+              "type": "backend"
+            },
+            {
+              "label": "旧路径:对话澄清",
+              "sub": "低效+认知负担",
+              "type": "external"
+            },
+            {
+              "label": "新路径:结构化消解",
+              "sub": "显式受约束选项",
+              "type": "security"
+            },
+            {
+              "label": "口径注册表",
+              "sub": "时间/区域/金额",
+              "type": "database"
+            },
+            {
+              "label": "精确 SQL/API 调用",
+              "sub": "口径显式声明",
+              "type": "cloud"
+            }
           ],
           "notes": [
-            {"label": "静默错误", "text": "歧义不报错而是产出偏离意图的结果——比失败更贵"},
-            {"label": "互证", "text": "Beyond Correctness：执行正确≠歧义已解决，agent 静默假设恰好蒙对"},
-            {"label": "产品化", "text": "指标平台的口径一次定义处处一致=structured disambiguation 的工业实现"}
+            {
+              "label": "静默错误",
+              "text": "歧义不报错而是产出偏离意图的结果——比失败更贵"
+            },
+            {
+              "label": "互证",
+              "text": "Beyond Correctness：执行正确≠歧义已解决，agent 静默假设恰好蒙对"
+            },
+            {
+              "label": "产品化",
+              "text": "指标平台的口径一次定义处处一致=structured disambiguation 的工业实现"
+            }
           ]
         }
       }
@@ -117,22 +196,58 @@
         "caveats": "金融领域特化，组件对其它行业的迁移成本未评估；lookup agent 增加每查询的 API 调用次数（延迟/token 成本）；论文基于单一生产环境，跨企业泛化性待核实。",
         "business": "商业启示：『值域语义层』（码表管理+主数据解析）是 text-to-SQL/NL2API 产品的未饱和差异化点——现有语义层产品（Cube/dbt）管指标口径不管值域码表。企业主数据管理（MDM）资产在 AI 时代被重新定价：码表质量直接决定查询精度上限。",
         "sources": [
-          {"url": "https://arxiv.org/abs/2610.03524", "title": "From Benchmarks to Production: A Text-to-SQL System for Complex Financial Data / FLINT (arXiv 2610.03524)"}
+          {
+            "url": "https://arxiv.org/abs/2610.03524",
+            "title": "From Benchmarks to Production: A Text-to-SQL System for Complex Financial Data / FLINT (arXiv 2610.03524)"
+          }
         ],
         "diagram": {
           "title": "FLINT：opaque keys 鸿沟与 lookup agent 桥接",
           "flow": [
-            {"label": "NL 查询", "sub": "『大客户』『渠道A』", "type": "frontend"},
-            {"label": "lookup agent", "sub": "概念→ID 动态解析", "type": "backend"},
-            {"label": "码表/主数据 API", "sub": "值域语义层", "type": "database"},
-            {"label": "ID 化谓词", "sub": "level=3, channel='07'", "type": "security"},
-            {"label": "深 JOIN 执行", "sub": "多表生产库", "type": "cloud"},
-            {"label": "反向解析", "sub": "ID→概念可读回答", "type": "frontend"}
+            {
+              "label": "NL 查询",
+              "sub": "『大客户』『渠道A』",
+              "type": "frontend"
+            },
+            {
+              "label": "lookup agent",
+              "sub": "概念→ID 动态解析",
+              "type": "backend"
+            },
+            {
+              "label": "码表/主数据 API",
+              "sub": "值域语义层",
+              "type": "database"
+            },
+            {
+              "label": "ID 化谓词",
+              "sub": "level=3, channel='07'",
+              "type": "security"
+            },
+            {
+              "label": "深 JOIN 执行",
+              "sub": "多表生产库",
+              "type": "cloud"
+            },
+            {
+              "label": "反向解析",
+              "sub": "ID→概念可读回答",
+              "type": "frontend"
+            }
           ],
           "notes": [
-            {"label": "鸿沟定量", "text": "生产金融库 opaque keys 让通用 text-to-SQL 跌破 50%（Spider/BIRD 优等生失效）"},
-            {"label": "第二语义层", "text": "值域语义（码表/枚举/主数据）是被忽视的层——多数方案只管列名语义"},
-            {"label": "用户迁移", "text": "宽表 API 标注需双层：字段层+值域层，agent 先解码再组装过滤"}
+            {
+              "label": "鸿沟定量",
+              "text": "生产金融库 opaque keys 让通用 text-to-SQL 跌破 50%（Spider/BIRD 优等生失效）"
+            },
+            {
+              "label": "第二语义层",
+              "text": "值域语义（码表/枚举/主数据）是被忽视的层——多数方案只管列名语义"
+            },
+            {
+              "label": "用户迁移",
+              "text": "宽表 API 标注需双层：字段层+值域层，agent 先解码再组装过滤"
+            }
           ]
         }
       }
@@ -153,23 +268,63 @@
         "caveats": "临床领域特化，特征分布迁移到业务场景需重训；分类器本身需要标注轨迹冷启动；论文三决策点的具体阈值策略与成本-召回权衡数据需读全文核实。",
         "business": "商业启示：Agent 可观测性产品的下一站是『置信度即成本控制』——把可靠性信号直接接入预算控制器（低置信早终止），对 always-on agent（9/3 dbt 测算 $685K→$165K/年）是进一步的成本杠杆。LLM Ops 厂商（LangSmith/Braintrust 类）可据此增加轨迹置信层产品线。",
         "sources": [
-          {"url": "https://arxiv.org/abs/2610.04156", "title": "Trajectory-Derived Confidence for Reliable, Resource-Aware Clinical Text-to-SQL Agents / Sentinel (arXiv 2610.04156)"}
+          {
+            "url": "https://arxiv.org/abs/2610.04156",
+            "title": "Trajectory-Derived Confidence for Reliable, Resource-Aware Clinical Text-to-SQL Agents / Sentinel (arXiv 2610.04156)"
+          }
         ],
         "diagram": {
           "title": "Sentinel 轨迹置信层：三决策点资源感知控制",
           "flow": [
-            {"label": "Agent 推理", "sub": "文本特征", "type": "frontend"},
-            {"label": "生成代码", "sub": "SQL 复杂度/重试", "type": "backend"},
-            {"label": "DB 输出", "sub": "行数/空值/越界", "type": "database"},
-            {"label": "置信分类器", "sub": "非 LLM judge", "type": "security"},
-            {"label": "决策点1:规划后", "sub": "低置信→澄清", "type": "security"},
-            {"label": "决策点2:执行中", "sub": "低置信→早终止省预算", "type": "cloud"},
-            {"label": "决策点3:输出前", "sub": "低置信→人审标记", "type": "frontend"}
+            {
+              "label": "Agent 推理",
+              "sub": "文本特征",
+              "type": "frontend"
+            },
+            {
+              "label": "生成代码",
+              "sub": "SQL 复杂度/重试",
+              "type": "backend"
+            },
+            {
+              "label": "DB 输出",
+              "sub": "行数/空值/越界",
+              "type": "database"
+            },
+            {
+              "label": "置信分类器",
+              "sub": "非 LLM judge",
+              "type": "security"
+            },
+            {
+              "label": "决策点1:规划后",
+              "sub": "低置信→澄清",
+              "type": "security"
+            },
+            {
+              "label": "决策点2:执行中",
+              "sub": "低置信→早终止省预算",
+              "type": "cloud"
+            },
+            {
+              "label": "决策点3:输出前",
+              "sub": "低置信→人审标记",
+              "type": "frontend"
+            }
           ],
           "notes": [
-            {"label": "核心洞察", "text": "可靠性失败=资源失败：错误轨迹烧掉的预算必须被止损"},
-            {"label": "避开自偏好", "text": "分类器判置信而非 LLM judge，规避 8/24 self-preference 放行错误的坑"},
-            {"label": "四联共振", "text": "与 Thinkingbox pass^20/AgentOps 2.4x 高估/Consistency Quadrant 构成可靠性测量学链路"}
+            {
+              "label": "核心洞察",
+              "text": "可靠性失败=资源失败：错误轨迹烧掉的预算必须被止损"
+            },
+            {
+              "label": "避开自偏好",
+              "text": "分类器判置信而非 LLM judge，规避 8/24 self-preference 放行错误的坑"
+            },
+            {
+              "label": "四联共振",
+              "text": "与 Thinkingbox pass^20/AgentOps 2.4x 高估/Consistency Quadrant 构成可靠性测量学链路"
+            }
           ]
         }
       }
@@ -190,22 +345,58 @@
         "caveats": "面向判例/文献语料的评测，企业 API 目录场景迁移效果未验证；经验索引的维护成本（工件变更时经验失效）未充分讨论；引用数待核实。",
         "business": "商业启示：『使用经验』成为数据资产的新形态——企业的 API 调用历史+查询历史是竞争对手拿不到的工件级经验语料（与 8/26『拥有查询历史的企业有独有数据护城河』判断一致）。数据目录产品（OpenMetadata/Atlan 类）的下一代竞争力在自动累积并暴露工件经验，而非仅存静态元数据。",
         "sources": [
-          {"url": "https://arxiv.org/abs/2610.10091", "title": "ExperienceIndex: Artifact-Grounded Memory (arXiv 2610.10091)"}
+          {
+            "url": "https://arxiv.org/abs/2610.10091",
+            "title": "ExperienceIndex: Artifact-Grounded Memory (arXiv 2610.10091)"
+          }
         ],
         "diagram": {
           "title": "工件经验记忆：从会话轨迹到工件绑定",
           "flow": [
-            {"label": "新任务", "sub": "业务问题", "type": "frontend"},
-            {"label": "工件经验索引", "sub": "API/表/文档级", "type": "database"},
-            {"label": "候选收窄", "sub": "经验替代全库相似检索", "type": "backend"},
-            {"label": "内容级推理", "sub": "仅对候选精读", "type": "cloud"},
-            {"label": "答案", "sub": "完整相关工件集", "type": "frontend"},
-            {"label": "经验回写", "sub": "成功轨迹→工件条目", "type": "security"}
+            {
+              "label": "新任务",
+              "sub": "业务问题",
+              "type": "frontend"
+            },
+            {
+              "label": "工件经验索引",
+              "sub": "API/表/文档级",
+              "type": "database"
+            },
+            {
+              "label": "候选收窄",
+              "sub": "经验替代全库相似检索",
+              "type": "backend"
+            },
+            {
+              "label": "内容级推理",
+              "sub": "仅对候选精读",
+              "type": "cloud"
+            },
+            {
+              "label": "答案",
+              "sub": "完整相关工件集",
+              "type": "frontend"
+            },
+            {
+              "label": "经验回写",
+              "sub": "成功轨迹→工件条目",
+              "type": "security"
+            }
           ],
           "notes": [
-            {"label": "抽象层级", "text": "记忆绑定工件而非会话——跨任务复用，新会话冷启动即有经验"},
-            {"label": "双收益", "text": "质量（找全相关工件集合）+成本（在线只精读候选）"},
-            {"label": "用户迁移", "text": "业务 API 目录=工件语料，调用历史=经验来源，越用越懂业务"}
+            {
+              "label": "抽象层级",
+              "text": "记忆绑定工件而非会话——跨任务复用，新会话冷启动即有经验"
+            },
+            {
+              "label": "双收益",
+              "text": "质量（找全相关工件集合）+成本（在线只精读候选）"
+            },
+            {
+              "label": "用户迁移",
+              "text": "业务 API 目录=工件语料，调用历史=经验来源，越用越懂业务"
+            }
           ]
         }
       }
@@ -226,22 +417,58 @@
         "caveats": "59% 是单一客户（RxBenefits）+特定配置（Snowflake adaptive warehouse）数据，平均值 15-30% 更保守可信；变更判定的假阴性（上游静默变更未被感知）风险未讨论；dbt State 与 Fivetran 摄取侧的联动细节待观察。",
         "business": "商业启示：dbt+Fivetran 合并体的商业化路径清晰——State GA 是『开放数据基础设施』的省钱 proof point，59%/15-30% 数字将成为销售话术核心。对买方：变更驱动构建应成为数据平台采购评估项；对 AI 基建团队：同样的经济学适用于知识库刷新管线。",
         "sources": [
-          {"url": "https://www.getdbt.com/blog/dbt-state-is-ga", "title": "dbt Blog: We built dbt State to stop rebuilding what hadn't changed (GA)"}
+          {
+            "url": "https://www.getdbt.com/blog/dbt-state-is-ga",
+            "title": "dbt Blog: We built dbt State to stop rebuilding what hadn't changed (GA)"
+          }
         ],
         "diagram": {
           "title": "dbt State：变更驱动的节点级构建决策",
           "flow": [
-            {"label": "触发运行", "sub": "任意编排器", "type": "cloud"},
-            {"label": "读取状态", "sub": "模型 SQL+仓库元数据", "type": "database"},
-            {"label": "差分判定", "sub": "结果会不同吗", "type": "backend"},
-            {"label": "build", "sub": "变更→重建", "type": "backend"},
-            {"label": "skip/clone/defer", "sub": "未变→复用", "type": "security"},
-            {"label": "成本节省", "sub": "15-59% 计算", "type": "frontend"}
+            {
+              "label": "触发运行",
+              "sub": "任意编排器",
+              "type": "cloud"
+            },
+            {
+              "label": "读取状态",
+              "sub": "模型 SQL+仓库元数据",
+              "type": "database"
+            },
+            {
+              "label": "差分判定",
+              "sub": "结果会不同吗",
+              "type": "backend"
+            },
+            {
+              "label": "build",
+              "sub": "变更→重建",
+              "type": "backend"
+            },
+            {
+              "label": "skip/clone/defer",
+              "sub": "未变→复用",
+              "type": "security"
+            },
+            {
+              "label": "成本节省",
+              "sub": "15-59% 计算",
+              "type": "frontend"
+            }
           ],
           "notes": [
-            {"label": "范式修正", "text": "按调度构建→按变更构建：消灭『上游没刷新的无效重建』"},
-            {"label": "硬数据", "text": "RxBenefits 59% 成本降+70 万模型复用；平均 15-30%"},
-            {"label": "迁移", "text": "同一经济学适用于 API schema 监控/术语编译/知识库索引的增量刷新"}
+            {
+              "label": "范式修正",
+              "text": "按调度构建→按变更构建：消灭『上游没刷新的无效重建』"
+            },
+            {
+              "label": "硬数据",
+              "text": "RxBenefits 59% 成本降+70 万模型复用；平均 15-30%"
+            },
+            {
+              "label": "迁移",
+              "text": "同一经济学适用于 API schema 监控/术语编译/知识库索引的增量刷新"
+            }
           ]
         }
       }
@@ -262,21 +489,53 @@
         "caveats": "结构方差→可靠性的映射假设『一致=学会了』，但稳定错误区证明一致性也会是系统性偏见；四象限阈值设定主观；文章是方法论+代码项目（GitHub 有配套代码），非同行评审论文，量化效度待社区验证。",
         "business": "商业启示：无真值可靠性测量降低了企业 AI 评估门槛——不需要先建黄金测试集就能做选型淘汰，加速采购决策。评估咨询/工具的新机会：把 Consistency Quadrant 类协议产品化为『Agent 可靠性体检报告』。",
         "sources": [
-          {"url": "https://towardsdatascience.com/the-consistency-quadrant-a-visual-guide-to-llm-reliability/", "title": "TDS: The Consistency Quadrant — A Visual Guide to LLM Reliability"}
+          {
+            "url": "https://towardsdatascience.com/the-consistency-quadrant-a-visual-guide-to-llm-reliability/",
+            "title": "TDS: The Consistency Quadrant — A Visual Guide to LLM Reliability"
+          }
         ],
         "diagram": {
           "title": "Consistency Quadrant：结构方差 × 执行输出四象限",
           "flow": [
-            {"label": "同一问题 N 次运行", "sub": "无需真值", "type": "frontend"},
-            {"label": "结构方差提取", "sub": "SQL/调用序列差异", "type": "backend"},
-            {"label": "执行输出记录", "sub": "成功/失败/结果一致", "type": "database"},
-            {"label": "四象限映射", "sub": "可靠/侥幸/稳定错误/不可用", "type": "security"},
-            {"label": "选型决策", "sub": "侥幸区不上生产", "type": "cloud"}
+            {
+              "label": "同一问题 N 次运行",
+              "sub": "无需真值",
+              "type": "frontend"
+            },
+            {
+              "label": "结构方差提取",
+              "sub": "SQL/调用序列差异",
+              "type": "backend"
+            },
+            {
+              "label": "执行输出记录",
+              "sub": "成功/失败/结果一致",
+              "type": "database"
+            },
+            {
+              "label": "四象限映射",
+              "sub": "可靠/侥幸/稳定错误/不可用",
+              "type": "security"
+            },
+            {
+              "label": "选型决策",
+              "sub": "侥幸区不上生产",
+              "type": "cloud"
+            }
           ],
           "notes": [
-            {"label": "关键区分", "text": "结果对但路径抖=侥幸区：等价性靠运气，schema 一变就崩"},
-            {"label": "互补", "text": "pass^k 需二值成功准则；本框架只需一致性信号，零标注成本"},
-            {"label": "场景", "text": "文章明确面向 AI 分析师（SQL+报告）与 coding agent 双场景"}
+            {
+              "label": "关键区分",
+              "text": "结果对但路径抖=侥幸区：等价性靠运气，schema 一变就崩"
+            },
+            {
+              "label": "互补",
+              "text": "pass^k 需二值成功准则；本框架只需一致性信号，零标注成本"
+            },
+            {
+              "label": "场景",
+              "text": "文章明确面向 AI 分析师（SQL+报告）与 coding agent 双场景"
+            }
           ]
         }
       }
@@ -297,22 +556,58 @@
         "caveats": "文章是 practitioner 视角综述（9 分钟），无新工具/框架发布，深度方案需追作者课程；15 万 agent 的 Gartner 预测口径（含低代码 bot？）未细分；13% 自认治理到位的测量方法未说明。",
         "business": "商业启示：agent 治理平台是确定性增长赛道——15 万 agent/企业 × 13% 就绪率的缺口即市场规模。数据团队的先机：元数据平台（OpenMetadata 类）已有资产注册/属主/lineage 能力，向 agent 注册治理扩展是自然路径；反之纯安全厂商缺数据语义上下文。",
         "sources": [
-          {"url": "https://towardsdatascience.com/how-to-govern-ai-agents/", "title": "TDS: How to Govern AI Agents — From guarding one agent to steering a fleet"}
+          {
+            "url": "https://towardsdatascience.com/how-to-govern-ai-agents/",
+            "title": "TDS: How to Govern AI Agents — From guarding one agent to steering a fleet"
+          }
         ],
         "diagram": {
           "title": "Agent 治理两阶段：单 Agent 四支柱 → 舰队治理",
           "flow": [
-            {"label": "部署门槛降低", "sub": "coding agent+低代码", "type": "frontend"},
-            {"label": "agent sprawl", "sub": "无属主失控增长", "type": "external"},
-            {"label": "单agent四支柱", "sub": "生命周期/风险/安全/可观测", "type": "security"},
-            {"label": "舰队注册表", "sub": "属主/用途/API/预算", "type": "database"},
-            {"label": "统一治理门", "sub": "agent与人同门", "type": "security"},
-            {"label": "成本+泄漏盘点", "sub": "token聚合/数据路径", "type": "cloud"}
+            {
+              "label": "部署门槛降低",
+              "sub": "coding agent+低代码",
+              "type": "frontend"
+            },
+            {
+              "label": "agent sprawl",
+              "sub": "无属主失控增长",
+              "type": "external"
+            },
+            {
+              "label": "单agent四支柱",
+              "sub": "生命周期/风险/安全/可观测",
+              "type": "security"
+            },
+            {
+              "label": "舰队注册表",
+              "sub": "属主/用途/API/预算",
+              "type": "database"
+            },
+            {
+              "label": "统一治理门",
+              "sub": "agent与人同门",
+              "type": "security"
+            },
+            {
+              "label": "成本+泄漏盘点",
+              "sub": "token聚合/数据路径",
+              "type": "cloud"
+            }
           ],
           "notes": [
-            {"label": "问题定量", "text": "IBM：97% 泄漏组织缺 AI 访问控制、63% 无治理策略；Gartner：2028 年 15 万 agent/F500，仅 13% 治理就绪"},
-            {"label": "两大新风险", "text": "舰队级浪费性 token 开销 + 敏感数据泄漏新增路径"},
-            {"label": "先手", "text": "单 agent 建设期即埋舰队治理种子（注册四元组），不等 sprawl"}
+            {
+              "label": "问题定量",
+              "text": "IBM：97% 泄漏组织缺 AI 访问控制、63% 无治理策略；Gartner：2028 年 15 万 agent/F500，仅 13% 治理就绪"
+            },
+            {
+              "label": "两大新风险",
+              "text": "舰队级浪费性 token 开销 + 敏感数据泄漏新增路径"
+            },
+            {
+              "label": "先手",
+              "text": "单 agent 建设期即埋舰队治理种子（注册四元组），不等 sprawl"
+            }
           ]
         }
       }
@@ -333,23 +628,62 @@
         "caveats": "minor 版本含行为变更（#12095 更严格校验可能拒绝此前放行的查询），升级需回归测试；#12152 修复前的暴露窗口内预聚合缓存可能已含未掩码数据，需清理重建；PK 自动检测依赖源库约束元数据质量（无约束声明的库无法受益）。",
         "business": "商业启示：语义层引擎的安全纵深（RLS 穿透修复）是企业采购的硬门槛——掩码被缓存绕过属于合规事故级缺陷。Cube 把 PK/FK 检测做进开源版，压缩了『建模服务』的收费空间，倒逼商业化向治理/可观测（Cloud 版）集中。",
         "sources": [
-          {"url": "https://github.com/cube-js/cube/releases/tag/v1.8.0", "title": "Cube v1.8.0 Release (2026-10-07)"},
-          {"url": "https://github.com/cube-js/cube/releases/tag/v1.8.2", "title": "Cube v1.8.2 Release (2026-10-08)"}
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.8.0",
+            "title": "Cube v1.8.0 Release (2026-10-07)"
+          },
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.8.2",
+            "title": "Cube v1.8.2 Release (2026-10-08)"
+          }
         ],
         "diagram": {
           "title": "Cube v1.8.x 三类变更：安全纵深 / 建模自动化 / join 图正确性",
           "flow": [
-            {"label": "源库约束元数据", "sub": "pg_catalog/inf..schema", "type": "database"},
-            {"label": "PK/FK 自动检测", "sub": "#11806/#12124/#12125", "type": "backend"},
-            {"label": "数据模型生成", "sub": "冷启动加速", "type": "backend"},
-            {"label": "join 图解析", "sub": "hub #12070/循环树 #12149", "type": "security"},
-            {"label": "预聚合", "sub": "严格校验 #12095", "type": "cloud"},
-            {"label": "掩码穿透修复", "sub": "#12152 RLS 安全", "type": "security"}
+            {
+              "label": "源库约束元数据",
+              "sub": "pg_catalog/inf..schema",
+              "type": "database"
+            },
+            {
+              "label": "PK/FK 自动检测",
+              "sub": "#11806/#12124/#12125",
+              "type": "backend"
+            },
+            {
+              "label": "数据模型生成",
+              "sub": "冷启动加速",
+              "type": "backend"
+            },
+            {
+              "label": "join 图解析",
+              "sub": "hub #12070/循环树 #12149",
+              "type": "security"
+            },
+            {
+              "label": "预聚合",
+              "sub": "严格校验 #12095",
+              "type": "cloud"
+            },
+            {
+              "label": "掩码穿透修复",
+              "sub": "#12152 RLS 安全",
+              "type": "security"
+            }
           ],
           "notes": [
-            {"label": "安全必修", "text": "#12152：masked members 经 pre-aggregations 读取时曾被绕过掩码——合规事故级，需升级+缓存重建"},
-            {"label": "成熟度轨迹", "text": "1.7.x 配置代码化+可观测 → 1.8.x 建模自动化+安全纵深"},
-            {"label": "升级风险", "text": "#12095 严格校验可能拒绝此前放行的查询，需回归测试"}
+            {
+              "label": "安全必修",
+              "text": "#12152：masked members 经 pre-aggregations 读取时曾被绕过掩码——合规事故级，需升级+缓存重建"
+            },
+            {
+              "label": "成熟度轨迹",
+              "text": "1.7.x 配置代码化+可观测 → 1.8.x 建模自动化+安全纵深"
+            },
+            {
+              "label": "升级风险",
+              "text": "#12095 严格校验可能拒绝此前放行的查询，需回归测试"
+            }
           ]
         }
       }
@@ -370,23 +704,62 @@
         "caveats": "两个维护版均为修复型（无新功能），2.0 主线回归说明大版本升级风险仍高，生产环境升级前应先在 staging 验证摄取；Redshift datashare/Mode 等修复仅惠及特定连接器用户；Jackson CVE 细节未在 release note 展开，需查依赖公告。",
         "business": "商业启示：元数据平台的竞争已从『连接器数量』转入『摄取可靠性+人工资产保护』——企业为语义标注投入的人工成本越高，对『标注不被冲掉』的要求越刚性。这是 OpenMetadata/Atlan/Collibra 共同的护城河方向，也是买方评估的新权重项。",
         "sources": [
-          {"url": "https://github.com/open-metadata/OpenMetadata/releases/tag/2.0.5-release", "title": "OpenMetadata 2.0.5-release (2026-10-08)"},
-          {"url": "https://github.com/open-metadata/OpenMetadata/releases/tag/2.0.4-release", "title": "OpenMetadata 2.0.4-release (2026-10-06)"}
+          {
+            "url": "https://github.com/open-metadata/OpenMetadata/releases/tag/2.0.5-release",
+            "title": "OpenMetadata 2.0.5-release (2026-10-08)"
+          },
+          {
+            "url": "https://github.com/open-metadata/OpenMetadata/releases/tag/2.0.4-release",
+            "title": "OpenMetadata 2.0.4-release (2026-10-06)"
+          }
         ],
         "diagram": {
           "title": "OpenMetadata 2.0.4/2.0.5：摄取可靠性与人工资产保护",
           "flow": [
-            {"label": "源系统", "sub": "Redshift/Oracle/Glue/Mode", "type": "database"},
-            {"label": "bot 自动摄取", "sub": "连接器可靠性修复", "type": "cloud"},
-            {"label": "摄取合并保护", "sub": "用户元数据不被覆盖", "type": "security"},
-            {"label": "元数据实体", "sub": "表/列/FK/参数/别名", "type": "database"},
-            {"label": "列级 lineage", "sub": "Mode 报表 #34733", "type": "backend"},
-            {"label": "agent/MCP 消费", "sub": "检索入口信任基础", "type": "frontend"}
+            {
+              "label": "源系统",
+              "sub": "Redshift/Oracle/Glue/Mode",
+              "type": "database"
+            },
+            {
+              "label": "bot 自动摄取",
+              "sub": "连接器可靠性修复",
+              "type": "cloud"
+            },
+            {
+              "label": "摄取合并保护",
+              "sub": "用户元数据不被覆盖",
+              "type": "security"
+            },
+            {
+              "label": "元数据实体",
+              "sub": "表/列/FK/参数/别名",
+              "type": "database"
+            },
+            {
+              "label": "列级 lineage",
+              "sub": "Mode 报表 #34733",
+              "type": "backend"
+            },
+            {
+              "label": "agent/MCP 消费",
+              "sub": "检索入口信任基础",
+              "type": "frontend"
+            }
           ],
           "notes": [
-            {"label": "关键保护", "text": "2.0.5：修复 2.0 摄取回归+bot 摄取期间保护用户管理元数据——语义标注资产安全"},
-            {"label": "静默 bug 警示", "text": "Oracle FK 大小写不一致=约束静默消失；元数据质量需例行完整性断言"},
-            {"label": "三部曲", "text": "API 元数据完整(1.13.5)→MCP 可访问(2.0.1)→人工资产保护(2.0.5)"}
+            {
+              "label": "关键保护",
+              "text": "2.0.5：修复 2.0 摄取回归+bot 摄取期间保护用户管理元数据——语义标注资产安全"
+            },
+            {
+              "label": "静默 bug 警示",
+              "text": "Oracle FK 大小写不一致=约束静默消失；元数据质量需例行完整性断言"
+            },
+            {
+              "label": "三部曲",
+              "text": "API 元数据完整(1.13.5)→MCP 可访问(2.0.1)→人工资产保护(2.0.5)"
+            }
           ]
         }
       }
@@ -407,23 +780,62 @@
         "caveats": "if_digest 需客户端正确管理 digest 生命周期（内容变更后旧 digest 失效重传全文属预期行为）；tokensave 面向代码库场景，schema/码表缓存需自行实现同型协议；WrenAI v0.15.0 发布于 9/21，非本周新版（本报首次收录）。",
         "business": "商业启示：agent 上下文传输经济学正在协议化——digest/ETag 模式若进入 MCP 标准（资源订阅/条件读取），将重塑 agent-数据接口的成本结构。先行实现条件读取的数据产品（目录/语义层/API 网关）在 always-on agent 场景有显著 TCO 优势。",
         "sources": [
-          {"url": "https://github.com/aovestdipaperino/tokensave/releases/tag/v7.15.0", "title": "tokensave v7.15.0 Release (2026-10-07)"},
-          {"url": "https://github.com/Canner/WrenAI/releases/tag/wren-v0.15.0", "title": "WrenAI wren-v0.15.0 Release (2026-09-21)"}
+          {
+            "url": "https://github.com/aovestdipaperino/tokensave/releases/tag/v7.15.0",
+            "title": "tokensave v7.15.0 Release (2026-10-07)"
+          },
+          {
+            "url": "https://github.com/Canner/WrenAI/releases/tag/wren-v0.15.0",
+            "title": "WrenAI wren-v0.15.0 Release (2026-09-21)"
+          }
         ],
         "diagram": {
           "title": "if_digest 条件读取：agent 上下文的 ETag 模式",
           "flow": [
-            {"label": "agent 请求", "sub": "tokensave_read+if_digest", "type": "frontend"},
-            {"label": "服务端比对", "sub": "digest 匹配当前 body", "type": "backend"},
-            {"label": "命中", "sub": "unchanged:true 短桩", "type": "security"},
-            {"label": "未命中", "sub": "返回全文+新 digest", "type": "database"},
-            {"label": "上下文窗口", "sub": "省重复 token", "type": "cloud"},
-            {"label": "MCP query_cube", "sub": "orderBy 表达力补齐", "type": "backend"}
+            {
+              "label": "agent 请求",
+              "sub": "tokensave_read+if_digest",
+              "type": "frontend"
+            },
+            {
+              "label": "服务端比对",
+              "sub": "digest 匹配当前 body",
+              "type": "backend"
+            },
+            {
+              "label": "命中",
+              "sub": "unchanged:true 短桩",
+              "type": "security"
+            },
+            {
+              "label": "未命中",
+              "sub": "返回全文+新 digest",
+              "type": "database"
+            },
+            {
+              "label": "上下文窗口",
+              "sub": "省重复 token",
+              "type": "cloud"
+            },
+            {
+              "label": "MCP query_cube",
+              "sub": "orderBy 表达力补齐",
+              "type": "backend"
+            }
           ],
           "notes": [
-            {"label": "协议化缓存", "text": "内容寻址 digest 把增量刷新判断下沉到协议层，agent 会话内上下文按需刷新"},
-            {"label": "三原则泛化", "text": "失败大声报+资源隔离+条件读取=agent-facing API 设计准则"},
-            {"label": "用户映射", "text": "宽表 schema/码表/术语表上下文可同型实现 digest 端点省 token"}
+            {
+              "label": "协议化缓存",
+              "text": "内容寻址 digest 把增量刷新判断下沉到协议层，agent 会话内上下文按需刷新"
+            },
+            {
+              "label": "三原则泛化",
+              "text": "失败大声报+资源隔离+条件读取=agent-facing API 设计准则"
+            },
+            {
+              "label": "用户映射",
+              "text": "宽表 schema/码表/术语表上下文可同型实现 digest 端点省 token"
+            }
           ]
         }
       }
@@ -444,34 +856,107 @@
         "caveats": "三件套是架构框架而非现成产品，整合成本在用户侧；ARCS/Sentinel/ExperienceIndex 均为新论文（引用=0 或待核实），方法成熟度未经社区验证；Gartner/IBM 数据口径需注意（agent 计数含低代码 bot 则 15 万偏高估）。",
         "business": "商业启示：受治理运行时是 2026-2027 企业数据 Agent 的采购主叙事——评估清单从『NL2SQL 准确率』转向『歧义消解协议+置信可观测+治理 Hooks 确定性』三项能力。语义层厂商（Cube/dbt）向值域语义与治理扩展、元数据厂商（OpenMetadata）向 agent 运行时扩展、评估工具向无真值可靠性测量扩展——三条产品演进路径都指向同一交汇点，先占据者定义标准。",
         "sources": [
-          {"url": "https://arxiv.org/abs/2610.06914", "title": "Text2Dashboard: A Governed Agent Architecture for Natural-Language Dashboard Generation over Enterprise DataBrain (arXiv 2610.06914)"},
-          {"url": "https://arxiv.org/abs/2610.09396", "title": "ARCS: Towards Precise Text-to-SQL via Structured Disambiguation (arXiv 2610.09396)"},
-          {"url": "https://arxiv.org/abs/2610.02739", "title": "Beyond Correctness: Resolving Underspecification in Agentic Text-to-SQL (arXiv 2610.02739)"},
-          {"url": "https://arxiv.org/abs/2610.03524", "title": "From Benchmarks to Production: A Text-to-SQL System for Complex Financial Data / FLINT (arXiv 2610.03524)"},
-          {"url": "https://arxiv.org/abs/2610.04156", "title": "Trajectory-Derived Confidence for Reliable, Resource-Aware Clinical Text-to-SQL Agents / Sentinel (arXiv 2610.04156)"},
-          {"url": "https://arxiv.org/abs/2610.10091", "title": "ExperienceIndex: Artifact-Grounded Memory (arXiv 2610.10091)"},
-          {"url": "https://towardsdatascience.com/the-consistency-quadrant-a-visual-guide-to-llm-reliability/", "title": "TDS: The Consistency Quadrant — A Visual Guide to LLM Reliability"},
-          {"url": "https://towardsdatascience.com/how-to-govern-ai-agents/", "title": "TDS: How to Govern AI Agents — From guarding one agent to steering a fleet"},
-          {"url": "https://www.getdbt.com/blog/dbt-state-is-ga", "title": "dbt Blog: We built dbt State to stop rebuilding what hadn't changed (GA)"},
-          {"url": "https://github.com/cube-js/cube/releases/tag/v1.8.2", "title": "Cube v1.8.2 Release (2026-10-08)"},
-          {"url": "https://github.com/open-metadata/OpenMetadata/releases/tag/2.0.5-release", "title": "OpenMetadata 2.0.5-release (2026-10-08)"},
-          {"url": "https://github.com/aovestdipaperino/tokensave/releases/tag/v7.15.0", "title": "tokensave v7.15.0 Release (2026-10-07)"}
+          {
+            "url": "https://arxiv.org/abs/2610.06914",
+            "title": "Text2Dashboard: A Governed Agent Architecture for Natural-Language Dashboard Generation over Enterprise DataBrain (arXiv 2610.06914)"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.09396",
+            "title": "ARCS: Towards Precise Text-to-SQL via Structured Disambiguation (arXiv 2610.09396)"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.02739",
+            "title": "Beyond Correctness: Resolving Underspecification in Agentic Text-to-SQL (arXiv 2610.02739)"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.03524",
+            "title": "From Benchmarks to Production: A Text-to-SQL System for Complex Financial Data / FLINT (arXiv 2610.03524)"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.04156",
+            "title": "Trajectory-Derived Confidence for Reliable, Resource-Aware Clinical Text-to-SQL Agents / Sentinel (arXiv 2610.04156)"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.10091",
+            "title": "ExperienceIndex: Artifact-Grounded Memory (arXiv 2610.10091)"
+          },
+          {
+            "url": "https://towardsdatascience.com/the-consistency-quadrant-a-visual-guide-to-llm-reliability/",
+            "title": "TDS: The Consistency Quadrant — A Visual Guide to LLM Reliability"
+          },
+          {
+            "url": "https://towardsdatascience.com/how-to-govern-ai-agents/",
+            "title": "TDS: How to Govern AI Agents — From guarding one agent to steering a fleet"
+          },
+          {
+            "url": "https://www.getdbt.com/blog/dbt-state-is-ga",
+            "title": "dbt Blog: We built dbt State to stop rebuilding what hadn't changed (GA)"
+          },
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.8.2",
+            "title": "Cube v1.8.2 Release (2026-10-08)"
+          },
+          {
+            "url": "https://github.com/open-metadata/OpenMetadata/releases/tag/2.0.5-release",
+            "title": "OpenMetadata 2.0.5-release (2026-10-08)"
+          },
+          {
+            "url": "https://github.com/aovestdipaperino/tokensave/releases/tag/v7.15.0",
+            "title": "tokensave v7.15.0 Release (2026-10-07)"
+          }
         ],
         "diagram": {
           "title": "受治理运行时三件套：企业数据 Agent 的信任底座",
           "flow": [
-            {"label": "业务查询", "sub": "含静默歧义", "type": "frontend"},
-            {"label": "歧义治理", "sub": "口径注册+值域码表", "type": "database"},
-            {"label": "模型提议", "sub": "schema 约束决策", "type": "backend"},
-            {"label": "执行治理", "sub": "typed tools+Hooks", "type": "security"},
-            {"label": "置信治理", "sub": "轨迹置信三决策点", "type": "security"},
-            {"label": "可审计回答", "sub": "口径显式声明", "type": "frontend"},
-            {"label": "工件经验回写", "sub": "越用越懂", "type": "cloud"}
+            {
+              "label": "业务查询",
+              "sub": "含静默歧义",
+              "type": "frontend"
+            },
+            {
+              "label": "歧义治理",
+              "sub": "口径注册+值域码表",
+              "type": "database"
+            },
+            {
+              "label": "模型提议",
+              "sub": "schema 约束决策",
+              "type": "backend"
+            },
+            {
+              "label": "执行治理",
+              "sub": "typed tools+Hooks",
+              "type": "security"
+            },
+            {
+              "label": "置信治理",
+              "sub": "轨迹置信三决策点",
+              "type": "security"
+            },
+            {
+              "label": "可审计回答",
+              "sub": "口径显式声明",
+              "type": "frontend"
+            },
+            {
+              "label": "工件经验回写",
+              "sub": "越用越懂",
+              "type": "cloud"
+            }
           ],
           "notes": [
-            {"label": "架构分工", "text": "每环都是确定性软件包裹概率性模型——治理不依赖模型遵从"},
-            {"label": "双路线统一", "text": "语义层承载歧义治理，知识图谱承载执行治理（join 图/hub 关系），置信治理独立其上"},
-            {"label": "新认知", "text": "值域语义（码表/枚举/主数据）是被忽视的第二语义层——语义建设需从字段层下沉到值层"}
+            {
+              "label": "架构分工",
+              "text": "每环都是确定性软件包裹概率性模型——治理不依赖模型遵从"
+            },
+            {
+              "label": "双路线统一",
+              "text": "语义层承载歧义治理，知识图谱承载执行治理（join 图/hub 关系），置信治理独立其上"
+            },
+            {
+              "label": "新认知",
+              "text": "值域语义（码表/枚举/主数据）是被忽视的第二语义层——语义建设需从字段层下沉到值层"
+            }
           ]
         }
       }
