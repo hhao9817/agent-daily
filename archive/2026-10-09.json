@@ -14,7 +14,8 @@
         "LLM-BlockFE（10/8）：离线 LLM 特征工程框架——将长文本转为可执行特征程序（immutable code blocks 增量追加+块级回滚+多轨迹交错探索），推理时无需 LLM 调用；五个金融风控系统上线后 KS 提升 0.02-1.56pp，AUC 提升 0.0069-0.0358",
         "Accurate but Not Humble（10/8）：Agent 认知谦逊评估——ISE 三维框架（Identify/Solve/Escalate），知识冲突下高准确率≠高谦逊：agent 在早期步骤检测到冲突但在后期步骤未能维持或解决；模型级干预可提升谦逊但常以准确率为代价",
         "Cited but Not Consulted（10/8）：法律 CoT 忠实度反事实审计——替换命名法律权威后，verdict 变化率仅 0-21.7%（CaseHOLD），命名正确率 66.7-100% 但判决对权威的实际依赖远低于此；对抗指令合规率 73.3-96.4% 远超 verdict-swap sensitivity——生成的法律解释作为审计 artifact 不可靠",
-        "Google Research 博客（10/7）：三月 RCT（133 名专利律师×11 律所）——AI 辅助使起草质量+0.38 SD（+11 percentile），但去除 AI 后资深律师判断力+0.45 SD（+13 percentile）而初级律师无平均提升且分数分化（更多高分和更多低分）——AI 是资深者的判断力放大器、初级者的学习双刃剑"
+        "Google Research 博客（10/7）：三月 RCT（133 名专利律师×11 律所）——AI 辅助使起草质量+0.38 SD（+11 percentile），但去除 AI 后资深律师判断力+0.45 SD（+13 percentile）而初级律师无平均提升且分数分化（更多高分和更多低分）——AI 是资深者的判断力放大器、初级者的学习双刃剑",
+        "OpenMetadata 2.0.5（10/8）：元数据治理维护版——Mode 报表列级 lineage 补全 #34733 + Databricks 分离读写 lineage 保全 #34732 + Redshift datashare 跨库 catalog 视图摄取 #34381 + bot 摄取保护用户管理元数据（RLS 治理分工）+ Jackson 两 CVE 修复；与 2.0.4（10/6 Glue 表参数/SQL Server 同义词/Snowflake 聚合指标保留）形成连接器可靠性大修组合"
       ],
       "cross": [
         "OnTrack（10/8）：流式 Structure-Aware Optimal Transport 实时监控 agent 轨迹——~1ms/step 对比历史成功运行，三档数据访问（全参考/仅 schema/仅日志）降级检测能力；SWE-bench 上前 8 步排名失败轨迹 AUROC +0.057，abort 策略省 18% 算力且 83% 中断正确",
@@ -312,6 +313,86 @@
             {
               "label": "对比基线",
               "text": "持续优于原始技能+四种现有技能进化方法（准确率+执行一致性）"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "business",
+      "title": "OpenMetadata 2.0.5：元数据治理维护版——列级 lineage 补全+连接器跨库摄取+RLS 保护",
+      "date": "2026-10-08",
+      "source": "GitHub Release",
+      "link": "https://github.com/open-metadata/OpenMetadata",
+      "summary": "OpenMetadata 2.0.5 维护版聚焦连接器和 lineage 可靠性。关键修复：Redshift datashare 消费集群库经跨库 catalog 视图摄取（#34381）；Oracle 外键约束大小写不一致丢失修复（#34415）；Mode 报表查询列/列级 lineage/owner 补全（#34733）；Databricks 分离读写记录的 lineage 保全（#34732）；实体关系图 FK 基数反转修复（#34812）。治理层：bot 摄取期间保护用户管理元数据不被覆盖；Jackson 两个 CVE 修复。2.0.4（10/6）已包含 Glue 表参数摄取（#34269）、SQL Server 同义词作表别名（#33415）、Snowflake 溢出重试保留子类化聚合指标（#34396）。",
+      "insight": "OpenMetadata 的列级 lineage 补全（Mode report queries #34733）和 Databricks 分离读写 lineage 保全（#34732）直接服务用户业务 Agent 架构的『可审计性』需求——当 agent 通过 API 查数时，数据从源到 API 响应的完整 lineage 链是审计的基础。bot 摄取期间保护用户管理元数据是 RBAC 治理的延伸——自动化摄取不应覆盖人工标注的业务语义。这与用户『字段级 RBAC/审计日志/读写分离』治理需求高度对齐。",
+      "detail": {
+        "why": "元数据治理是业务知识库构建的基础设施——没有准确的 lineage 和字段语义，Agent 查数的可信度无法验证。OpenMetadata 作为开源元数据平台，其版本演进直接反映元数据治理的工程实践进展。",
+        "mechanism": "Redshift datashare：消费集群通过跨库 catalog 视图读取非本地数据库的 schema/table/column/description——解决了跨库元数据摄取盲区。Mode lineage：从报表 SQL 解析查询列→构建列级 lineage→分配报告创建者为 owner。Databricks lineage：当 job 在分离的 query-history 记录中读和写表时，lineage 仍被保全。",
+        "deep": "OpenMetadata 的列级 lineage 与 Cube 的预聚合 lineage 形成互补：Cube 做的是 metric→source column 的语义层 lineage（声明式），OpenMetadata 做的是 report→table→column 的物理层 lineage（自动摄取）。两者叠加可构建从业务报表到物理表字段的完整 lineage 链——这正是业务 Agent 查数可信度验证的底座。",
+        "apply": "在业务 Agent 治理中：①部署 OpenMetadata 自动摄取数据源元数据+lineage②在 API 层标注每个返回字段对应的物理表/列（通过 lineage 链追溯）③Agent 查数后返回结果中携带 lineage provenance（『此字段来自 X 表 Y 列，经 Z API 返回』）④bot 摄取+人工标注并行：自动化摄取 schema/lineage，人工标注业务语义（字段含义、敏感级别），两者互不覆盖",
+        "caveats": "维护版修复的是 2.0 大版本的回归和连接器边界 case，不代表新功能突破；Redshift datashare 跨库摄取需要 consumer cluster 权限配置；Mode lineage 依赖 SQL 解析质量；2.0.5 的 Jackson CVE 修复是安全合规需求而非功能增强。",
+        "business": "对元数据治理团队：OpenMetadata 的列级 lineage 补全意味着可以追踪每个报表字段到物理表列的完整链路——这是数据可信度验证、影响分析、合规审计的基础。对 Agent 产品：当 agent 返回查询结果时，如果能附加 OpenMetadata 的 lineage provenance，用户可信度显著提升。RLS 保护（bot 摄取不覆盖人工元数据）是治理分工的工程化——自动化做物理层，人工做语义层，各司其职。",
+        "sources": [
+          {
+            "url": "https://github.com/open-metadata/OpenMetadata",
+            "title": "OpenMetadata 2.0.5 Release (connector & lineage reliability)"
+          },
+          {
+            "url": "https://github.com/open-metadata/OpenMetadata/releases/tag/2.0.5-release",
+            "title": "OpenMetadata 2.0.5 Changelog"
+          },
+          {
+            "url": "https://github.com/cube-js/cube",
+            "title": "Cube v1.8.2 (masked members pre-agg security fix)"
+          }
+        ],
+        "diagram": {
+          "title": "OpenMetadata 列级 lineage × Cube 语义层 lineage",
+          "flow": [
+            {
+              "label": "数据源",
+              "sub": "Redshift/Snowflake/Databricks",
+              "type": "database"
+            },
+            {
+              "label": "OpenMetadata 摄取",
+              "sub": "物理层 lineage",
+              "type": "backend"
+            },
+            {
+              "label": "列级 lineage",
+              "sub": "report→table→column",
+              "type": "database"
+            },
+            {
+              "label": "Cube 语义层",
+              "sub": "metric→source column",
+              "type": "backend"
+            },
+            {
+              "label": "API 返回",
+              "sub": "带 provenance",
+              "type": "frontend"
+            },
+            {
+              "label": "Agent 审计",
+              "sub": "可信度验证",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "双层 lineage",
+              "text": "OpenMetadata 物理层（自动摄取）+ Cube 语义层（声明式定义）——从报表到物理表的完整链路"
+            },
+            {
+              "label": "RLS 保护",
+              "text": "bot 摄取不覆盖人工标注的业务语义——自动化做物理层，人工做语义层"
+            },
+            {
+              "label": "关键修复",
+              "text": "Redshift datashare 跨库摄取 / Mode 列级 lineage / Databricks 分离读写 lineage 保全"
             }
           ]
         }
