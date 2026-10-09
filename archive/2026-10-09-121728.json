@@ -1,0 +1,965 @@
+{
+  "date": "2026-10-09",
+  "banner": "学术线五篇共振指向「受治理的数据 Agent 运行时」：Text2Dashboard 用 typed tools+确定性 Hooks 把模型决策关进 schema 约束，ARCS 提出 structured disambiguation 替代对话式澄清，FLINT 证明生产金融库（opaque integer keys）让通用 text-to-SQL 跌破 50%；开源线 Cube 升 1.8.0 小版本（主键自动检测+预聚合严格校验+pre-agg 掩码成员安全修复），OpenMetadata 连发 2.0.4/2.0.5 连接器可靠性大修；博客线 dbt State GA（变更驱动构建，RxBenefits 省 59% 计算成本）+ TDS Consistency Quadrant 无真值可靠性测量 + AI Agent 治理进入 agent sprawl 时代（Gartner：2028 年 Fortune 500 平均 15 万 agent，仅 13% 组织自认治理到位）。",
+  "snapshot": {
+    "summary": "今日情报呈现清晰的『企业数据 Agent 从生成精度转向受治理运行时』主线：学术侧五篇新论文（10/1-10/7）分别从架构治理（Text2Dashboard）、歧义消解（ARCS/Beyond Correctness）、生产落地鸿沟（FLINT：真实金融库 opaque keys 让 benchmark 优等生跌破 50%）、置信度验证（Sentinel 轨迹派生置信）、记忆基建（ExperienceIndex 工件经验记忆）五个角度收敛到同一结论——模型能力不再是瓶颈，schema 约束、歧义治理与可信度验证才是；商业侧 dbt State GA 用『按变更构建』替代『按调度构建』给出 15-59% 计算节省硬数据，TDS 治理文揭示 agent sprawl 已成为新治理挑战（IBM 研究：97% AI 泄漏组织缺 AI 访问控制），Cube v1.8.0 把主键检测/外键解析写进数据模型生成器——语义层引擎正在自动吸收元数据治理层的成果。",
+    "groups": {
+      "paper": [
+        "Text2Dashboard（10/2）：企业 DataBrain 上的受治理 Agent 架构——schema-constrained 模型决策 + typed tools + 持久状态 + 确定性 Hooks（审批/审计/检查点/恢复/失败处理），强制 read-only SQL，模型只『提议』动作、确定性软件控制执行——与用户『不直连数据库、通过受控 API 查数』约束天然同构",
+        "ARCS（10/7，Semantic Scholar 核实引用=0）：提出 structured disambiguation 新范式——业务问题歧义是细微的、领域/数据特定的，会『静默』偏离用户真实意图；用显式受约束交互替代低效且认知负担重的对话式澄清，直击业务查询『看起来对但答非所问』的核心痛点",
+        "FLINT（10/2，引用=0）：生产金融数据库 text-to-SQL 系统——学术 benchmark（Spider/BIRD）schema 浅、列值人类可读，但真实金融库概念存为 opaque integer keys，通用方法跌破 50%；lookup agent 动态解析 ID↔业务概念映射——对用户上百字段宽表 API 的『字段值不可读』场景是最直接的迁移模板",
+        "Sentinel（10/2，引用=0）：临床 text-to-SQL Agent 的轨迹派生置信层——分类器分析 agent 的推理/代码/数据库输出，在三个决策点判定可信度；不可靠推理轨迹=浪费的计算预算，错误在高杠杆场景代价极高——『业务数据可信度验证』方向的工程化范本",
+        "ExperienceIndex（10/7，Madden/Cafarella/Andreas 等）：工件经验记忆（artifact-grounded memory）——人类与共享语料（判例/文献）交互中积累关于工件的经验知识，能快速识别新任务的相关工件全集；现有 AI 记忆方案缺乏这种工件级经验复用——对企业业务知识库『越用越懂』的检索加速有直接启发"
+      ],
+      "blog": [
+        "dbt State GA（9/16）：从『按调度构建』到『按变更构建』——每次运行读取模型 SQL+仓库元数据，判定结果是否会变化，然后 build/skip/clone/defer；RxBenefits 实测调度任务成本降 59%、60 天复用 70 万模型、查询时间省两周；早期采用者平均省 15-30% 计算",
+        "TDS《The Consistency Quadrant》（10/7）：无真值（ground truth）条件下的 LLM 可靠性可视化测量——把结构方差（structural variance）映射到执行输出，四象限估计 coding agent/业务分析 agent 可靠性；AI 分析师已能探索数据集、发 SQL、出图表报告，可靠性测量成为选型前提",
+        "TDS《How to Govern AI Agents》（10/4）：治理挑战从单 agent 四支柱（生命周期/风险/安全/可观测）升级为 agent sprawl 舰队治理——IBM 2025 泄漏研究：97% 遭 AI 相关泄漏的组织缺 AI 访问控制、63% 完全没有 AI 治理策略；Gartner：2028 年 Fortune 500 平均用超 15 万 AI agent，但仅 13% 组织自认治理到位"
+      ],
+      "github": [
+        "Cube v1.8.0→v1.8.2（10/7-10/8，minor 版本跃迁）：generate data model 自动检测主键 #11806（MySQL/Postgres 经 pg_catalog 检测 PK/FK #12124/#12125）+ api-gateway 预聚合查询与日期范围严格校验 #12095 + hub 连接的 cube join 路径解析 #12070 + v1.8.2 安全修复：从 pre-aggregations 读取的 masked members 继续掩码 #12152（行级安全穿透预聚合的漏洞修复）+ 循环 join 树 join-hint enrichment 死循环修复 #12149 + rolling window 多阶段分区加载 #12147",
+        "OpenMetadata 2.0.4+2.0.5（10/6-10/8 连发两个维护版）：连接器与 lineage 可靠性大修——Redshift datashare 消费集群库经跨库 catalog 视图摄取 #34381 + Oracle 外键约束大小写不一致丢失修复 #34415 + Mode 报表查询列/列级 lineage/owner 补全 #34733 + Glue 表参数摄取为自定义属性 #34269 + SQL Server 同义词作表别名 #33415 + Snowflake 溢出重试保留子类化 Sum/Mean/StdDev 指标 #34396 + Jackson 两个 CVE 修复",
+        "tokensave v7.15.0（10/7）：tokensave_read 新增 if_digest 条件读取 #650——响应体携带 digest，客户端回传匹配的 digest 时只返回 unchanged:true 短桩而非全文，agent 上下文按需增量刷新；配套 WrenAI wren-v0.15.0（9/21）：CLI 与 MCP query_cube 工具支持 orderBy #2730 + BigQuery Application Default Credentials #2726"
+      ],
+      "product": [
+        "战略研判：企业数据 Agent 竞争焦点从『生成精度』收敛到『受治理运行时』三件套——①歧义治理（ARCS structured disambiguation + Beyond Correctness 揭示『执行结果正确≠underspecification 已解决』，agent 会静默做未验证假设）②置信治理（Sentinel 轨迹派生置信 + TDS Consistency Quadrant 无真值测量，可靠性成为可观测指标）③执行治理（Text2Dashboard typed tools+Hooks + Cube masked members 预聚合穿透修复 + agent sprawl 舰队治理），三者共同构成『业务系统精确查询』的信任底座"
+      ]
+    }
+  },
+  "items": [
+    {
+      "tag": "paper",
+      "title": "Text2Dashboard：企业 DataBrain 上的受治理 NL 仪表盘生成 Agent 架构",
+      "date": "2026-10-02",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2610.06914",
+      "summary": "Text2Dashboard 是面向企业 DataBrain 的原型系统，把自然语言分析请求转化为可检视（inspectable）的仪表盘。架构由可安装 Codex 插件 + 独立 Agent Runtime 组成，核心设计是 schema-constrained 模型决策 + typed tools + 持久状态 + 确定性 Hooks（审批、审计、检查点、恢复、失败处理）。管线依次做实体解析、元数据发现、强制 read-only SQL、仪表盘组装，再施加静态检查、动态 preflight 与浏览器检视三层验证。最关键的原则：模型只『提议』动作，确定性软件控制执行与恢复。",
+      "insight": "这是与用户课题匹配度最高的一篇：『模型提议、确定性软件执行』正是业务 API 查数 Agent 的正确架构分工。schema-constrained 决策对应宽表 API 字段语义约束，typed tools 对应带业务含义的 API 封装，确定性 Hooks 对应审批/审计治理门，read-only SQL 强制对应『不直连数据库只走受控 API』。三层验证（静态检查+动态 preflight+浏览器检视）可直接迁移为业务数据可信度验证管线。引用数待核实（Semantic Scholar 限流，10/2 新文预期 0）。",
+      "detail": {
+        "why": "企业级 NL→仪表盘是『AI for 业务』最高频场景之一，而多数方案把治理当补丁。Text2Dashboard 把审批/审计/检查点/恢复做成确定性 Hooks 一等公民，是『受治理 Agent 运行时』的完整参考架构。",
+        "mechanism": "管线：NL 请求 → 实体解析（业务术语→数据实体）→ 元数据发现（schema 约束下选表选列）→ read-only SQL 生成 → 仪表盘组装 → 静态检查（SQL/schema 合规）→ 动态 preflight（试运行验证）→ 浏览器检视（渲染结果人审）。模型在每个环节只输出『提议』，Hooks 决定放行/拒绝/回滚。持久状态支持检查点恢复，失败不丢上下文。",
+        "deep": "与 8/26 TDS『typed tools 决定推理天花板』+ 8/23 Codex hooks 五事件点 + 9/5 Cube 配置代码化形成完整谱系：工具词汇表（typed tools）定义能力边界，Hooks 定义治理边界，schema 约束定义数据边界——三层边界都是确定性软件而非 prompt。这与『CLAUDE.md 是 write-only channel』（8/26 'Do Not' Is Not Deny，4-16% 安全规则有匹配控制）的教训一脉相承：治理必须代码化。",
+        "apply": "用户可将其映射为：①实体解析层=业务术语表+API 目录检索；②元数据发现=宽表 API schema 语义标注库；③typed tools=每个业务 API 封装成带参数校验的工具；④确定性 Hooks=调用前审批门（高敏 API）+调用后审计日志+结果 preflight（行数/空值/范围校验）；⑤read-only 强制=API 网关只暴露查询类端点。",
+        "caveats": "原型基于特定 DataBrain 平台，通用性待验证；仪表盘组装的『可检视』依赖人工浏览器检视，规模化需自动化断言；论文未给出与无治理基线的定量对比（准确率/成本），引用数待核实。",
+        "business": "商业启示：企业买 NL2BI 产品的评估清单应新增『治理 Hooks 是否确定性实现』——审批/审计/恢复若在 prompt 层实现则等于没有。对厂商，受治理运行时是差异化卖点：Gartner 预测 40% agentic AI 项目将取消，治理缺失是主因之一。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.06914",
+            "title": "Text2Dashboard: A Governed Agent Architecture for Natural-Language Dashboard Generation over Enterprise DataBrain (arXiv 2610.06914)"
+          }
+        ],
+        "diagram": {
+          "title": "Text2Dashboard 受治理管线：模型提议 vs 确定性执行",
+          "flow": [
+            {
+              "label": "NL 分析请求",
+              "sub": "自然语言",
+              "type": "frontend"
+            },
+            {
+              "label": "实体解析",
+              "sub": "术语→数据实体",
+              "type": "backend"
+            },
+            {
+              "label": "元数据发现",
+              "sub": "schema 约束选表列",
+              "type": "database"
+            },
+            {
+              "label": "read-only SQL",
+              "sub": "强制只读",
+              "type": "security"
+            },
+            {
+              "label": "确定性 Hooks",
+              "sub": "审批/审计/检查点",
+              "type": "security"
+            },
+            {
+              "label": "仪表盘组装",
+              "sub": "typed tools",
+              "type": "backend"
+            },
+            {
+              "label": "三层验证",
+              "sub": "静态+preflight+浏览器",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "架构分工",
+              "text": "模型只提议动作，确定性软件控制执行与恢复——治理不依赖模型遵从"
+            },
+            {
+              "label": "验证纵深",
+              "text": "静态检查（合规）→ 动态 preflight（试运行）→ 浏览器检视（渲染人审）三层递进"
+            },
+            {
+              "label": "用户映射",
+              "text": "read-only SQL 强制 ≈ 用户『只走受控业务 API』约束的 SQL 版实现"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "ARCS：结构化歧义消解（Structured Disambiguation）替代对话式澄清",
+      "date": "2026-10-07",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2610.09396",
+      "summary": "ARCS 指出：text-to-SQL 从演示走向真实部署时，用户问题中的歧义成为首要错误来源。这类歧义往往是细微的、领域/数据特定的，会静默地让系统输出偏离用户真实意图。传统方案是对话式澄清（conversational clarification），但低效、认知负担重、且与真实用户工作流对齐差。ARCS 提出 structured disambiguation 新范式：通过显式、受约束的交互（而非自由对话）解决歧义。Semantic Scholar 已核实引用数=0（10/7 新文符合预期）。",
+      "insight": "与同日检索到的 Beyond Correctness（2610.02739，引用=0）形成互证：后者证明『执行结果正确≠underspecification 已解决』——agent 会静默做未验证假设恰好蒙对答案，且暴力多问因歧义集中在早期交互而低效。对用户业务查询场景：『上月华东销售额』的时间口径（自然月/账期）、区域定义（发货地/注册地）、指标口径（含税/不含税）都是典型的静默歧义——答案能跑出来但是错的，比报错更危险。",
+      "detail": {
+        "why": "业务查询错误的最贵形态不是失败而是『静默地答非所问』。ARCS 把歧义消解从对话艺术变为结构化工程，是业务语义层设计的直接输入。",
+        "mechanism": "structured disambiguation：系统识别查询中的歧义点（领域/数据特定），生成显式受约束的选项交互（如枚举口径选择），而非开放式追问。歧义知识来自领域 schema 与数据分布，而非通用语言模型猜测。",
+        "deep": "与 9/3 TIDE-Bench（对话意图漂移）+ 9/5 Data Investigations（多步调查）构成 text-to-SQL 三部曲的最新一章：TIDE-Bench 说对话有意图漂移，Beyond Correctness 说正确执行掩盖未解决歧义，ARCS 说解法是结构化受约束交互。三者共同指向：业务系统的『精确查询』需要口径级语义治理——这正是 metric store/语义层的存在理由（指标口径一次定义，处处一致）。",
+        "apply": "用户可在业务 API 层实现：①歧义点注册表——为每个宽表 API 字段/指标登记已知歧义（时间口径/区域定义/金额单位）；②受约束交互模板——检测到歧义时返回选项列表而非自由追问；③默认口径+显式声明——无歧义时按注册默认口径执行并在回答中声明所用口径（可审计）。",
+        "caveats": "论文对『结构化交互』的具体 UI/协议形态着墨需读全文确认；歧义点识别本身依赖领域标注质量，冷启动成本高；与对话式澄清的用户接受度对比数据待核实。",
+        "business": "商业启示：BI 产品的下一代交互不是更聪明的对话，而是更精确的口径选择器。指标平台厂商（dbt/Cube/Looker）的『一次定义处处一致』正是 structured disambiguation 的产品化——业务术语表+指标口径库是数据产品的护城河资产。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.09396",
+            "title": "ARCS: Towards Precise Text-to-SQL via Structured Disambiguation (arXiv 2610.09396)"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.02739",
+            "title": "Beyond Correctness: Resolving Underspecification in Agentic Text-to-SQL (arXiv 2610.02739)"
+          }
+        ],
+        "diagram": {
+          "title": "歧义治理双路径：对话式澄清 vs 结构化消解",
+          "flow": [
+            {
+              "label": "业务查询",
+              "sub": "含静默歧义",
+              "type": "frontend"
+            },
+            {
+              "label": "歧义检测",
+              "sub": "领域/数据特定",
+              "type": "backend"
+            },
+            {
+              "label": "旧路径:对话澄清",
+              "sub": "低效+认知负担",
+              "type": "external"
+            },
+            {
+              "label": "新路径:结构化消解",
+              "sub": "显式受约束选项",
+              "type": "security"
+            },
+            {
+              "label": "口径注册表",
+              "sub": "时间/区域/金额",
+              "type": "database"
+            },
+            {
+              "label": "精确 SQL/API 调用",
+              "sub": "口径显式声明",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "静默错误",
+              "text": "歧义不报错而是产出偏离意图的结果——比失败更贵"
+            },
+            {
+              "label": "互证",
+              "text": "Beyond Correctness：执行正确≠歧义已解决，agent 静默假设恰好蒙对"
+            },
+            {
+              "label": "产品化",
+              "text": "指标平台的口径一次定义处处一致=structured disambiguation 的工业实现"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "FLINT：从 Benchmark 到生产——金融数据库 Text-to-SQL 系统（opaque keys 让通用方法跌破 50%）",
+      "date": "2026-10-02",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2610.03524",
+      "summary": "通用 text-to-SQL 系统在 Spider/BIRD 等学术 benchmark 上表现强劲——那里 schema 相对浅、列值人类可读。但在生产金融数据库中，概念以 opaque integer keys（不透明整数键）而非可读字符串存储，这些方法准确率跌破 50%：即使简单查询也需要多表 JOIN，过滤谓词引用的是不透明 ID。FLINT（Financial LINking Text-to-SQL）通过三个关键组件弥合鸿沟，核心之一是 lookup agent——动态解析业务概念与数据库 ID 的映射。Semantic Scholar 已核实引用数=0（10/2 新文符合预期）。",
+      "insight": "这是『公开 benchmark 精度不预测生产效果』的最新硬数据（跌破 50%），与 8/28 Manufacturing Data Book（92000 列真实工厂 schema）共振。对用户场景的直接映射：业务 API 返回的宽表里，『客户等级=3』『渠道类型=07』这类枚举码/外键 ID 就是 opaque keys——LLM 看到字段值无法理解业务含义。lookup agent 模式（动态查询码表/主数据 API 解析 ID↔概念）应成为用户 API 语义层的标配组件：字段语义标注不仅要标『这是什么字段』，还要登记『值域码表在哪、如何动态解析』。",
+      "detail": {
+        "why": "金融/企业生产库的真实形态（opaque keys+深 JOIN）与 benchmark 的鸿沟被定量证明（<50%），为『不能用 benchmark 成果立项』再添硬论据；lookup agent 是可复用的工程模式。",
+        "mechanism": "三组件：①lookup agent 动态解析不透明 ID↔业务概念映射（查码表/主数据）；②领域特化的 schema linking（应对深 JOIN 路径）；③过滤谓词的 ID 化改写（自然语言概念→正确的 opaque key 过滤条件）。",
+        "deep": "与 8/23 TDS『schema 在人脑中非文档中』+ 8/26 TDS reranker『echo 排第一』共振：字段名相似≠语义相关，字段值可读≠业务可理解。生产系统的语义鸿沟在『值层』（opaque keys）而非仅『schema 层』（列名）——多数 RAG/text-to-SQL 方案只处理列名语义，值域语义（码表、枚举、主数据引用）是被忽视的第二语义层。",
+        "apply": "用户宽表 API 语义标注应扩为双层：①字段层——名称/类型/业务含义/敏感级；②值域层——枚举码表位置/主数据 API/单位与精度。Agent 调用规划时：遇到枚举字段先调码表 API 解析概念→ID，再组装过滤条件；结果返回时反向解析 ID→概念（回答可读化）。",
+        "caveats": "金融领域特化，组件对其它行业的迁移成本未评估；lookup agent 增加每查询的 API 调用次数（延迟/token 成本）；论文基于单一生产环境，跨企业泛化性待核实。",
+        "business": "商业启示：『值域语义层』（码表管理+主数据解析）是 text-to-SQL/NL2API 产品的未饱和差异化点——现有语义层产品（Cube/dbt）管指标口径不管值域码表。企业主数据管理（MDM）资产在 AI 时代被重新定价：码表质量直接决定查询精度上限。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.03524",
+            "title": "From Benchmarks to Production: A Text-to-SQL System for Complex Financial Data / FLINT (arXiv 2610.03524)"
+          }
+        ],
+        "diagram": {
+          "title": "FLINT：opaque keys 鸿沟与 lookup agent 桥接",
+          "flow": [
+            {
+              "label": "NL 查询",
+              "sub": "『大客户』『渠道A』",
+              "type": "frontend"
+            },
+            {
+              "label": "lookup agent",
+              "sub": "概念→ID 动态解析",
+              "type": "backend"
+            },
+            {
+              "label": "码表/主数据 API",
+              "sub": "值域语义层",
+              "type": "database"
+            },
+            {
+              "label": "ID 化谓词",
+              "sub": "level=3, channel='07'",
+              "type": "security"
+            },
+            {
+              "label": "深 JOIN 执行",
+              "sub": "多表生产库",
+              "type": "cloud"
+            },
+            {
+              "label": "反向解析",
+              "sub": "ID→概念可读回答",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "鸿沟定量",
+              "text": "生产金融库 opaque keys 让通用 text-to-SQL 跌破 50%（Spider/BIRD 优等生失效）"
+            },
+            {
+              "label": "第二语义层",
+              "text": "值域语义（码表/枚举/主数据）是被忽视的层——多数方案只管列名语义"
+            },
+            {
+              "label": "用户迁移",
+              "text": "宽表 API 标注需双层：字段层+值域层，agent 先解码再组装过滤"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "Sentinel：临床 Text-to-SQL Agent 的轨迹派生置信层（可靠性失败=资源失败）",
+      "date": "2026-10-02",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2610.04156",
+      "summary": "临床 text-to-SQL 的 LLM agent 自主多步推理，却无法评估自己的推理或输出是否可信。在医疗等高杠杆场景，系统错误代价极高。论文提出关键洞察：可靠性失败同时是资源失败——错误的推理轨迹把计算预算花在必须丢弃的输出上。Sentinel 是一个轨迹派生（trajectory-derived）、基于分类器的置信层：分析 agent 的推理过程、生成代码与数据库输出，在三个决策点判定是否继续/终止/升级。Semantic Scholar 已核实引用数=0（10/2 新文符合预期）。",
+      "insight": "『可靠性失败=资源失败』的视角对用户业务 Agent 的成本控制直接有用：不可信轨迹早终止=省 token+省 API 调用。三决策点置信判定是 9/5 AgentOps『监控假设重写』的具体实现——不看单步输出对错，看轨迹特征（推理/代码/DB 输出三类信号）派生置信。与 8/24 TDS LLM Judge self-preference（同模型互评放行错误）互补：Sentinel 用分类器而非 LLM judge，避开自偏好偏置。用户可迁移：为业务 API 调用轨迹训练轻量置信分类器（特征=调用序列/参数模式/返回统计），低置信时降级到人工审批而非继续烧预算。",
+      "detail": {
+        "why": "『业务数据可信度验证』是用户三大方向之一的核心难点，Sentinel 给出了资源感知的工程化答案：置信层不是事后审计而是运行时预算控制器。",
+        "mechanism": "轨迹派生特征三类：①推理文本特征（自我修正频率/不确定性表述）；②代码特征（SQL 复杂度/重试模式）；③数据库输出特征（行数异常/空结果/值域越界）。分类器在三个决策点（规划后/执行中/输出前）输出置信分，低于阈值触发终止或升级。",
+        "deep": "与 8/24 Thinkingbox（pass@1 65%→pass^20 25% 可靠性鸿沟）+ 9/5 AgentOps（tau-bench 单次 61% 但 8 次全过<25%，仪表盘 2.4x 高估）+ 10/7 TDS Consistency Quadrant（无真值可靠性测量）构成『可靠性测量学』四联：单次精度系统性高估循环可靠性，解法从评测侧（pass^k）走向运行时侧（轨迹置信）。临床场景的『高杠杆错误』与业务场景的『错误数据驱动错误决策』同构。",
+        "apply": "用户落地路径：①先收集业务 Agent 调用轨迹日志（推理/工具调用/API 返回）；②标注成功/失败轨迹，训练轻量分类器（GBDT 即可，特征工程>模型）；③三决策点接入：规划后置信低→澄清歧义（联动 ARCS），执行中置信低→早终止省预算，输出前置信低→标记『低置信结果』+人工复核。",
+        "caveats": "临床领域特化，特征分布迁移到业务场景需重训；分类器本身需要标注轨迹冷启动；论文三决策点的具体阈值策略与成本-召回权衡数据需读全文核实。",
+        "business": "商业启示：Agent 可观测性产品的下一站是『置信度即成本控制』——把可靠性信号直接接入预算控制器（低置信早终止），对 always-on agent（9/3 dbt 测算 $685K→$165K/年）是进一步的成本杠杆。LLM Ops 厂商（LangSmith/Braintrust 类）可据此增加轨迹置信层产品线。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.04156",
+            "title": "Trajectory-Derived Confidence for Reliable, Resource-Aware Clinical Text-to-SQL Agents / Sentinel (arXiv 2610.04156)"
+          }
+        ],
+        "diagram": {
+          "title": "Sentinel 轨迹置信层：三决策点资源感知控制",
+          "flow": [
+            {
+              "label": "Agent 推理",
+              "sub": "文本特征",
+              "type": "frontend"
+            },
+            {
+              "label": "生成代码",
+              "sub": "SQL 复杂度/重试",
+              "type": "backend"
+            },
+            {
+              "label": "DB 输出",
+              "sub": "行数/空值/越界",
+              "type": "database"
+            },
+            {
+              "label": "置信分类器",
+              "sub": "非 LLM judge",
+              "type": "security"
+            },
+            {
+              "label": "决策点1:规划后",
+              "sub": "低置信→澄清",
+              "type": "security"
+            },
+            {
+              "label": "决策点2:执行中",
+              "sub": "低置信→早终止省预算",
+              "type": "cloud"
+            },
+            {
+              "label": "决策点3:输出前",
+              "sub": "低置信→人审标记",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "核心洞察",
+              "text": "可靠性失败=资源失败：错误轨迹烧掉的预算必须被止损"
+            },
+            {
+              "label": "避开自偏好",
+              "text": "分类器判置信而非 LLM judge，规避 8/24 self-preference 放行错误的坑"
+            },
+            {
+              "label": "四联共振",
+              "text": "与 Thinkingbox pass^20/AgentOps 2.4x 高估/Consistency Quadrant 构成可靠性测量学链路"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "paper",
+      "title": "ExperienceIndex：工件经验记忆（Artifact-Grounded Memory）——MIT/Madden/Cafarella 团队",
+      "date": "2026-10-07",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2610.10091",
+      "summary": "知识密集型任务需要基于共享语料库（如法院判例、科学文献）回答大量问题。人类与这些语料交互时自然积累关于工件（artifacts）的经验知识，能快速识别每个新任务的相关工件完整集合。现有 AI agent 缺乏构建/复用这种工件级经验的记忆方案，导致答案质量低、在线成本高。ExperienceIndex 提出 artifact-grounded memory：记忆不是任务轨迹的摘要，而是绑定到语料工件本身的经验索引——哪些工件对哪类任务相关、如何组合。作者阵容含 Samuel Madden、Michael Cafarella、Jacob Andreas、Doug Downey（MIT/UW）。引用数待核实（Semantic Scholar 限流，10/7 新文预期 0）。",
+      "insight": "对企业业务知识库的『越用越懂』机制有直接启发：用户团队的业务 API 目录+宽表 schema 就是『共享语料工件』，每次成功查询积累的经验（哪个 API 对哪类业务问题相关、哪些字段组合常用）应绑定到 API/schema 工件本身而非会话轨迹——这样新任务来时检索的是工件级经验而非相似问题。与 9/5 MaP-SQL『记忆即决策准则非模型参数』互补：MaP-SQL 蒸馏 NL→schema 选择准则，ExperienceIndex 把经验索引到工件粒度。对上百字段宽表 API：字段级『被哪类问题使用过、与哪些字段共现』的经验索引是字段语义标注的动态补充。",
+      "detail": {
+        "why": "顶级数据库/NLP 学者（Madden=Cidr/Data Civilizer，Cafarella=table extraction 开创者）进军 agent 记忆，信号意义强：记忆的正确抽象层级是『工件』而非『会话』。",
+        "mechanism": "artifact-grounded memory：语料中每个工件（文档/表/API）累积经验条目——历史任务中该工件的相关性表现、组合模式、使用注意事项。新任务检索时先查工件经验索引缩小候选集，再对候选做内容级推理，降低在线成本并提升召回完整性（找全相关工件集合而非 top-k 相似）。",
+        "deep": "与 8/26 Beyond the Harness（context 工件 ROI 2-3x，reference cards 蒸馏历史查询画像）同源共振：两者都发现『工件级 context 资产』比检索调参/模型升级 ROI 高。差异在 Beyond the Harness 从查询历史蒸馏 cards，ExperienceIndex 从任务交互累积工件经验——前者离线蒸馏后者在线积累，可组合。与 9/5 Zeta-Lite（copy-on-write 分支记忆）构成记忆基建三件套：事务分支（Zeta-Lite）+选择准则（MaP-SQL）+工件经验（ExperienceIndex）。",
+        "apply": "用户可落地为『API 经验索引』：①每个业务 API 挂经验记录——历史调用的问题类型/成功率/常用字段组合/踩坑注意事项；②新问题先检索 API 经验索引（而非全目录 embedding 相似）；③经验随调用自动累积（成功轨迹回写工件条目）；④宽表字段级经验——字段被哪类问题使用、与哪些字段共现过滤。",
+        "caveats": "面向判例/文献语料的评测，企业 API 目录场景迁移效果未验证；经验索引的维护成本（工件变更时经验失效）未充分讨论；引用数待核实。",
+        "business": "商业启示：『使用经验』成为数据资产的新形态——企业的 API 调用历史+查询历史是竞争对手拿不到的工件级经验语料（与 8/26『拥有查询历史的企业有独有数据护城河』判断一致）。数据目录产品（OpenMetadata/Atlan 类）的下一代竞争力在自动累积并暴露工件经验，而非仅存静态元数据。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.10091",
+            "title": "ExperienceIndex: Artifact-Grounded Memory (arXiv 2610.10091)"
+          }
+        ],
+        "diagram": {
+          "title": "工件经验记忆：从会话轨迹到工件绑定",
+          "flow": [
+            {
+              "label": "新任务",
+              "sub": "业务问题",
+              "type": "frontend"
+            },
+            {
+              "label": "工件经验索引",
+              "sub": "API/表/文档级",
+              "type": "database"
+            },
+            {
+              "label": "候选收窄",
+              "sub": "经验替代全库相似检索",
+              "type": "backend"
+            },
+            {
+              "label": "内容级推理",
+              "sub": "仅对候选精读",
+              "type": "cloud"
+            },
+            {
+              "label": "答案",
+              "sub": "完整相关工件集",
+              "type": "frontend"
+            },
+            {
+              "label": "经验回写",
+              "sub": "成功轨迹→工件条目",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "抽象层级",
+              "text": "记忆绑定工件而非会话——跨任务复用，新会话冷启动即有经验"
+            },
+            {
+              "label": "双收益",
+              "text": "质量（找全相关工件集合）+成本（在线只精读候选）"
+            },
+            {
+              "label": "用户迁移",
+              "text": "业务 API 目录=工件语料，调用历史=经验来源，越用越懂业务"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "dbt State GA：从『按调度构建』到『按变更构建』，实测省 59% 计算成本",
+      "date": "2026-09-16",
+      "source": "dbt Blog",
+      "link": "https://www.getdbt.com/blog/dbt-state-is-ga",
+      "summary": "dbt State 正式 GA，可在任何编排器（Airflow/Dagster/GitHub Actions/笔记本）运行，支持 Snowflake/BigQuery/Databricks/Redshift。核心理念：多数 dbt 作业按调度运行，dbt State 让它们按变更运行——每次运行读取模型 SQL+仓库元数据，判定模型结果是否会不同，然后 build/skip/clone/defer 每个节点，无需选择语法、manifest 脚本或自定义编排。RxBenefits 实测：调度任务成本降 59%，60 天复用超 70 万模型，查询运行时间省两周；早期采用者平均省 15-30% 计算。dbt 平台每天有超 2200 万模型被构建，多数时候上游数据未刷新。",
+      "insight": "『按变更而非按调度』是数据管线经济学的范式修正——每天 2200 万模型构建中大量是无效重建。对用户业务 Agent 基建的映射：①语义层/知识库的刷新也应变更驱动（API schema 变了才重标注，业务术语改了才重编译 prompt）；②59% 成本数据是向管理层论证『语义基建投入』的现成 ROI 锚点；③dbt+Fivetran 合并后（8/26 已收录）State GA 是『开放数据基础设施』战略的第一个重磅落地——ELT 一体化后按变更构建覆盖摄取+转换全链。与 9/5 tokensave per-repo hooks（增量索引）+ 8/30 tokensave githooks 同向：工具链全面走向增量/变更驱动。",
+      "detail": {
+        "why": "变更驱动构建把数据管线成本从 O(调度频率) 降到 O(实际变更量)，对所有维护语义层/知识库的团队是可复制的成本结构优化。",
+        "mechanism": "每次运行：读取模型 SQL+仓库元数据 → 差分判定结果是否变化 → 每节点四选一（build 重建/skip 跳过/clone 克隆/defer 延迟引用已有）。无选择语法、无 manifest 脚本、无自定义编排——判定逻辑内建于 dbt 运行时。Snowflake adaptive warehouse 配合调优配置可获得更大跳变。",
+        "deep": "与 8/26 Beyond the Harness『context 工件经济学』共振：两者都在消灭冗余计算——dbt State 消灭冗余模型重建，reference cards 消灭冗余检索。深层模式：数据/AI 基建的下一阶段竞争力在『知道什么没变』——变更检测能力本身成为核心资产。这与 git 内容寻址（GRACE sha256 lint 缓存 8/24）、tokensave 增量索引同属一个工程谱系。",
+        "apply": "用户可迁移：①业务 API schema 监控——定期拉 OpenAPI spec 做差分，仅变更字段触发重标注；②prompt/术语表编译产物版本化——术语没变不重编译（联动 9/5 Compile by Training 模式）；③知识库索引增量更新——工件未变跳过重嵌入。三项都可省大量 LLM/计算开销。",
+        "caveats": "59% 是单一客户（RxBenefits）+特定配置（Snowflake adaptive warehouse）数据，平均值 15-30% 更保守可信；变更判定的假阴性（上游静默变更未被感知）风险未讨论；dbt State 与 Fivetran 摄取侧的联动细节待观察。",
+        "business": "商业启示：dbt+Fivetran 合并体的商业化路径清晰——State GA 是『开放数据基础设施』的省钱 proof point，59%/15-30% 数字将成为销售话术核心。对买方：变更驱动构建应成为数据平台采购评估项；对 AI 基建团队：同样的经济学适用于知识库刷新管线。",
+        "sources": [
+          {
+            "url": "https://www.getdbt.com/blog/dbt-state-is-ga",
+            "title": "dbt Blog: We built dbt State to stop rebuilding what hadn't changed (GA)"
+          }
+        ],
+        "diagram": {
+          "title": "dbt State：变更驱动的节点级构建决策",
+          "flow": [
+            {
+              "label": "触发运行",
+              "sub": "任意编排器",
+              "type": "cloud"
+            },
+            {
+              "label": "读取状态",
+              "sub": "模型 SQL+仓库元数据",
+              "type": "database"
+            },
+            {
+              "label": "差分判定",
+              "sub": "结果会不同吗",
+              "type": "backend"
+            },
+            {
+              "label": "build",
+              "sub": "变更→重建",
+              "type": "backend"
+            },
+            {
+              "label": "skip/clone/defer",
+              "sub": "未变→复用",
+              "type": "security"
+            },
+            {
+              "label": "成本节省",
+              "sub": "15-59% 计算",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "范式修正",
+              "text": "按调度构建→按变更构建：消灭『上游没刷新的无效重建』"
+            },
+            {
+              "label": "硬数据",
+              "text": "RxBenefits 59% 成本降+70 万模型复用；平均 15-30%"
+            },
+            {
+              "label": "迁移",
+              "text": "同一经济学适用于 API schema 监控/术语编译/知识库索引的增量刷新"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "TDS：Consistency Quadrant——无真值条件下测量 LLM Agent 可靠性的可视化框架",
+      "date": "2026-10-07",
+      "source": "Towards Data Science",
+      "link": "https://towardsdatascience.com/the-consistency-quadrant-a-visual-guide-to-llm-reliability/",
+      "summary": "Robert Martin-Short（10/7，27 分钟深度文）提出 Consistency Quadrant 框架：在没有 ground truth 的条件下，把结构方差（structural variance，多次运行输出的结构差异）映射到执行输出（execution outputs），四象限化估计 coding agent 的可靠性。文章开篇指出：软件工程/数据科学/分析正因 AI 工具经历剧变，2026 年初 Claude Code/Codex/Antigravity 等 coding harness 广泛采用；业务分析同样在向 AI 分析师转移——探索复杂数据集、编写执行 SQL、生成带图表和建议的报告。AI 正从生产力增强附件变为不可或缺工具，而这一切成立的前提是可靠性可测量——LLM 是非确定性 token 生成器。",
+      "insight": "补上了 Sentinel（轨迹派生置信）缺失的另一半：Sentinel 需要标注轨迹训练分类器（有监督），Consistency Quadrant 用自一致性做无监督可靠性估计——无真值也能选型。对用户业务 Agent 选型的直接价值：同一业务问题跑 N 次，看输出结构方差（SQL 结构/API 调用序列是否稳定）×执行结果（是否都成功），四象限定位模型-harness 组合的可靠性档位。与 8/24 TDS LLM Judge self-preference（同模型互评失效）+ 9/5 AgentOps（2.4x 高估）构成无真值测量方法论三件套：自一致性是当前最可行的替代信号。",
+      "detail": {
+        "why": "业务 Agent 上线前最大的问题是『没有标准答案集怎么评估』——Consistency Quadrant 给出可操作的无真值测量协议，且明确面向 AI 分析师（SQL+报告生成）场景。",
+        "mechanism": "同一输入多次运行 → 提取两个维度：①结构方差（输出的语法/调用结构差异度）②执行输出（结果是否正确执行/一致）→ 四象限映射：低方差+执行成功=可靠区，高方差+执行成功=侥幸区（结果对但路径不稳），低方差+执行失败=稳定错误区（系统性 bug），高方差+执行失败=不可用区。",
+        "deep": "与 Thinkingbox pass^k（8/24）在测量学上互补：pass^k 需要可判定成功准则（二值），Consistency Quadrant 只需一致性信号（无需真值）。深层洞察一致：单次成功是弱证据，分布形态才是强证据。对 text-to-SQL：SQL 结构方差高但结果都对=模型在『碰巧等价』的不同写法间抖动，等价性靠运气——生产环境 schema 一变就崩，应归入侥幸区而非可靠区。",
+        "apply": "用户评估业务 API 调用 Agent 的协议：①选 20-30 个代表性业务问题；②每题跑 5-10 次；③记录 API 调用序列方差+参数方差+执行成功率；④四象限定位每个『模型×prompt×工具集』组合；⑤侥幸区组合不上生产——即使当前成功率高。该协议零标注成本，可在选型阶段执行。",
+        "caveats": "结构方差→可靠性的映射假设『一致=学会了』，但稳定错误区证明一致性也会是系统性偏见；四象限阈值设定主观；文章是方法论+代码项目（GitHub 有配套代码），非同行评审论文，量化效度待社区验证。",
+        "business": "商业启示：无真值可靠性测量降低了企业 AI 评估门槛——不需要先建黄金测试集就能做选型淘汰，加速采购决策。评估咨询/工具的新机会：把 Consistency Quadrant 类协议产品化为『Agent 可靠性体检报告』。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/the-consistency-quadrant-a-visual-guide-to-llm-reliability/",
+            "title": "TDS: The Consistency Quadrant — A Visual Guide to LLM Reliability"
+          }
+        ],
+        "diagram": {
+          "title": "Consistency Quadrant：结构方差 × 执行输出四象限",
+          "flow": [
+            {
+              "label": "同一问题 N 次运行",
+              "sub": "无需真值",
+              "type": "frontend"
+            },
+            {
+              "label": "结构方差提取",
+              "sub": "SQL/调用序列差异",
+              "type": "backend"
+            },
+            {
+              "label": "执行输出记录",
+              "sub": "成功/失败/结果一致",
+              "type": "database"
+            },
+            {
+              "label": "四象限映射",
+              "sub": "可靠/侥幸/稳定错误/不可用",
+              "type": "security"
+            },
+            {
+              "label": "选型决策",
+              "sub": "侥幸区不上生产",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "关键区分",
+              "text": "结果对但路径抖=侥幸区：等价性靠运气，schema 一变就崩"
+            },
+            {
+              "label": "互补",
+              "text": "pass^k 需二值成功准则；本框架只需一致性信号，零标注成本"
+            },
+            {
+              "label": "场景",
+              "text": "文章明确面向 AI 分析师（SQL+报告）与 coding agent 双场景"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "TDS：How to Govern AI Agents——从守护单 Agent 到驾驭舰队（agent sprawl 时代）",
+      "date": "2026-10-04",
+      "source": "Towards Data Science",
+      "link": "https://towardsdatascience.com/how-to-govern-ai-agents/",
+      "summary": "Amber Roberts（9 分钟）复盘一年演进：去年她与 Andrew Ng 在 Deeplearning.ai 发布 AI Agent 治理课程，动机是 IBM 2025 泄漏研究——97% 遭 AI 相关泄漏的组织缺乏适当 AI 访问控制，63% 完全没有 AI 治理策略。一年后问题形态已变：从治理单个 agent 的四支柱（生命周期管理/风险管理/安全/可观测性）升级为 agent sprawl（自主 AI agent 在组织内无中心追踪、无属主、无治理地失控增长）。Gartner 数据：到 2028 年 Fortune 500 企业平均使用超 15 万个 AI agent，但仅 13% 组织自认有合适的 agent 治理。Claude Code/Codex 等 coding agent 与低代码/无代码选项大幅降低部署门槛，带来两大新风险：agent 舰队的巨量浪费性 token 开销与不可预见成本，以及敏感数据泄漏的新增路径。",
+      "insight": "为用户团队『AI for 业务』规模化阶段提前画好治理路线图：现在建单个业务 Agent 时就应埋好舰队治理的种子——每个 agent 注册属主/生命周期/成本预算/数据访问范围，而非等到 sprawl 发生再补。15 万 agent/13% 治理就绪的剪刀差意味着治理工具市场巨大缺口。与 Text2Dashboard（受治理运行时）+ Anthropic EFS（9/3 已收录，数据主权）串联：单 agent 治理靠架构（Hooks/typed tools），舰队治理靠平台（注册/属主/预算/审计）——两层缺一不可。97%/63% 的 IBM 数据是向管理层论证治理投入的最硬数字。",
+      "detail": {
+        "why": "agent sprawl 是 2026 年企业 AI 治理的新主战场，而多数团队（包括数据团队）还停留在单 agent 思维。IBM 97%/63% + Gartner 15 万/13% 两组数据构成完整的问题定量画像。",
+        "mechanism": "治理两阶段：①单 agent 四支柱——生命周期管理（创建/更新/退役）、风险管理（能力边界/失败模式）、安全（访问控制/数据范围）、可观测性（行为审计）；②舰队层——中心化 agent 注册表（谁建的/干什么/访问什么数据/花多少钱）、属主问责、跨 agent 成本聚合、数据泄漏路径盘点。部署门槛降低（coding agent+低代码）使 sprawl 速度超过治理建设速度。",
+        "deep": "与 8/27 DEW 操作型本体（agent 与人走同一治理门）+ 8/22 SBproxy Cedar（策略引擎）+ 9/3 Anthropic EFS（客户数据主权）构成企业 agent 治理四联：本体定义动作治理、策略引擎定义访问治理、EFS 定义数据主权、本文定义舰队规模治理。共同判断：治理不是 agent 的附加层而是组织级基础设施——13% 就绪率意味着这是未来两年最大的合规风险敞口之一。",
+        "apply": "用户团队行动清单：①业务 Agent 上线即注册——属主/用途/可访问 API 清单/token 预算四元组入注册表（可先用一个 YAML+Git 管理）；②API 网关层统一鉴权——agent 身份与人身份同等走治理门（联动 8/27 DEW 原则）；③成本可观测——按 agent 聚合 token/API 调用成本，超预算告警；④季度盘点——agent 数量/属主变更/数据访问范围漂移审计。",
+        "caveats": "文章是 practitioner 视角综述（9 分钟），无新工具/框架发布，深度方案需追作者课程；15 万 agent 的 Gartner 预测口径（含低代码 bot？）未细分；13% 自认治理到位的测量方法未说明。",
+        "business": "商业启示：agent 治理平台是确定性增长赛道——15 万 agent/企业 × 13% 就绪率的缺口即市场规模。数据团队的先机：元数据平台（OpenMetadata 类）已有资产注册/属主/lineage 能力，向 agent 注册治理扩展是自然路径；反之纯安全厂商缺数据语义上下文。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/how-to-govern-ai-agents/",
+            "title": "TDS: How to Govern AI Agents — From guarding one agent to steering a fleet"
+          }
+        ],
+        "diagram": {
+          "title": "Agent 治理两阶段：单 Agent 四支柱 → 舰队治理",
+          "flow": [
+            {
+              "label": "部署门槛降低",
+              "sub": "coding agent+低代码",
+              "type": "frontend"
+            },
+            {
+              "label": "agent sprawl",
+              "sub": "无属主失控增长",
+              "type": "external"
+            },
+            {
+              "label": "单agent四支柱",
+              "sub": "生命周期/风险/安全/可观测",
+              "type": "security"
+            },
+            {
+              "label": "舰队注册表",
+              "sub": "属主/用途/API/预算",
+              "type": "database"
+            },
+            {
+              "label": "统一治理门",
+              "sub": "agent与人同门",
+              "type": "security"
+            },
+            {
+              "label": "成本+泄漏盘点",
+              "sub": "token聚合/数据路径",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "问题定量",
+              "text": "IBM：97% 泄漏组织缺 AI 访问控制、63% 无治理策略；Gartner：2028 年 15 万 agent/F500，仅 13% 治理就绪"
+            },
+            {
+              "label": "两大新风险",
+              "text": "舰队级浪费性 token 开销 + 敏感数据泄漏新增路径"
+            },
+            {
+              "label": "先手",
+              "text": "单 agent 建设期即埋舰队治理种子（注册四元组），不等 sprawl"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "Cube v1.8.0→v1.8.2：minor 版本跃迁——主键自动检测、预聚合严格校验、masked members 安全修复",
+      "date": "2026-10-08",
+      "source": "GitHub",
+      "link": "https://github.com/cube-js/cube/releases/tag/v1.8.2",
+      "summary": "Cube 三天连发 v1.8.0（10/7）/v1.8.1/v1.8.2（10/8），完成 1.7.x→1.8.x minor 跃迁。v1.8.0 亮点：generate data model 自动检测主键 #11806（感谢社区贡献，关闭 #10517/#11270）、MySQL 外键指向被引用表修复 #12124、Postgres 经 pg_catalog 检测 PK/FK #12125、api-gateway 预聚合查询与日期范围更严格校验 #12095、仅通过 hub 连接的 cube 的 join 路径解析 #12070、rollupLambda 源查询加界 #11708、ClickHouse UNION LIMIT 经派生表加界 #12113。v1.8.2 关键安全修复：从 pre-aggregations 读取的 masked members 继续保持掩码 #12152（此前行级掩码可能被预聚合绕过）；另修复循环 join 树的 join-hint enrichment 死循环 #12149（关闭 2024 年老 issue #9696）、cubesql 过滤器保持在 limited CubeScan 之上 #12071、多阶段 rolling window 分区加载 #12147、UNION ALL rollup 分区规划提速 #12144、SQL 模板按查询记忆化 #12154。",
+      "insight": "两条线值得用户重点关注：①#12152 masked members 预聚合穿透是行级安全（RLS）的实质漏洞——语义层的字段掩码若被预聚合绕过，等于敏感字段经缓存泄漏，用 Cube 承载宽表 API 语义的团队应立即升级并审计预聚合中的掩码字段；②#11806 主键自动检测标志语义层引擎开始自动吸收元数据能力——generate data model 从表结构直接推导 PK/FK，冷启动建模成本再降（与 OpenMetadata 元数据侧形成互补：目录管全局血缘，Cube 管查询语义）。#12070 hub join 路径解析对星型模型多事实表共享维度的场景是关键正确性修复。",
+      "detail": {
+        "why": "Cube 是用户语义层路线的核心候选引擎；v1.8.x 的 minor 跃迁含安全修复（掩码穿透）+建模自动化（PK 检测）+join 图正确性（hub 路径/循环树）三类实质变更。",
+        "mechanism": "①掩码穿透修复：pre-aggregation 物化时/读取时对 masked members 继续应用掩码策略，防止经缓存绕过 RLS；②PK/FK 自动检测：generate data model 时经 information_schema/pg_catalog 读取约束元数据，自动生成带主外键关系的数据模型；③hub join 解析：多 cube 仅经中间 hub cube 连接时正确解析 join 路径而非失败；④循环 join 树：join-hint enrichment 增加环路检测终止条件。",
+        "deep": "与 9/5 Cube v1.7.33/34（cube.ts 移除=配置代码化+usedPreAggregations 暴露=可观测）延续同一轨迹：1.8.0 的 PK 自动检测是『建模自动化』，#12095 预聚合严格校验+#12152 掩码穿透修复是『安全与正确性』。语义层引擎成熟度曲线：功能→生命周期→时序正确性（1.7.x）→建模自动化+安全纵深（1.8.x）。#9696 老 issue（循环 join 死循环）在两年后关闭，说明 join 图复杂场景正被系统性攻坚——业务知识图谱路线若用 Cube join 图承载实体关系，这些修复直接相关。",
+        "apply": "用户行动：①立即评估升级 1.8.2（若使用字段掩码+预聚合组合，此为安全必修）；②试用 generate data model PK 检测加速宽表建模冷启动；③审计现有数据模型的 hub join 场景（多事实表共享维度）是否受 #12070 影响；④关注 #12095 严格校验是否影响现有 API 查询（日期范围边界行为变更）。",
+        "caveats": "minor 版本含行为变更（#12095 更严格校验可能拒绝此前放行的查询），升级需回归测试；#12152 修复前的暴露窗口内预聚合缓存可能已含未掩码数据，需清理重建；PK 自动检测依赖源库约束元数据质量（无约束声明的库无法受益）。",
+        "business": "商业启示：语义层引擎的安全纵深（RLS 穿透修复）是企业采购的硬门槛——掩码被缓存绕过属于合规事故级缺陷。Cube 把 PK/FK 检测做进开源版，压缩了『建模服务』的收费空间，倒逼商业化向治理/可观测（Cloud 版）集中。",
+        "sources": [
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.8.0",
+            "title": "Cube v1.8.0 Release (2026-10-07)"
+          },
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.8.2",
+            "title": "Cube v1.8.2 Release (2026-10-08)"
+          }
+        ],
+        "diagram": {
+          "title": "Cube v1.8.x 三类变更：安全纵深 / 建模自动化 / join 图正确性",
+          "flow": [
+            {
+              "label": "源库约束元数据",
+              "sub": "pg_catalog/inf..schema",
+              "type": "database"
+            },
+            {
+              "label": "PK/FK 自动检测",
+              "sub": "#11806/#12124/#12125",
+              "type": "backend"
+            },
+            {
+              "label": "数据模型生成",
+              "sub": "冷启动加速",
+              "type": "backend"
+            },
+            {
+              "label": "join 图解析",
+              "sub": "hub #12070/循环树 #12149",
+              "type": "security"
+            },
+            {
+              "label": "预聚合",
+              "sub": "严格校验 #12095",
+              "type": "cloud"
+            },
+            {
+              "label": "掩码穿透修复",
+              "sub": "#12152 RLS 安全",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "安全必修",
+              "text": "#12152：masked members 经 pre-aggregations 读取时曾被绕过掩码——合规事故级，需升级+缓存重建"
+            },
+            {
+              "label": "成熟度轨迹",
+              "text": "1.7.x 配置代码化+可观测 → 1.8.x 建模自动化+安全纵深"
+            },
+            {
+              "label": "升级风险",
+              "text": "#12095 严格校验可能拒绝此前放行的查询，需回归测试"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "OpenMetadata 2.0.4+2.0.5 连发：连接器与 Lineage 可靠性大修、2.0 摄取回归修复",
+      "date": "2026-10-08",
+      "source": "GitHub",
+      "link": "https://github.com/open-metadata/OpenMetadata/releases/tag/2.0.5-release",
+      "summary": "OpenMetadata 三天连发 2.0.4（10/6）与 2.0.5（10/8）两个维护版。2.0.5 聚焦连接器与 lineage 可靠性：修复 2.0 摄取回归影响的元数据、保护 bot 摄取期间的用户管理元数据——Redshift datashare 消费集群的非本地库现经跨库 catalog 视图摄取 schema/表/列/描述 #34381、Oracle 外键约束因标识符大小写不一致而消失的修复 #34415（被引用表名保留库原始大小写）、Mode 报表查询补全列/列级 lineage/owner #34733、Jackson 两个安全漏洞依赖升级。2.0.4 聚焦连接器可靠性：AWS Glue 表参数摄取为自定义属性 #34269、SQL Server 同义词作表别名摄取 #33415、Snowflake 溢出重试不再丢弃子类化 Sum/Mean/StdDev 指标 #34396、Datalake MF4 读取修复（canmatrix 钉版）#34419、搜索作用域与 Explore 计数正确性修复、更安全的 bot 批量导入路径。",
+      "insight": "对用户元数据管理方向的三个直接信号：①『bot 摄取不覆盖用户管理元数据』#34381 一线——人工标注的业务语义（字段描述/owner/glossary 术语）与自动摄取的隔离保护，正是宽表字段语义标注可靠性的基础（9/5 OpenMetadata 1.13.5 嵌套列元数据重采集保留 #32155 同线延续）；②列级 lineage 补全（Mode #34733）——BI 报表层的字段级血缘让『指标从哪来』可追溯，是业务数据可信度验证的元数据侧支撑；③Oracle FK 大小写 #34415 这类『静默丢失约束』修复提醒：元数据质量 bug 多为静默型，定期跑摄取完整性断言（FK 数/列数/描述覆盖率对账）应成为治理例行动作。",
+      "detail": {
+        "why": "元数据平台是业务知识库构建（用户方向①）的承载层；2.0.x 维护节奏显示其进入可靠性攻坚期——摄取回归修复+用户元数据保护直接决定语义标注资产会不会被自动摄取冲掉。",
+        "mechanism": "2.0.5 核心机制：①跨库 catalog 视图读取（Redshift datashare 消费集群的非本地库识别与摄取）；②大小写保真（Oracle 被引用表名保留原始 casing 使 FK 约束可解析）；③摄取合并策略（bot 自动摄取与用户手工编辑的字段级合并保护，回归影响的元数据恢复）；④列级 lineage 抽取扩展（Mode 报表查询解析列引用）。",
+        "deep": "与 9/5 1.13.5（REST/OpenAPI 内联对象不再 UNKNOWN+API 集合先于端点持久化引用完整）+ 9/3 2.0.1（MCP 加固）构成 OpenMetadata 的『AI 就绪元数据』三部曲：先保证 API 元数据完整（1.13.5），再给 agent 提供 MCP 访问（2.0.1），现在保证人工语义资产不被摄取冲掉（2.0.5）——三者正是『元数据层作为 agent 检索入口的信任基础』的完整拼图。用户 API 目录建设可对标：OpenAPI 摄取完整性→MCP/agent 可访问→人工语义标注保护，三步一个不能少。",
+        "apply": "用户行动：①若在用 OpenMetadata 管理 API/表元数据，升级 2.0.5 并核对 2.0 升级以来的元数据回归（描述/owner/glossary 是否丢失）；②建立摄取完整性断言例行任务（FK 数/列描述覆盖率/bot vs 人工编辑冲突计数）；③评估 Mode/BI 列级 lineage 对指标追溯的价值——若用户指标经 BI 层消费，列级血缘是口径审计的前提。",
+        "caveats": "两个维护版均为修复型（无新功能），2.0 主线回归说明大版本升级风险仍高，生产环境升级前应先在 staging 验证摄取；Redshift datashare/Mode 等修复仅惠及特定连接器用户；Jackson CVE 细节未在 release note 展开，需查依赖公告。",
+        "business": "商业启示：元数据平台的竞争已从『连接器数量』转入『摄取可靠性+人工资产保护』——企业为语义标注投入的人工成本越高，对『标注不被冲掉』的要求越刚性。这是 OpenMetadata/Atlan/Collibra 共同的护城河方向，也是买方评估的新权重项。",
+        "sources": [
+          {
+            "url": "https://github.com/open-metadata/OpenMetadata/releases/tag/2.0.5-release",
+            "title": "OpenMetadata 2.0.5-release (2026-10-08)"
+          },
+          {
+            "url": "https://github.com/open-metadata/OpenMetadata/releases/tag/2.0.4-release",
+            "title": "OpenMetadata 2.0.4-release (2026-10-06)"
+          }
+        ],
+        "diagram": {
+          "title": "OpenMetadata 2.0.4/2.0.5：摄取可靠性与人工资产保护",
+          "flow": [
+            {
+              "label": "源系统",
+              "sub": "Redshift/Oracle/Glue/Mode",
+              "type": "database"
+            },
+            {
+              "label": "bot 自动摄取",
+              "sub": "连接器可靠性修复",
+              "type": "cloud"
+            },
+            {
+              "label": "摄取合并保护",
+              "sub": "用户元数据不被覆盖",
+              "type": "security"
+            },
+            {
+              "label": "元数据实体",
+              "sub": "表/列/FK/参数/别名",
+              "type": "database"
+            },
+            {
+              "label": "列级 lineage",
+              "sub": "Mode 报表 #34733",
+              "type": "backend"
+            },
+            {
+              "label": "agent/MCP 消费",
+              "sub": "检索入口信任基础",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "关键保护",
+              "text": "2.0.5：修复 2.0 摄取回归+bot 摄取期间保护用户管理元数据——语义标注资产安全"
+            },
+            {
+              "label": "静默 bug 警示",
+              "text": "Oracle FK 大小写不一致=约束静默消失；元数据质量需例行完整性断言"
+            },
+            {
+              "label": "三部曲",
+              "text": "API 元数据完整(1.13.5)→MCP 可访问(2.0.1)→人工资产保护(2.0.5)"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "tokensave v7.15.0 条件读取（if_digest）+ WrenAI v0.15.0 MCP orderBy：Agent 上下文经济学持续精进",
+      "date": "2026-10-07",
+      "source": "GitHub",
+      "link": "https://github.com/aovestdipaperino/tokensave/releases/tag/v7.15.0",
+      "summary": "tokensave v7.15.0（10/7）：tokensave_read 新增 if_digest 参数 #650——每个带 body 的响应同时携带 digest，客户端若仍持有该内容可回传 digest 作为 if_digest；当其与当前同 mode+range 的 body 匹配时，返回 unchanged:true 短桩替代全文，否则返回完整 body（由用户 @xorets 提议）。配套变更：安装的 agent rules 现说明 tokensave_search literal:true 能找什么、何时该用 grep #653；C#/TypeScript 项目获得新边类型（sync -f 或按文件增量）。WrenAI wren-v0.15.0（9/21 发布，此前晨报未收录）：CLI 与 MCP query_cube 工具支持 orderBy #2730、BigQuery 支持 Application Default Credentials #2726、修复 LIMIT 包装在尾注释 SQL 上失效（BigQuery/DuckDB #2734 + Oracle/Redshift/Trino #2736）、UNION/INTERSECT/EXCEPT 任意分支的 SELECT * 检测 #2743。",
+      "insight": "if_digest 是 agent 上下文管理的 HTTP ETag 模式——『客户端已有最新内容就别重发』，把增量刷新判断下沉到协议层。对用户业务 Agent 直接可借鉴：宽表 API 的 schema/码表/术语表上下文可用 digest 机制缓存——agent 每轮对话携带 if_digest，服务端未变则返回短桩，省掉上百字段 schema 的重复 token 开销（联动 9/3 dbt『为 token 建模』20x 压缩线）。WrenAI 的 MCP query_cube orderBy 补齐了 agent 经 MCP 查语义层的排序能力——NL2Cube 查询的『最新 10 条/Top N』类业务问题此前无法表达。",
+      "detail": {
+        "why": "两个项目分别从『上下文传输经济学』（tokensave）与『语义查询表达力』（WrenAI MCP）推进 agent-数据接口成熟度，均为用户技术栈直接相关。",
+        "mechanism": "if_digest：内容寻址的条件读取——响应带 digest（内容哈希），请求回传 if_digest，匹配→unchanged:true 短桩（几十 token）替代全文（可达数千 token）。WrenAI MCP：query_cube 工具参数扩展 orderBy，agent 生成的 Cube 查询可携带排序语义；SQL 方言层修复 LIMIT 包装与集合运算分支检测。",
+        "deep": "tokensave 的演进线（8/26 #442 不可扫描告知→9/3 v7.11.0 per-repo hooks→10/7 if_digest）显示 agent 工具接口设计的成熟模式：①失败大声报（告知什么扫不了）②资源隔离（per-repo hooks）③传输经济（条件读取）。这三原则可泛化为『agent-facing API 设计准则』——用户的业务 API 封装成 agent 工具时同样适用：能力边界显式声明、会话级资源隔离、digest 缓存协议。",
+        "apply": "用户落地：①为宽表 API 的 schema 上下文/业务术语表/码表实现 digest 端点——agent 会话内 if_digest 命中即省重复传输；②业务 API 工具封装遵循三原则（能力边界声明/资源隔离/条件读取）；③若评估 WrenAI 作 NL2语义层方案，v0.15.0 的 orderBy+ADC 是生产部署前提项。",
+        "caveats": "if_digest 需客户端正确管理 digest 生命周期（内容变更后旧 digest 失效重传全文属预期行为）；tokensave 面向代码库场景，schema/码表缓存需自行实现同型协议；WrenAI v0.15.0 发布于 9/21，非本周新版（本报首次收录）。",
+        "business": "商业启示：agent 上下文传输经济学正在协议化——digest/ETag 模式若进入 MCP 标准（资源订阅/条件读取），将重塑 agent-数据接口的成本结构。先行实现条件读取的数据产品（目录/语义层/API 网关）在 always-on agent 场景有显著 TCO 优势。",
+        "sources": [
+          {
+            "url": "https://github.com/aovestdipaperino/tokensave/releases/tag/v7.15.0",
+            "title": "tokensave v7.15.0 Release (2026-10-07)"
+          },
+          {
+            "url": "https://github.com/Canner/WrenAI/releases/tag/wren-v0.15.0",
+            "title": "WrenAI wren-v0.15.0 Release (2026-09-21)"
+          }
+        ],
+        "diagram": {
+          "title": "if_digest 条件读取：agent 上下文的 ETag 模式",
+          "flow": [
+            {
+              "label": "agent 请求",
+              "sub": "tokensave_read+if_digest",
+              "type": "frontend"
+            },
+            {
+              "label": "服务端比对",
+              "sub": "digest 匹配当前 body",
+              "type": "backend"
+            },
+            {
+              "label": "命中",
+              "sub": "unchanged:true 短桩",
+              "type": "security"
+            },
+            {
+              "label": "未命中",
+              "sub": "返回全文+新 digest",
+              "type": "database"
+            },
+            {
+              "label": "上下文窗口",
+              "sub": "省重复 token",
+              "type": "cloud"
+            },
+            {
+              "label": "MCP query_cube",
+              "sub": "orderBy 表达力补齐",
+              "type": "backend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "协议化缓存",
+              "text": "内容寻址 digest 把增量刷新判断下沉到协议层，agent 会话内上下文按需刷新"
+            },
+            {
+              "label": "三原则泛化",
+              "text": "失败大声报+资源隔离+条件读取=agent-facing API 设计准则"
+            },
+            {
+              "label": "用户映射",
+              "text": "宽表 schema/码表/术语表上下文可同型实现 digest 端点省 token"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "product",
+      "title": "战略研判：企业数据 Agent 竞争焦点收敛到『受治理运行时』三件套——歧义治理×置信治理×执行治理",
+      "date": "2026-10-09",
+      "source": "综合研判",
+      "link": "https://hhao9817.github.io/agent-daily/",
+      "summary": "今日 12 条情报串成一条清晰主线：企业数据 Agent 的竞争焦点已从『生成精度』收敛到『受治理运行时』三件套。①歧义治理——ARCS structured disambiguation（受约束交互替代对话澄清）+ Beyond Correctness（执行正确≠歧义已解决，agent 静默假设蒙对答案）+ FLINT（opaque keys 值域歧义让通用方法跌破 50%）：精确查询的前提是口径与值域语义的显式治理。②置信治理——Sentinel（轨迹派生置信三决策点，可靠性失败=资源失败）+ TDS Consistency Quadrant（无真值四象限可靠性测量）：可信度从事后审计变为运行时预算控制器与选型协议。③执行治理——Text2Dashboard（typed tools+确定性 Hooks，模型提议/软件执行）+ Cube #12152（掩码穿透预聚合修复）+ agent sprawl 舰队治理（IBM 97%/63%+Gartner 15 万/13%）：单 agent 靠架构、舰队靠平台。基建侧同频：dbt State 变更驱动（59% 成本降）、OpenMetadata 人工语义资产保护、tokensave if_digest 上下文经济学——整个数据栈在为『受治理的 agent 消费』重构。",
+      "insight": "对用户的战略含义：『AI for 业务』的投入分配应明确偏向治理三件套而非模型选型——①歧义治理对应方向②业务语义理解（口径注册表+值域码表层是语义层的下一进化）；②置信治理对应方向③精确查询的可信度验证（轨迹置信分类器+一致性四象限协议零标注可启动）；③执行治理对应方向①知识库构建的运行时形态（API 目录+经验索引+治理 Hooks）。『语义层 vs 企业知识图谱』双路线在三件套框架下统一：语义层承载歧义治理（口径），知识图谱承载执行治理（实体/join 路径/hub 关系，参见 Cube #12070/#12149 join 图攻坚），置信治理独立于两者之上。",
+      "detail": {
+        "why": "五条学术线（Text2Dashboard/ARCS/FLINT/Sentinel/ExperienceIndex）+三条博客线（dbt State/Consistency Quadrant/agent 治理）+三条开源线（Cube/OpenMetadata/tokensave+WrenAI）在互不知情的情况下收敛到同一架构分工——这种跨源共振是强信号而非巧合。",
+        "mechanism": "三件套的运行时闭环：查询进入→歧义检测与结构化消解（口径/值域显式化）→schema 约束下模型提议动作→typed tools+Hooks 确定性执行（只读/审批/审计）→轨迹置信三决策点控制预算→结果带口径声明返回（可审计）→成功轨迹回写工件经验索引（越用越懂）。每环都是确定性软件包裹概率性模型。",
+        "deep": "历史脉络的延续与升级：8 月『工具词汇表经济学』（TDS typed tools 决定推理天花板）→9 月『三维护城河』（多步可审计+配置代码化+监控假设重写）→10 月『受治理运行时三件套』（歧义×置信×执行）。演进逻辑：从『给 agent 好工具』到『让 agent 全程可治理』。与 9/5 Data Investigations（单查询→多步调查）衔接：多步调查的每一步都需要歧义消解+置信判定+治理门，三件套正是多步调查范式的基础设施。FLINT 的『值域语义是被忽视的第二语义层』是本期最重要的新认知——语义层建设需从字段层下沉到值层（码表/枚举/主数据）。",
+        "apply": "用户 Q4 路线图建议：①（歧义治理，2-3 周）为核心业务 API 建口径注册表+值域码表索引，歧义点显式化；②（置信治理，1-2 周零标注启动）用 Consistency Quadrant 协议对现有 agent×模型组合做四象限体检，淘汰侥幸区组合；③（执行治理，持续）agent 工具封装按三原则改造（能力边界声明/资源隔离/digest 条件读取），高敏 API 接审批 Hook；④（经验积累）调用轨迹日志结构化存储，为 Sentinel 式置信分类器与 ExperienceIndex 式工件经验冷启动备料。",
+        "caveats": "三件套是架构框架而非现成产品，整合成本在用户侧；ARCS/Sentinel/ExperienceIndex 均为新论文（引用=0 或待核实），方法成熟度未经社区验证；Gartner/IBM 数据口径需注意（agent 计数含低代码 bot 则 15 万偏高估）。",
+        "business": "商业启示：受治理运行时是 2026-2027 企业数据 Agent 的采购主叙事——评估清单从『NL2SQL 准确率』转向『歧义消解协议+置信可观测+治理 Hooks 确定性』三项能力。语义层厂商（Cube/dbt）向值域语义与治理扩展、元数据厂商（OpenMetadata）向 agent 运行时扩展、评估工具向无真值可靠性测量扩展——三条产品演进路径都指向同一交汇点，先占据者定义标准。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.06914",
+            "title": "Text2Dashboard: A Governed Agent Architecture for Natural-Language Dashboard Generation over Enterprise DataBrain (arXiv 2610.06914)"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.09396",
+            "title": "ARCS: Towards Precise Text-to-SQL via Structured Disambiguation (arXiv 2610.09396)"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.02739",
+            "title": "Beyond Correctness: Resolving Underspecification in Agentic Text-to-SQL (arXiv 2610.02739)"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.03524",
+            "title": "From Benchmarks to Production: A Text-to-SQL System for Complex Financial Data / FLINT (arXiv 2610.03524)"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.04156",
+            "title": "Trajectory-Derived Confidence for Reliable, Resource-Aware Clinical Text-to-SQL Agents / Sentinel (arXiv 2610.04156)"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.10091",
+            "title": "ExperienceIndex: Artifact-Grounded Memory (arXiv 2610.10091)"
+          },
+          {
+            "url": "https://towardsdatascience.com/the-consistency-quadrant-a-visual-guide-to-llm-reliability/",
+            "title": "TDS: The Consistency Quadrant — A Visual Guide to LLM Reliability"
+          },
+          {
+            "url": "https://towardsdatascience.com/how-to-govern-ai-agents/",
+            "title": "TDS: How to Govern AI Agents — From guarding one agent to steering a fleet"
+          },
+          {
+            "url": "https://www.getdbt.com/blog/dbt-state-is-ga",
+            "title": "dbt Blog: We built dbt State to stop rebuilding what hadn't changed (GA)"
+          },
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.8.2",
+            "title": "Cube v1.8.2 Release (2026-10-08)"
+          },
+          {
+            "url": "https://github.com/open-metadata/OpenMetadata/releases/tag/2.0.5-release",
+            "title": "OpenMetadata 2.0.5-release (2026-10-08)"
+          },
+          {
+            "url": "https://github.com/aovestdipaperino/tokensave/releases/tag/v7.15.0",
+            "title": "tokensave v7.15.0 Release (2026-10-07)"
+          }
+        ],
+        "diagram": {
+          "title": "受治理运行时三件套：企业数据 Agent 的信任底座",
+          "flow": [
+            {
+              "label": "业务查询",
+              "sub": "含静默歧义",
+              "type": "frontend"
+            },
+            {
+              "label": "歧义治理",
+              "sub": "口径注册+值域码表",
+              "type": "database"
+            },
+            {
+              "label": "模型提议",
+              "sub": "schema 约束决策",
+              "type": "backend"
+            },
+            {
+              "label": "执行治理",
+              "sub": "typed tools+Hooks",
+              "type": "security"
+            },
+            {
+              "label": "置信治理",
+              "sub": "轨迹置信三决策点",
+              "type": "security"
+            },
+            {
+              "label": "可审计回答",
+              "sub": "口径显式声明",
+              "type": "frontend"
+            },
+            {
+              "label": "工件经验回写",
+              "sub": "越用越懂",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "架构分工",
+              "text": "每环都是确定性软件包裹概率性模型——治理不依赖模型遵从"
+            },
+            {
+              "label": "双路线统一",
+              "text": "语义层承载歧义治理，知识图谱承载执行治理（join 图/hub 关系），置信治理独立其上"
+            },
+            {
+              "label": "新认知",
+              "text": "值域语义（码表/枚举/主数据）是被忽视的第二语义层——语义建设需从字段层下沉到值层"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
