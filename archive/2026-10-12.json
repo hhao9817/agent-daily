@@ -13,7 +13,8 @@
         "HarnessSQL 训练-部署鸿沟（2610.12274）：text-to-SQL 训练映射问题→静态查询，部署是状态化多轮交互（inspect schema/execute probe/diagnose/revise）。harness-native SFT+RL 在隔离可执行 DB 环境中保留全交互结构，Qwen3-8B 15.5%→45.2%，Qwen3-14B 22.2%→54.8%，OOD 迁移到 BIRD-Interact/LiveSQLBench 有效。",
         "Conversational Task Disambiguation 泄漏感知框架（2610.10740）：引入 ambiguous verifiable task 将 agent 分解为 asking policy+solution policy，环境分解为 oracle+verifier。AmbiTab 统一 6 个歧义数据集，RL 训练 asking policy 在 6/6 数据集上提升歧义指标、5/6 提升任务成功率，judge-free 泄漏诊断量化训练对 oracle 泄漏的影响。",
         "dbt Redshift Data Sharing（10/9）：datasharing:true 新凭证实现零拷贝跨集群物化，producer 暴露 schema/table/view/MV/UDF，consumer 实时查询事务一致。dbt-redshift 迁移 Postgres 元数据 API→Redshift-native SVV_*/SHOW API，高并发更可靠。此前只能 table 物化，现在 view/跨项目引用/CI 跨集群全支持。",
-        "Cube v1.8.3（10/10）：cube ossie 命令实现 Cube⇄Apache Ossie 互转（CUB-5419 #12179），Athena readOnly via UNLOAD+export bucket（#12196），tesseract UNION ALL 多阶段结果合并（#12182），窗口化多阶段 measure 折叠进一个 rollup scan（#12189），NativeSerdeDeserializer N-API 往返削减（#12170），BigQuery DOW 编号对齐（#10678）。"
+        "Cube v1.8.3（10/10）：cube ossie 命令实现 Cube⇄Apache Ossie 互转（CUB-5419 #12179），Athena readOnly via UNLOAD+export bucket（#12196），tesseract UNION ALL 多阶段结果合并（#12182），窗口化多阶段 measure 折叠进一个 rollup scan（#12189），NativeSerdeDeserializer N-API 往返削减（#12170），BigQuery DOW 编号对齐（#10678）。",
+        "TopoGraphRAG-Bench（2610.09360）：2024 问题/201 长文档多模态 GraphRAG 基准，三种拓扑（单跳/桥接链/多源合成）+counterfactual validation（shortcut resistance+modality necessity+evidence necessity），多模态 GraphRAG 整体最强但对齐不完整时失败。"
       ],
       "cross": [
         "Who Verifies the Verifier?（2610.11464）：自进化验证器从聚类失败合成可检视表达式，MBPP+ +0.21 held-out agreement。关键发现：移除 anchor guards 后验证器塌缩为 always-pass 但仍训练有效——下游任务分数不能认证自进化验证器。Double Ratchet 配对验证器+生命周期管理 skill loop，保留 88-110% 真值/rubric 提升，覆盖代码生成/企业 text-to-SQL/无参考报告生成。",
@@ -745,6 +746,78 @@
             {
               "label": "与 dbt State 互补",
               "text": "State 管变更决策，Data Sharing 管数据拓扑——变更驱动+拓扑感知构建"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "business",
+      "title": "TopoGraphRAG-Bench——多模态 GraphRAG 布局锚定证据推理基准，counterfactual 验证抗捷径",
+      "date": "2026-10-12",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2610.09360",
+      "summary": "TopoGraphRAG-Bench 是布局锚定的多模态 GraphRAG 证据推理基准，包含 2024 个问题覆盖 201 个长文档（含文本/表格/图）。三种受控拓扑结构：单跳检索、桥接链推理、多源合成。用 counterfactual validation 确保问题抗捷径（shortcut resistance）、模态必要性（modality necessity）和证据必要性（evidence necessity）。评估 text-only GraphRAG、页级视觉检索、多模态 GraphRAG。多模态 GraphRAG 整体最强，但在视觉-文本证据对齐或组合不完整时仍失败。text-only 在关键依赖锚定于图/表时困难，页级视觉检索缺乏跨单元组合。",
+      "insight": "这是对用户业务线『文档理解（OCR/PDF 解析/单据识别/结构化抽取）』方向的直接学术贡献。与 9/5 TDS PDF 表格四层表示（表格是数据不是文本）形成方法论互补——TDS 说表格不应展平 embed，TopoGraphRAG-Bench 提供评估方法论验证这一主张。counterfactual validation 是评估方法论创新——用反事实验证确保问题真的需要多跳推理而非走捷径。对用户宽表 API 场景的启示：API 返回的宽表含结构化数据（表格），用 GraphRAG 时需要布局锚定（字段位置+表间关系）而非纯文本检索。",
+      "detail": {
+        "why": "真实文档的证据分布在文本/表格/图/标题中，跨复杂页面布局。回答复杂问题需要的不只是检索相关段落——系统必须恢复连接异构证据单元的证据拓扑。现有 GraphRAG 评估仍以文本为中心，多模态文档 RAG benchmark 评估跨模态检索和生成但不直接评估预期证据拓扑的恢复。",
+        "mechanism": "bottom-up 从文本/图/表证据单元构建问题，三种受控拓扑（single-hop/bridge-chain/multi-source synthesis）。counterfactual validation：(1) shortcut resistance——替换/移除关键证据后问题应不可答；(2) modality necessity——移除关键模态后答案质量下降；(3) evidence necessity——移除关键证据单元后答案改变。评估指标：retrieval（召回率/准确率）、generation（答案质量）、topology-aware reasoning（证据拓扑恢复度）。",
+        "deep": "counterfactual validation 是评估方法论的最重要贡献——它解决了 RAG 评估的『捷径问题』：agent 可能通过表面特征（关键词匹配）而非真正推理答对问题。用反事实验证（移除关键证据后答案应改变）确保问题真的需要多跳推理。这与 9/5 TDS PDF 表格的『标准 RAG 在表格上静默幻觉数字』共振——TopoGraphRAG-Bench 提供了检测这种幻觉的评估框架。三种拓扑结构（单跳/桥接链/多源合成）覆盖了业务文档理解的典型场景：单跳（直接查字段值）、桥接链（跨表 join 推理）、多源合成（多文档汇总分析）。多模态 GraphRAG 在视觉-文本对齐不完整时失败的发现，对用户单据识别（OCR+结构化抽取）场景直接相关——单据上的图章/签名/表格/文本需多模态对齐。",
+        "apply": "团队建设文档理解 RAG 时：(1) 用 counterfactual validation 验证评估问题真的需要多跳推理（移除关键证据后答案应改变）；(2) 三种拓扑结构可作为评估场景清单（单跳/桥接链/多源合成）；(3) 多模态 GraphRAG 在视觉-文本对齐不完整时失败——需加强跨模态对齐；(4) 布局锚定（字段位置+表间关系）替代纯文本检索。",
+        "caveats": "201 个长文档的规模对真实业务（上千文档）可能不够。counterfactual validation 需人工构建反事实样本，成本高。多模态 GraphRAG 的失败模式（视觉-文本对齐不完整）可能需要特定模型能力，非框架问题。三种拓扑结构可能不覆盖所有业务场景（如时序推理）。",
+        "business": "文档理解是业务 Agent 的核心能力之一（单据识别/合同解析/报表提取）。TopoGraphRAG-Bench 提供了评估这一能力的标准化框架——特别是 counterfactual validation 确保评估真的测到了推理能力而非检索捷径。对采购评估清单的直接贡献：从『文档 RAG 召回率』转向『证据拓扑恢复度+反事实验证』。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.09360",
+            "title": "TopoGraphRAG-Bench: Evaluating Multimodal GraphRAG on Layout-Grounded Evidence Reasoning"
+          }
+        ],
+        "diagram": {
+          "title": "TopoGraphRAG-Bench 布局锚定证据拓扑评估",
+          "flow": [
+            {
+              "label": "长文档",
+              "sub": "201 个含文本/表格/图",
+              "type": "database"
+            },
+            {
+              "label": "证据单元构建",
+              "sub": "bottom-up text/figure/table",
+              "type": "backend"
+            },
+            {
+              "label": "三种拓扑",
+              "sub": "single-hop/bridge-chain/multi-source",
+              "type": "backend"
+            },
+            {
+              "label": "Counterfactual Validation",
+              "sub": "shortcut resistance + modality necessity",
+              "type": "security"
+            },
+            {
+              "label": "多模态 GraphRAG",
+              "sub": "整体最强，对齐不完整时失败",
+              "type": "backend"
+            },
+            {
+              "label": "拓扑恢复度指标",
+              "sub": "retrieval+generation+topology-aware",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "2024 问题/201 文档",
+              "text": "布局锚定的多模态 GraphRAG 证据推理基准"
+            },
+            {
+              "label": "counterfactual validation",
+              "text": "移除关键证据后答案应改变——确保真的需要推理"
+            },
+            {
+              "label": "三种拓扑",
+              "text": "单跳直接查+桥接链跨表 join+多源合成汇总——覆盖业务文档场景"
             }
           ]
         }
