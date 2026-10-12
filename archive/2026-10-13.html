@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI for Business 领域每日晨报</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+            --card: #ffffff;
+            --border: #d6dde8;
+            --border-strong: #adbac9;
+            --text: #111827;
+            --muted: #4b5563;
+            --accent: #2563eb;
+            --accent-soft: #dbeafe;
+            --accent2: #059669;
+            --accent2-soft: #d1fae5;
+            --warn: #b45309;
+            --warn-soft: #fef3c7;
+            --red: #dc2626;
+            --red-soft: #fee2e2;
+            --shadow: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+            --shadow-hover: 0 10px 25px -5px rgba(15,23,42,0.1), 0 8px 10px -6px rgba(15,23,42,0.05);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+      padding: 20px;
+      max-width: 920px;
+      margin: 0 auto;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    /* 长英文标识符/URL 在移动端强制换行，避免撑破卡片 */
+    p, li, h1, h2, h3, h4, .summary, .insight, .snap-title, .snap-points li,
+    .modal-sec p, .modal-body, .detail-block, .item, .snapshot, .snapshot-summary {
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    header {
+      text-align: center;
+      padding: 30px 0 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    header h1 {
+      font-size: 1.8em;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    header h1 .grad {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header .date { color: var(--muted); margin-top: 8px; font-size: 0.95em; }
+    .archive-link {
+      display: inline-block; margin-top: 12px; color: var(--accent); text-decoration: none;
+      font-size: 0.85em; border: 1px solid var(--border-strong); background: var(--card);
+      padding: 5px 14px; border-radius: 20px; box-shadow: var(--shadow);
+      transition: all .15s;
+    }
+    .archive-link:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+    /* 今日速览（结构化，按来源分类） */
+    .snapshot {
+      background: linear-gradient(135deg, var(--accent-soft), var(--accent2-soft));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow);
+    }
+    .snapshot-summary {
+      font-size: 0.98em;
+      color: var(--text);
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px dashed var(--border-strong);
+    }
+    .snapshot-summary strong { color: var(--accent); }
+    .snapshot-groups { display: flex; flex-direction: column; gap: 10px; }
+    .snap-group {
+      display: flex;
+      gap: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      box-shadow: var(--shadow);
+    }
+    .snap-bar { width: 5px; border-radius: 3px; flex-shrink: 0; }
+    .snap-bar-paper { background: var(--accent); }
+    .snap-bar-github { background: var(--accent2); }
+    .snap-bar-product { background: var(--warn); }
+    .snap-bar-blog { background: var(--red); }
+    .snap-body { flex: 1; }
+    .snap-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.85em; font-weight: 700; color: var(--text);
+      margin-bottom: 6px;
+    }
+    .snap-title .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-paper { background: var(--accent); }
+    .dot-github { background: var(--accent2); }
+    .dot-product { background: var(--warn); }
+    .dot-blog { background: var(--red); }
+    .snap-title .badge {
+      font-size: 0.7em; font-weight: 600;
+      background: var(--bg); border: 1px solid var(--border-strong);
+      color: var(--muted); padding: 1px 8px; border-radius: 20px;
+    }
+    .snap-points { list-style: none; padding: 0; margin: 0; }
+    .snap-points li {
+      font-size: 0.9em; color: var(--text);
+      padding: 3px 0 3px 18px;
+      position: relative;
+    }
+    .snap-points li::before {
+      content: "▸";
+      position: absolute; left: 2px;
+      color: var(--accent);
+    }
+
+    /* 分类区块 */
+    .section { margin-bottom: 30px; }
+    .section-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 4px; margin-bottom: 14px;
+      border-bottom: 2px solid var(--border);
+    }
+    .section-head .bar { width: 6px; height: 22px; border-radius: 3px; }
+    .section-head h2 { font-size: 1.15em; color: var(--text); flex: 1; }
+    .section-head .count { font-size: 0.8em; color: var(--muted); background: var(--card); border: 1px solid var(--border); padding: 2px 10px; border-radius: 20px; }
+    .bar-paper { background: var(--accent); }
+    .bar-github { background: var(--accent2); }
+    .bar-product { background: var(--warn); }
+    .bar-blog { background: var(--red); }
+
+    .item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: border-color .2s, transform .1s, box-shadow .2s;
+    }
+    .item:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+    .item:active { transform: scale(0.995); }
+    .item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .tag {
+      display: inline-block;
+      font-size: 0.72em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .tag-paper { background: var(--accent-soft); color: var(--accent); }
+    .tag-github { background: var(--accent2-soft); color: var(--accent2); }
+    .tag-product { background: var(--warn-soft); color: var(--warn); }
+    .tag-blog { background: var(--red-soft); color: var(--red); }
+    .detail-hint { font-size: 0.78em; color: var(--accent); opacity: .8; }
+    .item h3 { font-size: 1.1em; margin-bottom: 8px; }
+    .item h3 a { color: var(--text); text-decoration: none; }
+    .item h3 a:hover { color: var(--accent); }
+    .item .meta { color: var(--muted); font-size: 0.82em; margin-bottom: 10px; }
+    .item .summary { font-size: 0.95em; margin-bottom: 10px; color: var(--text); }
+    .item .insight {
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      padding: 8px 12px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.92em;
+      color: var(--text);
+    }
+    .item .insight strong { color: var(--accent); }
+
+    /* ===== 详情弹层（浅色） ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(30,41,59,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      overflow-y: auto;
+      padding: 30px 20px;
+    }
+    .modal.show { display: block; }
+    .modal-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 32px 36px;
+      position: relative;
+      box-shadow: var(--shadow-hover);
+      animation: pop .18s ease;
+    }
+    @keyframes pop { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .modal-close {
+      position: absolute;
+      top: 14px; right: 16px;
+      background: none; border: none;
+      color: var(--muted);
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+    .modal-close:hover { color: var(--text); background: var(--bg); }
+    .modal-content h2 {
+      font-size: 1.4em;
+      color: var(--text);
+      margin: 10px 0 6px;
+      line-height: 1.4;
+      padding-right: 30px;
+    }
+    .modal-content .meta { color: var(--muted); font-size: 0.85em; margin-bottom: 18px; }
+    .modal-body { margin-top: 8px; }
+    .modal-sec {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+    }
+    .modal-sec h4 { font-size: 0.95em; color: var(--accent); margin-bottom: 8px; }
+    .modal-sec p { font-size: 0.93em; color: var(--text); }
+    .modal-sources { background: var(--bg); }
+    .modal-business { background: var(--warn-soft); }
+    .modal-business h4 { color: var(--warn); }
+    .sources-list { list-style: none; padding: 0; margin: 0; }
+    .sources-list li { font-size: 0.88em; color: var(--text); margin-bottom: 6px; padding-left: 4px; }
+    .src-id { color: var(--accent); font-weight: 600; margin-right: 6px; }
+    .src-link { color: var(--accent); text-decoration: none; word-break: break-all; }
+    .src-link:hover { text-decoration: underline; }
+    .diagram-box {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      overflow-x: auto;
+      position: relative;
+    }
+    .diagram-svg svg { display: block; }
+    .diagram-zoom {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.82em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      z-index: 5;
+    }
+    .diagram-zoom:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ===== 架构图放大 lightbox ===== */
+    .diagram-lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.85);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      overflow: auto;
+      padding: 30px;
+    }
+    .diagram-lightbox.show { display: block; }
+    .diagram-lightbox-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .diagram-lightbox-inner .lb-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px;
+    }
+    .diagram-lightbox-inner .lb-head h3 { font-size: 1.1em; color: var(--text); }
+    .diagram-lightbox-inner .lb-tools { display: flex; align-items: center; gap: 8px; }
+    .lb-btn {
+      background: var(--accent-soft); color: var(--accent);
+      border: 1px solid var(--border-strong); border-radius: 8px;
+      padding: 5px 12px; font-size: 0.85em; font-weight: 600; cursor: pointer;
+      transition: all .15s;
+    }
+    .lb-btn:hover { background: var(--accent); color: #fff; }
+    .lb-close {
+      background: none; border: none; color: var(--muted);
+      font-size: 26px; line-height: 1; cursor: pointer; padding: 4px 8px; border-radius: 8px;
+    }
+    .lb-close:hover { color: var(--text); background: var(--bg); }
+    .diagram-lightbox-inner .lb-svg {
+      overflow: auto;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .diagram-lightbox-inner .lb-svg svg {
+      max-width: 100%;
+      height: auto;
+      transition: transform .15s ease;
+      transform-origin: center center;
+    }
+    .diagram-lightbox-inner .lb-svg svg.zoomed { transform: scale(1.6); cursor: grab; }
+    .diagram-lightbox-inner .lb-svg svg.zoomed:active { cursor: grabbing; }
+    .diagram-lightbox-inner .lb-tip { text-align: center; color: var(--muted); font-size: 0.8em; margin-top: 10px; }
+    .modal-foot {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .modal-link { color: var(--accent); font-size: 0.88em; text-decoration: none; word-break: break-all; }
+    .modal-link:hover { text-decoration: underline; }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8em;
+      padding: 30px 0 10px;
+      border-top: 1px solid var(--border);
+      margin-top: 30px;
+    }
+    .empty { color: var(--muted); text-align: center; padding: 40px; }
+    /* ===== 反馈按钮 + 提交按钮 ===== */
+    .feedback-fab {
+      position: fixed; bottom: 24px; right: 24px;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; color: #fff; font-size: 24px; cursor: pointer;
+      box-shadow: var(--shadow-hover);
+      z-index: 9000; transition: transform .15s;
+    }
+    .feedback-fab:hover { transform: scale(1.1); }
+    .modal-submit {
+      width: 100%; padding: 12px; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; font-size: 1em; font-weight: 600; cursor: pointer;
+    }
+    .modal-submit:hover { opacity: 0.9; }
+    @media (max-width: 600px) {
+      .modal-content { padding: 24px 18px; }
+      body { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🤖 <span class="grad">AI for Business</span> 每日晨报</h1>
+    <div class="date">业务知识库 · 业务语义理解 · API 精确查询 | 2026-10-13</div>
+    <a class="archive-link" href="archive/index.html">📚 历史晨报归档</a>
+  </header>
+
+  <div class="snapshot"><div class="snapshot-summary"><strong>📌 今日速览</strong><br>本期 14 条情报聚焦『评估可信性危机与认证化应对』主线。研发线：CRBugBench（1800 真实 bug review 任务，claude-opus-5+copilot-cli top-5 捕获 71.9%，五个月模型进化 47.7%→71.9%）、TestSuiteBench（165 应用 74 mutants/应用，frontier agent mutation score &lt;60% 但实现通过 82% 参考测试——能构建不能验证）、ReviewBench（GitHub 官方开放 benchmark，219 PR 19 语言多源 golden set 96.6% 专家一致率）、GitHub Git 基建博文（月 Git 事件 218.2B→473.3B，9 月 7.38B commits 同比 5x，pushes 4.9x，durability 与 scale 解耦重构）；Ontology Atlas v1.7.0 以共享 Markdown 本体连接人与 coding agent。业务线：IBM Hassanzadeh/Subramanian 双篇——Same Query Different Answer 实测 1.2M 次调用证明 temp 0 下 0.07-10.2% 行翻转、SemBench 21% 结果质量跨执行漂移；SemViews 用语义视图+分层抽样认证实现 precision/recall 1-δ 保证、省 28-45% oracle 调用（同保证先前方法需 1.32-1.71x）；HSAD 8B advisor 蒸馏把冻结金融研究 agent 合格率 52.9%→56.6% 且成本降 37%，泛化到 BIRD text-to-SQL；Cube v1.8.4 修复 member-expression SQL 求值 JS 注入漏洞；Affirm 智能层实践（共享客户活动记录+统一定义+DQ 检查）。交叉线：SkillRelayBench 揭示跨会话 skill 工件攻击在 Codex CLI/Gemini CLI/Claude Code 上 ASR 46.7-77.4%，SkillRelayGuard 降至 10.9%；Reward Hacking Transmissible 证明 reward hacking 可经代码/共享记忆/计划跨 agent 传播且沿链增强；TDS《Why Temperature 0 Isn't Deterministic》给出单行翻转概率公式 p≈f(0)·E|Δ|/2。三线共振指向同一战略研判：2026-2027 企业 Agent 竞争焦点从『生成能力』转向『评估基建三件套』——benchmark 真实性（挖真实 bug/真实 PR）+不确定性量化（run-to-run variance+认证保证）+传染隔离（跨会话防护+多 agent 审计）。</div><div class="snapshot-groups"><div class="snap-group"><span class="snap-bar snap-bar-github"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-github"></span>🐙 开源项目<span class="badge">3 项</span></div><ul class="snap-points"><li>Ontology Atlas v1.7.0（144⭐，10/10）：人与 coding agent 共享的 Markdown 本体（atlas/ 目录每概念一文件，Git 版本化审阅），Claude Code/Codex/Cursor/Antigravity 经 MCP 读取概念/代码路径/依赖/未决问题；v1.7.0 新增证据优先 Analysis 页（打开单一 responsibility pair+有界依赖图+声明背后证据）、Flow 保存答案重查证据（未变证据不再标 unknown）、agent proposal 精确复制；『缺证据显示为 unknown 而非 safe』。</li><li>tokensave（661⭐，10/11 两 commit）：MCP callers/callees/impact/type_hierarchy 接受 symbol name 参数（#669/#684，免先查 UUID）；每 symbol 附 end_line+implementations 默认无 body（#674/#683，省 token）。</li><li>SocratiCode（3336⭐，10/10 merge #204）：codebase_symbol/codebase_impact/codebase_flow 增加 limit 参数（0f48a191），大仓库图谱查询防爆上下文。</li></ul></div></div></div></div>
+
+  <div class="section"><div class="section-head"><span class="bar bar-product"></span><h2>🏢 业界动态</h2><span class="count">1 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-product">🏢 业界动态</span></div><h3><a href="https://arxiv.org/abs/2610.13823" target="_blank" rel="noopener">战略研判：评估基建三件套——benchmark 真实性×不确定性量化×传染隔离成为 2026-2027 企业 Agent 竞争焦点</a></h3><div class="meta">2026-10-13 · 综合研判</div><div class="summary">本期 14 条情报串成一条完整链路：企业 Agent 竞争焦点正从『生成能力』转向『评估基建三件套』。第一件：benchmark 真实性——CRBugBench（真实 bug 挖掘 1800 任务）、ReviewBench（103.9M PR 分布采样+96.6% 专家一致率）、TestSuiteBench（mutant-per-requirement）、ReqClarifyBench（真实对话派生 persona）四个新基准同周出现，共同特征是从真实工件反推评估任务而非合成数据。第二件：不确定性量化——IBM 双篇（Same Query 实测 21% 漂移+SemViews 认证 1-δ 保证）、TDS temp 0 数学模型（p≈f(0)·E|Δ|/2）、Ontology Atlas（unknown 而非 safe）从实测/理论/工程三面确立『不确定性必须被测量、暴露、认证』。第三件：传染隔离——SkillRelayBench（跨会话工件攻击三大 CLI 全沦陷）与 Reward Hacking Transmissible（多 agent 传染沿链增强）证明 agent 系统的失败不是独立的，溯源+审计+独立 verifier 构成免疫层。</div><div class="insight"><strong>🔍 技术视角：</strong>延续昨日『训练-部署鸿沟』主线，今日情报把镜头转向第三层鸿沟：『单次执行≠可靠执行』的评估鸿沟。对用户的直接行动含义：(1) 业务 Agent 立项文档应包含 run-to-run variance 测试计划（同一批问题跑 5 次统计答案变化率）而非仅准确率；(2) 语义层/宽表 API 查询建设采用 SemViews 模式——历史判断沉淀为视图+新鲜抽样认证，兼顾成本与可信；(3) 研发线 AI review/测试工具选型用 CRBugBench/ReviewBench/TestSuiteBench 方法论自建内部基准（公开数字不预测自家代码库表现）；(4) 多 agent/skill 架构部署前跑 SkillRelayBench 式对抗测试+部署工件溯源。『语义层 vs 知识图谱』双路线在评估基建框架下再次统一：语义层承载认证保证（SemViews 的 precision/recall 证书），知识图谱/本体承载溯源与证据链（Ontology Atlas/SkillRelayGuard 的 provenance）——两者都是评估基建的组成部分而非替代关系。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">评估基建三件套全景</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Benchmark 真实性</text><text x="156.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">CRBug/Review/TestSuite/ReqClarify</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Variance 实测</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">1.2M 调用/21% 漂移</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">认证保证</text><text x="548.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">SemViews 1-δ 分层抽样</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">传染隔离</text><text x="744.0" y="124" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">溯源+verifier+路由去 bias</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">企业 Agent 可信</text><text x="450.0" y="252" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">生成→治理→评估闭环</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">三层鸿沟</tspan>　训练分布≠部署分布（HarnessSQL）≠单次执行分布（Same Query）</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">核心架构模式</tspan>　认证与复用分离：效率层可错（多花钱），保证层不错（证书）</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">双路线统一</tspan>　语义层承载认证保证，知识图谱/本体承载溯源证据链</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>昨天简报的战略研判是『训练时侧（harness-native）与运行时侧（受治理三件套）闭环』，今天的情报补上第三块：评估时侧。生成能力（模型）→运行时治理（歧义/置信/执行）→评估基建（benchmark/variance/传染）——企业 Agent 可靠性工程的全景图在本期完成拼合。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>三件套的技术支撑：benchmark 真实性=真实工件挖掘（bug 历史/PR 分布/mutant-per-requirement/真实 persona）；不确定性量化=variance 实测（1.2M 调用）+数学模型（翻转公式）+认证机制（分层抽样 1-δ）+诚实标注（unknown 而非 safe）；传染隔离=工件溯源（provenance 恢复）+跨 agent 审计（verifier）+路由去 bias（独立质量信号）。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>三件套与昨日受治理运行时三件套（歧义×置信×执行）的关系：运行时三件套管『单次执行正确』，评估三件套管『跨执行可信+跨 agent 免疫』。Same Query Different Answer 是两者的桥梁——它证明置信治理（Sentinel 轨迹置信）必须建立在 variance 实测之上，否则置信本身不可信。SemViews 的『认证与复用分离』可能是本期最重要的架构模式：效率层可以错（视图过期只多花钱），保证层不会错（统计证书）——这个模式可推广到用户整个业务 Agent 架构（缓存/记忆/RAG 都可以错，认证/审计层必须对）。SkillRelay+Reward Hacking 双篇把安全边界从模型内（对齐）推到系统间（传播动力学），预示 2027 年 agent 安全研究将系统化/流行病学化。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>评估基建正在产品化：ReviewBench 开放提交机制=AI review 市场的 MLPerf 时刻；SemViews 认证模式=语义查询的合规卖点；SkillRelayBench=skill 生态的安全审计标准候选。对采购方：2027 年企业 Agent RFP 应包含 variance 报告要求+对抗测试条款+溯源能力。对自建团队：评估基建是比模型选型更持久的投资——模型每五个月换代（47.7%→71.9%），评估体系跨模型复用。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>用户 90 天行动清单：(1) 建立业务 Agent variance 基线：50 个代表性业务问题跑 5 次，统计答案变化率与字段级 margin 分布；(2) 查询日志改造工程：记录全部 LLM 判断调用（输入/输出/margin/成本），为 SemViews 式视图沉淀和 HSAD 式 advisor 训练准备数据；(3) 研发线内部基准：从自家仓库挖 100 个已修 bug 建 CRBugBench 式 review 基准+核心模块 mutation 管线；(4) skill/MCP 工件清单与溯源元数据（写入者/会话/时间）；(5) 语义层试点加认证层（分层抽样验证高频查询的 precision/recall）。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>三件套是情报归纳的框架而非行业共识术语，落地节奏因组织成熟度而异。variance 测试与认证抽样都有额外 LLM 成本（SemViews 省 28-45% 但仍需认证调用）。内部基准建设是一次性投入+持续维护，需预算保障。传染隔离的工具链（溯源/审计）尚无成熟开源方案，多为论文原型。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2610.13823" target="_blank" rel="noopener" class="src-link">Same Query, Different Answer: Run-to-Run Variance in Semantic Query Processing</a></li><li><span class="src-id">[2]</span> <a href="https://arxiv.org/abs/2610.12768" target="_blank" rel="noopener" class="src-link">Semantic Views: Certified Reuse of LLM Labels Across Semantic Queries</a></li><li><span class="src-id">[3]</span> <a href="https://arxiv.org/abs/2610.13668" target="_blank" rel="noopener" class="src-link">(When) Should a Software Factory be Lights-off? (CRBugBench)</a></li><li><span class="src-id">[4]</span> <a href="https://arxiv.org/abs/2610.13065" target="_blank" rel="noopener" class="src-link">TestSuiteBench: Coding Agents Struggle to Generate Strong Test Suites</a></li><li><span class="src-id">[5]</span> <a href="https://github.blog/ai-and-ml/github-copilot/reviewbench-an-open-benchmark-for-ai-code-review/" target="_blank" rel="noopener" class="src-link">ReviewBench: An open benchmark for AI code review</a></li><li><span class="src-id">[6]</span> <a href="https://arxiv.org/abs/2610.13227" target="_blank" rel="noopener" class="src-link">Cross-Session Attacks via Persistent Artifacts in Agent Skill Composition</a></li><li><span class="src-id">[7]</span> <a href="https://arxiv.org/abs/2610.12822" target="_blank" rel="noopener" class="src-link">Reward Hacking as a Transmissible Strategy in Multi-Agent Coding Systems</a></li><li><span class="src-id">[8]</span> <a href="https://towardsdatascience.com/why-temperature-0-isnt-deterministic/" target="_blank" rel="noopener" class="src-link">Why Temperature 0 Isn't Deterministic</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2610.13823" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2610.13823</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-github"></span><h2>🐙 开源项目</h2><span class="count">1 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-github">🐙 GitHub</span></div><h3><a href="https://github.com/aovestdipaperino/tokensave" target="_blank" rel="noopener">代码智能 MCP 工具群像：tokensave symbol 直查+end_line 省 token，SocratiCode 图谱查询 limit 防爆上下文</a></h3><div class="meta">2026-10-13 · GitHub</div><div class="summary">代码智能 MCP 赛道本周密集迭代。tokensave（661⭐，40+ 工具/30+ 语言/9 agent 集成）10/11 两 commit：callers/callees/impact/type_hierarchy 四个图谱工具接受 symbol name 直接查询（#669/#684）——此前需先查 symbol UUID 再查关系，两步并一步省往返；每个 symbol 附 end_line+implementations 默认不含 body（#674/#683）——调用方拿到精确行范围按需取 body，默认响应更瘦。SocratiCode（3336⭐，企业级 40m+ LOC 代码库智能）10/10 merge #204：codebase_symbol/codebase_impact/codebase_flow 增加 limit 参数（0f48a191），大仓库图谱查询结果可截断，防止单次调用淹没上下文窗口。code-review-graph 保持 32k⭐ 居赛道首位（昨日已详报 v2.3.9）。</div><div class="insight"><strong>🔍 技术视角：</strong>三个项目同周不约而同优化同一件事：MCP 工具的上下文经济学。tokensave 的 symbol name 直查（省往返）、end_line+无 body 默认（省 token）、SocratiCode 的 limit（防爆窗口），都是对『agent 上下文是最稀缺资源』的工程回应——与 8/24 Beyond the Harness（context 工件 ROI）、9/5 tokensave if_digest（内容寻址 ETag 模式）延续同一主线。对用户的启示：自建业务 MCP 工具（宽表 API 查询工具）应同样设计——API schema 返回默认瘦身（字段名+类型+语义标注，不含样例数据）、大结果集强制 limit+分页、支持按名称直查免 ID 往返。上下文经济学是 MCP 工具设计的第一性原则。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">MCP 工具的上下文经济学三招</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">名称直查</text><text x="156.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">tokensave #669 免 UUID 往返</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">默认瘦身</text><text x="352.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">end_line+无 body #674</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">结果截断</text><text x="548.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">SocratiCode limit #204</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">按需披露</text><text x="744.0" y="124" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">agent 判断再取内容</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">上下文预算</text><text x="450.0" y="252" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">稀缺资源工程化</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">赛道信号</tspan>　三项目同周同方向优化=上下文经济学成 MCP 第一性原则</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">迁移模板</tspan>　宽表 API 工具：瘦 schema 默认+limit 强制+业务名直查</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">与学术互证</tspan>　KnowForge typed 尺寸受限 evidence pool 同思想</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>代码智能 MCP 是研发线 agent 基建的活跃赛道（code-review-graph 32k⭐/SocratiCode 3.3k⭐/tokensave 661⭐/octocode 510⭐）。本周迭代方向高度一致（上下文瘦身），显示赛道进入工程精细化阶段。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>tokensave #669/#684：图谱工具参数扩展支持 symbol name（内部解析到 UUID），免去 agent 两步查询；#674/#683：symbol 元数据附 end_line（精确定位）+implementations 列表默认剥离 body（按需再取）。SocratiCode #204：三个核心查询工具（symbol/impact/flow）加 limit 参数，结果截断+提示还有更多。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>end_line+默认无 body 的组合是『渐进式披露』（progressive disclosure）的 MCP 实现：先给结构与位置，agent 判断需要时再取内容——与 KnowForge 的 typed 尺寸受限 evidence pool 同思想。limit 参数的价值不止省 token：无 limit 的 impact 查询在 40m LOC 仓库可能返回数千节点直接摧毁上下文，limit 是把『查询爆炸』从运行时故障变为可控截断。symbol name 直查降低 agent 的认知负担（不需要理解 UUID 体系）——工具 API 的人性化即 agent 化。三项目与 octocode 0.26.7（MCP 按会话目录路由，昨日已报）拼出赛道全景：路由正确性→查询经济性→结果可控性的完整工具链成熟化。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>代码智能 MCP 赛道进入差异化竞争：规模能力（SocratiCode 40m LOC）、工具广度（tokensave 40+ 工具）、图谱深度（code-review-graph 社区检测）各有卖点。上下文经济学优化是所有玩家的共同底线能力——未来竞争或转向本体/意图层（Ontology Atlas 方向）。对企业采购：MCP 工具的 token 效率直接折算为 API 成本，选型时应实测每查询 token 消耗。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>(1) 用户自建宽表 API 查询 MCP 工具时采用同款设计：默认返回字段名+类型+业务语义标注（瘦 schema），样例数据按需取；大结果集强制 limit+游标；支持业务名称直查（如按指标名查 API）免 ID 映射往返；(2) 已有 MCP 工具审计上下文成本：统计每次调用的平均返回 token，对 top 消耗工具做瘦身改造；(3) 团队选用代码智能 MCP 时优先带 limit/瘦身默认的工具（大仓库场景必需）。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>limit 截断可能让 agent 基于不完整图谱做判断——需配合『还有 N 条未显示』提示（SocratiCode 实现细节待核实）。symbol name 直查遇重名符号的消歧策略未说明。tokensave 40+ 工具的集成复杂度对小团队偏高。星标数与实际生产采用率可能有差距。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://github.com/aovestdipaperino/tokensave" target="_blank" rel="noopener" class="src-link">tokensave: code intelligence MCP server</a></li><li><span class="src-id">[2]</span> <a href="https://github.com/giancarloerra/SocratiCode" target="_blank" rel="noopener" class="src-link">SocratiCode: enterprise codebase intelligence MCP</a></li></ol></div><div class="modal-foot"><a href="https://github.com/aovestdipaperino/tokensave" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://github.com/aovestdipaperino/tokensave</a></div></div></div>
+
+  
+
+  <footer>
+    由 Hermes Agent 自动生成 · 点击卡片查看深度详情 · 2026-10-13
+  </footer>
+
+  <!-- ===== 反馈按钮 + 表单弹层 ===== -->
+  <button class="feedback-fab" onclick="openFeedback()" title="提交反馈">💬</button>
+
+  <div class="modal" id="feedback-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeFeedback()" aria-label="关闭">×</button>
+      <span class="tag tag-product">💬 读者反馈</span>
+      <h2>提交意见 / 反馈</h2>
+      <div class="modal-body">
+        <p style="color:var(--muted);font-size:0.9em;margin-bottom:12px;">
+          你的反馈会帮我改进晨报内容。提交后将打开 GitHub Issue 页面，确认后我会在每天 17:00 处理。
+        </p>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">反馈类型</label>
+        <select id="fb-type" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);margin-bottom:12px;">
+          <option value="内容建议">内容建议（选题/深度/方向）</option>
+          <option value="错误报告">错误报告（链接失效/信息有误）</option>
+          <option value="格式反馈">格式/排版反馈</option>
+          <option value="其他">其他</option>
+        </select>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">你的反馈内容</label>
+        <textarea id="fb-body" rows="5" placeholder="请描述你的意见、建议或发现的问题…"
+          style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);resize:vertical;margin-bottom:12px;"></textarea>
+        <button class="modal-submit" onclick="submitFeedback()">提交反馈 →</button>
+      </div>
+      <div class="modal-foot" style="color:var(--muted);font-size:0.8em;">提交后请在打开的 GitHub 页面点击确认。</div>
+    </div>
+  </div>
+
+  <!-- ===== 架构图放大 lightbox ===== -->
+  <div class="diagram-lightbox" id="diagram-lightbox" onclick="if(event.target===this)closeDiagramZoom()">
+    <div class="diagram-lightbox-inner">
+      <div class="lb-head">
+        <h3 id="lb-title">📊 架构图</h3>
+        <div class="lb-tools">
+          <button type="button" class="lb-btn" onclick="diagramToggleZoom()">🔍 放大/缩小</button>
+          <button type="button" class="lb-close" onclick="closeDiagramZoom()" aria-label="关闭">×</button>
+        </div>
+      </div>
+      <div class="lb-svg" id="lb-svg"></div>
+      <div class="lb-tip">提示：点击「放大/缩小」切换缩放，缩放后可在图内拖动查看细节 · 按 Esc 关闭</div>
+    </div>
+  </div>
+
+  <script>
+    function openDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.add('show'); document.body.style.overflow = 'hidden'; }
+    }
+    function closeDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.remove('show'); document.body.style.overflow = ''; }
+    }
+    function openFeedback() {
+      document.getElementById('feedback-modal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeFeedback() {
+      document.getElementById('feedback-modal').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function submitFeedback() {
+      const type = document.getElementById('fb-type').value;
+      const body = document.getElementById('fb-body').value.trim();
+      if (!body) { alert('请填写反馈内容'); return; }
+      const date = '2026-10-13';
+      const title = '[网页反馈/' + type + '] ' + date;
+      const full = '反馈类型: ' + type + '\n日期: ' + date + '\n\n' + body;
+      // 生成 GitHub Issue 预填链接（不暴露 token，安全）
+      const url = 'https://github.com/hhao9817/agent-daily/issues/new?title=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(full);
+      window.open(url, '_blank');
+      closeFeedback();
+    }
+    /* ===== 架构图放大 ===== */
+    function openDiagramZoom(btn) {
+      const box = btn.closest('.diagram-box');
+      const svg = box.querySelector('.diagram-svg svg') || box.querySelector('svg');
+      if (!svg) return;
+      const title = box.querySelector('h4') ? box.querySelector('h4').textContent : '📊 架构图';
+      document.getElementById('lb-title').textContent = title;
+      const holder = document.getElementById('lb-svg');
+      holder.innerHTML = '';
+      holder.appendChild(svg.cloneNode(true));
+      const lb = document.getElementById('diagram-lightbox');
+      lb.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeDiagramZoom() {
+      document.getElementById('diagram-lightbox').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function diagramToggleZoom() {
+      const svg = document.querySelector('#lb-svg svg');
+      if (!svg) return;
+      svg.classList.toggle('zoomed');
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal.show').forEach(function(m) { m.classList.remove('show'); });
+        document.getElementById('diagram-lightbox').classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+</html>
