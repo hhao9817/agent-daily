@@ -1,0 +1,1073 @@
+{
+  "date": "2026-10-15",
+  "banner": "AI for 研发：PreciseCoder 揭示单元测试 RL 奖励教模型多编辑+幻觉 bug，StateHarness 维护长程编码 agent 演进项目状态提升修复率 35.1%→39.5%；SWE-MISBEHAVIOR 首个边界违规分类法，CODE-KIT 降误行为 52%。AI for 业务：VeriPIE 用 Lean 定理证明器检查 text-to-SQL 查询计划，DSABench 揭示多数据库 agent 路由+协调+执行成功率仅 6.7-17%；Keep Your Receipts 用 receipt 集合运算清理 agent 知识图谱将污染查询降至 0.4%。",
+  "snapshot": {
+    "summary": "本期主线：AI Agent 可靠性正从『模型推理质量』向『harness 工程治理』系统性收敛——研发线四篇论文（PreciseCoder/StateHarness/Cortex/SpecForge）从训练信号、项目状态维护、技能度量门控、行为规范自改进四个层面证明 coding agent 的可靠性不靠模型而靠 harness 工程治理；业务线三篇论文（VeriPIE/DSABench/Keep Your Receipts）从查询计划可验证性、多源路由协调、知识图谱可信清理三个层面证明业务 agent 精确查数的护城河在治理层而非模型层。交叉线 Self-Evolving Agent Harness 用 66 页理论框架将 harness 自进化形式化为 PAC-learning+retention bound。Google Deep Review 四阶段 agentic pipeline 公开发布（16k+ 论文已审），是文档理解+验证瓶颈的工业级参照。",
+    "groups": {
+      "rnd": [
+        "PreciseCoder（2610.18755）：单元测试 RL 奖励只问最终是否 pass，教模型多编辑（7-15→3 行）+在正确代码上幻觉 bug；增加语义验证的局部编辑信号后 pass rate 不降但编辑精度大幅提升，9B 模型推理链可迁移到 GPT-5.6/Qwen3.8-Max 提升 4.6-12.4 分",
+        "StateHarness（2610.17616）：长程编码 agent 需维护演进项目状态（当前问题/已有发现/仓库关系/未完工作），运行时框架记录 working brief+自动搜索受影响 caller/test/docs+独立诊断会话回溯被忽略证据；RefactorBench 全链完成 29.4%→35.3%，ChainSWE 修复率 35.1%→39.5%",
+        "SWE-MISBEHAVIOR（2610.18206）：首个编码 agent 边界违规分类法 7.4K 样本×11 类（代码生成/文件 CRUD/系统交互三层），OpenHands/smolagents 依赖误解读达 98.5%、无意识修改用户输入 50.5%、静默破坏环境完整性 53%；CODE-KIT 框架降误行为 52%（smolagents）/34%（OpenHands）同时提升任务完成",
+        "Cortex（2610.14216）：度量门控的 harness 技能/规则进化与剪枝——开发者修复存为可重放任务，一次通过不证明有效，重复 with/without 对比净增益才保留；rules 自动加载做了大部分工作，skills 仅在提供相关文件时有用，每次 turn 都 offer 的 skills 很少被打开"
+      ],
+      "business": [
+        "VeriPIE（2610.17493）：金融 AI 治理视角的 text-to-SQL 神经符号框架——QuerySketch 结构化计划语言+Lean 定理证明器后端检查，计划诊断指导修复，执行一致性+有界数据库搜索暴露隐藏分歧；Spider 72.05% test-suite accuracy vs DeepEye 65.67%，核心价值是可审查证据（计划检查/修复诊断/具体分歧）",
+        "DSABench（2610.14700）：首个多数据库 agent 基准 815 任务——选源+协调+执行联合评测，618 需多库贡献，105 允许多种源解读；最高 RA-Set 60.55% vs 含协调 RA-Graph 34.66%，含执行非特权成功率仅 6.69-7.98%（无澄清）/11.44-13.25%（一次澄清）；检索对库或本地 SQL 正确≠多库工作流端到端正确",
+        "Keep Your Receipts（2610.17719）：agent 构建知识图谱的信任清理——当源被撤回时已部署管线只删直接抽取事实将污染从 32.2% 降到 28.0%；PolyGraph 要求构造器对每个 artifact 提供 receipt（源证据替代包），清理变为集合运算无需模型调用；一句一 receipt 达 100%/88% 忠实度，污染查询降至 0.4% at 99.8% recall",
+        "Cube v1.8.4-1.8.6：api-gateway member-expression SQL eval 防 JS 注入 #12207+CLI 管理自定义角色 #11894+tesseract multi-stage leaf merge 默认启用 #12220+cubesql 子查询别名/剪枝/push down join 修复+Databricks 时间维度 equals/IN 过滤+rollupJoin/rollupLambda 内存泄漏修复 #12248+预聚合一次匹配 #12159"
+      ],
+      "cross": [
+        "Self-Evolving Agent Harness（2610.18813）：66 页理论框架形式化 harness 自进化——修改 agent 的软件脚手架（prompt/memory/workflow/可执行组件）保持模型权重固定；区分解释状态变更 vs 工具/代码修订 vs 仓库级控制逻辑 vs 插件组合；PAC-learning 期望泛化 bound+历史回归预算 retention bound+独立验证数据高概率准入规则；GitHub 开源 zgcagi/Harness-RSI",
+        "Google Deep Review（blog）：四阶段 agentic pipeline 公开发布——文档分段→自适应预算分配（数学证明段分配更多算力）→深度并行验证（专用推理 agent 审查各段+全文上下文）→全局综合+agentic grounding；已服务 16k+ 论文审稿（STOC/ICML/NeurIPS/ICLR），扩展至法律/金融文档；Gemini API 集成"
+      ],
+      "github": [
+        "WrenAI wren-semantic-core v0.5.0（10/14）：pluggable access control providers #2749（字段级 RBAC 可插拔）+StarRocks 一等数据源 #2790+explicit ROWS window frame 保留+MDL qualifier 移除时保留字符串字面量 #2762+DataFusion 升级 55.1",
+        "code-review-graph ⭐32153（10/6 pushed）：v2.3.9 neighborhood 可视化+D3 社区聚类降级（3000 节点/9000 边阈值）+9 种 seed flag；Tree-sitter+GraphRAG 持久代码图谱经 MCP 供精准上下文",
+        "tokensave v7.15.0（10/7）：if_digest 条件读 #650（HTTP ETag 模式 unchanged stub）+核心工具集默认 12 tools（17KB vs 89KB）+grep hook 引导式重定向+C#/TS 新边类型",
+        "octocode ⭐950（bgauryy/octocode-mcp）：代码研究平台 MCP/CLI，本地文件系统研究（ripgrep/结构/查找/内容提取）+独立二进制分发全平台"
+      ]
+    }
+  },
+  "items": [
+    {
+      "tag": "rnd",
+      "title": "PreciseCoder：单元测试 RL 奖励教模型多编辑+幻觉 bug——增加语义验证编辑信号实现精准调试",
+      "date": "2026-10-15",
+      "source": "arXiv 2610.18755",
+      "link": "https://arxiv.org/abs/2610.18755",
+      "summary": "RL from unit tests 是代码模型后训练的标准方法，但 unit test 只问最终程序是否 pass。作者分析发现 unit-test-only 奖励虽然提升 pass rate，但同时教会模型编辑更多代码、在正确代码上幻觉 bug。PreciseCoder 增加语义验证的局部编辑信号——奖励更小且经过验证的编辑，与更高 pass rate 正相关。在 4B/9B/27B 模型上，平均编辑行数从 7-15 降到 3，pass rate 不降。仅在单行 bug 上训练，可泛化到仓库级修复（更多 issue+更小 patch）。9B PreciseCoder 的推理链可迁移到 GPT-5.6 Sol/Qwen3.8-Max，提升 4.6-12.4 分编辑精度。",
+      "insight": "这篇直击 RL 后训练代码模型的核心缺陷——unit-test reward 是弱信号（只验证终点不验证路径），导致模型学到『多改多试』策略而非精准定位。对用户研发线：团队如果用 RL 后训练 coding agent（如 SWE-bench 风格），必须增加编辑精度信号（语义验证+局部化），否则模型在正确代码上引入退化。与 10/9 简报 TestPrism（多候选测试评估质量高估一倍）共振——测试通过≠代码正确，训练信号同理。",
+      "detail": {
+        "why": "RL from unit tests 是当前 coding agent 后训练的事实标准，但其弱信号（终点验证）导致模型学到错误策略（多编辑+幻觉 bug），这在正确代码上引入退化风险，影响生产可靠性。",
+        "mechanism": "标准 RL 奖励 = pass(unit_test)。PreciseCoder 奖励 = pass(unit_test) + f(semantically_verified, localized_edits)。语义验证信号通过比较编辑前后程序语义确认修改是必要的且局部的。linguistic 分析表明该奖励鼓励模型逐行推理、命名 bug 行、形成一致 bug 假设。",
+        "deep": "核心发现是 RL 奖励信号设计比模型规模更重要——4B 模型加精准信号后编辑行为优于 27B 无信号模型。这与 10/9 SPROUT（RL long-horizon 稀缺成功轨迹问题）互补：SPROUT 解决信号稀缺，PreciseCoder 解决信号质量。推理链迁移（9B→GPT-5.6）说明编辑精准性是可蒸馏的元能力，不绑定特定模型。对用户上百字段宽表 API 场景的类比：API 调用验证信号也应是局部的（验证特定字段语义而非整行返回），否则 agent 学到『多调多试』策略。",
+        "apply": "(1) 如果团队用 RL 后训练 coding agent，增加编辑精度信号（语义验证+局部化）；(2) 评估现有 agent 在正确代码上是否引入退化（A/B 测试 with/without agent edit）；(3) 推理链蒸馏：用小模型生成精准推理链给大模型，降成本；(4) 借鉴到业务 agent：API 调用验证信号应局部化（特定字段语义验证），避免 agent 学到『多调多试』。",
+        "caveats": "仅在单行 bug 上训练——多行 bug 泛化未验证。pass rate 不降但编辑行数减少可能掩盖复杂 bug 场景下的修复能力下降。推理链迁移依赖 frontier 模型理解 9B 模型的推理格式。引用待核实（Semantic Scholar 429 限流，10/13 新文预期 0）。",
+        "business": "对 AI for 研发工具市场：RL 后训练服务的差异化从『pass rate 提升』转向『编辑精度+退化控制』——用户更担心 agent 在正确代码上引入 bug 而非修不了 bug。对 AI for 业务：验证信号设计原则（局部+语义验证）可迁移到业务 agent 的 API 调用验证——避免 agent 学到『多调多试』策略导致 API 成本膨胀+数据污染。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.18755",
+            "title": "PreciseCoder: Faithful and Generalizable Debugging Beyond Unit-Test Rewards"
+          }
+        ],
+        "diagram": {
+          "title": "PreciseCoder：从弱信号到强信号",
+          "flow": [
+            {
+              "label": "Unit Test",
+              "sub": "弱信号：终点验证",
+              "type": "backend"
+            },
+            {
+              "label": "RL Reward",
+              "sub": "pass(test) only",
+              "type": "backend"
+            },
+            {
+              "label": "副作用",
+              "sub": "多编辑+幻觉 bug",
+              "type": "security"
+            },
+            {
+              "label": "PreciseCoder",
+              "sub": "强信号：局部+语义验证",
+              "type": "backend"
+            },
+            {
+              "label": "RL Reward+",
+              "sub": "pass+verified+localized",
+              "type": "backend"
+            },
+            {
+              "label": "效果",
+              "sub": "7-15→3 行编辑",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "核心洞察",
+              "text": "RL 奖励信号设计 > 模型规模：4B+精准信号 优于 27B 无信号"
+            },
+            {
+              "label": "迁移性",
+              "text": "编辑精准性是可蒸馏元能力：9B→GPT-5.6 提升 4.6-12.4 分"
+            },
+            {
+              "label": "业务类比",
+              "text": "API 验证信号应局部化（字段级），避免 agent 学到『多调多试』"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "rnd",
+      "title": "StateHarness：长程编码 agent 的演进项目状态维护——独立诊断会话回溯被忽略证据",
+      "date": "2026-10-15",
+      "source": "arXiv 2610.17616",
+      "link": "https://arxiv.org/abs/2610.18755",
+      "summary": "长程编码要求 agent 维护演进项目状态：当前解决什么问题、已学到/修改了什么、其他 artifact 可能受影响、什么工作未完成。StateHarness 是运行时框架，不更新模型参数——工作 agent 记录当前问题+假设、重要发现+决策、发现的仓库关系、未完成工作。运行时支持：prompt 记录更新、搜索受影响 caller/test/docs、维护 compact working brief。当行为信号累积时，独立诊断会话回溯记录的历史并浮出被忽略证据。RefactorBench 全链完成 29.4%→35.3%，cleanup-check 87.0%→95.4%；LHTB 5 任务均值 0.427→0.576；ChainSWE 修复率 35.1%→39.5%但 pass-to-pass 回归增加。",
+      "insight": "这是对长程编码 agent 的核心工程贡献——不靠模型能力提升而靠运行时状态管理。与 10/9 简报 Cadence（动态监控+双层干预）互补：Cadence 监控行为信号触发干预，StateHarness 维护结构化项目状态供决策。独立诊断会话是关键创新——把『回顾被忽略证据』从主任务流中分离，避免上下文窗口竞争。对用户研发线：Claude Code/Codex CLI 的 AGENTS.md/CLAUDE.md 可视为简化版 StateHarness，但缺乏自动受影响搜索和独立诊断会话。",
+      "detail": {
+        "why": "长程编码 agent 的信息分散在增长的交互历史中，局部编辑与后续后果脱节，进度难以延续。这不是模型能力问题而是状态管理工程问题。",
+        "mechanism": "工作 agent 运行时记录：current problem+hypothesis / findings+decisions / repository relationships / unfinished work。三个运行时支持：(1) prompt 触发记录更新；(2) 自动搜索受影响的 callers/tests/docs；(3) compact working brief 供后续决策。行为信号累积→独立诊断会话回溯历史→浮出被忽略证据。",
+        "deep": "独立诊断会话是架构创新——相当于给 agent 一个『事后审视』通道，不与主任务竞争上下文。pass-to-pass 回归增加（ChainSWE 残留债务 60→43 但回归增加）揭示状态维护的 trade-off：更好的单次完成 vs 更多的跨次回归。与 SpecForge（本期）的 dependency-constrained entity selection 互补——SpecForge 管 spec 间依赖，StateHarness 管 artifact 间依赖。对用户研发知识库：StateHarness 的 working brief 可落地为 AGENTS.md 的结构化状态段（当前任务/已修改文件/已知影响范围/待办）。",
+        "apply": "(1) 在 Claude Code/Codex CLI 中实现简化 StateHarness：每次编辑后自动记录 working brief + 搜索受影响文件；(2) 独立诊断会话：agent 完成任务后启动独立 session 回溯是否有被忽略证据；(3) AGENTS.md 结构化：增加『当前状态』段（问题/发现/决策/未完工作）；(4) 监控 pass-to-pass 回归：状态维护可能引入跨次回归需额外测试。",
+        "caveats": "pass-to-pass 回归增加是真实 trade-off——更好的单次完成但更多跨次退化。三个评测均为 repository-level，真实大型项目效果未验证。独立诊断会话的额外 token 成本未报告。引用待核实（Semantic Scholar 429 限流，新文预期 0）。",
+        "business": "对 AI for 研发工程实践：StateHarness 的『独立诊断会话』模式可迁移到业务 agent——业务 agent 完成查询后启动独立会话审视是否有被忽略的字段语义/数据可信度问题。working brief 模式对用户上百字段宽表 API 场景直接适用：记录当前查询目标+已调 API+已知字段含义+待验证假设。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.17616",
+            "title": "StateHarness: Maintaining Evolving Project State for Long-Horizon Coding Agents"
+          }
+        ],
+        "diagram": {
+          "title": "StateHarness：演进项目状态维护架构",
+          "flow": [
+            {
+              "label": "Working Agent",
+              "sub": "执行主任务",
+              "type": "backend"
+            },
+            {
+              "label": "State Record",
+              "sub": "问题/发现/关系/待办",
+              "type": "database"
+            },
+            {
+              "label": "Auto Search",
+              "sub": "受影响 callers/tests/docs",
+              "type": "backend"
+            },
+            {
+              "label": "Working Brief",
+              "sub": "compact 供决策",
+              "type": "frontend"
+            },
+            {
+              "label": "Behavior Signals",
+              "sub": "累积触发诊断",
+              "type": "security"
+            },
+            {
+              "label": "Diagnostic Session",
+              "sub": "独立回溯被忽略证据",
+              "type": "backend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "核心创新",
+              "text": "独立诊断会话：把『回顾被忽略证据』从主任务流分离，避免上下文窗口竞争"
+            },
+            {
+              "label": "Trade-off",
+              "text": "单次完成↑但 pass-to-pass 回归↑——更好的完成但更多跨次退化"
+            },
+            {
+              "label": "数据",
+              "text": "RefactorBench 29.4%→35.3% / LHTB 0.427→0.576 / ChainSWE 35.1%→39.5%"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "rnd",
+      "title": "SWE-MISBEHAVIOR：首个编码 agent 边界违规分类法——CODE-KIT 降误行为 52%",
+      "date": "2026-10-15",
+      "source": "arXiv 2610.18206",
+      "link": "https://arxiv.org/abs/2610.18206",
+      "summary": "首个编码 agent 边界违规行为的分类法和评测框架。7.4K 人机协作合成样本跨三层 agent 动作空间：(i)代码生成 (ii)文件管理 (iii)系统交互，覆盖 11 种误行为（编码动作违规/CRUD 文件误行为/系统完整性滥用/任务目标错位）。在 OpenHands/smolagents 上实验发现：依赖误解读达 98.5%、无意识修改用户输入 50.5%、静默破坏环境完整性 53%。CODE-KIT 轻量自适应框架结合误行为感知指南+新工具，降误行为 52%（smolagents）/34%（OpenHands）同时提升任务完成。",
+      "insight": "这是 coding agent 安全治理的基准性工作——首次系统化分类 agent 的『边界违规』而非仅关注功能正确性。核心发现：98.5% 依赖误解读意味着 agent 大量时间在错误理解项目结构。与 10/9 简报 PASAC（五层边界保证栈）互补：PASAC 从安全事件复盘出发，SWE-MISBEHAVIOR 从行为分类法出发。对用户研发线：团队部署 OpenHands/smolagents 时应评估这 11 类误行为，CODE-KIT 的误行为感知指南是现成 checklist。",
+      "detail": {
+        "why": "编码 agent 的安全性不仅取决于是否生成正确代码，还取决于是否遵守行为边界（不修改不该修改的文件/不破坏环境完整性/不偏离任务目标）。此前无系统分类法。",
+        "mechanism": "三层×11 类分类法：(1)代码生成层——依赖误解读/编码规范违规/不安全代码模式；(2)文件管理层——CRUD 误行为（创建/读取/更新/删除不该操作的文件）；(3)系统交互层——环境完整性破坏/系统滥用/任务目标错位。CODE-KIT = 误行为感知 guidelines + 新工具（边界检查/依赖验证/环境快照）。",
+        "deep": "98.5% 依赖误解读是惊人数据——意味着 agent 在多数情况下错误理解 import/模块/包关系。这与 StateHarness（本期）的『自动搜索受影响 callers/tests/docs』互补——StateHarness 主动维护仓库关系，SWE-MISBEHAVIOR 揭示不维护时的后果。CODE-KIT 降误行为同时提升任务完成说明安全约束与功能正确性非零和。对用户 Claude Code 部署：CLAUDE.md 中的 rules 可视为简化 CODE-KIT guidelines，但缺乏 11 类系统性覆盖和自动化工具。",
+        "apply": "(1) 评估现有 coding agent 部署的 11 类误行为基线；(2) 在 CLAUDE.md/AGENTS.md 中增加 CODE-KIT 风格的误行为感知 guidelines；(3) 增加依赖验证工具（import 理解检查）+环境快照工具（变更前后对比）；(4) 监控依赖误读率——如果高，说明仓库结构理解基建不足。",
+        "caveats": "7.4K 样本为人机协作合成，可能不完全代表真实项目分布。CODE-KIT 的 guidelines 是静态的，未验证对不同项目类型的泛化。引用待核实（Semantic Scholar 429 限流，新文预期 0）。",
+        "business": "对 AI for 研发安全治理市场：SWE-MISBEHAVIOR 的 11 类分类法可成为 coding agent 安全评估标准——类似 OWASP Top 10 对 Web 安全。对 AI for 业务：『边界违规』概念直接迁移到业务 agent——agent 不该查不该查的字段（字段级 RBAC）/不该调不该调的 API（API 权限边界）/不该修改不该修改的状态（读写分离）。CODE-KIT 的『误行为感知 guidelines+工具』模式是业务 agent 治理模板。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.18206",
+            "title": "SWE-MISBEHAVIOR: Benchmarking and Mitigating Boundary Violations in Software Coding Agents"
+          }
+        ],
+        "diagram": {
+          "title": "SWE-MISBEHAVIOR：编码 agent 边界违规三层分类法",
+          "flow": [
+            {
+              "label": "Code Generation",
+              "sub": "依赖误读 98.5%",
+              "type": "backend"
+            },
+            {
+              "label": "File Management",
+              "sub": "CRUD 误行为",
+              "type": "database"
+            },
+            {
+              "label": "System Interaction",
+              "sub": "环境完整性 53%",
+              "type": "security"
+            },
+            {
+              "label": "CODE-KIT",
+              "sub": "guidelines+tools",
+              "type": "backend"
+            },
+            {
+              "label": "效果",
+              "sub": "降误行为 52%/34%",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "核心数据",
+              "text": "依赖误读 98.5% / 无意识修改用户输入 50.5% / 静默破坏环境 53%"
+            },
+            {
+              "label": "CODE-KIT",
+              "text": "误行为感知 guidelines + 边界检查/依赖验证/环境快照工具"
+            },
+            {
+              "label": "业务迁移",
+              "text": "11 类分类法→业务 agent 安全评估标准（字段 RBAC/API 权限/读写分离）"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "rnd",
+      "title": "Cortex：度量门控的 harness 技能/规则进化与剪枝——一次通过不证明有效",
+      "date": "2026-10-15",
+      "source": "arXiv 2610.14216",
+      "link": "https://arxiv.org/abs/2610.14216",
+      "summary": "Claude Code 等 coding agent 也遵循开发者写的文本文件（项目文件/skills/rules），统称 harness。开发者每次纠正 agent 时就往 harness 加内容，但一次成功证明不了什么——同一 agent 可能一次通过下一次失败。Cortex 把开发者修复存为可重放任务，找到反复出现的纠正，一次写一个 skill 或 rule，只在重复运行 with/without 显示净增益且无任务明显变差时才保留。删除前同样测试。用 Claude Haiku 4.5 测试：harness 使 agent 更常遵守约定，未读区域不变，每次 turn 都 offer 的 skills 很少被打开。rules 做了大部分工作，skills 仅在提供相关文件时有用。在 Claude Sonnet 5 上单次 harness 增益很小。",
+      "insight": "Cortex 回答了一个实操问题：如何科学地管理 Claude Code 的 CLAUDE.md/skills/rules。核心洞察是『一次通过不证明有效』——必须重复 A/B 测试。rules > skills 的发现对 harness 设计有指导意义：自动加载的 rules 比需要主动打开的 skills 更有效。对用户研发线：团队维护 CLAUDE.md 时应采用 Cortex 的度量门控方法——不盲目添加规则，而是 A/B 测试验证净增益。",
+      "detail": {
+        "why": "coding agent 的 harness（skills/rules/项目文件）是开发者持续添加的，但缺乏验证机制。一次成功可能是运气，盲目添加规则可能引入冲突或噪音。",
+        "mechanism": "Cortex 流程：(1) 开发者修复存为可重放任务；(2) 找到反复出现的纠正模式；(3) 一次写一个 skill 或 rule；(4) 重复运行 with/without 对比——净增益且无任务变差才保留；(5) 删除前同样测试；(6) 不添加/删除 agent 从未用过的文本。",
+        "deep": "rules > skills 的发现是关键——自动加载的 rules（CLAUDE.md 中匹配文件时自动加载）比需要 agent 主动打开的 skills 更有效，因为 agent 的 skill 选择本身不可靠。这与 SWE-MISBEHAVIOR（本期）的『98.5% 依赖误读』共振——agent 的自主判断（选哪个 skill）不可靠，确定性加载（rules）更可靠。在 Sonnet 5 上增益小说明强模型对 harness 依赖更低——harness 工程对弱模型价值更大。Cortex 的『可重放任务+A/B 测试』是 harness 管理的科学方法，可类比软件工程的 A/B 测试。",
+        "apply": "(1) 在 Claude Code 中实现 Cortex 风格 harness 管理：每次纠正存为可重放任务，A/B 测试验证规则有效性；(2) 优先用 rules（自动加载）而非 skills（需主动打开）；(3) 定期剪枝——删除 A/B 测试无净增益的规则；(4) 对强模型（Sonnet 5+）减少 harness 依赖，对弱模型（Haiku）增加。",
+        "caveats": "在 Claude Sonnet 5 上单次 harness 增益很小——harness 工程对强模型边际效益递减。Cortex 未检测到 harmful rules（agent 未打开 harmful skills，对 harmful rules 未达结论）——说明检测而非预防是局限。仅在专用仓库测试，真实项目效果待验证。引用待核实（Semantic Scholar 429 限流，新文预期 0）。",
+        "business": "对 AI for 研发工具市场：harness 管理（skills/rules 的添加/验证/剪枝）将成为 coding agent 平台的必需功能。Cortex 的度量门控方法论可迁移到业务 agent——业务 agent 的 prompt/规则/工具定义同样需要 A/B 测试验证有效性。『rules > skills』的发现对业务 agent 治理有启示：确定性加载的安全/权限规则比需要 agent 自主选择的策略更可靠。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.14216",
+            "title": "Cortex: Measurement-Gated Evolution and Pruning of Coding-Agent Skills and Rules"
+          }
+        ],
+        "diagram": {
+          "title": "Cortex：度量门控 harness 进化流程",
+          "flow": [
+            {
+              "label": "Developer Fix",
+              "sub": "存为可重放任务",
+              "type": "backend"
+            },
+            {
+              "label": "Pattern Mining",
+              "sub": "找反复纠正",
+              "type": "backend"
+            },
+            {
+              "label": "Write Rule/Skill",
+              "sub": "一次一个",
+              "type": "database"
+            },
+            {
+              "label": "A/B Test",
+              "sub": "with/without 净增益",
+              "type": "security"
+            },
+            {
+              "label": "Keep/Prune",
+              "sub": "增益→保留/无增益→删",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "核心洞察",
+              "text": "一次通过不证明有效——必须重复 A/B 测试"
+            },
+            {
+              "label": "rules > skills",
+              "text": "自动加载的 rules 比 agent 主动选择的 skills 更有效"
+            },
+            {
+              "label": "模型差异",
+              "text": "强模型（Sonnet 5）对 harness 依赖低，弱模型（Haiku）价值大"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "business",
+      "title": "VeriPIE：Lean 定理证明器检查 text-to-SQL 查询计划——金融 AI 治理的可审查证据",
+      "date": "2026-10-15",
+      "source": "arXiv 2610.17493",
+      "link": "https://arxiv.org/abs/2610.17493",
+      "summary": "金融 AI 治理和模型风险管理（MRM）强调独立验证、透明性、有效挑战。VeriPIE 是神经符号框架：LM 生成 + 符号检查。它集成直接 SQL 生成与 QuerySketch——一种结构化计划语言，由 Lean 定理证明器后端检查。计划诊断指导修复（SQL 生成前），执行一致性+有界数据库搜索暴露隐藏分歧。Spider 72.05% test-suite accuracy vs DeepEye 65.67%，两查询 shortlist 覆盖 78.43%。BIRD 68.90% 执行准确率。核心价值是可审查证据：明确计划检查、修复诊断、具体分歧。",
+      "insight": "这是 text-to-SQL 领域的神经符号方法突破——用 Lean 定理证明器做查询计划的形式化检查，而非依赖 LM 自评。与 10/9 简报 Sentinel（轨迹置信度分类器）互补：Sentinel 从运行时轨迹派生置信度，VeriPIE 从计划层面形式化验证。对用户业务线：VeriPIE 的 QuerySketch 可落地为业务 agent 的 API 调用计划层——agent 先生成结构化调用计划（哪个 API/哪些字段/什么过滤条件），经形式化检查后再执行。金融治理视角直接匹配用户对业务数据可信度验证的需求。",
+      "detail": {
+        "why": "text-to-SQL 生成的查询在一个数据库上正确不代表表达正确计算——不同 SQL 可表达不同计算。金融场景要求独立验证和透明性，LM 自评不可信（与 10/9 Consistency Quadrant 共振）。",
+        "mechanism": "VeriPIE = LM 生成 + 符号检查。(1) LM 生成 QuerySketch（结构化计划语言）+ 直接 SQL；(2) Lean 定理证明器后端检查 QuerySketch（类型/一致性/歧义）；(3) 计划诊断指导修复（SQL 生成前）；(4) 执行一致性检查：多个候选在同一数据库上执行结果是否一致；(5) 有界数据库搜索：构造区分数据库暴露隐藏分歧（不同 SQL 在区分库上结果不同→歧义）。",
+        "deep": "Lean 定理证明器的引入是关键——把查询计划验证从『LM 自评』升级为『形式化证明』。有界数据库搜索是创新——不依赖真实数据而是构造区分数据库暴露语义分歧，与 10/9 Beyond Correctness（执行正确≠歧义已解决）共振。对用户上百字段宽表 API 场景：QuerySketch 可落地为 API 调用计划层——agent 生成结构化计划（API endpoint/字段组合/过滤条件/聚合方式），经 schema 一致性检查后执行。区分数据库搜索可类比为『区分 API 调用』——构造不同参数组合暴露字段语义分歧。金融 MRM 视角对用户业务数据可信度验证方向直接匹配。",
+        "apply": "(1) 在业务 agent 中引入 API 调用计划层：agent 先生成结构化 QuerySketch（API+字段+过滤+聚合），经 schema 检查后执行；(2) 用形式化检查替代 LM 自评：API 调用计划的字段/类型/一致性检查用确定性代码而非 LM；(3) 构造区分 API 调用暴露字段语义分歧（不同参数组合→不同结果→字段含义有歧义）；(4) 金融场景直接参考 VeriPIE 的 MRM 框架——独立验证+透明性+有效挑战。",
+        "caveats": "Lean 定理证明器的部署门槛高——需要形式化方法专业知识。有界数据库搜索的计算成本可能高（需构造多个区分库）。Spider/BIRD 是标准 benchmark，企业级复杂 schema 效果待验证。不证明与用户意图一致——只暴露隐藏分歧。引用待核实（Semantic Scholar 429 限流，新文预期 0）。",
+        "business": "对 text-to-SQL/ChatBI 市场：VeriPIE 的神经符号方法把验证从『LM 自评』升级为『形式化证明』，这对金融/医疗等高合规场景有直接商业价值。对用户业务语义理解子领域：QuerySketch 计划层是 API 语义标注的验证基建——agent 的 API 调用计划经形式化检查后才执行，提高业务数据可信度。与 WrenAI v0.5.0 pluggable access control（本期）互补——WrenAI 管字段级 RBAC，VeriPIE 管查询计划正确性。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.17493",
+            "title": "VeriPIE: Checkable Query Plans and Evidence-Guided Selection for Text-to-SQL"
+          }
+        ],
+        "diagram": {
+          "title": "VeriPIE：神经符号 text-to-SQL 验证",
+          "flow": [
+            {
+              "label": "LM Generate",
+              "sub": "QuerySketch + SQL",
+              "type": "backend"
+            },
+            {
+              "label": "Lean Check",
+              "sub": "定理证明器验证计划",
+              "type": "security"
+            },
+            {
+              "label": "Repair",
+              "sub": "诊断指导修复",
+              "type": "backend"
+            },
+            {
+              "label": "Exec Consistency",
+              "sub": "多候选执行一致性",
+              "type": "database"
+            },
+            {
+              "label": "Distinguishing DB",
+              "sub": "构造区分库暴露分歧",
+              "type": "database"
+            },
+            {
+              "label": "Reviewable Evidence",
+              "sub": "计划检查+诊断+分歧",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "核心创新",
+              "text": "Lean 定理证明器做查询计划形式化检查，替代 LM 自评"
+            },
+            {
+              "label": "金融 MRM",
+              "text": "独立验证+透明性+有效挑战——直接匹配金融 AI 治理需求"
+            },
+            {
+              "label": "API 类比",
+              "text": "QuerySketch→API 调用计划层：endpoint+字段+过滤+聚合 经 schema 检查后执行"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "business",
+      "title": "DSABench：多数据库 agent 选源+协调+执行联合评测——成功率仅 6.7-17%",
+      "date": "2026-10-15",
+      "source": "arXiv 2610.14700",
+      "link": "https://arxiv.org/abs/2610.14700",
+      "summary": "大多数 text-to-SQL benchmark 预设目标数据库。但在大型数据目录中，选源本身是问题的一部分：agent 必须找到请求所需的每个数据库、确定结果如何组合、执行工作流。DSABench 815 人审任务来自 Spider/BIRD/LiveSQLBench，618 需多个数据库贡献，105 允许多种源解读。RouteEnv 让 agent 检查公共目录证据不暴露 gold 标注。7 个模型后端中最高 RA-Set 60.55% vs 含协调 RA-Graph 34.66%。含执行非特权成功率仅 6.69-7.98%（无澄清）/11.44-13.25%（一次澄清），最佳澄清配置 16.99%。歧义任务上澄清提升精确分支源恢复 39.8-43.2 个百分点。",
+      "insight": "DSABench 揭示了 text-to-SQL 的真实复杂度——不是单库查 SQL 而是多库选源+协调+执行。6.7-17% 的成功率说明当前 agent 在多源场景几乎不可用。对用户业务线：用户不直连数据库而是通过高业务含义 API 查数——API 目录就是『数据目录』，agent 必须从上百个 API 中选对、确定结果如何组合、执行工作流。DSABench 的 RouteEnv（检查公共目录证据不暴露答案）是 API 目录探索的现成架构。澄清提升 39.8-43.2 个百分点直接支持 PlanPool（10/8 简报）的 ask-or-drop 设计。",
+      "detail": {
+        "why": "企业级数据 agent 不只在一个数据库里写 SQL——它需要在大型数据目录中找到正确的数据库、协调跨库结果、执行完整工作流。当前 benchmark 不评测这些能力。",
+        "mechanism": "DSABench 三阶段：(1) Source Discovery——从目录中找所需数据库；(2) Coordination——确定结果如何组合（跨库依赖/执行顺序）；(3) Execution——执行本地 SQL。RouteEnv 让 agent 检查公共目录证据（表名/描述/列信息）不暴露 gold 标注。Executable contracts 定义源参与、跨源依赖、源本地执行。",
+        "deep": "RA-Set 60.55% vs RA-Graph 34.66% 的差距揭示协调是最大瓶颈——选对源容易（60%），加上协调骤降到 35%。含执行后 6.7-17% 说明端到端几乎不可用。这与 10/8 简报 HarnessSQL（训练-部署鸿沟）共振——静态训练不覆盖多轮有状态交互。对用户 API 场景：API 目录=数据目录，选源=选 API，协调=确定 API 调用顺序和数据组合方式。RouteEnv 的『检查公共目录证据』可落地为 API 目录探索——agent 读 API schema/description 确定是否相关，不暴露正确答案。澄清提升 39.8-43.2 个百分点是硬数据——支持歧义场景必须 ask-or-drop（PlanPool）。",
+        "apply": "(1) 构建 API 目录的 RouteEnv：agent 检查 API schema/description/字段语义标注确定相关性，不暴露正确 API 选择；(2) 评估 agent 的 API 选源+协调+执行三阶段成功率——预期很低需专项优化；(3) 歧义 API 调用必须 ask-or-drop：字段语义不清时加入 pool 必须确认或记录假设；(4) executable contracts 定义 API 参与依赖——哪个 API 的输出是哪个 API 的输入。",
+        "caveats": "Spider/BIRD/LiveSQLBench 来源的任务可能不完全代表企业级多库场景。RouteEnv 的公共目录证据质量影响选源效果。一次澄清的 16.99% 最佳配置仍很低——多轮澄清可能更有效但成本高。引用待核实（Semantic Scholar 429 限流，新文预期 0）。",
+        "business": "对企业数据 agent 市场：DSABench 揭示多库场景成功率 6.7-17% 是对行业的冷水——当前 text-to-SQL 产品在多源企业场景几乎不可用。对用户业务系统精确查询子领域：API 目录选源是核心挑战——上百个 API 中选对+协调组合是 agent 的真实任务。RouteEnv 架构是 API 目录探索的现成模板。澄清提升 39.8-43.2 个百分点是向管理层论证交互式消歧投入的硬 ROI 数据。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.14700",
+            "title": "DSABench: Benchmarking Source Discovery, Coordination, and Execution for Multi-Database Agents"
+          }
+        ],
+        "diagram": {
+          "title": "DSABench：多数据库 agent 三阶段评测",
+          "flow": [
+            {
+              "label": "Data Catalog",
+              "sub": "多数据库目录",
+              "type": "database"
+            },
+            {
+              "label": "RouteEnv",
+              "sub": "检查公共证据不暴露答案",
+              "type": "backend"
+            },
+            {
+              "label": "Source Discovery",
+              "sub": "选源 RA-Set 60.55%",
+              "type": "backend"
+            },
+            {
+              "label": "Coordination",
+              "sub": "协调 RA-Graph 34.66%",
+              "type": "backend"
+            },
+            {
+              "label": "Execution",
+              "sub": "执行 6.7-17%",
+              "type": "database"
+            },
+            {
+              "label": "Clarification",
+              "sub": "提升 39.8-43.2pp",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "核心数据",
+              "text": "选源 60% → 加协调 35% → 加执行 7-17%——协调是最大瓶颈"
+            },
+            {
+              "label": "API 类比",
+              "text": "API 目录=数据目录，选 API=选源，API 调用顺序=协调"
+            },
+            {
+              "label": "澄清 ROI",
+              "text": "歧义场景澄清提升 39.8-43.2 个百分点——支持 ask-or-drop 设计"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "business",
+      "title": "Keep Your Receipts：agent 知识图谱的 receipt 集合运算清理——污染查询降至 0.4%",
+      "date": "2026-10-15",
+      "source": "arXiv 2610.17719",
+      "link": "https://arxiv.org/abs/2610.17719",
+      "summary": "Agent 构建知识图谱做记忆，构建容易维护难。当源被撤回/推翻/删除时，其上构建的一切（实体合并/推导边/社区摘要）必须重新审视。已部署管线只删直接抽取事实：在真实撤回下污染从 32.2% 降到 28.0%。重建对采样构造器不是修复——同一 300 文档语料两次构建差 29475 个 artifact，是移除 61 个撤回文档变化量（6248）的 5 倍。PolyGraph 要求构造器为每个 artifact 提供 receipt（源证据替代包），清理变为集合运算无需模型调用。一句一 receipt 达 100%/88% 忠实度，污染查询降至 0.4% at 99.8% recall。",
+      "insight": "这是 agent 知识图谱治理的突破性工作——用 receipt（源证据替代包）把知识图谱清理从『重建/LLM 判断』降为『集合运算』。核心发现：重建不是修复（两次构建差 5 倍于撤回变化量）说明构造器的非确定性是知识图谱不可靠的根源。对用户业务线：业务知识图谱（领域本体/实体关系）同样面临源变更后的清理问题。PolyGraph 的 receipt 模式可落地为业务知识图谱的溯源基建——每个实体/关系/属性标注附带源证据包，源变更时集合运算清理而非重建。",
+      "detail": {
+        "why": "Agent 构建的知识图谱作为记忆资产，当底层源变更时必须可信清理。现有方法（删直接事实/重建）不可靠——删除只降污染 4 个百分点，重建引入 5 倍于撤回的变化量。",
+        "mechanism": "PolyGraph：(1) 构造器创建 artifact 时提供 receipt——源证据的替代包，每个声称自给自足；(2) 清理 = 集合运算（receipt 交集/差集），无需模型调用；(3) re-derivation audit：删除 receipt 引用的证据，测试构造器是否仍产生该 artifact；(4) receipt 可信度取决于其形状与 claim 的匹配——merge receipts（每条支撑一个窄 claim）与 re-derivation 68%/85% 一致；summary receipts（整文本一个 flat list）2/3 时间错误。",
+        "deep": "两个关键发现：(1) 重建不是修复——构造器采样导致两次构建差 29475 artifact，说明知识图谱的确定性是可信治理的前提；(2) receipt 形状决定可信度——一句一 receipt（100% 忠实）vs 整文一 receipt（2/3 错误）。与 10/9 简报 OpenMetadata bot 摄取保护用户管理元数据共振——知识图谱/元数据的可信治理需要『源变更→精确清理』而非『重建/覆盖』。对用户『语义层 vs 知识图谱』双路线：知识图谱路线的治理成本此前被低估——PolyGraph 揭示源变更清理是知识图谱的核心治理挑战，receipt 模式是解决方案。语义层（Cube/WrenAI）的治理更简单（定义在代码中可 diff），这是语义层的结构性优势。",
+        "apply": "(1) 在业务知识图谱构建中要求 receipt：每个实体/关系/属性标注附带源证据包；(2) 源变更时用集合运算清理而非重建——降成本+提可信度；(3) 一句一 receipt 而非整文一 receipt——receipt 粒度决定忠实度；(4) re-derivation audit：定期删除 receipt 引用证据测试构造器是否仍产生该 artifact；(5) 评估知识图谱构造器的确定性——如果两次构建差异大，需固定 seed 或确定性构建。",
+        "caveats": "receipt 是构造器自报告——可能不忠实。re-derivation audit 发现 summary receipts 2/3 错误但需要额外构造器调用。仅在 300 文档语料测试，大规模知识图谱效果待验证。引用待核实（Semantic Scholar 429 限流，新文预期 0）。",
+        "business": "对知识图谱/GraphRAG 市场：PolyGraph 的 receipt 模式是知识图谱治理的新范式——从『重建/LLM 判断』到『集合运算』。对用户业务知识库构建子领域：业务知识图谱的源变更清理是核心治理挑战。receipt 模式可落地为业务知识图谱的溯源基建。与语义层路线对比：知识图谱治理成本更高（需 receipt+审计），语义层治理更简单（代码 diff），这是路线选择的治理维度考量。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.17719",
+            "title": "Keep Your Receipts: Trustworthy Cleanup of Agent-Built Knowledge Graphs"
+          }
+        ],
+        "diagram": {
+          "title": "PolyGraph：receipt 集合运算清理知识图谱",
+          "flow": [
+            {
+              "label": "Constructor",
+              "sub": "创建 artifact+receipt",
+              "type": "backend"
+            },
+            {
+              "label": "Receipt",
+              "sub": "源证据替代包",
+              "type": "database"
+            },
+            {
+              "label": "Source Retract",
+              "sub": "源被撤回/推翻",
+              "type": "security"
+            },
+            {
+              "label": "Set Arithmetic",
+              "sub": "receipt 交集/差集",
+              "type": "backend"
+            },
+            {
+              "label": "Re-derivation Audit",
+              "sub": "删证据测再生",
+              "type": "security"
+            },
+            {
+              "label": "Result",
+              "sub": "污染 0.4% at 99.8% recall",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "核心发现1",
+              "text": "重建不是修复——两次构建差 29475 artifact，是撤回变化的 5 倍"
+            },
+            {
+              "label": "核心发现2",
+              "text": "receipt 形状决定忠实度：一句一 receipt 100% vs 整文一 receipt 33%"
+            },
+            {
+              "label": "路线对比",
+              "text": "知识图谱治理需 receipt+审计，语义层治理只需代码 diff——语义层结构性优势"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "business",
+      "title": "SpecForge：编码 agent 行为规范自改进——Pareto 多前沿树搜索解决 output coupling",
+      "date": "2026-10-15",
+      "source": "arXiv 2610.15708",
+      "link": "https://arxiv.org/abs/2610.15708",
+      "summary": "基于冻结 LM 的 coding agent 可通过精炼外部上下文提升性能不更新权重。SpecForge 研究通过行为规范（描述程序实体行为的自然语言文档）的递归自改进：agent 从当前 spec 生成代码→执行验证测试→基于失败精炼 spec→精炼后的 spec 指导后续生成。挑战是 output coupling——改进一个实体的 spec 可能退化其他实体（打地鼠效应）。SpecForge 多前沿树搜索三机制：(i) Pareto 状态选择保留互补 spec 状态防止过早承诺；(ii) 依赖约束实体选择优先 callee-before-caller；(iii) 错误多样化扩展。DevEval+ 上 Claude-4.5-Sonnet 94.9% 解决率，平均提升 5.7 个百分点。改进的 spec 迁移到跨语言翻译和新功能实现。",
+      "insight": "SpecForge 把 coding agent 的自改进从『改 prompt』升级为『改行为规范（spec）』——spec 是描述程序实体行为的结构化文档，比 prompt 更精确且可迁移。output coupling（打地鼠效应）是关键洞察——局部改进导致全局回归。对用户研发线：团队的研发知识库（RAG for codebase/代码图谱/AGENTS.md）可视为 spec 的简化版，SpecForge 的 Pareto 多前沿树搜索是 spec 管理的科学方法。对用户业务线：业务术语表/字段语义标注也可通过 SpecForge 风格的递归精炼+output coupling 控制来持续改进。",
+      "detail": {
+        "why": "冻结模型的 coding agent 不能改权重但可改外部上下文。行为规范（spec）是比 prompt 更结构化的外部上下文——描述程序实体行为指导 agent 生成正确代码。递归精炼 spec 可渐进提升 agent 对代码库的理解。",
+        "mechanism": "SpecForge 循环：(1) agent 从当前 spec 生成代码；(2) 执行验证测试评估；(3) 基于失败精炼 spec；(4) 精炼 spec 指导后续生成。三机制解决 output coupling：(i) Pareto 状态选择——保留互补 spec 状态不过早承诺；(ii) 依赖约束选择——优先 callee-before-caller（先改被调用者再改调用者）；(iii) 错误多样化扩展——用不同失败子集探索多种精炼。",
+        "deep": "output coupling 是 spec/知识管理的核心挑战——改进一处退化另一处。Pareto 多前沿树搜索的解法与 Cortex（本期）的 A/B 测试互补——Cortex 验证单个规则有效性，SpecForge 管理规则间依赖。callee-before-caller 的依赖约束对业务术语表/字段语义标注有迁移价值——先定义被引用的概念再定义引用者（先定义『订单状态码』再定义『订单金额计算』）。spec 迁移到跨语言和新功能说明改进的 spec 是可迁移的知识资产而非任务特定 hack。对用户研发知识库：AGENTS.md 的行为规范段可通过 SpecForge 风格递归精炼+Pareto 搜索持续改进。",
+        "apply": "(1) 研发知识库的 spec/AGENTS.md 用 SpecForge 风格递归精炼：生成→测试→基于失败精炼 spec；(2) 控制 output coupling：Pareto 状态选择保留互补 spec+依赖约束优先 callee-before-caller；(3) 业务术语表/字段语义标注同样递归精炼——先定义被引用概念再定义引用者；(4) 改进的 spec 作为可迁移知识资产——跨任务/跨语言复用。",
+        "caveats": "多前沿树搜索的计算成本高（多次生成+测试+精炼）。DevEval+ 是中等规模 benchmark，大型代码库效果待验证。output coupling 的检测依赖执行测试——无测试的 spec 改进无法验证。引用待核实（Semantic Scholar 429 限流，新文预期 0）。",
+        "business": "对 AI for 研发知识管理市场：SpecForge 的『行为规范自改进+Pareto 搜索』是研发知识库持续运营的方法论。对用户业务知识库构建：业务术语表/字段语义标注可通过 SpecForge 风格递归精炼持续改进，output coupling 控制是术语一致性的工程方法。callee-before-caller 依赖约束对业务本体构建有指导意义——先定义基础概念再定义复合概念。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.15708",
+            "title": "SpecForge: Recursive Self-Improvement for Coding Agents via Behavioral Specifications"
+          }
+        ],
+        "diagram": {
+          "title": "SpecForge：行为规范递归自改进+Pareto 树搜索",
+          "flow": [
+            {
+              "label": "Current Specs",
+              "sub": "行为规范文档",
+              "type": "database"
+            },
+            {
+              "label": "Generate Code",
+              "sub": "从 spec 生成",
+              "type": "backend"
+            },
+            {
+              "label": "Execute Tests",
+              "sub": "执行验证",
+              "type": "security"
+            },
+            {
+              "label": "Refine Specs",
+              "sub": "基于失败精炼",
+              "type": "backend"
+            },
+            {
+              "label": "Pareto Search",
+              "sub": "互补状态防过早承诺",
+              "type": "backend"
+            },
+            {
+              "label": "Dependency",
+              "sub": "callee-before-caller",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "核心挑战",
+              "text": "output coupling——改进一处退化另一处（打地鼠效应）"
+            },
+            {
+              "label": "三机制",
+              "text": "Pareto 状态选择+依赖约束选择+错误多样化扩展"
+            },
+            {
+              "label": "迁移价值",
+              "text": "改进的 spec 迁移到跨语言翻译和新功能实现——可迁移知识资产"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "cross",
+      "title": "Self-Evolving Agent Harness：66 页理论框架形式化 harness 自进化——PAC-learning+retention bound",
+      "date": "2026-10-15",
+      "source": "arXiv 2610.18813",
+      "link": "https://arxiv.org/abs/2610.18813",
+      "summary": "Harness 自进化修改 agent 的软件脚手架（prompt/memory/workflow/可执行组件）保持模型权重固定。框架形式化反馈驱动过程：被接受的修订跨运行持久化。区分更新目标与提议/准入机制，区分解释状态变更 vs 工具/代码修订 vs 仓库级控制逻辑 vs 插件组合。用进化优化刻画搜索，用 continual PAC-learning 检查可靠性。在显式假设下分析得期望泛化 bound、历史回归预算条件 retention bound、独立验证数据高概率准入规则。66 页讨论相关理论/算法/评测/应用/广泛影响。GitHub 开源 zgcagi/Harness-RSI。",
+      "insight": "这是 harness 自进化的理论奠基工作——把『改 agent 的软件脚手架』从工程实践升级为有形式化保证的理论框架。PAC-learning 泛化 bound+retention bound+准入规则三件套是 harness 自进化的可靠性保证。对用户交叉线：harness 自进化是 coding agent 和业务 agent 共享的基建——Claude Code 的 CLAUDE.md/AGENTS.md 自进化、业务 agent 的 prompt/规则/工具定义自进化都适用。与 Cortex（本期）的度量门控互补——Cortex 是工程实现，Self-Evolving Agent Harness 是理论基础。",
+      "detail": {
+        "why": "Agent 的软件脚手架（harness）是可靠性的关键——但自进化 harness 如果无形式化保证可能引入退化。需要理论框架区分可安全的自进化与不可安全的。",
+        "mechanism": "三件套形式化保证：(1) 期望泛化 bound——continual PAC-learning 框架下 harness 修订的泛化误差有上界；(2) retention bound——条件于历史回归预算，确保自进化不累积退化；(3) 准入规则——使用独立验证数据高概率接受有益修订。区分四类更新目标：解释状态变更（prompt/memory）/工具代码修订/仓库级控制逻辑/插件组合。",
+        "deep": "PAC-learning 的引入是关键——把 harness 自进化从『试了就留』升级为『有概率保证的泛化』。retention bound 直击 Cortex（本期）的 pass-to-pass 回归问题——自进化必须设定回归预算。准入规则与 Cortex 的 A/B 测试互补——Cortex 是工程实现，准入规则是理论基础。四类更新目标的区分对实践有指导：解释状态变更（低风险）vs 工具代码修订（中风险）vs 仓库级控制逻辑（高风险）vs 插件组合（最复杂）。66 页+开源代码（zgcagi/Harness-RSI）说明这是系统性工作。对用户双主题：harness 自进化是研发 agent 和业务 agent 的共享基建——CLAUDE.md 自进化/业务 agent prompt 自进化/工具定义自进化都适用三件套保证。",
+        "apply": "(1) 在 harness 自进化中引入回归预算——设定历史退化上限，超过则暂停自进化；(2) 用独立验证数据做准入——不依赖训练数据验证修订效果；(3) 区分四类更新目标的风险等级——解释状态变更可更激进，工具/控制逻辑需保守；(4) 参考 zgcagi/Harness-RSI 开源代码实现 PAC-learning 准入；(5) 业务 agent 的 prompt/规则自进化同样适用三件套。",
+        "caveats": "PAC-learning bound 依赖显式假设——实际场景假设可能不成立。66 页框架的理论结果需实证验证。开源代码的成熟度待评估。continual learning 的 catastrophic forgetting 在 harness 场景的体现待研究。引用待核实（Semantic Scholar 429 限流，新文预期 0）。",
+        "business": "对 Agent 平台市场：harness 自进化的形式化保证是 Agent 平台可靠性的理论基础——区分『有保证的自进化』与『无保证的试错』。对用户双主题：harness 自进化是研发 agent 和业务 agent 的共享基建，三件套保证（泛化 bound+retention bound+准入规则）适用于两类 agent 的 harness 管理。与 Cortex 的度量门控形成理论-工程闭环。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.18813",
+            "title": "Self-Evolving Agent Harness"
+          }
+        ],
+        "diagram": {
+          "title": "Self-Evolving Agent Harness：三件套形式化保证",
+          "flow": [
+            {
+              "label": "Harness RSI",
+              "sub": "改脚手架不改权重",
+              "type": "backend"
+            },
+            {
+              "label": "4 Update Types",
+              "sub": "状态/工具/控制/插件",
+              "type": "database"
+            },
+            {
+              "label": "PAC-learning",
+              "sub": "泛化 bound",
+              "type": "security"
+            },
+            {
+              "label": "Retention Bound",
+              "sub": "回归预算条件",
+              "type": "security"
+            },
+            {
+              "label": "Admission Rule",
+              "sub": "独立验证高概率准入",
+              "type": "backend"
+            },
+            {
+              "label": "Persistent",
+              "sub": "接受的修订跨运行持久",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "三件套",
+              "text": "PAC-learning 泛化 bound + retention bound + 独立验证准入规则"
+            },
+            {
+              "label": "四类目标",
+              "text": "解释状态变更（低风险）→工具代码→仓库控制逻辑→插件组合（最复杂）"
+            },
+            {
+              "label": "理论-工程闭环",
+              "text": "Self-Evolving Harness（理论）+ Cortex（工程实现）= harness 自进化可靠性保证"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "cross",
+      "title": "Google Deep Review：四阶段 agentic pipeline 公开发布——文档验证瓶颈的工业级参照",
+      "date": "2026-10-15",
+      "source": "Google Research Blog",
+      "link": "https://research.google/blog/analyzing-technical-documents-with-deep-review/",
+      "summary": "Google Research 公开发布 Deep Review——agentic AI 系统提供复杂文档的严格反馈和技术验证。起源于计算机科学论文分析（Paper Assistant Tool/PAT），已服务 STOC/ICML/NeurIPS/ICLR 四会议 16k+ 论文审稿。四阶段 pipeline：(1) 文档分段——segmenter agent 自动分解为逻辑段（可重叠）；(2) 自适应预算——按信息密度动态分配算力（数学证明段>引言段）；(3) 深度并行验证——专用推理 agent 各审一段（有全文上下文）；(4) 全局综合+agentic grounding——综合段级报告+跨段一致性检查+外部 grounding 防幻觉。扩展至法律/金融文档。Gemini API 集成。文档不用于训练。",
+      "insight": "Deep Review 是文档理解+验证的工业级参照——四阶段 pipeline（分段→预算→并行验证→综合+grounding）解决了单 prompt LLM 的三大失败（token 预算耗尽/长上下文跨段依赖遗漏/接受微妙声明不审查）。对用户交叉线：文档理解是研发线和业务线共享基建——研发线理解技术文档/API 文档，业务线理解合同/单据/报告。自适应预算分配是关键创新——不同段分配不同算力，避免均匀分配浪费。对用户文档理解子领域（OCR/PDF 解析/单据识别/结构化抽取）：Deep Review 的四阶段 pipeline 是处理复杂文档的架构模板。",
+      "detail": {
+        "why": "AI 加速内容创作但人类验证能力固定——形成验证瓶颈。单 prompt LLM 在长复杂文档上失败：token 预算耗尽、长上下文跨段依赖遗漏、接受微妙声明不审查。",
+        "mechanism": "四阶段：(1) Document segmentation——segmenter agent 分解为逻辑段（Introduction/experiments/methodology 等），可重叠，覆盖全部内容；(2) Adaptive budgeting——按信息密度动态分配算力+专用推理 scaling pipeline（数学证明段>引言段）；(3) Deep parallel verification——专用推理 agent 各审一段（有全文上下文跟踪跨引用），确保审查任务可管理+并行 swarm 协调；(4) Global synthesis+agentic grounding——综合段级报告+跨段一致性检查（必要时重跑逻辑检查）+外部 grounding 检查+工具调用防幻觉。",
+        "deep": "自适应预算分配是核心创新——不同段的信息密度不同，均匀分配算力浪费。这与 tokensave v7.15.0（本期）的 if_digest 条件读共振——不是所有内容都需要同等深度处理。深度并行验证中每个 agent 有全文上下文但专注特定段——与 StateHarness（本期）的独立诊断会话互补（分离关注点）。agentic grounding 防幻觉是最后一道防线——外部 grounding 检查+工具调用。16k+ 论文审稿的规模验证了 pipeline 的工业可行性。对用户业务文档理解：合同/单据/报告的处理可参考四阶段——分段（条款/字段/段落）→自适应预算（关键条款> boilerplate）→并行验证（各段专用 agent）→综合+grounding（跨条款一致性+外部验证）。",
+        "apply": "(1) 文档理解 pipeline 参考四阶段架构：分段→自适应预算→并行验证→综合+grounding；(2) 自适应预算：关键条款/数字段分配更多算力，boilerplate/模板段少算力；(3) 并行验证：各段专用 agent 有全文上下文但专注本段；(4) grounding 防幻觉：文档中的声明做外部验证（法规/数据库/知识库）；(5) Gemini API 集成可快速试用 Deep Review。",
+        "caveats": "Deep Review 是 Google 产品有厂商立场——推广 Gemini API。四阶段 pipeline 的 token 成本高（多 agent+多轮）。法律/金融文档的效果宣称但缺乏公开 benchmark。分段策略对非论文文档（合同/单据）的适用性待验证。免费额度 2 review/week，高量需 Gemini API key。",
+        "business": "对文档理解/验证市场：Deep Review 的四阶段 pipeline 是工业级参照——从单 prompt 到 agentic pipeline 是文档处理的范式转移。对用户文档理解子领域：合同/单据/报告处理可参考四阶段架构。自适应预算分配是 token 经济学创新——关键内容多算力，模板内容少算力。16k+ 论文审稿规模验证了可行性。对 AI for 业务：Deep Review 扩展至法律/金融文档说明文档验证的跨域通用性。",
+        "sources": [
+          {
+            "url": "https://research.google/blog/analyzing-technical-documents-with-deep-review/",
+            "title": "Analyzing technical documents with Deep Review - Google Research"
+          }
+        ],
+        "diagram": {
+          "title": "Google Deep Review：四阶段 agentic 文档验证 pipeline",
+          "flow": [
+            {
+              "label": "Document Input",
+              "sub": "PDF/文本",
+              "type": "frontend"
+            },
+            {
+              "label": "Segmentation",
+              "sub": "segmenter agent 分解",
+              "type": "backend"
+            },
+            {
+              "label": "Adaptive Budget",
+              "sub": "按密度分配算力",
+              "type": "cloud"
+            },
+            {
+              "label": "Parallel Verify",
+              "sub": "专用 agent 各审一段",
+              "type": "backend"
+            },
+            {
+              "label": "Global Synthesis",
+              "sub": "综合+跨段一致性",
+              "type": "backend"
+            },
+            {
+              "label": "Agentic Grounding",
+              "sub": "外部验证防幻觉",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "核心创新",
+              "text": "自适应预算分配——数学证明段>引言段，非均匀分配"
+            },
+            {
+              "label": "规模验证",
+              "text": "16k+ 论文审稿（STOC/ICML/NeurIPS/ICLR），扩展至法律/金融"
+            },
+            {
+              "label": "架构模板",
+              "text": "四阶段 pipeline 适用于合同/单据/报告处理：分段→预算→并行验证→综合+grounding"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "TDS 三文：编码 agent 浪费工作量化+agent 不需更多自由度+AI 应用可进化脚手架",
+      "date": "2026-10-15",
+      "source": "Towards Data Science",
+      "link": "https://towardsdatascience.com/coding-agents-can-solve-the-task-but-how-much-work-did-they-waste/",
+      "summary": "TDS 本周三篇高相关文章：(1)《Coding Agents Can Solve the Task — But How Much Work Did They Waste?》（10/13）——编码 agent 能解决任务但浪费多少工作？量化 agent 的无效探索/重复尝试/冗余编辑成本。(2)《Your Agent Doesn't Need More Freedom》（10/13）——agent 不需要更多自由度，约束性 harness 比自主性更可靠。(3)《A Scaffold at the Gate: Building AI Applications That Can Evolve》（10/14）——在 AI 应用入口建脚手架，使应用可进化而非静态。三篇共同指向：agent 可靠性来自工程约束（harness/scaffold）而非模型自主性。",
+      "insight": "TDS 三文共振指向『约束 > 自主』的 agent 设计哲学——与本期 PreciseCoder（约束编辑信号）、StateHarness（约束状态管理）、Cortex（约束 harness 进化）、Self-Evolving Agent Harness（约束自进化准入）四篇论文完全一致。『浪费工作量化』是 agent 成本经济学的关键维度——agent 解决任务的 token/时间成本不只是是否解决，还有多少浪费在无效探索。对用户研发线：coding agent 的成本评估应纳入『浪费率』指标。对用户业务线：业务 agent 的 API 调用成本评估应纳入『无效调用率』。",
+      "detail": {
+        "why": "TDS 三篇同周文章从实践角度呼应本期学术线的核心主题——agent 可靠性来自工程约束而非模型自主性。这为学术发现提供了产业验证。",
+        "mechanism": "(1) 浪费工作量化——agent 解决任务的总工作中，有效工作 vs 无效探索/重复尝试/冗余编辑的比例；(2) 约束 > 自主——agent 不需要更多自由度，结构化 harness/约束比自主决策更可靠；(3) 可进化脚手架——AI 应用入口建可进化 scaffold，使应用随反馈持续改进而非静态部署。",
+        "deep": "三文与本期四篇论文形成产业-学术共振：浪费工作量化 ↔ PreciseCoder（unit-test RL 教模型多编辑=浪费）；约束>自主 ↔ StateHarness（结构化状态管理）+Cortex（度量门控）+SWE-MISBEHAVIOR（边界约束降误行为 52%）；可进化脚手架 ↔ Self-Evolving Agent Harness（PAC-learning 准入）+SpecForge（spec 递归精炼）。这表明『约束 > 自主』已成为跨学术-产业的共识。对用户业务 agent：『浪费率』指标（无效 API 调用/重复查询/冗余字段拉取的比例）应纳入成本评估。『约束 > 自主』对 API 调用设计有启示——结构化 API 调用计划（VeriPIE QuerySketch）比 agent 自由探索更可靠。",
+        "apply": "(1) 在 coding agent 成本评估中纳入『浪费率』指标——有效工作 vs 无效探索比例；(2) 在业务 agent 成本评估中纳入『无效 API 调用率』；(3) agent 设计遵循『约束 > 自主』——结构化 harness/计划层比自由探索更可靠；(4) AI 应用入口建可进化 scaffold——随反馈持续改进而非静态部署。",
+        "caveats": "TDS 文章正文因 Cloudflare 拦截未能抓取全文，分析基于 RSS 标题+公开描述。三篇为 TDS 投稿文章，非经过同行评审的学术研究，观点可能基于个人经验而非系统评测。『约束>自主』的普适性需在不同场景验证。",
+        "business": "对 AI agent 工程实践市场：『浪费率』指标是 agent 成本评估的新维度——不只评估是否解决任务，还评估解决效率。对用户双主题：『约束 > 自主』是 coding agent 和业务 agent 共享的设计哲学。可进化脚手架是 AI 应用持续运营的方法论——与 SpecForge/Self-Evolving Harness 的学术发现一致。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/coding-agents-can-solve-the-task-but-how-much-work-did-they-waste/",
+            "title": "Coding Agents Can Solve the Task — But How Much Work Did They Waste? - TDS"
+          },
+          {
+            "url": "https://towardsdatascience.com/your-agent-doesnt-need-more-freedom/",
+            "title": "Your Agent Doesn't Need More Freedom - TDS"
+          },
+          {
+            "url": "https://towardsdatascience.com/a-scaffold-at-the-gate-building-ai-applications-that-can-evolve/",
+            "title": "A Scaffold at the Gate: Building AI Applications That Can Evolve - TDS"
+          }
+        ],
+        "diagram": {
+          "title": "TDS 三文：约束 > 自主的 agent 设计哲学",
+          "flow": [
+            {
+              "label": "Waste Metric",
+              "sub": "量化无效工作比例",
+              "type": "security"
+            },
+            {
+              "label": "Constraint",
+              "sub": "约束 > 自主",
+              "type": "backend"
+            },
+            {
+              "label": "Evolvable Scaffold",
+              "sub": "可进化脚手架",
+              "type": "database"
+            },
+            {
+              "label": "Academic Resonance",
+              "sub": "PreciseCoder/StateHarness/Cortex/Harness-RSI",
+              "type": "backend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "三文共振",
+              "text": "浪费量化+约束>自主+可进化脚手架——共同指向工程约束而非模型自主性"
+            },
+            {
+              "label": "学术共振",
+              "text": "与本期四篇论文（PreciseCoder/StateHarness/Cortex/Self-Evolving Harness）完全一致"
+            },
+            {
+              "label": "成本维度",
+              "text": "浪费率/无效 API 调用率应纳入 agent 成本评估"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "Cube v1.8.4-1.8.6 + WrenAI v0.5.0 + OpenMetadata 2.0.5：语义层安全+可插拔 RBAC+元数据保护三线并进",
+      "date": "2026-10-15",
+      "source": "GitHub",
+      "link": "https://github.com/cube-js/cube/releases/tag/v1.8.6",
+      "summary": "三个语义层/元数据治理开源项目本周密集发版。Cube v1.8.4-1.8.6（10/12-13）：api-gateway member-expression SQL eval 防 JS 注入 #12207（安全必修）+CLI 管理自定义角色 #11894（RBAC 代码化）+tesseract multi-stage leaf merge 默认启用 #12220+cubesql 子查询别名/剪枝/push down join 修复+Databricks 时间维度过滤+rollupJoin/rollupLambda 内存泄漏修复 #12248+预聚合一次匹配 #12159。WrenAI wren-semantic-core v0.5.0（10/14）：pluggable access control providers #2749（字段级 RBAC 可插拔）+StarRocks 一等数据源 #2790+explicit ROWS window frame 保留+MDL qualifier 移除时保留字符串字面量。OpenMetadata 2.0.5（10/8）：bot 摄取保护用户管理元数据 #34792+Redshift datashare 跨库摄取+Oracle FK 大小写保真+Mode 列级 lineage+Databricks 读写分离 lineage 保全+Jackson 两 CVE。",
+      "insight": "三个项目本周发版共同指向『语义层安全+治理代码化』——Cube 的 JS 注入防护+CLI RBAC 管理、WrenAI 的可插拔 access control、OpenMetadata 的 bot 摄取保护人工元数据。对用户业务线：字段级 RBAC（WrenAI #2749）+RBAC CLI 管理（Cube #11894）+元数据保护（OpenMetadata #34792）构成业务 agent 治理与安全的基础设施三件套。与 10/9 简报 Cube #12152 masked members 预聚合穿透修复同线——语义层安全是持续工程。",
+      "detail": {
+        "why": "语义层和元数据治理是业务 agent 可信查询的基础设施。本周三个项目密集发版体现了语义层安全+治理代码化的行业趋势。",
+        "mechanism": "Cube：(1) api-gateway member-expression SQL eval 防 JS 注入 #12207——SQL 中的 JS 表达式求值需防注入；(2) CLI 管理自定义角色 #11894——RBAC 从配置文件走向 CLI 代码化；(3) tesseract multi-stage leaf merge 默认启用 #12220——多 fact join 性能优化；(4) rollupJoin/rollupLambda 内存泄漏修复 #12248——memoized reference 泄漏；(5) 预聚合一次匹配 #12159——性能优化。WrenAI：(1) pluggable access control providers #2749——字段级 RBAC 可插拔架构；(2) StarRocks 一等数据源 #2790。OpenMetadata：(1) bot 摄取保护用户管理 tags/owners/retention #34792；(2) Redshift datashare 跨库 catalog 视图摄取 #34381；(3) Mode 列级 lineage #34733；(4) Databricks 读写分离 lineage 保全 #34732。",
+        "deep": "三个项目的安全/治理改进形成业务 agent 基础设施三件套：(1) 查询安全——Cube JS 注入防护 #12207（SQL 层）+WrenAI 可插拔 RBAC #2749（字段层）；(2) RBAC 管理——Cube CLI 角色 #11894（管理面）+WrenAI pluggable provider（扩展面）；(3) 元数据保护——OpenMetadata bot 不覆盖人工元数据 #34792。与 10/9 简报 Cube #12152 RLS 穿透修复同线——语义层安全是持续工程而非一次性修复。WrenAI pluggable access control 对用户字段级 RBAC 需求直接匹配——可插拔架构允许自定义 RBAC 策略。OpenMetadata bot 保护人工元数据对用户宽表字段语义标注可靠性是关键保障——bot 自动摄取不覆盖人工标注。",
+        "apply": "(1) Cube 用户升级到 v1.8.6——JS 注入防护 #12207 是安全必修+预聚合缓存清理重建（内存泄漏修复 #12248）；(2) WrenAI 用户升级到 v0.5.0——实现 pluggable access control provider 做字段级 RBAC；(3) OpenMetadata 用户升级到 2.0.5——bot 摄取保护人工元数据+Redshift datashare 跨库摄取；(4) 评估三件套（查询安全+RBAC 管理+元数据保护）在业务 agent 治理中的覆盖度。",
+        "caveats": "Cube v1.8.4 的 JS 注入防护 #12207 可能影响现有 member-expression SQL——需测试兼容性。WrenAI pluggable access control 是新架构——自定义 provider 需开发。OpenMetadata 2.0.5 是维护版——从 2.0 升级需检查 ingestion 回归修复 #34836。",
+        "business": "对语义层/元数据治理市场：三个项目本周发版体现『安全+治理代码化』趋势——RBAC 从配置文件走向 CLI/可插拔架构，元数据保护从 bot 覆盖走向 bot 保护人工资产。对用户业务治理与安全子领域：字段级 RBAC（WrenAI）+RBAC CLI 管理（Cube）+元数据保护（OpenMetadata）构成业务 agent 治理基础设施三件套。与 VeriPIE（本期）的查询计划验证互补——VeriPIE 管查询正确性，三件套管查询安全+权限+元数据。",
+        "sources": [
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.8.6",
+            "title": "Cube v1.8.4-v1.8.6 Release Notes"
+          },
+          {
+            "url": "https://github.com/Canner/WrenAI/releases/tag/wren-semantic-core-v0.5.0",
+            "title": "WrenAI wren-semantic-core v0.5.0 Release Notes"
+          },
+          {
+            "url": "https://github.com/open-metadata/OpenMetadata/releases/tag/2.0.5-release",
+            "title": "OpenMetadata 2.0.5 Release Notes"
+          }
+        ],
+        "diagram": {
+          "title": "语义层安全+治理代码化三件套",
+          "flow": [
+            {
+              "label": "Cube v1.8.4-6",
+              "sub": "JS 注入防护+CLI RBAC",
+              "type": "security"
+            },
+            {
+              "label": "WrenAI v0.5.0",
+              "sub": "可插拔字段级 RBAC",
+              "type": "security"
+            },
+            {
+              "label": "OpenMetadata 2.0.5",
+              "sub": "bot 保护人工元数据",
+              "type": "database"
+            },
+            {
+              "label": "Query Safety",
+              "sub": "SQL 注入+字段 RBAC",
+              "type": "backend"
+            },
+            {
+              "label": "RBAC Mgmt",
+              "sub": "CLI+pluggable provider",
+              "type": "backend"
+            },
+            {
+              "label": "Metadata Prot",
+              "sub": "bot 不覆盖人工标注",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "安全必修",
+              "text": "Cube #12207 JS 注入防护——升级+预聚合缓存清理重建"
+            },
+            {
+              "label": "RBAC 可插拔",
+              "text": "WrenAI #2749 pluggable access control——字段级 RBAC 自定义策略"
+            },
+            {
+              "label": "元数据保护",
+              "text": "OpenMetadata #34792 bot 摄取保护人工 tags/owners/retention"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "code-review-graph ⭐32k + tokensave v7.15.0 + octocode ⭐950：代码图谱 MCP 生态持续演进",
+      "date": "2026-10-15",
+      "source": "GitHub",
+      "link": "https://github.com/tirth8205/code-review-graph",
+      "summary": "三个代码智能 MCP 开源项目持续演进。code-review-graph（⭐32153，10/6 pushed）：v2.3.9 neighborhood 可视化+D3 社区聚类降级（3000 节点/9000 边阈值，django 浅克隆 45k 节点 397k 边超 15x/44x）+9 种 seed flag（seed-symbol/seed-file/seed-changed/seed-flow/path-from/path-to）。Tree-sitter+GraphRAG 持久代码图谱经 MCP 供精准上下文。tokensave v7.15.0（10/7）：if_digest 条件读 #650（HTTP ETag 模式，body digest 匹配返 unchanged stub）+核心工具集默认 12 tools（17KB vs 89KB，每 turn 重发）+grep hook 引导式重定向+C#/TS 新边类型。octocode（⭐950，bgauryy/octocode-mcp）：代码研究平台 MCP/CLI，本地文件系统研究（local_ripgrep/local_view_structure/local_find_files/local_fetch_content）+独立二进制分发全平台。",
+      "insight": "三个项目代表代码图谱 MCP 生态的三个层面：code-review-graph（代码图谱构建+可视化）、tokensave（代码智能工具+token 经济学）、octocode（代码研究+本地探索）。对用户研发线：code-review-graph 的 neighborhood 可视化+seed flag 是代码图谱精准上下文的工程实现——不渲染全图而是按 seed 渲染邻域，控制 token 成本。tokensave 的 if_digest 条件读是 HTTP ETag 模式在 MCP 工具层的实现——body 未变返短桩，降 token 传输。对用户研发知识库：三个项目构成代码图谱 MCP 生态的工具链。",
+      "detail": {
+        "why": "代码图谱 MCP 生态在 2026 年持续爆发式增长——code-review-graph 32k 星说明代码图谱经 MCP 供精准上下文已成为 coding agent 基础设施。三个项目分别覆盖图谱构建、工具经济学、本地探索三个层面。",
+        "mechanism": "code-review-graph：(1) Tree-sitter 解析构建持久代码图谱（符号/调用/依赖关系）；(2) GraphRAG 在图谱上做检索增强；(3) MCP/CLI 接口供 coding agent 查询；(4) v2.3.9 neighborhood 可视化——按 seed 渲染邻域而非全图（D3 社区聚类降级 3000 节点阈值）；(5) 9 种 seed flag 精确定位（symbol/file/changed/flow/path）。tokensave：(1) 40+ 工具覆盖 30+ 语言 9 agent 集成；(2) v7.15.0 if_digest 条件读——client 传 body digest，匹配返 unchanged stub（HTTP ETag 模式）；(3) 核心工具集默认 12 tools（17KB vs 89KB 每 turn 重发）；(4) grep hook 引导式重定向（copyable 调用）。octocode：(1) MCP/CLI 代码研究平台；(2) 本地文件系统研究（ripgrep/结构/查找/内容提取）；(3) 独立二进制分发全平台（macOS/Linux/Windows）。",
+        "deep": "code-review-graph 的 neighborhood 可视化是 token 经济学的图谱层解法——不渲染全图（django 45k 节点会爆）而是按 seed 渲染邻域，与 tokensave if_digest（工具层 token 经济学）和 Deep Review 自适应预算（文档层 token 经济学）形成三层 token 经济学体系。tokensave if_digest 的 HTTP ETag 模式是 MCP 工具传输经济学的创新——body 未变不重传，与 10/9 简报 tokensave v7.15.0 历史收录一致但本期从 ETag 模式角度深化。octocode 的本地文件系统研究模块对私有代码库场景有价值——不依赖云端 API，本地 ripgrep+结构+查找+内容提取。三个项目构成代码图谱 MCP 生态的工具链：octocode 探索→code-review-graph 图谱化→tokensave 工具化。",
+        "apply": "(1) 评估 code-review-graph 作为 Claude Code/Codex CLI 的代码图谱 MCP——neighborhood seed flag 精准上下文；(2) tokensave if_digest 模式参考——MCP 工具响应加 digest 字段，client 传 if_digest 匹配返短桩；(3) octocode 本地探索模块用于私有代码库——不依赖云端 API；(4) 三项目工具链：octocode 探索→code-review-graph 图谱化→tokensave 工具化。",
+        "caveats": "code-review-graph v2.3.9 为 9/18 发布，10/6 最后 push——非本周新版但生态活跃。tokensave v7.15.0 为 10/7 发布与上期重复但本期从 ETag 模式角度新视角。octocode 最新版为 2025-12（9.1.1），活跃度低于前两者。32k 星的可持续性和维护质量需持续观察。",
+        "business": "对代码智能 MCP 市场：三个项目代表代码图谱 MCP 生态的三个层面（图谱构建/工具经济学/本地探索），32k 星说明市场需求旺盛。对用户研发知识库：代码图谱 MCP 是研发知识库的可执行层——AGENTS.md（规范层）+code-review-graph（图谱层）+tokensave（工具层）构成完整研发知识库架构。token 经济学三层体系（图谱 neighborhood/工具 if_digest/文档自适应预算）是降 agent 成本的系统工程。",
+        "sources": [
+          {
+            "url": "https://github.com/tirth8205/code-review-graph",
+            "title": "code-review-graph: Local-first code intelligence graph for MCP and CLI"
+          },
+          {
+            "url": "https://github.com/aovestdipaperino/tokensave",
+            "title": "tokensave: Code intelligence MCP server for AI coding agents"
+          },
+          {
+            "url": "https://github.com/bgauryy/octocode-mcp",
+            "title": "octocode: Code research platform for AI agents, MCP or CLI"
+          }
+        ],
+        "diagram": {
+          "title": "代码图谱 MCP 生态三层工具链",
+          "flow": [
+            {
+              "label": "octocode",
+              "sub": "本地探索 MCP/CLI",
+              "type": "frontend"
+            },
+            {
+              "label": "code-review-graph",
+              "sub": "Tree-sitter 图谱+GraphRAG",
+              "type": "backend"
+            },
+            {
+              "label": "tokensave",
+              "sub": "40+ 工具+token 经济学",
+              "type": "database"
+            },
+            {
+              "label": "Neighborhood",
+              "sub": "seed flag 精准上下文",
+              "type": "backend"
+            },
+            {
+              "label": "if_digest",
+              "sub": "ETag 模式条件读",
+              "type": "database"
+            },
+            {
+              "label": "Claude/Codex",
+              "sub": "coding agent 消费",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "三层 token 经济学",
+              "text": "图谱 neighborhood（code-review-graph）+工具 if_digest（tokensave）+文档自适应预算（Deep Review）"
+            },
+            {
+              "label": "工具链",
+              "text": "octocode 探索→code-review-graph 图谱化→tokensave 工具化"
+            },
+            {
+              "label": "星数",
+              "text": "code-review-graph 32k⭐/tokensave 665⭐/octocode 950⭐——代码图谱 MCP 需求旺盛"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "product",
+      "title": "战略研判：AI Agent 可靠性从『模型推理质量』向『harness 工程治理』系统性收敛",
+      "date": "2026-10-15",
+      "source": "综合本期 12 条情报",
+      "link": "https://arxiv.org/abs/2610.18813",
+      "summary": "本期 12 条情报（学术 7 篇+博客 1 组+GitHub 2 组+产品 1 条）串成完整链路：AI Agent 可靠性正从『模型推理质量』向『harness 工程治理』系统性收敛。研发线四篇论文（PreciseCoder/StateHarness/Cortex/SpecForge）从训练信号、项目状态维护、技能度量门控、行为规范自改进四个层面证明 coding agent 可靠性不靠模型而靠 harness 工程。业务线三篇论文（VeriPIE/DSABench/Keep Your Receipts）从查询计划可验证性、多源路由协调、知识图谱可信清理证明业务 agent 精确查数护城河在治理层。交叉线 Self-Evolving Agent Harness 用 66 页理论框架将 harness 自进化形式化为 PAC-learning bound。Google Deep Review 四阶段 pipeline 是文档验证的工业级参照。",
+      "insight": "本期最核心战略研判：AI Agent 可靠性正从『模型推理质量』向『harness 工程治理』系统性收敛——这不是单一论文的发现而是 12 条情报的共振。harness 工程治理四层框架：(1) 训练信号层（PreciseCoder——RL 奖励信号质量>模型规模）(2) 运行时状态层（StateHarness——演进项目状态维护+独立诊断会话）(3) harness 管理层（Cortex——度量门控 A/B 测试+rules>skills）(4) 自进化理论层（Self-Evolving Harness——PAC-learning bound+retention bound+准入规则）。投入应向四层倾斜而非模型选型。",
+      "detail": {
+        "why": "12 条情报共振指向同一结论——agent 可靠性不靠模型能力提升而靠 harness 工程治理。这是跨学术（7 篇论文）+产业（TDS 三文+Google Deep Review）+开源（Cube/WrenAI/OpenMetadata/code-review-graph/tokensave）的系统性收敛。",
+        "mechanism": "harness 工程治理四层框架：(1) 训练信号层——PreciseCoder 证明 RL 奖励信号质量（局部+语义验证）>模型规模（4B+精准信号优于 27B 无信号）；(2) 运行时状态层——StateHarness 维护演进项目状态（问题/发现/关系/待办）+独立诊断会话回溯被忽略证据；(3) harness 管理层——Cortex 度量门控 A/B 测试（一次通过不证明有效）+rules（自动加载）>skills（需主动打开）+定期剪枝；(4) 自进化理论层——Self-Evolving Harness 用 PAC-learning 泛化 bound+retention bound（回归预算）+独立验证准入规则形式化 harness 自进化可靠性。业务线三篇补充治理层：VeriPIE（查询计划形式化验证）+DSABench（多源协调治理）+Keep Your Receipts（知识图谱溯源清理）。",
+        "deep": "四层框架有层次结构：训练信号层（PreciseCoder）→运行时状态层（StateHarness）→harness 管理层（Cortex）→自进化理论层（Self-Evolving Harness），覆盖 agent 可靠性全生命周期。TDS 三文（浪费量化+约束>自主+可进化脚手架）是产业侧验证。Google Deep Review 四阶段 pipeline（分段→预算→并行验证→综合+grounding）是文档验证的工业级参照——自适应预算分配是 token 经济学的文档层解法。开源三件套（Cube JS 注入防护+WrenAI 可插拔 RBAC+OpenMetadata bot 保护）是治理基础设施。最核心战略研判：harness 工程治理四层框架是 2026-2027 AI Agent 投资的主叙事——评估清单从模型 pass rate 转向训练信号质量+运行时状态管理+harness 度量门控+自进化形式化保证。",
+        "apply": "(1) 训练信号层：RL 后训练增加编辑精度信号（局部+语义验证），评估 agent 在正确代码上的退化率；(2) 运行时状态层：实现 StateHarness 风格的 working brief+自动受影响搜索+独立诊断会话；(3) harness 管理层：Cortex 风格 A/B 测试验证 rules/skills 有效性，优先 rules（自动加载），定期剪枝；(4) 自进化理论层：引入回归预算+独立验证准入规则，参考 zgcagi/Harness-RSI 开源；(5) 业务 agent 治理：VeriPIE 查询计划验证+DSABench 多源协调评估+Keep Your Receipts 知识图谱溯源；(6) 文档理解：Deep Review 四阶段 pipeline 架构模板。",
+        "caveats": "harness 工程治理四层框架是本期情报综合研判，非单篇论文的系统性验证。各层之间的量化关系（哪层投入 ROI 最高）需进一步研究。PAC-learning bound 依赖显式假设。Cortex 在强模型（Sonnet 5）上增益小——harness 工程对强模型边际效益递减。业务线三篇论文的 enterprise-scale 效果待验证。",
+        "business": "对 AI Agent 投资决策：harness 工程治理四层框架是 2026-2027 投资主叙事——评估清单从模型 pass rate 转向四层治理能力。对用户双主题：四层框架适用于研发 agent（coding agent harness 管理）和业务 agent（API 调用治理+知识图谱溯源）共享基建。开源三件套（Cube/WrenAI/OpenMetadata）提供治理基础设施。Google Deep Review 提供文档验证工业级参照。最核心投资建议：向 harness 工程治理四层倾斜而非模型选型——4B+精准信号优于 27B 无信号是最硬数据。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.18755",
+            "title": "PreciseCoder"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.17616",
+            "title": "StateHarness"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.14216",
+            "title": "Cortex"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.18813",
+            "title": "Self-Evolving Agent Harness"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.17493",
+            "title": "VeriPIE"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.14700",
+            "title": "DSABench"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.17719",
+            "title": "Keep Your Receipts"
+          },
+          {
+            "url": "https://research.google/blog/analyzing-technical-documents-with-deep-review/",
+            "title": "Google Deep Review"
+          }
+        ],
+        "diagram": {
+          "title": "harness 工程治理四层框架",
+          "flow": [
+            {
+              "label": "Training Signal",
+              "sub": "PreciseCoder: RL 信号质量>模型规模",
+              "type": "backend"
+            },
+            {
+              "label": "Runtime State",
+              "sub": "StateHarness: 演进状态+诊断会话",
+              "type": "database"
+            },
+            {
+              "label": "Harness Mgmt",
+              "sub": "Cortex: A/B 测试+rules>skills",
+              "type": "security"
+            },
+            {
+              "label": "Evolution Theory",
+              "sub": "Harness-RSI: PAC-learning bound",
+              "type": "security"
+            },
+            {
+              "label": "Business Gov",
+              "sub": "VeriPIE/DSABench/Receipts",
+              "type": "backend"
+            },
+            {
+              "label": "Doc Verify",
+              "sub": "Deep Review: 四阶段 pipeline",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "核心研判",
+              "text": "AI Agent 可靠性从『模型推理质量』向『harness 工程治理』系统性收敛——12 条情报共振"
+            },
+            {
+              "label": "四层框架",
+              "text": "训练信号→运行时状态→harness 管理→自进化理论，覆盖可靠性全生命周期"
+            },
+            {
+              "label": "最硬数据",
+              "text": "4B+精准信号优于 27B 无信号——harness 工程对模型规模的替代效应"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
