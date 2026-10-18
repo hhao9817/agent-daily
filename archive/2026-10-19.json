@@ -1,0 +1,957 @@
+{
+  "date": "2026-10-19",
+  "banner": "AI for 研发：FDE-Gym 揭示 AI 交付『最后一公里』——最强配置 95 个真实交付任务仅解决 14 个，发现未言明约束是首要瓶颈；CodeOwnership 协议量化『AI 写的代码你还拥有吗』；HERO 用执行证据优化 harness pass@1 +7.6。AI for 业务：PremiseSQL 证明前沿模型默认『前提轻信』——对 1800 条缺陷前提查询极少批判性弃答；受治理置信分数审计显示精心设计的 confidence score AUROC 仅 0.624，重构为『agreement 为主分+确定性检查为否决』后升至 0.725。交叉线：MCP-FSD 大规模审计 21097 个 MCP server，16.4% 存在文件系统能力洗白漏洞。",
+  "snapshot": {
+    "summary": "本期主线：AI Agent 的评估焦点正从『答对了吗』扩展到『该不该答、答了还敢信吗、代码交付后谁还能修』三个新维度。业务线三篇论文（PremiseSQL/Governed Confidence/What Is a Clarification）分别从前提批判弃答、置信分数审计、模型相关歧义估计三个角度补齐『可信回答』闭环——共同指向构造性拒绝与置信治理必须成为系统一等能力。研发线 FDE-Gym 给出最硬警示数据：最强配置在真实客户交付场景 mean score 仅 0.56、95 任务仅解决 14 个，『发现未言明约束』而非『写代码』是最后一公里瓶颈；CodeOwnership 协议与 opencode-swarm 门控执行则分别从『人类所有权』与『机器验证』两侧收紧 AI 代码信任。交叉线 MCP-FSD 首次大规模量化 MCP 生态的文件系统能力洗白漏洞（21097 server 审计、16.4% 违规），为 agent 工具生态安全治理提供基线。开源侧 Cube v1.8.7 SQL pushdown to Cube Store + 安全上下文注入 evals、WrenAI v0.16.0 StarRocks 一等数据源、OpenMetadata OIDC 授权码强制与邮箱域准入修复持续加固语义层与元数据治理。",
+    "groups": {
+      "rnd": [
+        "FDE-Gym（2610.22350）：95 个端到端交付任务×20 客户场景×18 行业，行业专家从真实交付项目改编；按客户成功指标提升量归一化打分（0=系统未变，1=参考方案），对利益相关者交互（消息/试运行/等待）扣分；13 个模型配置中最强 mean 0.56、仅解决 14/95（score≥0.8 且零事故）；即使在获得全部关键事实的 23 个任务上也仅 10 个达到 0.8——『知道所有事实』≠『交付成功』",
+        "CodeOwnership（TDS+GitHub，Emmimal）：量化『AI 写的代码开发者是否还理解』的可复现协议——感知理解（1-5 置信评分先于破坏提交）×调试表现（第二个 agent 植入预注册行为缺陷、60 分钟无 AI 修复、隐藏测试客观验证）×事后理解（4 道 rubric 评分题）三维永不合成单一分数；FROZEN_SHA256 预注册+盲态变异+verdict-only 验证防自欺；纯 Python 标准库零依赖",
+        "HERO（2610.19184，引用数已核实=0）：程序生成的 harness 优化——离线阶段从执行验证的成功/失败学习可复用 prompt 更新并在采纳前验证候选修订，测试时把生成的代码当作实例特定 harness 用执行反馈精炼；4 个 SQL/Cypher/Python benchmark 上 pass@1 +7.6 分、test-time refinement 再 +2.0 分",
+        "opencode-swarm v7.199.x（⭐506，10-18 密集发布）：OpenCode 的架构师中心 agent 群插件——planning/implementation/review/test/security 角色分离+门控执行（所有必需 gate 通过才能 ship）；v7.199.1 修复 git worktree 场景文件权限误判（AUTHORITY_ROOT_ESCAPE，经 git worktree list 发现关联 worktree 并双向锚定验证防越权扩大）；v7.199.0 新增 delegation gate 验收标准自动注入（opt-in，默认保持 fail-closed 严格拒绝）"
+      ],
+      "business": [
+        "PremiseSQL（2610.22158）：首个『前提批判与弃答』评测——1800 条缺陷前提查询（4 类前提失败）+1800 条原始查询；前沿 LLM 默认强烈『前提轻信』（premise-trusting），极少批判缺陷前提；critique 导向 prompting 提升检出与弃答但同时增加误判无效+抑制原始查询的 SQL 生成——『敢疑』与『敢答』此消彼长，弃答能力需专门设计而非 prompt 开关",
+        "Governed Confidence Score（2610.17256，引用数已核实=0）：审计生产级 text-to-SQL 置信分数设计——BIRD dev 1534 题 GPT-5.1×5 采样，设计分数 AUROC 仅 0.624 且误扣 35.7% 正确答案；几乎全部排序信号来自样本间 agreement，却被『任一 unsupported claim 即清零』的 checklist 以 min 方式摧毁；重构为 agreement 主分+确定性检查作否决/上限，预注册 Spider 验证 AUROC 0.566→0.725、正确答案误扣 49.0%→8.8%、PASS 准确率 95.7%",
+        "What Is a Clarification（2610.20052）：区分 world ambiguity（输入允许的全部解释）与 model ambiguity（模型可达的解释子集）；用 uniqueness/faithfulness/answer equivalence 三条 desiderata 形式化澄清问题，证明有效答案与澄清等价类一一对应；CircleClar 黑盒方法沿 answer-clarification-answer 循环估计模型可答集合，在 QA 与可执行 text-to-SQL 上实现 answering/clarifying/abstaining 三态选择",
+        "Cube v1.8.7+v1.8.8（10-16）：cubesql 支持 SQL push down to Cube Store（#12247）+COUNT(DISTINCT dimension) 走预聚合规划（#12294）——高频 BI 查询不再穿透到源库；cube evals run 新增 --security-context（#12202）让评估运行可携带行级安全上下文；tesseract 支持 join aliases（#12097）；Trino 驱动钉住会话时区 UTC（#12291）；v1.8.6 修复 rollupJoin/rollupLambda 记忆化引用内存泄漏（#12248）",
+        "WrenAI wren-v0.16.0（10-16）：StarRocks 升为一等数据源（#2790）；MDL 导入保真修复（init --from-mdl 保留 cubes #2771+v2 cube 元数据 UTF-8 读取 #2769）；memory 重建索引失败原因带出 watch 循环（#2767）；profile secrets 按所选项目解析（#2796）；urllib3/pyjwt/sentence-transformers 安全升级（#2787）",
+        "OpenMetadata 治理加固周（10-15~10-18 commits）：机密 OIDC 回调强制 authorization code（#35679，防授权码拦截降级）；创建用户时拒绝允许邮箱域之外的用户（#35613）；profiler 分区配置从表分区元数据自动推断（#35669）；OntologyDataExploreRdf 统计继承列（#35620）——本体探索的数据完整性；Relations Graph 工具栏常驻+边绕开术语节点（#35687）"
+      ],
+      "cross": [
+        "MCP-FSD（2610.22301，引用数已核实=0）：首次大规模审计 MCP server『文件系统能力洗白』——客户端批准工具调用即授予 server 进程宽泛主机文件权限而非限定声明操作；三层分析（L1 server 类别筛查/L2 每工具契约分析/L3 可绕过路径校验）+动态执行验证；9 个注册表 21097 个 server 中，4806 个受审 server 里 787 个（16.4%）在非文件系统功能分类下具备文件系统能力，150 个实例确认漏洞——agent 工具生态的供应链安全基线",
+        "tokensave 10-18 密集提交：性能/内存五连发（worker pool 按待处理批次定容 #703+编译清单进程级保留设界 #702+提取数据即用即释 #701+缓存源借用按需切行 #700+SCC 遍历免克隆 #698）；claude_hooks 配置可关闭 Claude Code hooks 注入；grep 拒绝只对索引真实定义的名字生效（防误拒）；literal search 扫描改为实时 stat 文件（防陈旧缓存）——代码智能 MCP server 的『工具经济学』继续精细化",
+        "战略研判：评估三新维度成型——『该不该答』（PremiseSQL 前提批判+CircleClar 三态选择）×『答了敢不敢信』（Governed Confidence 审计+预注册验证）×『交付后谁还能修』（CodeOwnership 人类所有权+FDE-Gym 未言明约束+opencode-swarm 机器门控）；置信治理从『设计分数』走向『审计分数』，MCP-FSD 把 agent 工具生态安全从个案研究推进到 21097 server 规模基线"
+      ],
+      "github": [
+        "Cube v1.8.7：SQL push down to Cube Store #12247 + COUNT(DISTINCT) 预聚合规划 #12294 + evals --security-context #12202 + tesseract join aliases #12097",
+        "WrenAI wren-v0.16.0：StarRocks 一等数据源 #2790 + MDL 导入保真 #2771/#2769 + 安全依赖升级 #2787",
+        "opencode-swarm v7.199.x（⭐506）：git worktree 文件权限双向锚定修复 + delegation gate 验收标准自动注入（opt-in fail-closed 默认不变）",
+        "tokensave：性能/内存五连发（#698-#703）+ claude_hooks 可配置 + grep 拒绝收窄到索引已定义名字",
+        "Emmimal/codeownership（新，10-13 创建）：AI 代码所有权测量协议，纯标准库零依赖，72 项 harness 自检"
+      ]
+    }
+  },
+  "items": [
+    {
+      "tag": "business",
+      "title": "PremiseSQL：text-to-SQL 的前提批判与弃答评测——前沿模型默认『前提轻信』，敢疑与敢答此消彼长",
+      "date": "2026-10-15",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2610.22158",
+      "summary": "现有 NL2SQL 系统默认用户查询有效且可答，导致模型对前提有缺陷的查询也生成可执行 SQL。PremiseSQL 提出『前提批判能力』（premise critique）概念：识别缺陷查询并弃答而非生成误导性 SQL。基准含 1800 条缺陷前提查询（覆盖 4 类前提失败）+对应 1800 条原始查询，评测框架在 3 种 prompting 设定下测量内生的与诱导的前提感知行为。实验显示前沿 LLM 默认强烈 premise-trusting、极少批判缺陷前提；强化 critique 的 prompting 提升缺陷查询检出与弃答，但同时增加『误判有效查询为无效』并抑制原始查询的 SQL 生成。引用数待核实（Semantic Scholar 限流，10-15 新文预期 0）。",
+      "insight": "这是『构造性拒绝』在 text-to-SQL 评测侧的正式落地：弃答不是能力缺失而是独立能力维度，且与生成能力存在 Pareto 权衡。对用户业务 Agent 的直接映射：上百字段宽表 API 查询中，用户问题常隐含错误前提（『查上个月退款率最高的渠道』但退款字段口径本月才上线）——Agent 必须能指出前提缺陷而非硬生成一次『成功』的 API 调用。critique prompting 的副作用（误杀有效查询）警示：弃答阈值需要像 Governed Confidence 论文那样用数据审计设定，不能靠 prompt 措辞。",
+      "detail": {
+        "why": "业务查询最贵的错误不是查错数，而是对一个不该回答的问题给出了『成功执行』的错误答案——前提缺陷（不存在的实体/时间窗外推/口径未定义）在传统 NL2SQL 评测中完全盲区。PremiseSQL 是首个把『前提批判+弃答』形式化为评测维度的基准。",
+        "mechanism": "四类前提失败（flawed premises）各构造 450 条缺陷查询并保留对应原始查询作对照组；评测框架区分 intrinsic（模型自发）与 prompt-induced（提示诱导）两种前提感知行为，跨 3 种 prompting 设定测量：检出率（识别缺陷）、弃答率（拒绝生成）、误判率（把有效当无效）、抑制率（对原始查询也不再生成 SQL）。",
+        "deep": "核心发现是『敢疑与敢答的耦合衰减』：critique 导向提示把检出率拉起来的同时，误判无效与原始查询抑制同步上升——说明当前模型没有独立的前提验证机制，批判能力是从生成能力里『挤』出来的。这与 10-09 晨报收录的 ARCS（structured disambiguation）互补：ARCS 处理『问题可答但有歧义』，PremiseSQL 处理『问题本身不该答』；两者共同构成业务 Agent 输入侧治理的两道闸门。代码已开源（github.com/vegeet/PremiseSQL）。",
+        "apply": "1) 把 PremiseSQL 的 4 类前提失败映射到自家 API 目录：字段口径未定义/时间窗超数据保留期/实体不存在/聚合粒度不匹配，各构造 50-100 条缺陷问题做内部弃答基准；2) 弃答决策不要放在生成 prompt 里，做成前置确定性检查（时间窗校验、实体存在性 lookup）+模型批判双层；3) 用原始查询对照组持续监控误杀率。",
+        "caveats": "1800 条缺陷查询为构造数据，真实用户的前提缺陷分布可能不同；论文只测前沿闭源模型的 prompting 行为，未给出训练侧解法；『误判无效』的代价在业务场景不对称——错误弃答损失体验，错误回答损失信任，需按业务定阈值。",
+        "business": "弃答能力是 to B 数据产品的信任资产：能指出『这个问题问错了』的系统比总能给出数字的系统更快建立专家信任。对客户成功团队，前提批判输出（指出哪个前提不成立）本身就是可交付的分析服务。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.22158",
+            "title": "PremiseSQL: Evaluating Premise Critique and Abstention in Text-to-SQL Systems"
+          },
+          {
+            "url": "https://github.com/vegeet/PremiseSQL",
+            "title": "PremiseSQL benchmark code"
+          }
+        ],
+        "diagram": {
+          "title": "业务 Agent 输入侧双闸门：歧义治理 + 前提治理",
+          "flow": [
+            {
+              "label": "用户自然语言问题",
+              "sub": "含隐含前提",
+              "type": "frontend"
+            },
+            {
+              "label": "前提批判闸门",
+              "sub": "PremiseSQL 4类缺陷",
+              "type": "security"
+            },
+            {
+              "label": "确定性前置检查",
+              "sub": "时间窗/实体存在性",
+              "type": "backend"
+            },
+            {
+              "label": "歧义消解闸门",
+              "sub": "ARCS structured disambiguation",
+              "type": "backend"
+            },
+            {
+              "label": "SQL/API 调用生成",
+              "sub": "仅在两闸通过后",
+              "type": "database"
+            },
+            {
+              "label": "弃答+前提缺陷说明",
+              "sub": "一等返回值",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "Pareto 权衡",
+              "text": "critique prompting 提升检出但增加误杀，弃答阈值须数据审计设定"
+            },
+            {
+              "label": "双层设计",
+              "text": "确定性检查（可验证）+模型批判（覆盖语义缺陷），不能只靠 prompt"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "business",
+      "title": "Governed Confidence Score：生产级 text-to-SQL 置信分数的预注册审计——AUROC 0.624→0.725，误扣正确答案 49%→8.8%",
+      "date": "2026-10-12",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2610.17256",
+      "summary": "对话式分析系统给每个答案附加置信分数，决定直接展示/带警告展示/扣留答案。本文审计一个生产系统的『设计型』置信分数：在 BIRD dev 1534 题（GPT-5.1+生产 prompt+每题 5 采样）上，该分数区分对错的能力弱（AUROC 0.624）且扣留 35.7% 的正确答案。诊断发现几乎全部排序信号来自样本间 agreement，但 agreement 被一个『任一 unsupported claim（含评注中的 claim）即清零』的 checklist 以 min 方式组合，信号大量流失。作者冻结新规则——agreement 为主分、确定性检查只作否决（veto）与上限（cap）——并在任何 Spider 答案产生前预注册验证：AUROC 0.566→0.725（配对差 +0.159），正确答案误扣 49.0%→8.8%，PASS 准确率 95.7%。Semantic Scholar 已核实引用数=0（新文符合预期）。",
+      "insight": "这是 10-09 晨报『置信治理』线索的方法论升级：Sentinel 从轨迹派生置信，本文则审计『人工设计的置信公式』本身——精心设计的 weights/caps/thresholds 可能系统性摧毁信号。核心工程教训：确定性检查应当作否决器而非乘数/最小值组合器。预注册（pre-registration）验证流程值得整个团队借鉴：先冻结规则+登记假设，再跑数据，杜绝事后调参叙事。对用户业务 Agent：置信分数是『敢不敢把答案给业务方』的开关，其设计必须经过同款审计而不是拍脑袋加权。",
+      "detail": {
+        "why": "企业数据 Agent 的三态输出（展示/警告/扣留）完全依赖置信分数质量，但置信公式本身很少被当作『需要验证的模型』来审计。本文示范了完整的审计方法论：诊断信号来源→定位组合方式缺陷→冻结替代规则→预注册确认。",
+        "mechanism": "诊断：分解设计分数的排序信号来源，发现 agreement（5 采样间一致性）承载几乎全部信号；checklist 的 min 组合让任一评注级 unsupported claim 把分数清零。重构：score=agreement with shown answer，确定性检查降级为 veto（直接否决）与 cap（设置上限）而非参与连续组合。验证：BIRD 探索性研究→冻结规则→Spider 预注册确认（主假设成立）+空结果预注册检查（未达效应量标准，诚实报告）。",
+        "deep": "三个可迁移结论：(1) 『agreement 进入分数的方式』比『用哪种 agreement 统计量』重要——同一匹配策略下统计量选择影响很小，组合方式决定成败；(2) 附加检查是否有益取决于正确性如何定义，且总是以无保留覆盖率（unqualified coverage）为代价——检查越多，敢直接展示的答案越少；(3) 局限透明：正确性指核心答案、标签为模型判定、双人盲审未完成将在修订版报告。与 9-05 收录的 AgentOps pass^k 高估、10-15 收录的 Sentinel 轨迹置信构成『置信治理』三部曲：测量循环可靠性→运行时派生置信→审计置信公式。",
+        "apply": "1) 对现有业务 Agent 的置信/风控公式做同款信号分解：每个成分单独测 AUROC，找出承载信号的主成分与被摧毁的方式；2) 重构原则：主分=可排序的连续信号（如 agreement），确定性规则只做 veto/cap 不做乘数；3) 建立预注册流程：规则冻结+假设登记在先，评测在后；4) 监控三态分布：误扣率（正确被扣留）与 PASS 准确率必须同时看。",
+        "caveats": "BIRD/Spider 是学术基准，与真实企业宽表 API 查询分布有差距；agreement 需要多次采样，推理成本×5；模型判定标签存在 self-preference 风险（与 8-24 TDS LLM Judge 教训一致）；空结果检查未达标准说明部分设计假设在 Spider 上不成立。",
+        "business": "置信分数直接决定人工复核工作量：误扣 49%→8.8% 意味着分析师团队少复核 5.6 倍的正确答案，这是可量化的 ROI——把『置信公式审计』列为数据 Agent 上线前必做项，成本极低（复用现有评测数据）收益极高。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.17256",
+            "title": "Does a Governed Confidence Score Know When a Text-to-SQL Answer Is Right? An Exploratory Study on BIRD and a Pre-registered Confirmation on Spider"
+          }
+        ],
+        "diagram": {
+          "title": "置信分数审计与重构：min 组合摧毁信号 → veto/cap 保留信号",
+          "flow": [
+            {
+              "label": "5 采样生成",
+              "sub": "GPT-5.1×生产prompt",
+              "type": "backend"
+            },
+            {
+              "label": "agreement 计算",
+              "sub": "样本间一致性=主信号",
+              "type": "backend"
+            },
+            {
+              "label": "旧: min(checklist)",
+              "sub": "任一claim清零 AUROC 0.624",
+              "type": "security"
+            },
+            {
+              "label": "新: veto/cap",
+              "sub": "确定性检查只否决/设上限",
+              "type": "security"
+            },
+            {
+              "label": "三态输出",
+              "sub": "展示/警告/扣留",
+              "type": "frontend"
+            },
+            {
+              "label": "预注册验证",
+              "sub": "Spider AUROC 0.725",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "组合方式>统计量",
+              "text": "agreement 进入分数的方式决定成败，统计量选择影响很小"
+            },
+            {
+              "label": "预注册",
+              "text": "冻结规则+登记假设在先，杜绝事后调参叙事"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "business",
+      "title": "What Is a Clarification：模型相关输入歧义估计——world ambiguity vs model ambiguity，CircleClar 黑盒三态选择",
+      "date": "2026-10-14",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2610.20052",
+      "summary": "歧义输入可 admits 多种解释，但对特定模型而言只有部分替代解释是已知且可答的。本文区分 world ambiguity（输入在世界上允许的全部解释）与 model ambiguity（响应模型实际可达的解释子集），主张歧义是模型相关属性而非纯输入属性。作者用三条 desiderata（uniqueness/faithfulness/answer equivalence）形式化自然语言澄清，证明有效答案与澄清等价类之间存在一一对应——任何解释既可用其答案表示，也可用唯一表达它的澄清表示。基于该对应提出 CircleClar 黑盒方法：沿 answer→clarification→answer 循环检查一致性，估计模型可答集合。在开放域 QA 与可执行 text-to-SQL 上，恢复的答案集合实现最强模型相关歧义检测，并支持 answering/clarifying/abstaining 三态有效选择。引用数待核实（Semantic Scholar 限流，10-14 新文预期 0）。",
+      "insight": "对『语义层 vs 知识图谱』双路线研究是关键理论输入：world ambiguity 对应业务本体/知识图谱承载的全量口径（世界有哪些解释），model ambiguity 对应 LLM+语义层实际能消解的子集（模型能处理哪些解释）——两者之差就是语义层建设的真实工作量清单。CircleClar 的黑盒特性（只需模型 API 不需内部权重）意味着可以直接对生产 Agent 做歧义容量普查。三态选择（答/澄清/弃答）与 PremiseSQL 的弃答、ARCS 的结构化消歧拼成完整的输入侧决策框架。",
+      "detail": {
+        "why": "此前歧义研究把歧义当作输入的静态属性，导致澄清策略与模型能力错配：让模型澄清它根本不知道的解释没有意义，让它直接回答它无法区分的解释则产生静默错误。model ambiguity 概念把『该问什么澄清问题』变成可计算对象。",
+        "mechanism": "三条 desiderata 约束澄清生成：uniqueness（澄清唯一确定一种解释）、faithfulness（澄清忠实于原输入的合理读法）、answer equivalence（同一解释的不同澄清得到相同答案）。一一对应定理保证答案集合与澄清等价类可互换表示。CircleClar：采样候选答案→为每个答案生成唯一澄清→用澄清回问模型→答案一致则确认该解释在模型可达集合内，循环恢复完整答案集合。",
+        "deep": "与 10-09 收录的 ARCS 互补且更深一层：ARCS 给出结构化消歧的交互协议（工程侧），本文给出『模型到底能区分哪些解释』的估计方法（测量侧）——先用 CircleClar 普查 model ambiguity，再对普查出的歧义点用 ARCS 式结构化选项交互，是完整流水线。在 text-to-SQL 上的验证尤其重要：可执行语义让 answer equivalence 可判定（执行结果相同即等价），这比开放域 QA 更严格。与 FLINT（10-09，opaque keys 值域歧义）共振：值域层的 ID↔概念歧义正是 model ambiguity 的高发区——模型不知道 'CN' 是渠道码还是国家码，除非 lookup 表进入上下文。",
+        "apply": "1) 对宽表 API 的高频问题集跑 CircleClar 式普查：每题采样 k 个候选答案→生成澄清→回问，答案集合大小>1 的题即为歧义热点；2) 歧义热点清单直接驱动语义层建设优先级（哪些字段口径需要显式定义）；3) 生产 Agent 按恢复的答案集合大小路由：1→直接答，2-4→结构化选项澄清，>4 或空→弃答+转人工。",
+        "caveats": "CircleClar 成本随采样数与澄清生成轮次线性增长，适合离线普查不适合每查询在线执行；一一对应定理依赖澄清生成质量，实际 LLM 生成的澄清可能违反 uniqueness；论文验证于 BIRD 类基准，企业私有口径歧义（如『活跃用户』的公司特定定义）不在 world ambiguity 语料中。",
+        "business": "model ambiguity 概念给语义层投资一个精确的价值表述：语义层建设的本质是缩小 world ambiguity 与 model ambiguity 的差距。差距可测量（CircleClar），因此语义层 ROI 首次变成可量化指标——每次口径上线后重跑普查看歧义热点减少量。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.20052",
+            "title": "What Is a Clarification? Estimating Model-Dependent Input Ambiguity"
+          }
+        ],
+        "diagram": {
+          "title": "CircleClar：answer-clarification-answer 循环估计模型可答集合",
+          "flow": [
+            {
+              "label": "歧义输入",
+              "sub": "world ambiguity 全集",
+              "type": "frontend"
+            },
+            {
+              "label": "采样候选答案",
+              "sub": "k 次生成",
+              "type": "backend"
+            },
+            {
+              "label": "生成唯一澄清",
+              "sub": "uniqueness+faithfulness",
+              "type": "backend"
+            },
+            {
+              "label": "澄清回问模型",
+              "sub": "answer equivalence 检验",
+              "type": "backend"
+            },
+            {
+              "label": "model ambiguity 集合",
+              "sub": "一致的解释子集",
+              "type": "database"
+            },
+            {
+              "label": "三态路由",
+              "sub": "答/澄清/弃答",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "语义层 ROI 可量化",
+              "text": "world-model ambiguity 差距=语义层建设清单，口径上线后重跑普查验证"
+            },
+            {
+              "label": "黑盒方法",
+              "text": "只需模型 API，可直接对生产 Agent 做歧义容量普查"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "rnd",
+      "title": "FDE-Gym：AI 交付的最后一公里——95 个真实客户交付任务，最强配置仅解决 14 个，未言明约束是首要瓶颈",
+      "date": "2026-10-15",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2610.22350",
+      "summary": "现有 agent 基准评测的是 issue report/规格书/工单定义的良构任务，而真实客户交付中 forward-deployed engineers（FDE）必须澄清模糊需求、在生产级系统上工作、发现未言明约束。FDE-Gym 由行业专家从真实交付项目改编出 95 个端到端交付任务（20 客户场景×18 行业），在带脚本化利益相关者与可修改客户系统的模拟环境中评测。打分按交付对客户自身成功指标的提升量归一化（0=系统未变，1=参考方案），并对利益相关者交互（消息数/试运行/等待时间）扣分。13 个模型配置（7 家供应商）中最强者在需自主发现未言明约束的真实设定下 mean score 仅 0.56，只解决 14/95 任务（解决=score≥0.8 且零事故）。即使在最好配置拿到全部关键事实的 23 个任务上，也只有 10 个达到 0.8——信息发现之外还有执行鸿沟。引用数待核实（Semantic Scholar 限流，10-15 新文预期 0）。",
+      "insight": "这是继 DSABench（多数据库 agent 成功率 6.7-17%）之后又一个『真实场景断崖』数据点，且维度更高：DSABench 测选源+协调+执行，FDE-Gym 测需求澄清+约束发现+系统操作+业务价值交付全链路。对架构师的启示：内部 coding agent 平台的评测如果只覆盖良构 issue，会系统性高估 agent 在真实交付中的可用性；『发现未言明约束』能力（本质是主动信息获取策略）应成为 agent 评测与训练的独立维度。配套在线平台让人类用同一评分标准练习 FDE 技能——人机同标尺的评测设计值得借鉴。",
+      "detail": {
+        "why": "AI 编码能力评测（SWE-bench 系）与 AI 真实交付价值之间存在巨大鸿沟：企业买的不是『解 issue 的能力』而是『客户成功指标提升』。FDE-Gym 首次把后者做成可复现基准，0.56/14-of-95 的数据为『AI 交付成熟度』讨论提供硬锚点。",
+        "mechanism": "模拟客户环境三要素：脚本化利益相关者（可对话获取信息）、可修改的客户系统（生产级配置）、行业专家改编的真实交付项目。评分函数=业务提升归一化-交互成本惩罚（消息/试运行/等待都扣分，防止无限试探）。解决判定双门槛：score≥0.8 且零事故（incident）。",
+        "deep": "两个瓶颈的分离是本文最有价值的设计：(1) 约束发现瓶颈——需要自主发现未言明约束时性能断崖式下跌；(2) 执行瓶颈——即使拿到全部关键事实（23 个任务），达标率也只有 10/23，说明『知道该做什么』到『在真实系统上正确做完』仍有独立鸿沟。这与 10-15 晨报的 StateHarness（长程状态维护）互补：StateHarness 修的是执行侧的项目状态丢失，FDE-Gym 量化的是发现+执行双瓶颈的宏观规模。对『AI for 业务』的直接映射：业务 Agent 面对的内部客户（业务方）同样是脚本化利益相关者的现实版——需求模糊、约束藏在人脑里、成功指标是业务方的而非技术的。",
+        "apply": "1) 内部 agent 平台评测增加『约束发现』维度：把部分评测任务的关键约束从 issue 描述中移除，只放在可查询的系统状态或可对话的 mock 干系人处；2) 借鉴交互成本惩罚设计：agent 的每次澄清提问/试运行都计入成本，防止『无限试探』刷分；3) 用『业务指标提升』而非『任务完成』作为最终评分——对业务 Agent 就是『决策质量提升』而非『SQL 执行成功』。",
+        "caveats": "95 个任务样本量有限且依赖行业专家改编的主观判断；模拟环境与真实客户政治/合规/遗留系统复杂度仍有差距；脚本化利益相关者的回答策略可能泄露出题人预期路径；13 个配置均未 fine-tune 于交付场景，专用训练后结论可能改变。",
+        "business": "对企业 AI 采购决策：『demo 能解 issue』与『能交付客户价值』之间的 14/95 数据是压价与验收标准设计的依据。对 AI 交付服务商：FDE 技能（约束发现+干系人管理）是人类工程师的护城河，AI 增强 FDE 而非替代 FDE 是近期更现实的产品形态。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.22350",
+            "title": "FDE-Gym: The Last Mile of AI Delivery"
+          }
+        ],
+        "diagram": {
+          "title": "FDE-Gym 评测闭环：模拟客户环境+业务价值归一化打分",
+          "flow": [
+            {
+              "label": "交付任务",
+              "sub": "95任务×18行业专家改编",
+              "type": "external"
+            },
+            {
+              "label": "脚本化干系人",
+              "sub": "对话获取隐含约束",
+              "type": "frontend"
+            },
+            {
+              "label": "可修改客户系统",
+              "sub": "生产级模拟环境",
+              "type": "cloud"
+            },
+            {
+              "label": "Agent 交付执行",
+              "sub": "13配置×7供应商",
+              "type": "backend"
+            },
+            {
+              "label": "业务提升评分",
+              "sub": "归一化0-1减交互惩罚",
+              "type": "database"
+            },
+            {
+              "label": "双门槛判定",
+              "sub": "≥0.8且零事故=14/95",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "双瓶颈分离",
+              "text": "约束发现瓶颈（断崖下跌）+执行瓶颈（拿到全部事实仍只有10/23达标）"
+            },
+            {
+              "label": "交互成本",
+              "text": "消息/试运行/等待都扣分，防无限试探刷分"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "CodeOwnership：量化『AI 写的代码你还拥有吗』——预注册+盲态变异+无 AI 调试的所有权测量协议",
+      "date": "2026-10-16",
+      "source": "Towards Data Science + GitHub",
+      "link": "https://towardsdatascience.com/do-you-still-own-the-code-your-ai-wrote-i-built-codeownership-to-measure-it/",
+      "summary": "TDS 新文（Emmimal P Alexander，10-16）与其配套开源仓库（github.com/Emmimal/codeownership，10-13 创建）提出『实践所有权』（practical ownership）测量协议：测试通过只说明软件今天能工作，不说明拥有代码的开发者在 coding agent 消失后还能解释和修复它。协议测三个永不合成单一分数的维度：感知理解（AI 代码验证后、任何破坏前提交 1-5 置信评分到 git）、调试表现（第二个 agent 植入一个预注册行为缺陷，开发者拿事故报告、无 coding agent、60 分钟上限修复，隐藏测试客观验证）、事后理解（4 道 rubric 评分的实现理解题）。防自欺控制：FROZEN_SHA256 哈希预注册（31 文件，篡改即拒跑）、盲态变异（开发者不见 diff）、verdict-only 验证（只输出 VERIFIED/NOT VERIFIED，细节进密封日志）、无重试、先写后评（置信与解释在任何分数展示前提交）、72 项 harness 自检。作者诚实标注 V0.1 单开发者试点状态：仪器可运行不等于开发者群体行为结论。（TDS 正文经 Cloudflare 拦截未能直接抓取，协议细节以 GitHub README 为准，已核实。）",
+      "insight": "这是『AI 代码所有权』问题的首个可复现测量仪器，与 SWE-MISBEHAVIOR（10-15，agent 越界分类法）形成镜像：后者管 agent 别做坏事，前者管人类别失去能力。对研发团队管理者的直接价值：AI 辅助编码的隐性成本是团队对自己代码库的理解力衰减，CodeOwnership 的三维协议（置信×无AI调试×理解题）可以做成季度性团队健康检查。方法论亮点是预注册+盲态变异的防自欺设计——与 Governed Confidence 论文的预注册验证同一思想：先冻结规则再跑数据。",
+      "detail": {
+        "why": "『AI 写的代码谁拥有』从版权讨论（法律层）转向可维护性讨论（工程层）：当 agent 生成的代码占比过半，团队的真实风险不是许可证而是无人能修的暗知识。此前该风险只有轶事证据，CodeOwnership 提供了可复现的测量协议。",
+        "mechanism": "任务=给小型笔记库加文件夹支持（笔记可属多个文件夹），隐藏不变量=删文件夹只删成员关系不删笔记。10 步流程：冻结规则（哈希+tag）→agent 单次写码→基线门禁（11 可见+13 隐藏测试）→置信评分提交→第二 agent 盲态植入预注册缺陷→变异验证（verdict-only）→无 AI 调试（INCIDENT.md+60分钟）→解释先提交→隐藏测试验证修复→rubric 理解题。",
+        "deep": "三个设计决策值得架构师注意：(1) 三维永不合成单一分数——感知理解、调试表现、事后理解分别报告，避免『综合分』掩盖维度间的背离（自信高但调试差=最危险象限）；(2) 盲态变异+verdict-only 验证解决了『被试提前知道会测什么』的评测污染；(3) 纯标准库零依赖使协议可在任何环境复现。与 8-24 TDS《Bug Detection Blind Spots》共振：那次实验发现『未文档化契约』类缺陷 12/12 全败，CodeOwnership 的隐藏不变量（删除语义）正是同类陷阱的受控版本。局限作者自己写明：单开发者自设计自跑，V0.1 只是仪器验证。",
+        "apply": "1) 团队级试点：选 3-5 个 AI 生成占比高的模块，用同款协议做季度所有权健康检查，重点看『自信-调试』背离象限；2) 把 60 分钟无 AI 调试失败案例反哺研发知识库——修不动的地方就是文档/测试缺口所在；3) 借鉴预注册机制到内部 agent 评测：评测脚本哈希冻结，防止评测者（也是开发者）无意识调参。",
+        "caveats": "V0.1 单开发者试点，无群体统计效力；任务规模小（单模块文件夹支持），大型代码库的所有权衰减可能非线性；60 分钟上限对复杂缺陷偏紧；隐藏不变量设计依赖出题人预判开发者盲区，跨团队复现时需重新设计任务。",
+        "business": "AI 编码工具采购的新验收维度：除了『生成速度/通过率』，还应测『使用后团队维护能力变化』。对咨询/外包场景，CodeOwnership 式协议可写进交付验收条款——交付的代码必须通过客户团队无 AI 调试测试。",
+        "sources": [
+          {
+            "url": "https://towardsdatascience.com/do-you-still-own-the-code-your-ai-wrote-i-built-codeownership-to-measure-it/",
+            "title": "Do You Still Own the Code Your AI Wrote? I Built CodeOwnership to Measure It - TDS"
+          },
+          {
+            "url": "https://github.com/Emmimal/codeownership",
+            "title": "Emmimal/codeownership GitHub repo"
+          }
+        ],
+        "diagram": {
+          "title": "CodeOwnership 10 步测量流程：预注册+盲态变异+三维不合成",
+          "flow": [
+            {
+              "label": "冻结规则",
+              "sub": "SHA256哈希+git tag",
+              "type": "security"
+            },
+            {
+              "label": "Agent 写码",
+              "sub": "单次无重试",
+              "type": "backend"
+            },
+            {
+              "label": "基线门禁",
+              "sub": "11可见+13隐藏测试",
+              "type": "security"
+            },
+            {
+              "label": "盲态植入缺陷",
+              "sub": "第二agent+预注册行为",
+              "type": "backend"
+            },
+            {
+              "label": "无AI调试",
+              "sub": "60分钟+INCIDENT.md",
+              "type": "frontend"
+            },
+            {
+              "label": "三维评分",
+              "sub": "置信×修复×理解题",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "防自欺五件套",
+              "text": "预注册/盲态变异/verdict-only/无重试/先写后评"
+            },
+            {
+              "label": "危险象限",
+              "text": "感知自信高但无AI调试差=暗知识风险最高，三维分报告不合成"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "rnd",
+      "title": "HERO：程序生成的证据驱动 harness 优化——执行验证的 prompt 更新+测试时代码自精炼，pass@1 +7.6 再 +2.0",
+      "date": "2026-10-13",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2610.19184",
+      "summary": "Harness 优化通过精炼可复用 prompt 与脚手架改进 LLM，但用于 text-to-SQL/text-to-Python 等程序生成任务时，LLM reflector 提议的 harness 更新可能修复已观察失败的同时破坏此前正确的行为。HERO 利用程序生成任务的天然优势——输出可执行，更新效果可直接验证：离线阶段从执行验证的成功与失败中学习可复用 prompt 更新，且候选修订在采纳前先验证；测试时阶段把生成的代码本身当作实例特定 harness，用执行反馈精炼。在 4 个 SQL、Cypher、Python benchmark 上，HERO 取得最佳离线性能（pass@1 比初始 prompt +7.6 分），测试时精炼再 +2.0 分并提升执行效率。Semantic Scholar 已核实引用数=0/influential 0。",
+      "insight": "与 10-15 晨报的 Cortex（度量门控技能进化）同属『harness 自进化』谱系但机制更简洁：Cortex 用 with/without 对比净增益决定技能保留，HERO 用『候选修订采纳前执行验证』防止 harness 更新回归。共同确认的架构原则：harness 进化必须门控于客观验证信号，不能信任 LLM reflector 的自我报告。text-to-code 任务的执行反馈是免费验证器——这解释了为什么 SQL/代码域的 harness 自进化比开放域先行。对用户业务 Agent：API 调用同样可执行可验证（响应 schema 校验+业务规则断言），HERO 模式可直接迁移到 API 调用 prompt 的持续优化。",
+      "detail": {
+        "why": "生产系统的 prompt/脚手架是持续演化的资产，但每次『优化』都可能引入回归——8-26 收录的 TDS Prompt 依赖图文已量化 blast radius 不可预测问题。HERO 给出解法方向：把执行验证嵌入 harness 更新流程本身，让每次更新都过回归测试。",
+        "mechanism": "两阶段：(1) 离线 harness 优化——收集执行结果（成功/失败对），从中提炼候选 prompt 修订，每个候选在采纳前于验证集执行验证，只保留净提升的修订；(2) 测试时精炼——把单次生成的代码视为实例特定 harness（其结构本身就是对任务的解读），用执行反馈（错误信息/部分结果）迭代精炼该实例。",
+        "deep": "『生成的代码即 harness』是本文最有启发性的视角转换：通常 harness 指代码之外的 prompt/脚手架，HERO 指出代码本身承载了对任务的实例化理解（schema 假设/边界处理/中间变量语义），因此可以在测试时用执行反馈直接精炼代码而非重新生成。+7.6（离线）与 +2.0（测试时）的分解说明两类优化互补不冗余。Cypher benchmark 的纳入值得注意——图查询语言进入 text-to-code 优化射程，与用户『语义层 vs 知识图谱』双路线中知识图谱查询侧直接相关。",
+        "apply": "1) 给业务 Agent 的 API 调用 prompt 建同款闭环：执行日志（成功/失败+错误信息）→候选修订→在回放验证集上执行验证→净增益才上线；2) 验证集从生产查询日志采样并脱敏，覆盖高频+长尾；3) 测试时精炼模式用于高价值查询：首次 API 调用失败后，用错误反馈精炼调用参数而非从头重试。",
+        "caveats": "执行验证需要可执行环境，对无沙箱的写操作 API 不适用；离线优化的验证集若与生产分布漂移，净增益结论会过期；+7.6/+2.0 是学术 benchmark 数字，企业私有 schema 上的增益未知；测试时精炼增加延迟与 token 成本，需按查询价值分级启用。",
+        "business": "harness 优化闭环把 prompt 工程从手艺变成有回归测试的工程流程——这是数据 Agent 团队规模化的前提：多人协作改 prompt 时，执行验证门控防止互相破坏。可执行的验证器（SQL/API 响应）是 text-to-code 域相对开放域 agent 的结构性优势，也是该领域产品化更快的原因。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.19184",
+            "title": "HERO: Harnessing Evidence for Test-time Refinement and Prompt Optimization in Program Generation"
+          }
+        ],
+        "diagram": {
+          "title": "HERO 双阶段：离线 harness 进化 + 测试时代码自精炼",
+          "flow": [
+            {
+              "label": "执行日志",
+              "sub": "成功/失败对",
+              "type": "database"
+            },
+            {
+              "label": "候选 prompt 修订",
+              "sub": "从证据提炼",
+              "type": "backend"
+            },
+            {
+              "label": "采纳前执行验证",
+              "sub": "净增益才保留",
+              "type": "security"
+            },
+            {
+              "label": "更新后 harness",
+              "sub": "pass@1 +7.6",
+              "type": "backend"
+            },
+            {
+              "label": "生成代码=实例harness",
+              "sub": "测试时视角转换",
+              "type": "backend"
+            },
+            {
+              "label": "执行反馈精炼",
+              "sub": "再 +2.0 分",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "门控原则",
+              "text": "harness 更新必须过执行回归验证，不信任 reflector 自我报告"
+            },
+            {
+              "label": "Cypher 入射程",
+              "text": "图查询语言优化与知识图谱路线直接相关"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "cross",
+      "title": "MCP-FSD：21097 个 MCP server 大规模审计——16.4% 存在文件系统能力洗白，agent 工具生态安全基线确立",
+      "date": "2026-10-15",
+      "source": "arXiv",
+      "link": "https://arxiv.org/abs/2610.22301",
+      "summary": "MCP 标准化了 AI agent 调用外部工具的方式：server 通过声明契约（名称/描述/参数 schema）暴露工具。但典型本地部署中，客户端批准一次工具调用即授予 server 进程宽泛的主机文件系统权限，而非限定于声明的操作。本文研究由此产生的漏洞类——文件系统能力洗白（filesystem capability laundering）：攻击者引导的参数使工具访问声明契约与部署范围之外的敏感主机文件。MCP-FSD 框架三层分析：L1 server 类别筛查、L2 每工具契约分析、L3 可绕过的路径校验检查；并编目 MCP server、为每个工具推断最小权限边界、在边界外植入凭据 fixture、通过配对动态执行评估可利用性与沙箱遏制。结果：跨 9 个注册表的 21097 个 MCP server 中，4806 个受审 server 里 787 个（16.4%）在非文件系统功能分类下具备文件系统能力；动态三例验证确认 150 个漏洞实例。Semantic Scholar 已核实引用数=0/influential 0。",
+      "insight": "MCP 生态从『协议采纳竞赛』进入『供应链安全审计』阶段的标志性研究。对同时服务研发与业务两条线：研发线 coding agent 大量挂载第三方 MCP server（代码图谱/搜索/部署工具），业务线数据 Agent 的 API 工具也将以 MCP 形态暴露——16.4% 的违规率意味着『批准工具调用』的权限模型在文件系统层根本性不足。用户团队的直接行动项：自建 MCP server 按最小权限原则显式声明文件访问范围；挂载第三方 server 前用 MCP-FSD 式契约分析筛查；把『凭据 fixture 探测』纳入 agent 平台的安全回归测试。",
+      "detail": {
+        "why": "MCP 已成 agent 工具生态事实标准，但权限模型停留在『用户批准工具名』粒度，而 server 进程实际持有主机级文件权限——批准粒度与能力粒度错配是整个生态的系统性风险。此前只有个案研究，本文是首个 2 万级规模的系统性量化。",
+        "mechanism": "三层静态分析：L1 按注册表分类筛查（功能分类 vs 实际能力）、L2 解析每工具声明契约推断应有的最小权限边界、L3 检查路径校验实现是否可绕过（如 ../ 穿越/符号链接/大小写）。动态验证：在推断边界外植入凭据 fixture（金丝雀文件），配对执行（正常参数 vs 攻击引导参数）测可利用性，同时验证沙箱遏制有效性。",
+        "deep": "『能力洗白』概念的价值在于把问题从『恶意 server』扩展到『善意但过度授权的 server』：787 个违规 server 多数并非后门，而是功能分类与实际文件能力不匹配（如数据库工具顺带读配置文件）——攻击面来自声明与实现的差距而非故意恶意。这与 8-26 收录的《'Do Not' Is Not Deny》（CLAUDE.md 安全规则 4-16% 匹配内置控制）同构：自然语言/声明层的安全意图与执行层的实际能力之间存在系统性鸿沟，唯一解法是把权限边界代码化+动态验证。150 个确认漏洞实例说明 L3 路径校验普遍可绕过——校验逻辑本身成了攻击面。",
+        "apply": "1) 自建 MCP server：文件访问显式声明目录白名单，用 MCP-FSD 式 fixture 探测做发布前安全测试；2) 第三方 server 准入：跑 L1/L2 契约分析，功能分类与实际能力不匹配者拒入或降权运行（容器/沙箱内）；3) agent 平台层：工具批准粒度从『工具名』细化到『工具+参数模式』，高危参数模式（路径类）触发二次确认；4) 业务 Agent 的 API 工具虽不触文件系统，但同款『声明契约 vs 实际能力』审计方法适用于 API scope 越权检测。",
+        "caveats": "静态契约分析依赖 schema 声明质量，动态验证覆盖 4806/21097（23%）受审子集；16.4% 是能力不匹配率而非全部可被实际利用；论文聚焦文件系统能力，网络外联/环境变量/进程注入等其他能力通道未覆盖；注册表元数据的分类本身可能不准，影响 L1 结论。",
+        "business": "企业 agent 平台采购的安全验收清单新增一项：MCP server 供应链审计能力（契约分析+fixture 探测）。对 MCP server 开发者，『最小权限声明』将成为企业市场的准入卖点——类似 SOC2 之于 SaaS。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.22301",
+            "title": "My Credentials, Please: Detecting Filesystem Capability Laundering in MCP Servers at Scale"
+          }
+        ],
+        "diagram": {
+          "title": "MCP-FSD 三层审计+动态验证流水线",
+          "flow": [
+            {
+              "label": "9 注册表编目",
+              "sub": "21097 MCP servers",
+              "type": "cloud"
+            },
+            {
+              "label": "L1 类别筛查",
+              "sub": "功能分类vs实际能力",
+              "type": "security"
+            },
+            {
+              "label": "L2 契约分析",
+              "sub": "每工具最小权限边界",
+              "type": "backend"
+            },
+            {
+              "label": "L3 路径校验检查",
+              "sub": "绕过性静态分析",
+              "type": "security"
+            },
+            {
+              "label": "凭据 fixture 植入",
+              "sub": "边界外金丝雀文件",
+              "type": "database"
+            },
+            {
+              "label": "配对动态执行",
+              "sub": "150漏洞实例确认",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "能力洗白",
+              "text": "多数违规是善意但过度授权：声明与实现的差距即攻击面"
+            },
+            {
+              "label": "批准粒度错配",
+              "text": "用户批准工具名，进程获得主机文件权限——需参数级批准"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "business",
+      "title": "Cube v1.8.7/v1.8.8：SQL pushdown to Cube Store+COUNT(DISTINCT) 预聚合规划+evals 安全上下文——语义层查询路径与评估治理并进",
+      "date": "2026-10-16",
+      "source": "GitHub",
+      "link": "https://github.com/cube-js/cube/releases/tag/v1.8.7",
+      "summary": "Cube 于 10-16 连发 v1.8.7/v1.8.8（10-13 还有 v1.8.6 内存泄漏修复）。v1.8.7 核心：cubesql 支持 SQL push down to Cube Store（#12247）与 COUNT(DISTINCT dimension) 走预聚合规划（#12294）——两个最高频的 BI 查询模式不再穿透到源数据库；cube evals run 新增 --security-context（#12202）让评估运行携带行级安全上下文，评估结果与生产权限视图一致；tesseract 支持 join aliases（#12097）；Trino 驱动改用 TrinoQuery 并钉住会话时区 UTC（#12291，关闭 2024 年老 issue #10207）；MSSQL 小数算术保真（#12175）；时间戳/间隔算术支持非常量操作数（#12242）；编译器缓存按编译成员数（而非仅模型数）设界（#12203）；查询方言按数据源只解析一次（#12268 性能）。v1.8.6 修复 rollupJoin/rollupLambda 经记忆化引用的内存泄漏（#12248）。",
+      "insight": "两条线值得架构师注意：(1) COUNT(DISTINCT) 预聚合规划是精确去重与预聚合性能的历史矛盾点，Cube 在规划器层解决意味着语义层引擎的『可加速查询面』继续扩大——业务 Agent 生成的聚合查询命中预聚合的概率上升，延迟与成本双降；(2) evals --security-context 是『评估治理』信号：语义层的评估运行开始尊重 RLS 上下文，与 10-09 收录的 v1.8.2 masked members 修复（预聚合穿透掩码）同一方向——安全语义贯穿查询/缓存/评估全路径。对用户 API 化查数架构：Cube 作语义层时，评估集必须带真实用户安全上下文跑，否则『评估通过』不代表该用户视角下答案正确。",
+      "detail": {
+        "why": "Cube 是开源语义层引擎事实标准之一，v1.8.x 系列（10-07 起）持续三周高频发版：主键自动检测→掩码穿透修复→SQL pushdown→评估安全上下文，路线清晰指向『企业级受治理语义层』。",
+        "mechanism": "SQL pushdown to Cube Store：cubesql 把可下推的 SQL 片段直接交给 Cube Store 执行而非拉数据到中间层；COUNT(DISTINCT) 预聚合规划：规划器识别精确去重查询与预聚合表的兼容条件，命中则走预聚合；--security-context：evals CLI 接受安全上下文 JSON，评估查询以该身份的 RLS 视图执行；编译器缓存按成员数设界防止大模型文件膨胀 OOM。",
+        "deep": "v1.8.x 三周演进拼图：v1.8.0（10-07，主键自动检测+pg_catalog PK/FK 检测）解决数据模型冷启动；v1.8.2（10-08，masked members 预聚合穿透修复）堵 RLS 合规漏洞；v1.8.6-1.8.8（10-13~16，内存泄漏+pushdown+评估安全上下文）做性能与治理。三步连起来是『冷启动→合规→规模化』的完整企业采用路径。tesseract join aliases（#12097）延续 10-09 晨报记录的 join 图攻坚线（#12070 hub join 路径/#12149 循环 join 死循环）——join 拓扑仍是语义层引擎最活跃的正确性战场，印证『知识图谱承载执行治理（实体/join 路径）』的双路线判断。",
+        "apply": "1) 升级 v1.8.7+ 后把高频 COUNT(DISTINCT) 指标（去重用户数/去重订单数）纳入预聚合，验证命中率（usedPreAggregations 响应字段，v1.7.33 起暴露）；2) CI 中的 cube evals 加 --security-context 跑至少两个角色（全量/受限），确认 RLS 下评估结论一致；3) Trino 用户注意会话时区钉 UTC 的行为变化，跨时区报表需回归验证。",
+        "caveats": "SQL pushdown to Cube Store 是新路径，复杂查询的下推正确性需自行回归；COUNT(DISTINCT) 预聚合有兼容性条件（非所有维度组合可命中）；--security-context 只覆盖 evals CLI，其他入口的评估一致性需自行保证；高频发版节奏下 minor 版本间行为变化需盯 release notes。",
+        "business": "语义层引擎的竞争维度已从『建模表达力』转向『受治理查询面』：能安全加速的查询比例（pushdown+预聚合命中）决定 API 化查数的成本曲线。评估带安全上下文是企业采购合规清单的新一项。",
+        "sources": [
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.8.7",
+            "title": "Cube v1.8.7 Release Notes"
+          }
+        ],
+        "diagram": {
+          "title": "Cube v1.8.7 查询路径：pushdown+预聚合+安全上下文评估",
+          "flow": [
+            {
+              "label": "BI/API 查询",
+              "sub": "含COUNT(DISTINCT)",
+              "type": "frontend"
+            },
+            {
+              "label": "cubesql 规划器",
+              "sub": "预聚合兼容判定",
+              "type": "backend"
+            },
+            {
+              "label": "Cube Store pushdown",
+              "sub": "#12247 SQL下推",
+              "type": "database"
+            },
+            {
+              "label": "预聚合命中",
+              "sub": "#12294 精确去重加速",
+              "type": "database"
+            },
+            {
+              "label": "源数据库",
+              "sub": "未命中才穿透",
+              "type": "database"
+            },
+            {
+              "label": "evals --security-context",
+              "sub": "#12202 RLS下评估",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "三周企业路径",
+              "text": "v1.8.0冷启动→v1.8.2合规→v1.8.6-8规模化"
+            },
+            {
+              "label": "join 拓扑战场",
+              "text": "tesseract join aliases 延续 join 图攻坚线"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "business",
+      "title": "WrenAI v0.16.0：StarRocks 一等数据源+MDL 导入保真修复——语义层定义资产的可迁移性加固",
+      "date": "2026-10-16",
+      "source": "GitHub",
+      "link": "https://github.com/Canner/WrenAI/releases/tag/wren-v0.16.0",
+      "summary": "WrenAI 10-16 发布 wren-v0.16.0（此前 wren-semantic-core v0.5.0 于 10-14、wren-core-wasm v0.5.0 于 10-15 发布）。v0.16.0 核心：StarRocks 升为一等数据源（#2790）；MDL（建模定义语言）导入保真系列修复——init --from-mdl 保留 cubes（#2771）、无项目名的 MDL 自动命名项目（#2780）、v2 cube 元数据按 UTF-8 读取（#2769）；memory 重建索引失败原因带出 watch 循环（#2767）；profile secrets 按所选项目解析（#2796）；validate 警告摘要计入错误数（#2781）；多行子查询包装防尾注释吞并（#2754）+尾分号剥离（#2752）延续 SQL 生成保真线；urllib3/pyjwt/sentence-transformers 安全升级（#2787）；test-unit 像 CI 一样跑完整单元树（#2768）。",
+      "insight": "v0.16.0 的主题是『语义资产的保真迁移』：MDL 导入的 cubes 保留/UTF-8/项目名修复都在保证语义定义（用户的业务口径资产）在工具链流转中无损。这对『语义层 vs 知识图谱』路线研究是重要信号：语义层资产的锁定效应比数据库更低的前提是导入导出保真——WrenAI 在主动降低迁移摩擦。profile secrets 按项目解析（#2796）+安全依赖升级是 multi-tenant 语义层的治理基本功。与 Cube 的 SQL pushdown 性能线不同，WrenAI 走『定义资产可靠性』线，两者互补构成开源语义层的两极。",
+      "detail": {
+        "why": "语义层的核心资产是业务口径定义（MDL/data model），资产能否无损进出决定采纳风险。v0.16.0 集中修复导入保真问题，配合 10-14 semantic-core v0.5.0（10-09 晨报已记录 ordered cube queries+拒绝 collapsed relationship joins），WrenAI 正把『定义层正确性』做深。",
+        "mechanism": "MDL 导入链路：解析 MDL JSON→保留 cubes 定义（此前丢失）→无项目名时派生项目名→v2 cube 元数据 UTF-8 解码（此前编码假设错误导致非 ASCII 业务术语损坏）。memory watch 循环：重建索引失败时把原因传播到循环外（此前静默失败，用户只见索引不更新不见原因）。",
+        "deep": "三个细节的业务含义：(1) UTF-8 修复直接影响中文业务术语——用中文命名的 cube/字段元数据此前可能损坏，对国内团队是实际 bug 修复；(2) 索引失败原因外带是 fail-loud 设计延续（8-26 晨报记录的 WrenAI fail-loud 线：mdl.json 验证大声失败/截断值标注），语义层引擎的可观测性从查询层扩展到索引层；(3) StarRocks 一等支持反映分析型数据库市场格局——StarRocks 在实时分析场景的份额增长正传导到语义层生态。SQL 生成保真线（尾注释/分号处理）与 Cube 的 MSSQL 小数保真（#12175）同期出现，说明方言边缘 case 仍是 text-to-SQL 生产化的主要摩擦源。",
+        "apply": "1) 使用 WrenAI 的中文团队升级到 v0.16.0 并重新导入 MDL 验证业务术语完整性；2) 把 memory 索引失败告警接入监控（失败原因现已可获取）；3) 评估语义层选型时把『MDL/model 导入导出保真』列为必测项——用含中文术语+cubes+多项目的真实 model 做迁移测试。",
+        "caveats": "StarRocks 一等支持是新代码路径，生产采用需自行回归；MDL v2 格式演进中，跨版本迁移仍需验证；WrenAI 发版节奏快（CLI/semantic-core/core-wasm 三线并行），版本组合矩阵需注意兼容性说明。",
+        "business": "语义层市场的信任竞争：定义资产可无损迁出=低锁定=更低采纳门槛，WrenAI 主动降摩擦是开源产品对抗商业语义层（Cube Cloud/dbt Semantic Layer）的差异化策略。中文术语 UTF-8 修复对国内企业是实际采购加分项。",
+        "sources": [
+          {
+            "url": "https://github.com/Canner/WrenAI/releases/tag/wren-v0.16.0",
+            "title": "WrenAI wren-v0.16.0 Release Notes"
+          }
+        ],
+        "diagram": {
+          "title": "WrenAI v0.16.0：语义资产保真迁移链路",
+          "flow": [
+            {
+              "label": "MDL 定义资产",
+              "sub": "业务口径/cubes/术语",
+              "type": "database"
+            },
+            {
+              "label": "init --from-mdl",
+              "sub": "cubes保留#2771",
+              "type": "backend"
+            },
+            {
+              "label": "UTF-8 元数据",
+              "sub": "中文术语修复#2769",
+              "type": "backend"
+            },
+            {
+              "label": "memory 索引",
+              "sub": "失败原因外带#2767",
+              "type": "backend"
+            },
+            {
+              "label": "SQL 生成",
+              "sub": "尾注释/分号保真",
+              "type": "backend"
+            },
+            {
+              "label": "StarRocks",
+              "sub": "一等数据源#2790",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "低锁定策略",
+              "text": "导入导出保真=迁移摩擦低=采纳门槛低"
+            },
+            {
+              "label": "fail-loud 延续",
+              "text": "索引层失败原因可观测，与 mdl.json 验证大声失败同线"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "rnd",
+      "title": "opencode-swarm v7.199.x：门控执行 agent 群的 worktree 权限修复与 delegation gate 演进——『AI 写码，Swarm 证明能跑』",
+      "date": "2026-10-18",
+      "source": "GitHub",
+      "link": "https://github.com/ZaxbyHub/opencode-swarm",
+      "summary": "opencode-swarm（⭐506，MIT）是 OpenCode 的架构师中心 agent 群插件：把单个 AI 编码会话变成 architect 领导的专职 agent 团队（planning/implementation/review/test/security 角色分离），口号『Your AI writes the code. Swarm proves it works.』——所有必需 gate 通过才能 ship，并行 agent 只在作用域证明不相交时才能变更代码库（v8 parallel lanes/Epic waves），且各自在隔离 worktree 中。10-18 密集发版：v7.199.1 修复 git worktree 场景文件权限误判——checkFileAuthorityWithRules 此前假设所有合法路径严格包含于 cwd，多 worktree 工作流中同仓库 worktree 位于兄弟目录导致误报 AUTHORITY_ROOT_ESCAPE；修复经 git worktree list --porcelain 发现关联 worktree（LRU 缓存 60s TTL+1500ms 超时+环境变量剥离），且每个关联根必须双向锚定验证（其 .git 文件引用本仓库注册项且注册项 gitdir 指回该根）防止权限范围被恶意注册扩大。v7.199.0 新增 delegation gate 验收标准自动注入（hooks.auto_inject_acceptance，默认 false 保持 fail-closed 严格拒绝：无 ACCEPTANCE 行的委派被拒）。",
+      "insight": "这是『门控执行』路线的活跃工程样本，与 10-15 晨报的 SWE-MISBEHAVIOR/CODE-KIT（学术分类法）形成工程对照。两个安全设计细节值得抄：(1) worktree 权限的双向锚定验证——发现关联目录后不直接信任，要求 .git 引用与注册项互指一致，防『伪造 worktree 注册扩大权限范围』，这正是 MCP-FSD 能力洗白问题在文件系统权限层的同款防御；(2) delegation gate 默认 fail-closed、自动注入为 opt-in 且注入内容过同一验证器——治理放宽必须显式且留痕（ACCEPTANCE AUTO-INJECTED advisory）。用户团队自建 coding agent 编排时，worktree 隔离+作用域不相交证明+验收标准强制是可复用的三件套。",
+      "detail": {
+        "why": "多 agent 并行写码的最大风险是相互踩踏与未验收合并。opencode-swarm 用『角色分离+门控执行+worktree 隔离』给出工程答案，且 506 star+6000+ 测试+v7.199 的版本号显示高频迭代成熟度。",
+        "mechanism": "架构师 agent 分解任务→专职 agent（coder/reviewer/tester/security）在各自隔离 worktree 执行→delegation gate 强制每个委派携带 ACCEPTANCE 验收标准（缺失即拒绝）→所有必需 gate（review/test/security）通过才允许 ship→并行变更需作用域不相交证明。v7.199.1 的权限修复：git worktree list --porcelain 枚举+LRU 缓存（60s TTL 保证会话中 worktree 增删可感知）+子进程环境剥离 GIT_DIR 等变量（防环境注入）+双向锚定验证。",
+        "deep": "release notes 的安全工程密度罕见地高：有界发现（bounded discovery：超时+字节上限+windowsHide）、缓存 TTL 的安全含义（worktree 会话中被移除时 60s 内重新查询，防陈旧授权）、双向锚定（拒绝『目标无对应注册』的单向引用）。这三层与 MCP-FSD 的 L1/L2/L3 分层审计同构：都是『先发现、再验证声明与实现一致、最后动态确认』。delegation gate 的演进方向（自动注入 opt-in）反映真实张力：严格 fail-closed 保证安全但摩擦大，放宽必须可配置+留痕+过验证——治理设计的『默认安全，显式放宽』范式。",
+        "apply": "1) 团队 coding agent 编排借鉴三件套：任务委派强制验收标准（无验收不派发）、并行变更 worktree 隔离+作用域不相交检查、合并前独立 reviewer/tester gate；2) 文件权限检查若涉及 git worktree，直接复用双向锚定验证模式；3) 治理放宽（如自动注入验收标准）做成 opt-in 配置+审计事件，保持默认严格。",
+        "caveats": "依赖 OpenCode 生态（bun>=1.3.13 或 node>=22.13），非 OpenCode 用户不可直接复用；gate 全过才 ship 的流程对小变更偏重；506 star 社区规模有限，长期维护风险需评估；自动注入的『通用默认验收标准』质量有限，注入不等于真验收。",
+        "business": "『AI 写码+机器证明能跑』是 AI 编码工具的信任卖点演进方向：从『生成快』到『交付可信』。门控执行架构对企业采购的意义：代码变更有强制质量门=AI 编码可纳入现有工程治理体系而非绕过它。",
+        "sources": [
+          {
+            "url": "https://github.com/ZaxbyHub/opencode-swarm",
+            "title": "opencode-swarm: Architect-centric agentic swarm plugin for OpenCode"
+          }
+        ],
+        "diagram": {
+          "title": "opencode-swarm 门控执行架构 + worktree 权限双向锚定",
+          "flow": [
+            {
+              "label": "Architect agent",
+              "sub": "任务分解+委派",
+              "type": "frontend"
+            },
+            {
+              "label": "Delegation gate",
+              "sub": "ACCEPTANCE缺失即拒",
+              "type": "security"
+            },
+            {
+              "label": "专职 agent 群",
+              "sub": "coder/reviewer/tester",
+              "type": "backend"
+            },
+            {
+              "label": "隔离 worktree",
+              "sub": "作用域不相交才并行",
+              "type": "backend"
+            },
+            {
+              "label": "双向锚定验证",
+              "sub": ".git引用互指一致",
+              "type": "security"
+            },
+            {
+              "label": "全 gate 通过",
+              "sub": "review+test+security",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "默认安全显式放宽",
+              "text": "auto_inject_acceptance 默认false，注入过同一验证器+留advisory"
+            },
+            {
+              "label": "缓存TTL安全含义",
+              "text": "60s TTL防陈旧worktree授权，会话中增删可感知"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "business",
+      "title": "OpenMetadata 治理加固周：OIDC 授权码强制+邮箱域准入+profiler 分区自动推断——元数据平台的安全与自动化细节战",
+      "date": "2026-10-17",
+      "source": "GitHub",
+      "link": "https://github.com/open-metadata/OpenMetadata",
+      "summary": "OpenMetadata 10-15~10-18 主分支密集提交（2.0.5-release 后进入下一版本开发）：安全侧——机密 OIDC 回调强制 authorization code（#35679，防授权流降级攻击）、创建用户时拒绝允许邮箱域之外的用户（#35613，关闭 2023 年老 issue #19306）、SSO 显示名与头像服务端同步（#35675）；自动化侧——profiler 分区配置从表分区元数据自动推断（#35669，大表 profiling 不再手工配分区）、force-sync 可刷新连接器供给的自定义属性（#35622）、测试参数对照定义校验+修复 open-window/boolean-set 运行（#35629）、test-connection 报错指名无效字段而非泛化 converter 错误（#34722）；本体侧——OntologyDataExploreRdf 统计继承列+alert 源搜索稳定（#35620）、Relations Graph 工具栏常驻屏幕+边绕开术语节点路由（#35687）；平台侧——Classic mode 弃用通告+暗色模式对比度修复（#35609）、2.0 欢迎与升级界面重设计（#35657）。",
+      "insight": "三类信号：(1) 安全修复的『老 issue 清算』模式（#19306 邮箱域准入开了两年多）说明元数据平台的权限治理需求长期存在但优先级被功能挤压——企业自建时应把邮箱域/OIDC 流配置列入上线前检查而非等上游修复；(2) profiler 分区自动推断是『元数据反哺元数据』：表分区信息（已有元数据）自动生成 profiling 配置（新元数据任务），减少人工配置是数据质量覆盖率的实际瓶颈；(3) Ontology RDF 继承列统计+关系图路由优化表明 OpenMetadata 的本体/知识图谱能力（与用户『语义层 vs 知识图谱』双路线相关）在持续做实——术语继承、关系可视化都是知识图谱路线的平台化载体。",
+      "detail": {
+        "why": "OpenMetadata 是开源元数据治理平台标杆，其提交流是观察『企业元数据平台真实痛点』的最佳窗口。本周提交集中在安全准入、profiling 自动化、本体能力三点，均为生产环境高频需求。",
+        "mechanism": "OIDC 加固：confidential client 回调必须携带 authorization code（此前可能接受降级流），阻断授权码拦截/注入类攻击路径。邮箱域准入：用户创建 API 校验邮箱域白名单，域外直接拒绝（此前只在 UI 层部分限制）。profiler 分区推断：读取表分区元数据（如 BigQuery partitioned table/Spark partition columns）自动生成分区 profiling 配置，替代手工指定。",
+        "deep": "与 10-09 晨报记录的 2.0.4/2.0.5（bot 摄取保护用户管理元数据+人工语义资产保护）连成一条线：OpenMetadata 正从『元数据目录』走向『受治理元数据平台』——bot 与人的写权限分离（2.0.5）、OIDC 流加固+域准入（本周）、人工语义资产不被覆盖（2.0.5）共同构成企业级访问控制闭环。#34722（报错指名无效字段）延续 fail-loud 可诊断性线：连接测试失败时告诉用户哪个字段错，而非泛化错误——元数据平台的可运维性细节。Classic mode 弃用通告确认 8-30 晨报记录的 AI 双模式（AppModeSwitcher）战略：平台全面转向 AI-native 交互。",
+        "apply": "1) 自建 OpenMetadata 实例立即核查：OIDC confidential client 配置+邮箱域白名单（#35613 在下一版本才发布，当前版本需网关层补偿）；2) 大表 profiling 用分区自动推断（升级后）替代手工配置，把数据质量覆盖率从核心表扩展到分区大表；3) 评估本体能力（术语继承/关系图）作为知识图谱路线的平台载体——先验证术语表+继承统计能否满足业务口径管理需求，再决定是否自建图谱。",
+        "caveats": "本周为开发分支提交，功能在下一 release（2.0.6+）才可用；邮箱域准入的存量用户迁移策略未见说明；profiler 分区推断依赖源系统分区元数据质量；本体/RDF 能力仍在演进，生产采用需评估成熟度。",
+        "business": "元数据治理平台的采购评估清单更新：OIDC 流安全性、域准入控制、profiling 自动化覆盖率、本体能力成熟度四项。老 issue 清算速度（#19306 两年）提示：安全类需求不能依赖上游路线图，企业需要网关层自主补偿能力。",
+        "sources": [
+          {
+            "url": "https://github.com/open-metadata/OpenMetadata",
+            "title": "OpenMetadata commits (10-15 to 10-18)"
+          }
+        ],
+        "diagram": {
+          "title": "OpenMetadata 受治理元数据平台三线加固",
+          "flow": [
+            {
+              "label": "OIDC 回调",
+              "sub": "授权码强制#35679",
+              "type": "security"
+            },
+            {
+              "label": "邮箱域准入",
+              "sub": "域外拒绝#35613",
+              "type": "security"
+            },
+            {
+              "label": "表分区元数据",
+              "sub": "已有元数据资产",
+              "type": "database"
+            },
+            {
+              "label": "profiler 自动推断",
+              "sub": "分区配置#35669",
+              "type": "backend"
+            },
+            {
+              "label": "本体 RDF",
+              "sub": "继承列统计#35620",
+              "type": "backend"
+            },
+            {
+              "label": "Relations Graph",
+              "sub": "术语绕路由#35687",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "访问控制闭环",
+              "text": "bot/人写权限分离+OIDC加固+域准入+语义资产保护"
+            },
+            {
+              "label": "元数据反哺元数据",
+              "text": "分区信息自动生成profiling配置，减少人工是覆盖率瓶颈"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "cross",
+      "title": "tokensave 10-18 密集提交：性能/内存五连发+hooks 可配置+grep 拒绝收窄——代码智能 MCP server 的工具经济学精细化",
+      "date": "2026-10-18",
+      "source": "GitHub",
+      "link": "https://github.com/aovestdipaperino/tokensave",
+      "summary": "tokensave（⭐668，自称最全面的代码智能 MCP server：40+ 工具/30+ 语言）10-18 单日 14 提交：性能/内存五连发——worker pool 按待处理文件批次定容（#703）、编译清单进程级保留设界（#702）、提取数据移动语义+已处理同步结果即释（#701）、上下文借用缓存源+只切分请求行（#700）、迭代 SCC 遍历复用免图克隆（#698）+冗余检测只保留最优重复对（#699）；agent 集成侧——claude_hooks 配置可关闭 Claude Code hooks 注入（用户可选择不让 tokensave 接管 hooks）、OpenCode 2 配置形状修复、pi 集成规则块写入 <agent-dir>/AGENTS.md（#692）、MCP 的 tokensave_read 接受 path+start/end 参数（#696）；正确性侧——grep 拒绝只对索引真实定义的名字生效（此前 hook 可能拒绝索引中不存在的名字的 grep，误伤合法搜索）、literal search 扫描改为实时 stat 文件（防陈旧缓存返回已删除内容）、libsql 连接构造失败时关闭原生句柄（#704）、Delphi .dpk/.inc 按 Pascal 索引（#690）。",
+      "insight": "tokensave 的演进是『代码智能工具的经济学』教科书：v7.15.0 的 if_digest 条件读取（10-09 已收录，HTTP ETag 模式）解决传输经济学，本周五连发解决内存/计算经济学（进程级保留设界防长跑 OOM、移动语义免拷贝、SCC 免克隆）。两个治理细节与本期主线共振：(1) grep 拒绝收窄——hook 只拒绝索引已定义名字的 grep，防止治理规则误伤合法操作，与 opencode-swarm 的『默认安全但显式放宽+留痕』同款精细度；(2) claude_hooks 可关闭——工具不强制接管用户环境，agent 集成的『可退出性』是生态信任基础。对研发知识库基建：代码智能 MCP server 的稳定性工程（内存设界/实时 stat）是长期运行的前提，选型时看提交流密度比看 star 数更有信息量。",
+      "detail": {
+        "why": "研发知识库已建成的团队下一步是把代码智能工具接入 agent 日常回路，tokensave 作为高活跃度的代码智能 MCP server，其工程实践（性能/治理/集成）直接可借鉴。",
+        "mechanism": "内存经济学：#702 给进程级编译清单保留设上界（长跑进程清单无限增长会 OOM）；#701 提取数据用移动语义+同步结果处理后立即释放；#700 上下文构建借用缓存源不拷贝、只切分请求的行区间；#698 SCC（强连通分量）遍历改迭代式复用不克隆整图。治理收窄：hook 的 grep 拒绝逻辑先查索引——只有索引真实定义了该名字才拒绝 grep 引导用 tokensave_search，索引没有的名字放行 grep。",
+        "deep": "『拒绝收窄』是工具治理成熟度的标志：早期版本为推广自家工具激进拦截 grep（8-26 晨报记录的 #442 告知什么无法扫描是第一步），现在退到『只拦截索引确有价值可替代的场景』——治理规则的可信度来自精确性而非覆盖面。与 MCP-FSD 的能力洗白审计形成有趣对照：MCP server 的能力声明要防止过度（安全侧），治理规则要防止过宽（可用性侧），两者都是『声明与实际行为的精确对齐』问题。实时 stat 修复（literal search 不信任缓存的文件存在性）与 10-09 记录的 if_digest 内容寻址是同一思想的两个方向：内容可以用 digest 缓存，存在性必须实时确认。",
+        "apply": "1) 自建代码智能 MCP server 借鉴内存五件套：长跑进程所有缓存设界、大对象移动语义、遍历免克隆、文件存在性实时确认；2) 工具治理规则（如强制用图谱查询替代 grep）设计成『只在替代确有价值时拦截』+可配置关闭；3) agent 集成提供退出机制（hooks 可关/规则可卸载），降低团队采纳阻力。",
+        "caveats": "单日 14 提交的高频节奏意味着版本间行为变化快，生产采用应钉版本+读 CHANGELOG；#703 worker pool 定容策略对超大仓库的表现未知；自称『最全面』的 40+ 工具面也是攻击面与维护负担（与 MCP-FSD 审计结论相关）。",
+        "business": "代码智能工具的竞争进入『长跑稳定性』阶段：demo 效果趋同后，内存曲线、缓存正确性、治理精确度决定团队是否敢让它常驻 CI/agent 回路。高 star 低提交密度的项目风险大于中 star 高提交密度项目。",
+        "sources": [
+          {
+            "url": "https://github.com/aovestdipaperino/tokensave",
+            "title": "tokensave: The most comprehensive code intelligence MCP server for AI coding agents"
+          }
+        ],
+        "diagram": {
+          "title": "tokensave 工具经济学：传输→内存→治理三层精细化",
+          "flow": [
+            {
+              "label": "agent 工具调用",
+              "sub": "40+工具/30+语言",
+              "type": "frontend"
+            },
+            {
+              "label": "if_digest 条件读取",
+              "sub": "传输经济学(v7.15)",
+              "type": "backend"
+            },
+            {
+              "label": "缓存设界+移动语义",
+              "sub": "内存经济学#700-703",
+              "type": "backend"
+            },
+            {
+              "label": "grep 拒绝收窄",
+              "sub": "只拦截索引已定义名",
+              "type": "security"
+            },
+            {
+              "label": "实时 stat",
+              "sub": "存在性不信任缓存",
+              "type": "database"
+            },
+            {
+              "label": "hooks 可关闭",
+              "sub": "集成可退出性",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "治理精确性>覆盖面",
+              "text": "拒绝收窄：只在替代确有价值时拦截，防误伤合法grep"
+            },
+            {
+              "label": "内容vs存在性",
+              "text": "内容可digest缓存，文件存在性必须实时确认"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "product",
+      "title": "战略研判：Agent 评估三新维度成型——『该不该答』×『答了敢不敢信』×『交付后谁还能修』",
+      "date": "2026-10-19",
+      "source": "综合分析",
+      "link": "https://hhao9817.github.io/agent-daily/",
+      "summary": "本期 12 条情报串成一条清晰主线：AI Agent 的评估焦点正从『答对了吗』（pass@1/执行正确率）扩展到三个新维度。维度一『该不该答』：PremiseSQL（前提批判弃答，前沿模型默认前提轻信）+CircleClar（world/model ambiguity 区分+answering/clarifying/abstaining 三态选择）与 10-09 的 ARCS 拼成输入侧完整决策框架——弃答与澄清是独立能力维度，且与生成能力存在 Pareto 权衡。维度二『答了敢不敢信』：Governed Confidence Score 审计证明精心设计的置信公式 AUROC 仅 0.624，重构为 agreement 主分+确定性检查 veto/cap 后 0.725，与 Sentinel（轨迹置信）/AgentOps（pass^k 高估）构成置信治理三部曲——置信公式本身是需要预注册审计的『模型』。维度三『交付后谁还能修』：FDE-Gym（最强配置 14/95，未言明约束是瓶颈）+CodeOwnership（人类所有权测量协议）+opencode-swarm（机器门控执行）从宏观基准、人类能力、机器验证三侧收紧 AI 代码/交付信任。交叉线的 MCP-FSD（16.4% 能力洗白）与 tokensave 治理收窄（拒绝只拦截索引已定义名）共同指向：声明与实际行为的精确对齐是 agent 生态安全与可用性的同一枚硬币。",
+      "insight": "对用户双主题课题的落点：业务线——『该不该答』与『敢不敢信』两维度直接可落地：(1) 用 PremiseSQL 4 类前提失败映射宽表 API 场景建内部弃答基准；(2) 用 CircleClar 对高频问题跑歧义普查，world-model ambiguity 差距清单驱动语义层建设优先级（语义层 ROI 首次可量化）；(3) 用 Governed Confidence 审计方法检视现有风控公式，主分+否决重构原则直接套用。研发线——CodeOwnership 三维协议可做成团队季度健康检查，FDE-Gym 的『约束发现』维度应加入内部 agent 评测。交叉基建——自建 MCP server 按 MCP-FSD 式契约分析做发布前审计，治理规则学 tokensave 的精确收窄。开源侧 Cube（评估安全上下文）/WrenAI（语义资产保真迁移）/OpenMetadata（访问控制闭环）三线并进确认：受治理运行时仍是 2026-2027 企业数据 Agent 主叙事，本期新增『评估治理』（evals 带安全上下文+置信公式预注册审计）作为第三件套。",
+      "detail": {
+        "why": "连续三期晨报（10-09 受治理运行时三件套/10-15 harness 工程治理收敛/本期评估三新维度）显示同一趋势的深化：竞争焦点从模型能力→运行时治理→评估体系本身。评估是最后被工程化的环节，也是采购决策的最终依据。",
+        "mechanism": "三新维度的技术载体：弃答维度=前提批判基准（PremiseSQL 1800+1800 对照）+歧义估计（CircleClar answer-clarification-answer 循环）+置信三态（agreement 主分+veto/cap）；信任维度=预注册审计方法论（冻结规则→登记假设→事后验证）；所有权维度=人类侧测量（CodeOwnership 盲态变异+无 AI 调试）+机器侧门控（opencode-swarm 全 gate 通过才 ship）+宏观基准（FDE-Gym 业务价值归一化）。",
+        "deep": "三个跨条目共振：(1) 『预注册』方法论在 Governed Confidence（置信公式）与 CodeOwnership（基准哈希冻结）独立出现——评测可信度的核心是防事后叙事，这应成为内部 agent 评测的标准流程；(2) 『声明与实际对齐』在 MCP-FSD（契约 vs 文件能力）、tokensave（索引 vs grep 拒绝）、WrenAI（MDL 导入保真）、PremiseSQL（查询前提 vs 数据现实）四处同构出现——对齐审计是跨层的通用方法；(3) 『Pareto 权衡显式化』：PremiseSQL 的敢疑vs敢答、Governed Confidence 的检查vs覆盖率、FDE-Gym 的交互成本vs交付质量——成熟系统的评估必须报告权衡曲线而非单点分数。与 10-09 结论的衔接：受治理运行时三件套（歧义×置信×执行）本期升级为『评估三维度』，治理从运行时机制扩展到评估体系设计。",
+        "apply": "本季度行动清单：1) 建内部弃答基准（PremiseSQL 4 类前提失败×自家 API 目录，各 50-100 条）；2) 对高频业务问题跑 CircleClar 式歧义普查，输出语义层建设优先级清单；3) 审计现有置信/风控公式的信号分解，按主分+veto/cap 重构并预注册验证；4) 内部 agent 评测加『约束发现』维度+交互成本惩罚；5) AI 生成占比高的模块试点 CodeOwnership 季度检查；6) 自建 MCP server 过最小权限契约分析+fixture 探测。",
+        "caveats": "三维度均有学术基准到企业场景的分布差距；CircleClar 普查成本高（多次采样×澄清生成）只适合离线；CodeOwnership V0.1 无群体统计效力；FDE-Gym 14/95 的结论基于未 fine-tune 的通用模型，专用训练后数字会变。评估体系建设的投入本身需要 ROI 论证——优先做弃答基准与置信审计（复用现有数据，成本最低）。",
+        "business": "评估能力正在成为数据 Agent 产品的差异化卖点：能出具『弃答率/误扣率/预注册验证报告』的供应商比只报准确率的供应商更容易通过企业风控审查。对内：评估三维度给管理层一个清晰的投入叙事——不是『模型不够好』而是『评估体系缺失』，后者的建设成本远低于换模型。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.22158",
+            "title": "PremiseSQL: Evaluating Premise Critique and Abstention in Text-to-SQL Systems"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.17256",
+            "title": "Does a Governed Confidence Score Know When a Text-to-SQL Answer Is Right?"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.20052",
+            "title": "What Is a Clarification? Estimating Model-Dependent Input Ambiguity"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.22350",
+            "title": "FDE-Gym: The Last Mile of AI Delivery"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.22301",
+            "title": "My Credentials, Please: Detecting Filesystem Capability Laundering in MCP Servers at Scale"
+          },
+          {
+            "url": "https://github.com/Emmimal/codeownership",
+            "title": "Emmimal/codeownership GitHub repo"
+          },
+          {
+            "url": "https://github.com/ZaxbyHub/opencode-swarm",
+            "title": "opencode-swarm: Architect-centric agentic swarm plugin for OpenCode"
+          }
+        ],
+        "diagram": {
+          "title": "Agent 评估三新维度全景",
+          "flow": [
+            {
+              "label": "该不该答",
+              "sub": "PremiseSQL+CircleClar",
+              "type": "security"
+            },
+            {
+              "label": "答了敢不敢信",
+              "sub": "置信公式预注册审计",
+              "type": "backend"
+            },
+            {
+              "label": "交付后谁还能修",
+              "sub": "FDE-Gym+CodeOwnership",
+              "type": "frontend"
+            },
+            {
+              "label": "声明实际对齐",
+              "sub": "MCP-FSD+tokensave收窄",
+              "type": "security"
+            },
+            {
+              "label": "受治理运行时",
+              "sub": "歧义×置信×执行(10-09)",
+              "type": "database"
+            },
+            {
+              "label": "评估治理",
+              "sub": "本期新增第三件套",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "三期趋势线",
+              "text": "模型能力→运行时治理→评估体系本身，评估是最后被工程化的环节"
+            },
+            {
+              "label": "预注册方法论",
+              "text": "Governed Confidence与CodeOwnership独立采用：冻结规则在先防事后叙事"
+            },
+            {
+              "label": "权衡曲线",
+              "text": "敢疑vs敢答/检查vs覆盖/交互成本vs质量——报曲线不报单点"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
