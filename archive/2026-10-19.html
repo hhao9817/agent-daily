@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI for Business 领域每日晨报</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+            --card: #ffffff;
+            --border: #d6dde8;
+            --border-strong: #adbac9;
+            --text: #111827;
+            --muted: #4b5563;
+            --accent: #2563eb;
+            --accent-soft: #dbeafe;
+            --accent2: #059669;
+            --accent2-soft: #d1fae5;
+            --warn: #b45309;
+            --warn-soft: #fef3c7;
+            --red: #dc2626;
+            --red-soft: #fee2e2;
+            --shadow: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+            --shadow-hover: 0 10px 25px -5px rgba(15,23,42,0.1), 0 8px 10px -6px rgba(15,23,42,0.05);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+      padding: 20px;
+      max-width: 920px;
+      margin: 0 auto;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    /* 长英文标识符/URL 在移动端强制换行，避免撑破卡片 */
+    p, li, h1, h2, h3, h4, .summary, .insight, .snap-title, .snap-points li,
+    .modal-sec p, .modal-body, .detail-block, .item, .snapshot, .snapshot-summary {
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    header {
+      text-align: center;
+      padding: 30px 0 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    header h1 {
+      font-size: 1.8em;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    header h1 .grad {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header .date { color: var(--muted); margin-top: 8px; font-size: 0.95em; }
+    .archive-link {
+      display: inline-block; margin-top: 12px; color: var(--accent); text-decoration: none;
+      font-size: 0.85em; border: 1px solid var(--border-strong); background: var(--card);
+      padding: 5px 14px; border-radius: 20px; box-shadow: var(--shadow);
+      transition: all .15s;
+    }
+    .archive-link:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+    /* 今日速览（结构化，按来源分类） */
+    .snapshot {
+      background: linear-gradient(135deg, var(--accent-soft), var(--accent2-soft));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow);
+    }
+    .snapshot-summary {
+      font-size: 0.98em;
+      color: var(--text);
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px dashed var(--border-strong);
+    }
+    .snapshot-summary strong { color: var(--accent); }
+    .snapshot-groups { display: flex; flex-direction: column; gap: 10px; }
+    .snap-group {
+      display: flex;
+      gap: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      box-shadow: var(--shadow);
+    }
+    .snap-bar { width: 5px; border-radius: 3px; flex-shrink: 0; }
+    .snap-bar-paper { background: var(--accent); }
+    .snap-bar-github { background: var(--accent2); }
+    .snap-bar-product { background: var(--warn); }
+    .snap-bar-blog { background: var(--red); }
+    .snap-body { flex: 1; }
+    .snap-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.85em; font-weight: 700; color: var(--text);
+      margin-bottom: 6px;
+    }
+    .snap-title .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-paper { background: var(--accent); }
+    .dot-github { background: var(--accent2); }
+    .dot-product { background: var(--warn); }
+    .dot-blog { background: var(--red); }
+    .snap-title .badge {
+      font-size: 0.7em; font-weight: 600;
+      background: var(--bg); border: 1px solid var(--border-strong);
+      color: var(--muted); padding: 1px 8px; border-radius: 20px;
+    }
+    .snap-points { list-style: none; padding: 0; margin: 0; }
+    .snap-points li {
+      font-size: 0.9em; color: var(--text);
+      padding: 3px 0 3px 18px;
+      position: relative;
+    }
+    .snap-points li::before {
+      content: "▸";
+      position: absolute; left: 2px;
+      color: var(--accent);
+    }
+
+    /* 分类区块 */
+    .section { margin-bottom: 30px; }
+    .section-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 4px; margin-bottom: 14px;
+      border-bottom: 2px solid var(--border);
+    }
+    .section-head .bar { width: 6px; height: 22px; border-radius: 3px; }
+    .section-head h2 { font-size: 1.15em; color: var(--text); flex: 1; }
+    .section-head .count { font-size: 0.8em; color: var(--muted); background: var(--card); border: 1px solid var(--border); padding: 2px 10px; border-radius: 20px; }
+    .bar-paper { background: var(--accent); }
+    .bar-github { background: var(--accent2); }
+    .bar-product { background: var(--warn); }
+    .bar-blog { background: var(--red); }
+
+    .item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: border-color .2s, transform .1s, box-shadow .2s;
+    }
+    .item:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+    .item:active { transform: scale(0.995); }
+    .item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .tag {
+      display: inline-block;
+      font-size: 0.72em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .tag-paper { background: var(--accent-soft); color: var(--accent); }
+    .tag-github { background: var(--accent2-soft); color: var(--accent2); }
+    .tag-product { background: var(--warn-soft); color: var(--warn); }
+    .tag-blog { background: var(--red-soft); color: var(--red); }
+    .detail-hint { font-size: 0.78em; color: var(--accent); opacity: .8; }
+    .item h3 { font-size: 1.1em; margin-bottom: 8px; }
+    .item h3 a { color: var(--text); text-decoration: none; }
+    .item h3 a:hover { color: var(--accent); }
+    .item .meta { color: var(--muted); font-size: 0.82em; margin-bottom: 10px; }
+    .item .summary { font-size: 0.95em; margin-bottom: 10px; color: var(--text); }
+    .item .insight {
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      padding: 8px 12px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.92em;
+      color: var(--text);
+    }
+    .item .insight strong { color: var(--accent); }
+
+    /* ===== 详情弹层（浅色） ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(30,41,59,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      overflow-y: auto;
+      padding: 30px 20px;
+    }
+    .modal.show { display: block; }
+    .modal-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 32px 36px;
+      position: relative;
+      box-shadow: var(--shadow-hover);
+      animation: pop .18s ease;
+    }
+    @keyframes pop { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .modal-close {
+      position: absolute;
+      top: 14px; right: 16px;
+      background: none; border: none;
+      color: var(--muted);
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+    .modal-close:hover { color: var(--text); background: var(--bg); }
+    .modal-content h2 {
+      font-size: 1.4em;
+      color: var(--text);
+      margin: 10px 0 6px;
+      line-height: 1.4;
+      padding-right: 30px;
+    }
+    .modal-content .meta { color: var(--muted); font-size: 0.85em; margin-bottom: 18px; }
+    .modal-body { margin-top: 8px; }
+    .modal-sec {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+    }
+    .modal-sec h4 { font-size: 0.95em; color: var(--accent); margin-bottom: 8px; }
+    .modal-sec p { font-size: 0.93em; color: var(--text); }
+    .modal-sources { background: var(--bg); }
+    .modal-business { background: var(--warn-soft); }
+    .modal-business h4 { color: var(--warn); }
+    .sources-list { list-style: none; padding: 0; margin: 0; }
+    .sources-list li { font-size: 0.88em; color: var(--text); margin-bottom: 6px; padding-left: 4px; }
+    .src-id { color: var(--accent); font-weight: 600; margin-right: 6px; }
+    .src-link { color: var(--accent); text-decoration: none; word-break: break-all; }
+    .src-link:hover { text-decoration: underline; }
+    .diagram-box {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      overflow-x: auto;
+      position: relative;
+    }
+    .diagram-svg svg { display: block; }
+    .diagram-zoom {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.82em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      z-index: 5;
+    }
+    .diagram-zoom:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ===== 架构图放大 lightbox ===== */
+    .diagram-lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.85);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      overflow: auto;
+      padding: 30px;
+    }
+    .diagram-lightbox.show { display: block; }
+    .diagram-lightbox-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .diagram-lightbox-inner .lb-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px;
+    }
+    .diagram-lightbox-inner .lb-head h3 { font-size: 1.1em; color: var(--text); }
+    .diagram-lightbox-inner .lb-tools { display: flex; align-items: center; gap: 8px; }
+    .lb-btn {
+      background: var(--accent-soft); color: var(--accent);
+      border: 1px solid var(--border-strong); border-radius: 8px;
+      padding: 5px 12px; font-size: 0.85em; font-weight: 600; cursor: pointer;
+      transition: all .15s;
+    }
+    .lb-btn:hover { background: var(--accent); color: #fff; }
+    .lb-close {
+      background: none; border: none; color: var(--muted);
+      font-size: 26px; line-height: 1; cursor: pointer; padding: 4px 8px; border-radius: 8px;
+    }
+    .lb-close:hover { color: var(--text); background: var(--bg); }
+    .diagram-lightbox-inner .lb-svg {
+      overflow: auto;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .diagram-lightbox-inner .lb-svg svg {
+      max-width: 100%;
+      height: auto;
+      transition: transform .15s ease;
+      transform-origin: center center;
+    }
+    .diagram-lightbox-inner .lb-svg svg.zoomed { transform: scale(1.6); cursor: grab; }
+    .diagram-lightbox-inner .lb-svg svg.zoomed:active { cursor: grabbing; }
+    .diagram-lightbox-inner .lb-tip { text-align: center; color: var(--muted); font-size: 0.8em; margin-top: 10px; }
+    .modal-foot {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .modal-link { color: var(--accent); font-size: 0.88em; text-decoration: none; word-break: break-all; }
+    .modal-link:hover { text-decoration: underline; }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8em;
+      padding: 30px 0 10px;
+      border-top: 1px solid var(--border);
+      margin-top: 30px;
+    }
+    .empty { color: var(--muted); text-align: center; padding: 40px; }
+    /* ===== 反馈按钮 + 提交按钮 ===== */
+    .feedback-fab {
+      position: fixed; bottom: 24px; right: 24px;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; color: #fff; font-size: 24px; cursor: pointer;
+      box-shadow: var(--shadow-hover);
+      z-index: 9000; transition: transform .15s;
+    }
+    .feedback-fab:hover { transform: scale(1.1); }
+    .modal-submit {
+      width: 100%; padding: 12px; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; font-size: 1em; font-weight: 600; cursor: pointer;
+    }
+    .modal-submit:hover { opacity: 0.9; }
+    @media (max-width: 600px) {
+      .modal-content { padding: 24px 18px; }
+      body { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🤖 <span class="grad">AI for Business</span> 每日晨报</h1>
+    <div class="date">业务知识库 · 业务语义理解 · API 精确查询 | 2026-10-19</div>
+    <a class="archive-link" href="archive/index.html">📚 历史晨报归档</a>
+  </header>
+
+  <div class="snapshot"><div class="snapshot-summary"><strong>📌 今日速览</strong><br>本期主线：AI Agent 的评估焦点正从『答对了吗』扩展到『该不该答、答了还敢信吗、代码交付后谁还能修』三个新维度。业务线三篇论文（PremiseSQL/Governed Confidence/What Is a Clarification）分别从前提批判弃答、置信分数审计、模型相关歧义估计三个角度补齐『可信回答』闭环——共同指向构造性拒绝与置信治理必须成为系统一等能力。研发线 FDE-Gym 给出最硬警示数据：最强配置在真实客户交付场景 mean score 仅 0.56、95 任务仅解决 14 个，『发现未言明约束』而非『写代码』是最后一公里瓶颈；CodeOwnership 协议与 opencode-swarm 门控执行则分别从『人类所有权』与『机器验证』两侧收紧 AI 代码信任。交叉线 MCP-FSD 首次大规模量化 MCP 生态的文件系统能力洗白漏洞（21097 server 审计、16.4% 违规），为 agent 工具生态安全治理提供基线。开源侧 Cube v1.8.7 SQL pushdown to Cube Store + 安全上下文注入 evals、WrenAI v0.16.0 StarRocks 一等数据源、OpenMetadata OIDC 授权码强制与邮箱域准入修复持续加固语义层与元数据治理。</div><div class="snapshot-groups"><div class="snap-group"><span class="snap-bar snap-bar-github"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-github"></span>🐙 开源项目<span class="badge">5 项</span></div><ul class="snap-points"><li>Cube v1.8.7：SQL push down to Cube Store #12247 + COUNT(DISTINCT) 预聚合规划 #12294 + evals --security-context #12202 + tesseract join aliases #12097</li><li>WrenAI wren-v0.16.0：StarRocks 一等数据源 #2790 + MDL 导入保真 #2771/#2769 + 安全依赖升级 #2787</li><li>opencode-swarm v7.199.x（⭐506）：git worktree 文件权限双向锚定修复 + delegation gate 验收标准自动注入（opt-in fail-closed 默认不变）</li><li>tokensave：性能/内存五连发（#698-#703）+ claude_hooks 可配置 + grep 拒绝收窄到索引已定义名字</li><li>Emmimal/codeownership（新，10-13 创建）：AI 代码所有权测量协议，纯标准库零依赖，72 项 harness 自检</li></ul></div></div></div></div>
+
+  <div class="section"><div class="section-head"><span class="bar bar-product"></span><h2>🏢 业界动态</h2><span class="count">1 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-product">🏢 业界动态</span></div><h3><a href="https://hhao9817.github.io/agent-daily/" target="_blank" rel="noopener">战略研判：Agent 评估三新维度成型——『该不该答』×『答了敢不敢信』×『交付后谁还能修』</a></h3><div class="meta">2026-10-19 · 综合分析</div><div class="summary">本期 12 条情报串成一条清晰主线：AI Agent 的评估焦点正从『答对了吗』（pass@1/执行正确率）扩展到三个新维度。维度一『该不该答』：PremiseSQL（前提批判弃答，前沿模型默认前提轻信）+CircleClar（world/model ambiguity 区分+answering/clarifying/abstaining 三态选择）与 10-09 的 ARCS 拼成输入侧完整决策框架——弃答与澄清是独立能力维度，且与生成能力存在 Pareto 权衡。维度二『答了敢不敢信』：Governed Confidence Score 审计证明精心设计的置信公式 AUROC 仅 0.624，重构为 agreement 主分+确定性检查 veto/cap 后 0.725，与 Sentinel（轨迹置信）/AgentOps（pass^k 高估）构成置信治理三部曲——置信公式本身是需要预注册审计的『模型』。维度三『交付后谁还能修』：FDE-Gym（最强配置 14/95，未言明约束是瓶颈）+CodeOwnership（人类所有权测量协议）+opencode-swarm（机器门控执行）从宏观基准、人类能力、机器验证三侧收紧 AI 代码/交付信任。交叉线的 MCP-FSD（16.4% 能力洗白）与 tokensave 治理收窄（拒绝只拦截索引已定义名）共同指向：声明与实际行为的精确对齐是 agent 生态安全与可用性的同一枚硬币。</div><div class="insight"><strong>🔍 技术视角：</strong>对用户双主题课题的落点：业务线——『该不该答』与『敢不敢信』两维度直接可落地：(1) 用 PremiseSQL 4 类前提失败映射宽表 API 场景建内部弃答基准；(2) 用 CircleClar 对高频问题跑歧义普查，world-model ambiguity 差距清单驱动语义层建设优先级（语义层 ROI 首次可量化）；(3) 用 Governed Confidence 审计方法检视现有风控公式，主分+否决重构原则直接套用。研发线——CodeOwnership 三维协议可做成团队季度健康检查，FDE-Gym 的『约束发现』维度应加入内部 agent 评测。交叉基建——自建 MCP server 按 MCP-FSD 式契约分析做发布前审计，治理规则学 tokensave 的精确收窄。开源侧 Cube（评估安全上下文）/WrenAI（语义资产保真迁移）/OpenMetadata（访问控制闭环）三线并进确认：受治理运行时仍是 2026-2027 企业数据 Agent 主叙事，本期新增『评估治理』（evals 带安全上下文+置信公式预注册审计）作为第三件套。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">Agent 评估三新维度全景</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">该不该答</text><text x="156.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">PremiseSQL+CircleClar</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">答了敢不敢信</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">置信公式预注册审计</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">交付后谁还能修</text><text x="548.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">FDE-Gym+CodeOwnership</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">声明实际对齐</text><text x="744.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">MCP-FSD+tokensave收窄</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="277.0" y="208" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="352.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">受治理运行时</text><text x="352.0" y="252" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">歧义×置信×执行(10-09)</text><rect x="473.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="548.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">评估治理</text><text x="548.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">本期新增第三件套</text><line x1="427.0" y1="237.0" x2="469.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">三期趋势线</tspan>　模型能力→运行时治理→评估体系本身，评估是最后被工程化的环节</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">预注册方法论</tspan>　Governed Confidence与CodeOwnership独立采用：冻结规则在先防事后叙事</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">权衡曲线</tspan>　敢疑vs敢答/检查vs覆盖/交互成本vs质量——报曲线不报单点</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>连续三期晨报（10-09 受治理运行时三件套/10-15 harness 工程治理收敛/本期评估三新维度）显示同一趋势的深化：竞争焦点从模型能力→运行时治理→评估体系本身。评估是最后被工程化的环节，也是采购决策的最终依据。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>三新维度的技术载体：弃答维度=前提批判基准（PremiseSQL 1800+1800 对照）+歧义估计（CircleClar answer-clarification-answer 循环）+置信三态（agreement 主分+veto/cap）；信任维度=预注册审计方法论（冻结规则→登记假设→事后验证）；所有权维度=人类侧测量（CodeOwnership 盲态变异+无 AI 调试）+机器侧门控（opencode-swarm 全 gate 通过才 ship）+宏观基准（FDE-Gym 业务价值归一化）。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>三个跨条目共振：(1) 『预注册』方法论在 Governed Confidence（置信公式）与 CodeOwnership（基准哈希冻结）独立出现——评测可信度的核心是防事后叙事，这应成为内部 agent 评测的标准流程；(2) 『声明与实际对齐』在 MCP-FSD（契约 vs 文件能力）、tokensave（索引 vs grep 拒绝）、WrenAI（MDL 导入保真）、PremiseSQL（查询前提 vs 数据现实）四处同构出现——对齐审计是跨层的通用方法；(3) 『Pareto 权衡显式化』：PremiseSQL 的敢疑vs敢答、Governed Confidence 的检查vs覆盖率、FDE-Gym 的交互成本vs交付质量——成熟系统的评估必须报告权衡曲线而非单点分数。与 10-09 结论的衔接：受治理运行时三件套（歧义×置信×执行）本期升级为『评估三维度』，治理从运行时机制扩展到评估体系设计。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>评估能力正在成为数据 Agent 产品的差异化卖点：能出具『弃答率/误扣率/预注册验证报告』的供应商比只报准确率的供应商更容易通过企业风控审查。对内：评估三维度给管理层一个清晰的投入叙事——不是『模型不够好』而是『评估体系缺失』，后者的建设成本远低于换模型。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>本季度行动清单：1) 建内部弃答基准（PremiseSQL 4 类前提失败×自家 API 目录，各 50-100 条）；2) 对高频业务问题跑 CircleClar 式歧义普查，输出语义层建设优先级清单；3) 审计现有置信/风控公式的信号分解，按主分+veto/cap 重构并预注册验证；4) 内部 agent 评测加『约束发现』维度+交互成本惩罚；5) AI 生成占比高的模块试点 CodeOwnership 季度检查；6) 自建 MCP server 过最小权限契约分析+fixture 探测。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>三维度均有学术基准到企业场景的分布差距；CircleClar 普查成本高（多次采样×澄清生成）只适合离线；CodeOwnership V0.1 无群体统计效力；FDE-Gym 14/95 的结论基于未 fine-tune 的通用模型，专用训练后数字会变。评估体系建设的投入本身需要 ROI 论证——优先做弃答基准与置信审计（复用现有数据，成本最低）。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2610.22158" target="_blank" rel="noopener" class="src-link">PremiseSQL: Evaluating Premise Critique and Abstention in Text-to-SQL Systems</a></li><li><span class="src-id">[2]</span> <a href="https://arxiv.org/abs/2610.17256" target="_blank" rel="noopener" class="src-link">Does a Governed Confidence Score Know When a Text-to-SQL Answer Is Right?</a></li><li><span class="src-id">[3]</span> <a href="https://arxiv.org/abs/2610.20052" target="_blank" rel="noopener" class="src-link">What Is a Clarification? Estimating Model-Dependent Input Ambiguity</a></li><li><span class="src-id">[4]</span> <a href="https://arxiv.org/abs/2610.22350" target="_blank" rel="noopener" class="src-link">FDE-Gym: The Last Mile of AI Delivery</a></li><li><span class="src-id">[5]</span> <a href="https://arxiv.org/abs/2610.22301" target="_blank" rel="noopener" class="src-link">My Credentials, Please: Detecting Filesystem Capability Laundering in MCP Servers at Scale</a></li><li><span class="src-id">[6]</span> <a href="https://github.com/Emmimal/codeownership" target="_blank" rel="noopener" class="src-link">Emmimal/codeownership GitHub repo</a></li><li><span class="src-id">[7]</span> <a href="https://github.com/ZaxbyHub/opencode-swarm" target="_blank" rel="noopener" class="src-link">opencode-swarm: Architect-centric agentic swarm plugin for OpenCode</a></li></ol></div><div class="modal-foot"><a href="https://hhao9817.github.io/agent-daily/" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://hhao9817.github.io/agent-daily/</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-blog"></span><h2>📝 技术博客</h2><span class="count">1 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-blog">📝 技术博客</span></div><h3><a href="https://towardsdatascience.com/do-you-still-own-the-code-your-ai-wrote-i-built-codeownership-to-measure-it/" target="_blank" rel="noopener">CodeOwnership：量化『AI 写的代码你还拥有吗』——预注册+盲态变异+无 AI 调试的所有权测量协议</a></h3><div class="meta">2026-10-16 · Towards Data Science + GitHub</div><div class="summary">TDS 新文（Emmimal P Alexander，10-16）与其配套开源仓库（github.com/Emmimal/codeownership，10-13 创建）提出『实践所有权』（practical ownership）测量协议：测试通过只说明软件今天能工作，不说明拥有代码的开发者在 coding agent 消失后还能解释和修复它。协议测三个永不合成单一分数的维度：感知理解（AI 代码验证后、任何破坏前提交 1-5 置信评分到 git）、调试表现（第二个 agent 植入一个预注册行为缺陷，开发者拿事故报告、无 coding agent、60 分钟上限修复，隐藏测试客观验证）、事后理解（4 道 rubric 评分的实现理解题）。防自欺控制：FROZEN_SHA256 哈希预注册（31 文件，篡改即拒跑）、盲态变异（开发者不见 diff）、verdict-only 验证（只输出 VERIFIED/NOT VERIFIED，细节进密封日志）、无重试、先写后评（置信与解释在任何分数展示前提交）、72 项 harness 自检。作者诚实标注 V0.1 单开发者试点状态：仪器可运行不等于开发者群体行为结论。（TDS 正文经 Cloudflare 拦截未能直接抓取，协议细节以 GitHub README 为准，已核实。）</div><div class="insight"><strong>🔍 技术视角：</strong>这是『AI 代码所有权』问题的首个可复现测量仪器，与 SWE-MISBEHAVIOR（10-15，agent 越界分类法）形成镜像：后者管 agent 别做坏事，前者管人类别失去能力。对研发团队管理者的直接价值：AI 辅助编码的隐性成本是团队对自己代码库的理解力衰减，CodeOwnership 的三维协议（置信×无AI调试×理解题）可以做成季度性团队健康检查。方法论亮点是预注册+盲态变异的防自欺设计——与 Governed Confidence 论文的预注册验证同一思想：先冻结规则再跑数据。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 458" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="458" fill="#f8fafc"/><rect width="900" height="458" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">CodeOwnership 10 步测量流程：预注册+盲态变异+三维不合成</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">冻结规则</text><text x="156.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">SHA256哈希+git tag</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Agent 写码</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">单次无重试</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">基线门禁</text><text x="548.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">11可见+13隐藏测试</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">盲态植入缺陷</text><text x="744.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">第二agent+预注册行为</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="277.0" y="208" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="352.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">无AI调试</text><text x="352.0" y="252" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">60分钟+INCIDENT.md</text><rect x="473.0" y="208" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="548.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">三维评分</text><text x="548.0" y="252" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">置信×修复×理解题</text><line x1="427.0" y1="237.0" x2="469.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">防自欺五件套</tspan>　预注册/盲态变异/verdict-only/无重试/先写后评</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">危险象限</tspan>　感知自信高但无AI调试差=暗知识风险最高，三维分报告不合成</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>『AI 写的代码谁拥有』从版权讨论（法律层）转向可维护性讨论（工程层）：当 agent 生成的代码占比过半，团队的真实风险不是许可证而是无人能修的暗知识。此前该风险只有轶事证据，CodeOwnership 提供了可复现的测量协议。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>任务=给小型笔记库加文件夹支持（笔记可属多个文件夹），隐藏不变量=删文件夹只删成员关系不删笔记。10 步流程：冻结规则（哈希+tag）→agent 单次写码→基线门禁（11 可见+13 隐藏测试）→置信评分提交→第二 agent 盲态植入预注册缺陷→变异验证（verdict-only）→无 AI 调试（INCIDENT.md+60分钟）→解释先提交→隐藏测试验证修复→rubric 理解题。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>三个设计决策值得架构师注意：(1) 三维永不合成单一分数——感知理解、调试表现、事后理解分别报告，避免『综合分』掩盖维度间的背离（自信高但调试差=最危险象限）；(2) 盲态变异+verdict-only 验证解决了『被试提前知道会测什么』的评测污染；(3) 纯标准库零依赖使协议可在任何环境复现。与 8-24 TDS《Bug Detection Blind Spots》共振：那次实验发现『未文档化契约』类缺陷 12/12 全败，CodeOwnership 的隐藏不变量（删除语义）正是同类陷阱的受控版本。局限作者自己写明：单开发者自设计自跑，V0.1 只是仪器验证。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>AI 编码工具采购的新验收维度：除了『生成速度/通过率』，还应测『使用后团队维护能力变化』。对咨询/外包场景，CodeOwnership 式协议可写进交付验收条款——交付的代码必须通过客户团队无 AI 调试测试。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>1) 团队级试点：选 3-5 个 AI 生成占比高的模块，用同款协议做季度所有权健康检查，重点看『自信-调试』背离象限；2) 把 60 分钟无 AI 调试失败案例反哺研发知识库——修不动的地方就是文档/测试缺口所在；3) 借鉴预注册机制到内部 agent 评测：评测脚本哈希冻结，防止评测者（也是开发者）无意识调参。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>V0.1 单开发者试点，无群体统计效力；任务规模小（单模块文件夹支持），大型代码库的所有权衰减可能非线性；60 分钟上限对复杂缺陷偏紧；隐藏不变量设计依赖出题人预判开发者盲区，跨团队复现时需重新设计任务。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://towardsdatascience.com/do-you-still-own-the-code-your-ai-wrote-i-built-codeownership-to-measure-it/" target="_blank" rel="noopener" class="src-link">Do You Still Own the Code Your AI Wrote? I Built CodeOwnership to Measure It - TDS</a></li><li><span class="src-id">[2]</span> <a href="https://github.com/Emmimal/codeownership" target="_blank" rel="noopener" class="src-link">Emmimal/codeownership GitHub repo</a></li></ol></div><div class="modal-foot"><a href="https://towardsdatascience.com/do-you-still-own-the-code-your-ai-wrote-i-built-codeownership-to-measure-it/" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://towardsdatascience.com/do-you-still-own-the-code-your-ai-wrote-i-built-codeownership-to-measure-it/</a></div></div></div>
+
+  
+
+  <footer>
+    由 Hermes Agent 自动生成 · 点击卡片查看深度详情 · 2026-10-19
+  </footer>
+
+  <!-- ===== 反馈按钮 + 表单弹层 ===== -->
+  <button class="feedback-fab" onclick="openFeedback()" title="提交反馈">💬</button>
+
+  <div class="modal" id="feedback-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeFeedback()" aria-label="关闭">×</button>
+      <span class="tag tag-product">💬 读者反馈</span>
+      <h2>提交意见 / 反馈</h2>
+      <div class="modal-body">
+        <p style="color:var(--muted);font-size:0.9em;margin-bottom:12px;">
+          你的反馈会帮我改进晨报内容。提交后将打开 GitHub Issue 页面，确认后我会在每天 17:00 处理。
+        </p>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">反馈类型</label>
+        <select id="fb-type" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);margin-bottom:12px;">
+          <option value="内容建议">内容建议（选题/深度/方向）</option>
+          <option value="错误报告">错误报告（链接失效/信息有误）</option>
+          <option value="格式反馈">格式/排版反馈</option>
+          <option value="其他">其他</option>
+        </select>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">你的反馈内容</label>
+        <textarea id="fb-body" rows="5" placeholder="请描述你的意见、建议或发现的问题…"
+          style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);resize:vertical;margin-bottom:12px;"></textarea>
+        <button class="modal-submit" onclick="submitFeedback()">提交反馈 →</button>
+      </div>
+      <div class="modal-foot" style="color:var(--muted);font-size:0.8em;">提交后请在打开的 GitHub 页面点击确认。</div>
+    </div>
+  </div>
+
+  <!-- ===== 架构图放大 lightbox ===== -->
+  <div class="diagram-lightbox" id="diagram-lightbox" onclick="if(event.target===this)closeDiagramZoom()">
+    <div class="diagram-lightbox-inner">
+      <div class="lb-head">
+        <h3 id="lb-title">📊 架构图</h3>
+        <div class="lb-tools">
+          <button type="button" class="lb-btn" onclick="diagramToggleZoom()">🔍 放大/缩小</button>
+          <button type="button" class="lb-close" onclick="closeDiagramZoom()" aria-label="关闭">×</button>
+        </div>
+      </div>
+      <div class="lb-svg" id="lb-svg"></div>
+      <div class="lb-tip">提示：点击「放大/缩小」切换缩放，缩放后可在图内拖动查看细节 · 按 Esc 关闭</div>
+    </div>
+  </div>
+
+  <script>
+    function openDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.add('show'); document.body.style.overflow = 'hidden'; }
+    }
+    function closeDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.remove('show'); document.body.style.overflow = ''; }
+    }
+    function openFeedback() {
+      document.getElementById('feedback-modal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeFeedback() {
+      document.getElementById('feedback-modal').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function submitFeedback() {
+      const type = document.getElementById('fb-type').value;
+      const body = document.getElementById('fb-body').value.trim();
+      if (!body) { alert('请填写反馈内容'); return; }
+      const date = '2026-10-19';
+      const title = '[网页反馈/' + type + '] ' + date;
+      const full = '反馈类型: ' + type + '\n日期: ' + date + '\n\n' + body;
+      // 生成 GitHub Issue 预填链接（不暴露 token，安全）
+      const url = 'https://github.com/hhao9817/agent-daily/issues/new?title=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(full);
+      window.open(url, '_blank');
+      closeFeedback();
+    }
+    /* ===== 架构图放大 ===== */
+    function openDiagramZoom(btn) {
+      const box = btn.closest('.diagram-box');
+      const svg = box.querySelector('.diagram-svg svg') || box.querySelector('svg');
+      if (!svg) return;
+      const title = box.querySelector('h4') ? box.querySelector('h4').textContent : '📊 架构图';
+      document.getElementById('lb-title').textContent = title;
+      const holder = document.getElementById('lb-svg');
+      holder.innerHTML = '';
+      holder.appendChild(svg.cloneNode(true));
+      const lb = document.getElementById('diagram-lightbox');
+      lb.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeDiagramZoom() {
+      document.getElementById('diagram-lightbox').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function diagramToggleZoom() {
+      const svg = document.querySelector('#lb-svg svg');
+      if (!svg) return;
+      svg.classList.toggle('zoomed');
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal.show').forEach(function(m) { m.classList.remove('show'); });
+        document.getElementById('diagram-lightbox').classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+</html>
