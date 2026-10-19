@@ -1,0 +1,992 @@
+{
+  "date": "2026-10-20",
+  "banner": "AI for 研发：DeskCheck 在 SWE-bench-Pro 上以 $0.14/实例成本系统性引导代码推理、+10.5%；Ace 自适应编辑策略选择 Pass@1 +21.7%。AI for 业务：SchemaShield-Lite 揭示 interface drift 致 function calling 准确率骤降，验证-修复层低成本挽回；Netflix 用 QuipuDB RDF 知识图谱统一可观测性语义，Zalando RAG flywheel 自动化供应商 schema 映射。交叉线：Monitor-Validity Failures 发现 18 起 LLM 安全证据路径断裂，code-review-graph 突破 32k ⭐。",
+  "snapshot": {
+    "summary": "今日情报聚焦『Agent 可靠性的接口契约层』——研发线 coding agent 从生成精度转向推理过程可引导（DeskCheck 四阶段代码推理+Ace 特征驱动策略选择+VulnSAGE 程序结构连接 LLM 判断+MLOps-Bench 生产 ML 工程评测）；业务线 function calling 在 interface drift 下脆弱性被量化（SchemaShield-Lite 验证-修复层+Data Provenance 查询模板识别+SQLWitness 方言无关等价反驳+HSAD 小顾问模型蒸馏）；交叉线揭示 LLM 安全监控的证据路径断裂（Monitor-Validity Failures 18 例+Darwin-Claw 自进化经验巩固+code-review-graph 32k 星 MCP 代码图谱）。Netflix 知识图谱可观测性+Zalando RAG flywheel+Airbnb CASTLE 冷启动搜索是三篇企业实践标杆。三条线共同指向：可靠性投资从模型推理层下沉到接口契约与证据路径层。",
+    "groups": {
+      "rnd": [
+        "DeskCheck：系统性引导代码推理的 agentic scaffold，731 个 SWE-bench-Pro 实例上比 mini-SWE-Agent 和 Claude Code 提升 6.29%-10.53%，每实例仅增 $0.02-$0.28，四阶段（执行路径模拟定位根因→候选补丁模拟修正近距→issue 需求审计→边界用例测试生成）。",
+        "Ace（No One-Size-Fits-All）：自适应代码编辑策略选择框架，构建 CEBench 500 任务，发现 one-step/search-replace/plan-apply 三策略无通用最优，按总代码行数/修改类型/修改范围/任务类型四特征动态选择，Pass@1 +21.7% 同时 token 消耗 -27.3%。",
+        "VulnSAGE：SAST 报告裁定系统，用 report-centered slicer 恢复依赖+CLAIM 中间表示记录模型判断语义事实+程序分析检查前提，拒绝 89/97 误报、保留 85/90 真缺陷，在 200 个 C/C++ 项目上运行时复现 104 个缺陷。",
+        "MLOps-Bench：生产 ML 工程基准，212 任务×31 仓库覆盖数据管道/特征工程/训练/服务/监控/CI-CD/治理全生命周期，最优 agent 仅解 31.2% 任务但过 68.7% 测试——部分进度≠生产可用。",
+        "CognitiveCanvas：交互式 GraphRAG 工作空间，把对话记忆从线性文本日志转为持久可审计知识对象，HSFG 分层语义事实图 92.2% token 缩减+时间漂移审计器+空间-符号 prompt 编译器。"
+      ],
+      "business": [
+        "SchemaShield-Lite（Robust Function Calling）：interface drift 是部署后 function calling 准确率骤降主因，schema 验证+候选集重试+单次约束修复零训练成本将 DICE-300 从 0.717→0.813、BFCL-200 从 0.580→0.805，干扰工具是最大伤害源。",
+        "Data Provenance for Query-Template ID：用 Lineage+Why-provenance 聚合构建查询级画像+Provenance Structural Descriptors 数值特征，12,500 个 TPC-DS 查询实例仅凭 provenance footprint 即可识别查询模板，历史数据越多越准。",
+        "SQLWitness：方言无关 SQL 等价反驳引擎，用 DBMS 执行引擎判定生成实例是否构成反例，比 SOTA 多反驳 5.34%-88.4% 对、0.12s 平均处理、2.1x-16.4x 加速，方言翻译基准中发现 8.4% 不一致翻译。",
+        "NL2SQL Iterative Self-Refinement：保险领域多 agent persona-driven NL2SQL，五步（领域相关性检测→schema 接地知识构建→KPI 感知 SQL 合成→sqlite 执行反馈自修复→SQL-to-NL 反向工程语义一致性检查），60 查询 90% 准确率（Mistral 7 次协调 LLM 调用）。",
+        "HSAD（Hindsight Structured Advice Distillation）：小顾问模型读输入写结构化建议追加到冻结执行器 prompt，8B 顾问使 Samaya 金融研究 agent 资格率 52.9%→56.6%（超自身高配，成本降 37%），也提升 BIRD text-to-SQL。",
+        "Netflix Ontology-Driven Observability：用 QuipuDB（Rust redb 上的 RDF quad store）构建可观测性本体，统一 metrics/deployments/alerts/Slack 事件为单一语义契约——企业知识图谱生产级落地标杆。",
+        "Zalando RAG Flywheel：供应商 schema 映射自动化，zero-shot LLM 冷启动+pgvector HNSW 历史映射检索+cosine 相似度×人工批准频率排序防漂移，10-60 列→55 列内部 schema 映射瓶颈消除。",
+        "Airbnb CASTLE：真实查询前训练自然语言搜索，从历史预订会话合成训练查询+相关性标签，预订 listing 配对 viewed-but-skipped 替代品，LLM 生成 seed-guided 查询匹配 winner——标签构造即准确，无 LLM-as-judge 循环。"
+      ],
+      "cross": [
+        "Monitor-Validity Failures：LLM 安全监控的接口可靠性问题——框架路径可能保持运行但策略相关证据未达决策点，canary contracts 确认 18 起证据路径断裂（11 项目组×4 生态），分 carrier/adapter/authority/surface 四族，安全监控需在 schema/stream/tool/adapter 层回归测试。",
+        "Darwin-Claw：环境自适应经验巩固框架，从原始交互轨迹提取细粒度错误归因→泛化为原型向量→作为交互补丁和技能优化信号，Hierarchical Experience Consolidation System，WildClawBench 显著提升，兼容主流 agent 系统无需人工策展。",
+        "code-review-graph：32265⭐ 本地优先代码智能图谱 MCP+CLI，Tree-sitter+GraphRAG 构建代码库持久映射，让 AI 编码工具按需读取而非全量重读——代码图谱 MCP 生态 2026 持续爆发。",
+        "Modularity Claude Code 插件：565⭐ 架构级耦合分析，基于 Balanced Coupling 模型（集成强度/距离/波动性三维）审查代码库耦合失衡+从功能需求设计模块化架构，填补 AI 生成代码架构债务治理空白。"
+      ],
+      "github": [
+        "code-review-graph 32265⭐（+112 vs 10/19）：Tree-sitter+GraphRAG 本地代码图谱 MCP/CLI，D3 社区聚类可视化，neighborhood seed 检索。",
+        "OpenGiraffe 105⭐（10/12 新）：持久化守护进程多 agent 系统，基于 opencode 自动探索/计划/实现/审查代码变更，Planner→Coder→Reviewer 管道+多模型多评审投票+git worktree 隔离并行+SQLite 持久状态。",
+        "Repo Wizard 337⭐：人机协同 AI 代码变更应用工具，side-by-side diff 全审查，多文件批量变更，非黑盒自主 agent。",
+        "Modularity 565⭐：Claude Code 插件，架构级耦合分析+模块化设计，填补 AI 生成代码架构债务治理。",
+        "Cube v1.8.7（10/16）：SQL push down to Cube Store #12247+COUNT(DISTINCT dimension) 预聚合 #12294+cube evals --security-context #12202+Trino UTC 钉 #12291+MSSQL 小数保真 #12175+tesseract join aliases #12097。"
+      ]
+    }
+  },
+  "items": [
+    {
+      "tag": "rnd",
+      "title": "DeskCheck：系统性引导代码推理的 Agentic Scaffold，SWE-bench-Pro +6.29%-10.53%",
+      "date": "2026-10-16",
+      "source": "arXiv cs.SE 2610.23782",
+      "link": "https://arxiv.org/abs/2610.23782",
+      "summary": "研究分析了 7,955 条 issue 解决轨迹（6 种单/多 agent scaffold×4 编程语言×SWE-bench Verified/Pro/Lite），发现 66.95% 轨迹含代码推理但大多不受引导——agent 常聚焦表面症状定位、不修正近正确补丁、忽略 issue 需求、生成测试行为多样性不足。提出 DeskCheck scaffold 四阶段系统性引导代码推理：①模拟执行路径定位根因 ②模拟候选补丁修正近距 ③审计补丁与 issue 需求一致性 ④推理边界用例与预期输出再生成测试。在 731 个 SWE-bench-Pro 实例上比 mini-SWE-Agent 和 Claude Code 提升 6.29%-10.53%，每实例仅增 $0.02-$0.28（均 $0.14）。McNemar 检验统计显著 p<10⁻¹⁰。",
+      "insight": "这是 10/9-10/15 harness 工程治理主题线的延续——Cortex 的'度量门控'+StateHarness 的'状态维护'+本期 DeskCheck 的'推理引导'，三层共同指向 coding agent 可靠性投资从模型推理质量转向推理过程的可引导性。DeskCheck 四阶段是可直接落地工程模板：定位/修正/审计/测试每步都把 agent 隐式推理变为显式可审计步骤。对用户研发知识库+RAG 课题，DeskCheck 的'模拟执行路径定位根因'与代码图谱的 neighborhood seed 检索互补——图谱提供结构关系，DeskCheck 提供推理路径。",
+      "detail": {
+        "why": "揭示了当前 coding agent 的核心短板：不是不会推理，而是推理不受引导——聚焦表面症状、不修近正确补丁、忽略需求、测试单一。这是 SWE-bench 准确率瓶颈的根因。",
+        "mechanism": "四阶段代码推理引导：①执行路径模拟定位根因（method-level localization recall 提升）②候选补丁模拟修正近距（修复不精确定位的 issue 成功率提升）③issue 需求审计（检测被忽略的 corner case）④边界用例推理+预期输出生成测试。每阶段独立可审计，成本 $0.14/实例。",
+        "deep": "论文核心发现是'代码推理强度随任务复杂度增加但不受引导'——这意味着模型推理能力在但被浪费在错误方向。DeskCheck 的贡献是把'好的推理习惯'编码进 scaffold 而非依赖模型自发。这与 10/15 PreciseCoder 的'RL 奖励信号质量>模型规模'共振：4B+精准信号优于 27B 无信号，说明引导>规模。",
+        "apply": "①将 DeskCheck 四阶段作为内部 coding agent scaffold 模板 ②定位阶段集成代码图谱 neighborhood seed ③审计阶段接 issue tracker 需求 ④测试阶段用边界用例生成器 ⑤每阶段输出可审计日志供 review。",
+        "caveats": "成本虽低（$0.14/实例）但累积规模化需预算控制；四阶段增加延迟；McNemar 显著但绝对提升 6-10% 非颠覆性；仅 SWE-bench 验证，生产代码库复杂度更高。",
+        "business": "DeskCheck 的 $0.14/实例+6-10% 提升是向管理层论证 coding agent 投资的现成 ROI 数据。四阶段可审计性满足企业代码审查合规需求——每步推理有日志可追溯。对 AI 代码占比高的模块，DeskCheck 式推理引导是质量保障工程化路径。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.23782",
+            "title": "Enforcing Code Reasoning in Agentic Scaffold for More Effective Issue Resolution"
+          }
+        ],
+        "diagram": {
+          "title": "DeskCheck 四阶段代码推理引导流程",
+          "flow": [
+            {
+              "label": "Issue 输入",
+              "sub": "需求+代码库",
+              "type": "external"
+            },
+            {
+              "label": "①执行路径模拟",
+              "sub": "定位根因 method-level",
+              "type": "backend"
+            },
+            {
+              "label": "②候选补丁模拟",
+              "sub": "修正近距 patch",
+              "type": "backend"
+            },
+            {
+              "label": "③Issue 需求审计",
+              "sub": "corner case 检测",
+              "type": "security"
+            },
+            {
+              "label": "④边界测试生成",
+              "sub": "预期输出推理",
+              "type": "backend"
+            },
+            {
+              "label": "可审计日志",
+              "sub": "每步推理记录",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "成本",
+              "text": "$0.02-$0.28/实例，均 $0.14"
+            },
+            {
+              "label": "提升",
+              "text": "SWE-bench-Pro +6.29%-10.53%，p<10⁻¹⁰"
+            },
+            {
+              "label": "关键洞察",
+              "text": "66.95% 轨迹含代码推理但不受引导"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "rnd",
+      "title": "Ace：自适应代码编辑策略选择，Pass@1 +21.7% 同时 token -27.3%",
+      "date": "2026-10-16",
+      "source": "arXiv cs.SE 2610.22881",
+      "link": "https://arxiv.org/abs/2610.22881",
+      "summary": "现有 LLM 代码编辑系统依赖固定策略（one-step/search-replace/plan-apply），但 CE 任务在代码上下文/编辑局部性/语义复杂度上差异大，无单一策略始终最优。构建 CEBench（500 个 SWE-bench 真实 CE 任务）比较三策略，发现策略有效性受四个核心任务特征显著影响：总代码行数、修改类型、修改范围、任务类型。提出 Ace 自适应框架，用微调 LLM 学习特征-策略映射推荐策略+可解释理由。Pass@1 +21.7%、token -27.3%（vs AutoCodeRover），选择准确率 72.6%、理由准确率 69.9%（Cohen's Kappa=0.807）。",
+      "insight": "Ace 揭示了 coding agent 的一个被忽视维度：不是所有编辑任务都该用同一策略。这与 10/15 SpecForge 的 output coupling（打地鼠效应）共振——固定策略在某些任务上过度工程化、在另一些上欠工程化。Ace 的'特征驱动策略选择'是 coding agent 从'一刀切'走向'任务感知'的标志。对用户研发知识库，CEBench 的四特征（代码行数/修改类型/修改范围/任务类型）可作为代码编辑任务分类标签入库。",
+      "detail": {
+        "why": "代码编辑是 coding agent 最高频操作，但策略选择被忽视——固定策略在某些任务上浪费 token（plan-apply 用于单行修改）、在另一些上欠覆盖（one-step 用于多文件重构）。",
+        "mechanism": "微调 LLM 学习'任务特征→最优策略'映射，输入四特征（总行数/修改类型/修改范围/任务类型），输出策略推荐+理由。非分类器也非指令 prompt，而是从经验数据学习的特征-策略映射模型，72.6% 选择准确率。",
+        "deep": "CEBench 的四特征是任务复杂度的可观测代理——代码行数反映规模、修改类型反映操作性质、修改范围反映影响面、任务类型反映语义复杂度。Ace 的贡献是把这些特征显式化并驱动决策，而非让模型隐式猜测。Cohen's Kappa=0.807 说明选择与理由高度一致，可审计。",
+        "apply": "①将四特征作为内部 coding agent 任务分类标签 ②用 CEBench 评估当前 agent 策略偏好 ③实现特征驱动的策略路由层 ④监控策略选择准确率+理由一致性 ⑤token -27.3% 是直接成本节约。",
+        "caveats": "CEBench 500 任务规模有限；微调 LLM 需标注数据；四特征可能不覆盖所有 CE 场景（如跨语言迁移）；72.6% 准确率意味 27.4% 策略选错。",
+        "business": "token -27.3% 是直接成本节约数据，向管理层论证 coding agent 策略优化的 ROI。Pass@1 +21.7% 是质量提升。可解释理由满足审计需求。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.22881",
+            "title": "No One-Size-Fits-All: Adaptive Code Editing with Feature-Based Strategy Selection"
+          }
+        ],
+        "diagram": {
+          "title": "Ace 特征驱动策略选择流程",
+          "flow": [
+            {
+              "label": "CE 任务输入",
+              "sub": "待编辑代码+需求",
+              "type": "external"
+            },
+            {
+              "label": "特征提取",
+              "sub": "行数/类型/范围/任务",
+              "type": "backend"
+            },
+            {
+              "label": "策略选择器",
+              "sub": "微调 LLM 推荐",
+              "type": "backend"
+            },
+            {
+              "label": "one-step",
+              "sub": "单步直接编辑",
+              "type": "backend"
+            },
+            {
+              "label": "search-replace",
+              "sub": "搜索替换",
+              "type": "backend"
+            },
+            {
+              "label": "plan-apply",
+              "sub": "规划后应用",
+              "type": "backend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "提升",
+              "text": "Pass@1 +21.7%，token -27.3%"
+            },
+            {
+              "label": "准确率",
+              "text": "选择 72.6%，理由 69.9%，Kappa=0.807"
+            },
+            {
+              "label": "四特征",
+              "text": "总行数/修改类型/修改范围/任务类型"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "rnd",
+      "title": "VulnSAGE：SAST 报告裁定——LLM 推理连接程序结构，拒 89/97 误报保 85/90 真缺陷",
+      "date": "2026-10-16",
+      "source": "arXiv cs.SE/cs.CR/cs.PL 2610.23035",
+      "link": "https://arxiv.org/abs/2610.23035",
+      "summary": "SAST 报告标记的安全操作依赖项目特定上下文，维护者须判断哪些是真缺陷。LLM 能解读上下文，但裁定需要远离报告行的决定性代码+程序分析可检查的决策依据。VulnSAGE 双向连接 LLM 推理与程序结构：report-centered slicer 恢复报告操作依赖+程序结构；CLAIM 中间表示把模型判断记录为语义事实（引用所假设的程序关系）；程序分析检查前提，verdict 来自前提成立的事实。在 187 个标注报告（5 漏洞族）上拒绝 89/97 误报、保留 85/90 真缺陷，运行时复现 25 个（vs LLM4SA 仅 3 个）。在 200 个 C/C++ 项目的 45,440 个告警上复现 104 个缺陷，维护者确认 24/26。",
+      "insight": "VulnSAGE 是'AI 代码审查'子领域的突破——不是让 LLM 直接判断漏洞，而是让 LLM 推理与程序分析互查：LLM 引用程序关系作为判断前提，程序分析验证前提是否成立。这与 10/15 VeriPIE（Lean 定理证明器检查 text-to-SQL 查询计划）同构——都不依赖 LM 自评，而是用形式化/程序分析工具验证 LLM 判断。CLAIM 中间表示的'语义事实引用程序关系'模式对业务知识图谱的实体/关系溯源有迁移价值。",
+      "detail": {
+        "why": "SAST 误报率高是安全审查瓶颈——LLM 能解读上下文但判断不可验证。VulnSAGE 把 LLM 判断从黑盒变为可程序分析检查的语义事实。",
+        "mechanism": "①report-centered slicer 恢复报告操作依赖+解释性程序结构 ②CLAIM IR 把模型判断记录为语义事实（cite 程序关系）③程序分析检查前提 ④verdict 来自前提成立的事实 ⑤静态支持的真阳性引导 PoC 生成+运行时复现。双向共享程序图：模型引用读到的代码，检查器查询引用。",
+        "deep": "VulnSAGE 的核心创新是'引用-验证'双向通道：LLM 引用程序关系（让模型 cite 它读的代码），程序分析验证引用（让检查器 query 引用）。这避免了 LLM 幻觉程序关系——每个判断前提都被程序分析检查。89/97 误报拒绝率+85/90 真缺陷保留率是行业级表现。",
+        "apply": "①SAST 告警裁定引入 VulnSAGE 式引用-验证通道 ②CLAIM IR 模式迁移到业务知识图谱实体溯源 ③程序图作为 LLM 与程序分析共享接口 ④运行时 PoC 复现作为验证最后一环 ⑤45,440 告警→104 缺陷复现是规模化数据。",
+        "caveats": "仅 C/C++ 验证；CLAIM IR 需手动设计漏洞族；程序分析覆盖有限；运行时复现 25/85 真缺陷（29%）非全部；维护者确认 24/26 响应率有限。",
+        "business": "SAST 误报率高是安全团队最大痛点——VulnSAGE 89/97 误报拒绝直接降人工审查负担。45,440 告警→104 缺陷是规模化 SAST 治理数据。对 AI 代码审查产品，引用-验证通道是可信度核心。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.23035",
+            "title": "VulnSAGE: Adjudicating SAST Reports by Connecting LLM Reasoning to Program Structure"
+          }
+        ],
+        "diagram": {
+          "title": "VulnSAGE 引用-验证双向通道",
+          "flow": [
+            {
+              "label": "SAST 报告",
+              "sub": "安全告警+报告行",
+              "type": "external"
+            },
+            {
+              "label": "Report Slicer",
+              "sub": "恢复依赖+程序结构",
+              "type": "backend"
+            },
+            {
+              "label": "LLM 推理",
+              "sub": "生成 CLAIM 语义事实",
+              "type": "backend"
+            },
+            {
+              "label": "CLAIM IR",
+              "sub": "引用程序关系",
+              "type": "database"
+            },
+            {
+              "label": "程序分析",
+              "sub": "验证前提是否成立",
+              "type": "security"
+            },
+            {
+              "label": "Verdict",
+              "sub": "真阳性/误报",
+              "type": "security"
+            },
+            {
+              "label": "PoC+运行时复现",
+              "sub": "验证最后一环",
+              "type": "external"
+            }
+          ],
+          "notes": [
+            {
+              "label": "误报拒绝",
+              "text": "89/97（91.8%）"
+            },
+            {
+              "label": "真缺陷保留",
+              "text": "85/90（94.4%）"
+            },
+            {
+              "label": "规模化",
+              "text": "45,440 告警→104 缺陷复现，维护者确认 24/26"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "rnd",
+      "title": "MLOps-Bench：生产 ML 工程基准——212 任务×31 仓库，最优 agent 仅解 31.2%",
+      "date": "2026-10-16",
+      "source": "arXiv cs.SE 2610.23506",
+      "link": "https://arxiv.org/abs/2610.23506",
+      "summary": "现有基准评测竞赛式 ML 实验或通用仓库 issue 解决，但生产 ML 工程要求 agent 修改维护真实 ML 系统。MLOps-Bench 是仓库接地生产 ML 工程基准，评测数据管道/特征工程/模型训练/模型服务/监控/CI-CD/治理/端到端集成全生命周期可执行变更。每个任务接地仓库证据，含 NL 需求+oracle patch+plausible buggy baseline+fail-to-pass 测试+pass-to-pass 测试+provenance 元数据。212 任务×31 公共 ML 仓库，636 fail-to-pass+856 pass-to-pass 测试。6 个 agent 评测，最优解 31.2% 任务但过 68.7% 测试——部分进度≠生产可用。",
+      "insight": "MLOps-Bench 是 10/19 FDE-Gym（95 任务仅解 14）的同类信号——生产场景 agent 成功率远低于基准场景。31.2% 任务解决但 68.7% 测试通过揭示'部分进度'假象——agent 改了代码但未满足生产行为要求。这与 10/15 DSABench（多源 6.7-17%）共振：当前 agent 在多步+多源+生产约束场景几乎不可用。对用户团队，MLOps-Bench 的全生命周期任务分类是评估 coding agent 生产就绪度的清单模板。",
+      "detail": {
+        "why": "竞赛式 ML 基准（Kaggle 类）≠生产 ML 工程（改管道/服务/监控/CI-CD）。现有基准高估 agent 生产能力。",
+        "mechanism": "212 任务覆盖 7 类（数据管道/特征工程/训练/服务/监控/CI-CD/治理/端到端），每任务含 oracle patch+buggy baseline+fail-to-pass+pass-to-pass+provenance。评测 6 agent：最优 31.2% 任务解决率、68.7% 测试通过率。",
+        "deep": "31.2% 任务解决 vs 68.7% 测试通过揭示'部分进度'——agent 改了代码过了一些测试但未满足全部生产行为要求。这是生产场景与基准场景的核心差异：生产要求行为保持（pass-to-pass）+行为变更（fail-to-pass）双满足。MLOps-Bench 的全生命周期分类（7 类）是 coding agent 生产就绪度评估清单。",
+        "apply": "①用 MLOps-Bench 7 类任务作为内部 coding agent 生产就绪度评估清单 ②关注 pass-to-pass 测试通过率（行为保持）非仅 fail-to-pass ③31.2% 是生产 ML 场景 agent 能力基线 ④provenance 元数据用于任务溯源。",
+        "caveats": "31 公共仓库不代表私有生产 ML 系统；212 任务规模有限；fail-to-pass 测试设计可能遗漏边界；6 agent 可能不代表全部前沿。",
+        "business": "31.2% 任务解决率是向管理层论证'agent 生产就绪度仍低'的硬数据——需投入 harness 工程而非仅模型选型。全生命周期分类是 coding agent 采购评估清单。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.23506",
+            "title": "MLOps-Bench: Benchmarking AI Agents on Production ML Engineering in Real Repositories"
+          }
+        ],
+        "diagram": {
+          "title": "MLOps-Bench 生产 ML 工程全生命周期评测",
+          "flow": [
+            {
+              "label": "212 任务",
+              "sub": "31 公共 ML 仓库",
+              "type": "external"
+            },
+            {
+              "label": "数据管道",
+              "sub": "pipeline 变更",
+              "type": "backend"
+            },
+            {
+              "label": "特征工程",
+              "sub": "feature 变更",
+              "type": "backend"
+            },
+            {
+              "label": "训练",
+              "sub": "model 训练变更",
+              "type": "backend"
+            },
+            {
+              "label": "服务",
+              "sub": "serving 变更",
+              "type": "cloud"
+            },
+            {
+              "label": "监控/CI-CD/治理",
+              "sub": "运维变更",
+              "type": "security"
+            },
+            {
+              "label": "评测结果",
+              "sub": "31.2% 任务/68.7% 测试",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "任务解决率",
+              "text": "最优 agent 31.2%"
+            },
+            {
+              "label": "测试通过率",
+              "text": "68.7%（部分进度≠生产可用）"
+            },
+            {
+              "label": "任务分类",
+              "text": "7 类全生命周期"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "business",
+      "title": "SchemaShield-Lite：Interface Drift 下 Function Calling 的验证-修复层，BFCL-200 0.580→0.805",
+      "date": "2026-10-16",
+      "source": "arXiv cs.AI/cs.CL/cs.SE 2610.23342",
+      "link": "https://arxiv.org/abs/2610.23342",
+      "summary": "工具增强 LLM agent 依赖接口文本（工具描述/参数 schema/候选工具列表），这些接口部署后常变即使工具语义不变，造成 function calling 可靠性问题。研究将此定义为 interface drift，评估轻量无训练修复层能否恢复鲁棒性。SchemaShield-Lite 结合 schema 验证+候选集重试（缺失工具名）+单次约束修复。在 Qwen3.5-9B 上 DICE-300 从 0.717→0.813、BFCL-200 从 0.580→0.805，恢复 19/22 和 33/45 drift 致失败且无修复损害。消融显示候选集 drift（尤其干扰工具）是主要伤害源，描述/schema 编辑单独伤害较小。",
+      "insight": "SchemaShield-Lite 直接命中用户业务线核心约束——'通过高业务含义 API 查数'。Interface drift 是 API 字段名/描述/候选列表变更致 agent function calling 失败的根因。验证-修复层零训练成本（schema 验证+重试+单次约束修复）即可将准确率从 0.580→0.805——这是业务 agent 部署后的可靠性保障工程模板。与 10/19 MCP-FSD（能力洗白）同构：API 契约与实际能力错配是跨层通用问题。",
+      "detail": {
+        "why": "用户上百字段宽表 API 的字段名/描述/候选列表会随业务演进变更——这是 interface drift。无修复层则 agent 部署后准确率骤降。",
+        "mechanism": "①schema 验证：检查 LLM 输出工具调用是否符合 schema ②候选集重试：缺失工具名时用候选集重试 ③单次约束修复：一次约束引导修复。三层无训练成本，BFCL-200 0.580→0.805。",
+        "deep": "消融的关键发现：候选集 drift（尤其干扰工具）>描述/schema 编辑伤害。这意味着 agent 的最大威胁不是 API 描述变了，而是候选 API 列表变了（新增干扰 API 把正确 API 挤掉）。对用户宽表 API 目录，新增 API 时需评估对现有查询的干扰。",
+        "apply": "①在 function calling 层加 schema 验证+候选集重试+单次约束修复三件套 ②API 目录新增时评估对现有查询的干扰（候选集 drift） ③监控 drift 致失败率 ④零训练成本即可大幅恢复——优先于重训模型。",
+        "caveats": "仅 Qwen3.5-9B 验证；单次约束修复可能不足（复杂 drift 需多次）；消融基于模拟 drift 非真实部署日志；BFCL-200 规模有限。",
+        "business": "interface drift 是业务 agent 部署后准确率衰减的主因之一——API 字段名/描述/候选列表随业务演进变更。验证-修复层零训练成本 0.580→0.805 是直接 ROI 数据。候选集 drift 评估应纳入 API 目录变更管理流程。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.23342",
+            "title": "Robust Function Calling for LLM Agents Under Interface Drift"
+          }
+        ],
+        "diagram": {
+          "title": "SchemaShield-Lite 验证-修复三层",
+          "flow": [
+            {
+              "label": "LLM 工具调用输出",
+              "sub": "可能 drift 致错",
+              "type": "backend"
+            },
+            {
+              "label": "Schema 验证",
+              "sub": "检查符合 schema",
+              "type": "security"
+            },
+            {
+              "label": "候选集重试",
+              "sub": "缺失工具名重试",
+              "type": "backend"
+            },
+            {
+              "label": "单次约束修复",
+              "sub": "约束引导修复",
+              "type": "backend"
+            },
+            {
+              "label": "准确率恢复",
+              "sub": "0.580→0.805",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "BFCL-200",
+              "text": "0.580→0.805（+38.8%）"
+            },
+            {
+              "label": "DICE-300",
+              "text": "0.717→0.813（+13.4%）"
+            },
+            {
+              "label": "主要伤害源",
+              "text": "候选集 drift（干扰工具）>描述/schema 编辑"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "business",
+      "title": "Data Provenance 聚合与结构描述子：仅凭 provenance footprint 识别查询模板",
+      "date": "2026-10-15",
+      "source": "arXiv cs.DB 2610.22705",
+      "link": "https://arxiv.org/abs/2610.22705",
+      "summary": "运行时查询相似性识别支持工作负载分析/重复行为识别/审计/调试/异常检测。现有方法依赖 SQL 文本/执行计划/结果值但未考虑输入数据或结果如何推导。提出用 data provenance 进行查询模板识别：构建查询级画像捕获显式数据依赖/出现频率/结构属性（聚合 tuple 级 Lineage 和 Why-provenance），并推导 Provenance Structural Descriptors（PSD）用少量数值特征总结。12,500 个 TPC-DS 查询实例实验显示：仅凭 provenance footprint 即可识别查询模板，历史数据越多越准，PSD 用有限训练历史+低测试成本达高分类准确率。",
+      "insight": "Data Provenance for query-template ID 对用户业务线'业务系统精确查询'方向有直接迁移价值——用户上百字段宽表 API 返回的数据可构建 provenance 画像，用 Lineage+Why-provenance 识别查询模式。这与 10/15 VeriPIE（Lean 检查查询计划）互补：VeriPIE 验证查询正确性，provenance 识别查询模式。对业务知识库，provenance footprint 可作为 API 调用模式的指纹——相同业务问题应产生相似 provenance 画像。",
+      "detail": {
+        "why": "SQL 文本/执行计划/结果值相似性方法忽略数据依赖与结果推导——相同查询模板不同参数会产生不同 SQL 文本/计划/结果但相同 provenance 结构。",
+        "mechanism": "①聚合 tuple 级 Lineage+Why-provenance 构建查询级画像（数据依赖+出现频率+结构属性）②推导 PSD（少量数值特征总结画像）③用画像/PSD 识别查询模板。12,500 TPC-DS 实例验证：历史数据越多越准，PSD 高分类准确率+低成本。",
+        "deep": "provenance footprint 是查询的'数据指纹'——相同模板不同参数共享相同的数据依赖结构。PSD 把高维 provenance 画像压缩为少量数值特征，使分类低成本。历史数据增量提升准确率意味着系统越用越准——与 10/9 ExperienceIndex 工件经验记忆'越用越懂'同构。",
+        "apply": "①对宽表 API 返回数据构建 provenance 画像 ②用 PSD 识别 API 调用模式（相同业务问题→相似 provenance） ③历史 provenance 增量提升识别准确率 ④用于审计（异常 provenance=异常查询）+调试+工作负载分析。",
+        "caveats": "仅 TPC-DS 验证（合成基准）；真实业务查询复杂度可能更高；provenance 聚合计算成本未充分评估；PSD 特征设计需领域知识。",
+        "business": "查询模板识别是工作负载分析/审计/异常检测的基础能力。对业务数据可信度验证，异常 provenance footprint 可标记异常查询。系统越用越准的特性适合长期运行的业务分析 agent。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.22705",
+            "title": "Data Provenance Aggregation and Structural Descriptors for Query-Template Identification"
+          }
+        ],
+        "diagram": {
+          "title": "Provenance Footprint 查询模板识别",
+          "flow": [
+            {
+              "label": "查询执行",
+              "sub": "12,500 TPC-DS 实例",
+              "type": "database"
+            },
+            {
+              "label": "Tuple 级 Lineage",
+              "sub": "数据依赖",
+              "type": "backend"
+            },
+            {
+              "label": "Why-provenance",
+              "sub": "结果推导来源",
+              "type": "backend"
+            },
+            {
+              "label": "查询级画像",
+              "sub": "依赖+频率+结构",
+              "type": "database"
+            },
+            {
+              "label": "PSD",
+              "sub": "少量数值特征",
+              "type": "backend"
+            },
+            {
+              "label": "模板识别",
+              "sub": "高准确率+低成本",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "规模",
+              "text": "12,500 查询实例"
+            },
+            {
+              "label": "关键特性",
+              "text": "历史数据越多越准（越用越准）"
+            },
+            {
+              "label": "PSD 优势",
+              "text": "有限训练历史+低测试成本"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "business",
+      "title": "SQLWitness：方言无关 SQL 等价反驳引擎，比 SOTA 多反驳 5.34%-88.4% 对",
+      "date": "2026-10-15",
+      "source": "arXiv cs.DB 2610.22442",
+      "link": "https://arxiv.org/abs/2610.22442",
+      "summary": "识别语义不等价 SQL 查询对 text-to-SQL 评测和方言翻译有用，但现有方法难处理 SQL 特性/方言多样性。SQLWitness 是高效 DBMS 无关查询等价反驳引擎：核心是用 DBMS 执行引擎判定生成实例是否构成反例（忠实捕获方言语义，防假反例）。受约束数据生成空间探索+完整性约束感知生成策略+谓词覆盖信号配对统计估计器引导高效终止。6 基准×4 方言评测：比 SOTA 多反驳 5.34%-88.4% 对，0.12s 平均处理，2.1x-16.4x 加速。方言翻译基准 case study 发现 8.4% 不一致翻译。",
+      "insight": "SQLWitness 对用户业务线'企业级 text-to-SQL'方向是评测工具——反驳不等价查询对，用于验证 text-to-SQL 系统输出正确性。与 10/9 Cross-Dialect（方言无关 plan 编译）互补：Cross-Dialect 解决生成层方言无关性，SQLWitness 解决验证层方言无关性。'用 DBMS 执行引擎判定反例'模式与 10/15 VeriPIE（Lean 定理证明器检查）同构——用确定性工具验证 LLM 输出，不依赖 LM 自评。8.4% 不一致翻译是方言翻译工具可信度警示数据。",
+      "detail": {
+        "why": "text-to-SQL 评测需要判定查询对是否等价，方言翻译需要验证翻译一致性——现有方法难跨方言。",
+        "mechanism": "①用 DBMS 执行引擎判定生成实例是否构成反例（忠实捕获方言语义）②受约束数据生成空间探索 ③完整性约束感知生成策略 ④谓词覆盖信号+统计估计器引导终止。6 基准×4 方言验证。",
+        "deep": "核心创新是用 DBMS 执行引擎本身作为语义判定器——不抽象 SQL 语义为规则，而是让 DBMS 执行生成实例判定反例。这避免了规则抽象的方言局限。2.1x-16.4x 加速来自受约束生成+统计估计器的高效终止。",
+        "apply": "①text-to-SQL 评测集成 SQLWitness 反驳查询对 ②方言翻译工具用 SQLWitness 验证一致性 ③8.4% 不一致翻译率作为方言翻译可信度基线 ④DBMS 执行引擎作为语义判定器模式可迁移到 API 调用等价性验证。",
+        "caveats": "反驳不等价≠证明等价（只能找反例不能证明无反例）；受约束生成可能遗漏反例；4 方言覆盖有限；0.12s 平均但仍需执行 DBMS。",
+        "business": "text-to-SQL 评测的方言无关反驳工具——8.4% 不一致翻译率是方言翻译工具可信度警示。对多数据源企业场景，SQLWitness 可验证跨方言查询等价性。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.22442",
+            "title": "Efficient Dialect-Agnostic SQL Equivalence Refutation"
+          }
+        ],
+        "diagram": {
+          "title": "SQLWitness DBMS 执行引擎反驳流程",
+          "flow": [
+            {
+              "label": "SQL 查询对",
+              "sub": "待判定等价性",
+              "type": "external"
+            },
+            {
+              "label": "受约束数据生成",
+              "sub": "完整性约束感知",
+              "type": "backend"
+            },
+            {
+              "label": "DBMS 执行引擎",
+              "sub": "判定实例是否反例",
+              "type": "database"
+            },
+            {
+              "label": "谓词覆盖+统计估计",
+              "sub": "高效终止",
+              "type": "backend"
+            },
+            {
+              "label": "反驳结果",
+              "sub": "不等价/未找到反例",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "多反驳",
+              "text": "比 SOTA +5.34%-88.4% 对"
+            },
+            {
+              "label": "速度",
+              "text": "0.12s 平均，2.1x-16.4x 加速"
+            },
+            {
+              "label": "case study",
+              "text": "方言翻译 8.4% 不一致"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "business",
+      "title": "HSAD：小顾问模型蒸馏——8B 顾问使金融 agent 资格率 52.9%→56.6% 成本降 37%",
+      "date": "2026-10-09",
+      "source": "arXiv cs.AI 2610.13000",
+      "link": "https://arxiv.org/abs/2610.13000",
+      "summary": "LLM agent 用于金融研究/医疗/法律等专门工作，常足够胜任但漏细节（如哪个报告披露某数据或公司如何定义某指标）。重训 agent 昂贵且常不可能（闭源/共享系统）。把缺失 know-how 写进 prompt 使 prompt 长且对所有输入相同，但不同输入需不同指导。HSAD 学习生成指导：小顾问模型读每个输入写结构化建议追加到冻结执行器 prompt，顾问用 hindsight 训练（蒸馏特权信息）——在训练池分析执行器失败、多种策略试哪种有效、让看到成绩+轨迹的老师写有用的建议，顾问通过 SFT 从输入 alone 学写该建议。8B 顾问使 Samaya 金融研究 agent 资格率 52.9%→56.6%（超自身高配，成本降 37%），也提升 WebShop/BIRD text-to-SQL/ExpertLongBench。",
+      "insight": "HSAD 对用户业务线'企业 Agent 架构'方向是工程模板——不动执行器（冻结/闭源/共享），用小顾问模型按输入生成结构化建议。这与 10/9 Agent in a Bottle（bottling 能力蒸馏）同构但更精准：bottling 蒸馏通用能力，HSAD 蒸馏输入特定指导。对用户宽表 API 场景，顾问模型可学习'这个查询应该注意哪个字段语义/哪个 API 调用顺序'——输入感知的 know-how 注入。37% 成本降低是直接 ROI。",
+      "detail": {
+        "why": "业务 agent 漏细节是核心痛点——哪个 API 字段含某指标、字段枚举码含义、调用顺序约束。重训昂贵/不可能，prompt 全局相同但不同输入需不同指导。",
+        "mechanism": "①小顾问模型读输入写结构化建议 ②建议追加到冻结执行器 prompt ③顾问 hindsight 训练：分析失败→多策略试→老师看成绩+轨迹写建议→SFT 从输入学写 ④顾问是独立小模型，便宜训练+低延迟。",
+        "deep": "HSAD 的核心创新是'输入特定指导'而非全局 prompt——不同业务查询需注意不同字段/API，顾问按输入生成定制建议。hindsight 训练利用特权信息（成绩+轨迹）但推理时只用输入，使顾问可泛化。8B 顾问使排行榜第一的 Samaya agent 再提升——说明即使强 agent 也有输入特定细节可被顾问补足。",
+        "apply": "①对宽表 API 查询训练顾问模型生成字段语义/API 调用顺序建议 ②不动执行器（冻结/闭源）+加顾问层 ③hindsight 训练：记录失败查询+成功策略→老师写建议→SFT ④37% 成本降低是直接 ROI ⑤也适用于 BIRD text-to-SQL 已验证。",
+        "caveats": "顾问需训练数据（失败查询+策略+老师建议）；8B 仍需推理资源；仅金融研究验证（虽也测 WebShop/BIRD/ExpertLongBench）；Samaya 是专有 agent，可复现性待验证。",
+        "business": "不动执行器+加顾问层是闭源/共享 agent 场景的可行性路径——37% 成本降低+资格率提升。对业务 agent，输入特定 know-how 注入比全局 prompt 更高效。BIRD text-to-SQL 验证说明跨域可迁移。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.13000",
+            "title": "Hindsight Structured Advice Distillation: Steering Executor Agents with Advisors Trained on Their Failures and Task Characteristics"
+          }
+        ],
+        "diagram": {
+          "title": "HSAD 顾问-执行器架构",
+          "flow": [
+            {
+              "label": "用户输入",
+              "sub": "业务查询",
+              "type": "frontend"
+            },
+            {
+              "label": "顾问模型(8B)",
+              "sub": "读输入写建议",
+              "type": "backend"
+            },
+            {
+              "label": "结构化建议",
+              "sub": "输入特定 know-how",
+              "type": "backend"
+            },
+            {
+              "label": "冻结执行器",
+              "sub": "prompt+建议",
+              "type": "external"
+            },
+            {
+              "label": "训练: hindsight",
+              "sub": "失败+策略+老师",
+              "type": "database"
+            },
+            {
+              "label": "资格率提升",
+              "sub": "52.9%→56.6% 成本-37%",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "资格率",
+              "text": "52.9%→56.6%（超自身高配）"
+            },
+            {
+              "label": "成本",
+              "text": "降 37%"
+            },
+            {
+              "label": "跨域",
+              "text": "WebShop/BIRD/ExpertLongBench 均提升"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "Netflix Ontology-Driven Observability：QuipuDB RDF 知识图谱统一可观测性语义契约",
+      "date": "2026-10-19",
+      "source": "Data Engineering Weekly #292 / Netflix Tech Blog",
+      "link": "https://netflixtechblog.com/ontology-driven-observability-building-an-end-to-end-knowledge-graph-at-netflix-scale-421392cf5adf",
+      "summary": "Netflix 构建可观测性本体（Ontology）持久化在 QuipuDB——自研分布式 RDF quad store（基于 Rust redb），统一 metrics/deployments/alerts/Slack 事件为单一语义契约，解决跨隔离运维工具的语义断裂。Netflix 规模的可观测性知识图谱端到端构建实践：本体建模→RDF quad store 持久化→多源统一语义契约。DEW #292 同时收录 Airbnb CASTLE（真实查询前训练自然语言搜索，从历史预订会话合成训练查询+相关性标签，预订 listing 配对 viewed-but-skipped，LLM 生成 seed-guided 查询匹配 winner，标签构造即准确无 LLM-as-judge 循环）和 Zalando RAG Flywheel（供应商 schema 映射自动化，zero-shot LLM 冷启动+pgvector HNSW 历史映射检索+cosine×人工批准频率排序防漂移，10-60 列→55 列内部 schema 映射瓶颈消除）。",
+      "insight": "Netflix 用 RDF quad store 构建可观测性本体是'企业知识图谱'路线的生产级标杆——与用户'语义层 vs 知识图谱双路线'课题直接相关：知识图谱承载实体/join 路径/关系（metrics↔deployments↔alerts↔Slack 事件），语义层承载口径（metrics 定义）。Netflix 选 RDF quad store 而非关系库说明知识图谱的多跳关系查询需求。Airbnb CASTLE 的'标签构造即准确'是冷启动搜索新范式——不靠 LLM-as-judge 循环，而从用户行为构造标签。Zalando RAG flywheel 的'cosine×人工批准频率排序'防漂移是 schema 映射治理工程模板。",
+      "detail": {
+        "why": "Netflix 跨隔离运维工具（metrics/deployments/alerts/Slack）语义断裂是可观测性瓶颈——需统一语义契约。企业知识图谱生产级落地标杆。",
+        "mechanism": "①本体建模可观测性实体+关系 ②QuipuDB（Rust redb 上 RDF quad store）持久化 ③多源统一语义契约：metrics↔deployments↔alerts↔Slack 事件 ④端到端知识图谱查询。Airbnb CASTLE：历史预订→合成查询+标签→seed-guided 匹配→无 judge 循环。Zalando：zero-shot+pgvector HNSW+cosine×频率排序。",
+        "deep": "Netflix 选 RDF quad store（非关系库）说明多跳关系查询是可观测性核心需求——metrics 关联部署关联告警关联事件。这与 Cube #12070 join-path hub-only 解析同向：关系查询需图引擎。QuipuDB 基于 Rust redb 说明性能优先。Airbnb CASTLE 的'标签构造即准确'避开 LLM-as-judge 循环——从用户行为（预订 vs viewed-but-skipped）构造标签，winner 已知所以标签正确。Zalando 的'cosine×人工批准频率'双重排序：语义相似+历史批准频率，防止语义近但未批准的映射漂移。",
+        "apply": "①Netflix RDF quad store 模式迁移到业务知识图谱（实体/join 路径/关系层） ②Airbnb CASTLE 模式迁移到业务搜索冷启动（从历史行为构造标签） ③Zalando RAG flywheel 模式迁移到宽表字段语义映射（zero-shot+HNSW+频率排序） ④三篇共同：企业实践标杆可对标内部落地。",
+        "caveats": "Netflix/QuipuDB 为自研内部工具，可复现性有限（需自建 RDF quad store）；Airbnb Medium 正文 Cloudflare 拦截，分析基于 DEW 摘要；Zalando 依赖 AWS Bedrock（供应商绑定）；三篇均为工程博客非学术论文，量化数据有限。",
+        "business": "Netflix 知识图谱可观测性是'企业知识图谱'路线的生产级标杆——向管理层论证知识图谱投入的现成案例。Airbnb CASTLE 冷启动搜索是自然语言搜索产品化的工程路径。Zalando RAG flywheel 是供应商数据治理自动化模板。",
+        "sources": [
+          {
+            "url": "https://netflixtechblog.com/ontology-driven-observability-building-an-end-to-end-knowledge-graph-at-netflix-scale-421392cf5adf",
+            "title": "Ontology-Driven Observability: Building an End-to-End Knowledge Graph at Netflix Scale"
+          },
+          {
+            "url": "https://medium.com/airbnb-engineering/castle-training-natural-language-search-before-the-first-real-query-3818ef8b4828",
+            "title": "CASTLE: training natural language search before the first real query"
+          },
+          {
+            "url": "https://engineering.zalando.com/posts/2026/10/structure-automating-data-ingestion-with-a-rag-flywheel.html",
+            "title": "Automating Data Ingestion with a RAG Flywheel"
+          },
+          {
+            "url": "https://www.dataengineeringweekly.com/p/data-engineering-weekly-292",
+            "title": "Data Engineering Weekly #292"
+          }
+        ],
+        "diagram": {
+          "title": "三篇企业实践对标",
+          "flow": [
+            {
+              "label": "Netflix QuipuDB",
+              "sub": "RDF quad store 可观测性本体",
+              "type": "database"
+            },
+            {
+              "label": "metrics↔deployments↔alerts↔Slack",
+              "sub": "多源统一语义契约",
+              "type": "backend"
+            },
+            {
+              "label": "Airbnb CASTLE",
+              "sub": "历史行为→合成标签",
+              "type": "frontend"
+            },
+            {
+              "label": "Zalando RAG Flywheel",
+              "sub": "zero-shot+HNSW+频率排序",
+              "type": "backend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "Netflix",
+              "text": "Rust redb RDF quad store，生产级知识图谱"
+            },
+            {
+              "label": "Airbnb",
+              "text": "标签构造即准确，无 LLM-as-judge 循环"
+            },
+            {
+              "label": "Zalando",
+              "text": "cosine×人工批准频率防漂移"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "cross",
+      "title": "Monitor-Validity Failures：LLM 安全监控的证据路径断裂——18 起 cross 11 项目组",
+      "date": "2026-10-16",
+      "source": "arXiv cs.AI/cs.CR/cs.SE 2610.23362",
+      "link": "https://arxiv.org/abs/2610.23362",
+      "summary": "现代 LLM 应用依赖运行时监控器检查 tool calls/traces/streams/detector 输出/verifier 输入，创造接口可靠性问题：框架路径可能保持运行但策略相关证据未达决策点。一代表案例：regex 检测器返回正匹配但框架在 block 决策前搁置结果——不同于越狱和检测器错误，因为证据已被识别但与执行断开。研究用 canary contracts（父/固定确认单元放置已知 payload 到变更证据面+记录监控可见性与下游决策）研究此修复边界签名。应用公共框架修复确认 18 起证据路径断裂（11 LLM/agent 安全项目组×4 生态）：9 起已建立边界修复、8 起新表面策略覆盖缺口、1 起仅边界证据案例。14 起达 E1 执行边界。分 carrier/adapter/authority/surface 四族。",
+      "insight": "Monitor-Validity Failures 揭示 LLM 安全监控的隐蔽失败模式——不是检测器错了或被越狱，而是证据已被识别但未达执行决策点。这与 10/19 MCP-FSD（能力洗白：契约 vs 实际能力错配）和 tokensave（索引 vs grep 拒绝收窄）同构：声明与实际对齐是跨层通用问题。对用户业务 agent 治理，canary contracts 是安全监控回归测试工程模板——放置已知 payload 到变更证据面+记录可见性与下游决策。四族分类（carrier/adapter/authority/surface）是安全证据路径审计清单。",
+      "detail": {
+        "why": "LLM 安全监控假设证据达决策点即可靠，但框架路径可能断——证据被识别但未达执行。这是越狱/检测器错误之外的第三类失败，更隐蔽。",
+        "mechanism": "①canary contracts：父/固定确认单元放置已知 payload 到变更证据面 ②记录监控可见性+下游决策 ③应用公共框架修复 ④18 起证据路径断裂确认：9 已建立边界修复+8 新表面策略缺口+1 边界证据 ⑤14 起达 E1 执行边界 ⑥四族：carrier/adapter/authority/surface。",
+        "deep": "核心洞察是'证据路径断裂≠证据缺失'——检测器可能正确识别威胁但框架在 block 决策前搁置结果。canary contracts 的创新是用已知 payload 测试变更证据面的可见性——类似灰盒测试但针对安全证据路径。四族分类（carrier=传输/adapter=适配/authority=授权/surface=表面）是安全证据路径的结构化审计框架。",
+        "apply": "①安全监控引入 canary contracts 回归测试 ②框架升级时在 schema/stream/tool/adapter 层做证据路径回归测试 ③四族分类作为安全证据路径审计清单 ④监控假设需显式文档化（证据达决策点的假设） ⑤18 起 cross 11 项目组说明此问题普遍。",
+        "caveats": "canary contracts 需手动设计已知 payload；18 起来自公共框架修复非私有系统；4 生态覆盖有限；证据路径断裂检测需框架内部访问。",
+        "business": "安全监控的证据路径断裂是业务 agent 治理的隐蔽风险——agent 看似安全运行但安全证据未达执行。canary contracts 是安全监控回归测试工程模板。18 起 cross 11 项目组说明此问题普遍需纳入安全审计。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.23362",
+            "title": "Monitor-Validity Failures: LLM Safety Evidence Paths at Evolving Framework Boundaries"
+          }
+        ],
+        "diagram": {
+          "title": "证据路径断裂四族审计",
+          "flow": [
+            {
+              "label": "检测器",
+              "sub": "识别威胁",
+              "type": "security"
+            },
+            {
+              "label": "Carrier 族",
+              "sub": "传输断裂",
+              "type": "backend"
+            },
+            {
+              "label": "Adapter 族",
+              "sub": "适配断裂",
+              "type": "backend"
+            },
+            {
+              "label": "Authority 族",
+              "sub": "授权断裂",
+              "type": "security"
+            },
+            {
+              "label": "Surface 族",
+              "sub": "表面覆盖缺口",
+              "type": "frontend"
+            },
+            {
+              "label": "Block 决策",
+              "sub": "证据未达",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "规模",
+              "text": "18 起证据路径断裂"
+            },
+            {
+              "label": "覆盖",
+              "text": "11 项目组×4 生态"
+            },
+            {
+              "label": "执行边界",
+              "text": "14 起达 E1"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "cross",
+      "title": "Darwin-Claw：环境自适应经验巩固——自进化 agent 的可控路径",
+      "date": "2026-10-16",
+      "source": "arXiv cs.CL 2610.23574",
+      "link": "https://arxiv.org/abs/2610.23574",
+      "summary": "LLM agent 多在隔离会话运行，缺乏从历史交互持续学习或适应用户特定环境的能力。现有自进化范式常不分青红皂白注入原始轨迹到记忆/技能模块，致行为模式模糊+更新可控性受损。随基础 LLM 推理提升，agent 进化瓶颈从积累通用知识转向有效管理情境经验。Darwin-Claw 是环境自适应自进化框架：系统蒸馏情景经验驱动操作技能+持久记忆全面进化。理论基础 agent-actor 与 evolver-critic 迭代共适应，引入 Hierarchical Experience Consolidation System 提取细粒度错误归因→泛化为动态更新原型向量。结构化情境经验作为交互补丁（上下文感知感知）+显式优化信号（技能精炼）。兼容主流 agent 系统无需人工策展，WildClawBench 显著提升。Semantic Scholar 引用核实：citationCount=0/infl0（10/16 新文符合预期）。",
+      "insight": "Darwin-Claw 与 10/15 Self-Evolving Harness（66 页 PAC-learning bound）+10/9 ExperienceIndex（工件经验记忆）形成自进化三联：Self-Evolving Harness 提供理论形式化保证，ExperienceIndex 提供记忆正确抽象层级（工件非会话），Darwin-Claw 提供经验巩固工程实现（Hierarchical Experience Consolidation）。对用户业务 agent，'环境自适应'意味着 agent 越用越懂特定业务 API 调用模式/字段语义/用户偏好——情境经验作为交互补丁。'无需人工策展+兼容主流 agent 系统'是落地友好信号。",
+      "detail": {
+        "why": "agent 隔离会话运行缺乏持续学习——原始轨迹注入致行为模糊+更新不可控。随 LLM 推理提升，瓶颈转向情境经验管理。",
+        "mechanism": "①agent-actor 与 evolver-critic 迭代共适应 ②Hierarchical Experience Consolidation System：提取细粒度错误归因→泛化为动态更新原型向量 ③结构化情境经验作为交互补丁（上下文感知感知）+显式优化信号（技能精炼） ④兼容主流 agent 系统 ⑤WildClawBench 验证。",
+        "deep": "Darwin-Claw 的核心创新是'细粒度错误归因→原型向量泛化'——不是把原始轨迹全部注入，而是蒸馏出错误模式泛化为原型。这与 10/16 Cognitive Differentiation in Skill Evolution（CDSE，技能功能分化 Meta/Experience/Tool/Script）共振：两者都把经验按功能角色组织而非扁平存储。'环境自适应'说明原型向量是用户/环境特定的——不同业务环境产生不同原型。",
+        "apply": "①业务 agent 引入 Hierarchical Experience Consolidation ②从失败 API 调用提取错误归因→泛化为原型向量 ③原型向量作为交互补丁（上下文感知）+技能优化信号 ④兼容主流 agent 系统无需重写 ⑤WildClawBench 验证可对标。",
+        "caveats": "WildClawBench 可能不代表业务场景；原型向量设计需领域知识；agent-actor/evolver-critic 共适应的稳定性待长期验证；无需人工策展但可能需初始配置。",
+        "business": "环境自适应是业务 agent 越用越懂的关键能力——情境经验作为交互补丁+技能优化信号。兼容主流 agent 系统降低落地门槛。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.23574",
+            "title": "Darwin-Claw: Environment-Adaptive Experience Consolidation for Recursively Self-Evolving Agents"
+          }
+        ],
+        "diagram": {
+          "title": "Darwin-Claw 经验巩固流程",
+          "flow": [
+            {
+              "label": "历史交互轨迹",
+              "sub": "情景经验",
+              "type": "external"
+            },
+            {
+              "label": "细粒度错误归因",
+              "sub": "提取错误模式",
+              "type": "backend"
+            },
+            {
+              "label": "原型向量泛化",
+              "sub": "动态更新",
+              "type": "database"
+            },
+            {
+              "label": "交互补丁",
+              "sub": "上下文感知",
+              "type": "backend"
+            },
+            {
+              "label": "技能优化信号",
+              "sub": "技能精炼",
+              "type": "backend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "引用核实",
+              "text": "Semantic Scholar citationCount=0/infl0（10/16 新文符合预期）"
+            },
+            {
+              "label": "兼容性",
+              "text": "兼容主流 agent 系统无需人工策展"
+            },
+            {
+              "label": "验证",
+              "text": "WildClawBench 显著提升"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "开源代码智能图谱生态：code-review-graph 32265⭐ + OpenGiraffe 守护进程多 agent + Modularity 架构耦合分析",
+      "date": "2026-10-20",
+      "source": "GitHub API search + README",
+      "link": "https://github.com/tirth8205/code-review-graph",
+      "summary": "GitHub 搜索揭示代码智能图谱 MCP 生态 2026 持续爆发：code-review-graph（32265⭐，+112 vs 10/19）Tree-sitter+GraphRAG 本地代码图谱 MCP/CLI，D3 社区聚类可视化，neighborhood seed 检索；OpenGiraffe（105⭐，10/12 新）持久化守护进程多 agent 系统，基于 opencode 自动探索/计划/实现/审查代码变更，Planner→Coder→Reviewer 管道+多模型多评审投票+git worktree 隔离并行+SQLite 持久状态；Modularity（565⭐）Claude Code 插件，基于 Balanced Coupling 模型（集成强度/距离/波动性三维）审查代码库耦合失衡+从功能需求设计模块化架构；Repo Wizard（337⭐）人机协同 AI 代码变更应用，side-by-side diff 全审查。Cube v1.8.7（10/16）：SQL push down to Cube Store #12247+COUNT(DISTINCT dimension) 预聚合 #12294+cube evals --security-context #12202+Trino UTC 钉 #12291+tesseract join aliases #12097。",
+      "insight": "开源代码智能图谱生态呈现三条进化线：①图谱基建（code-review-graph Tree-sitter+GraphRAG 持续爆发，32265⭐）②多 agent 编排（OpenGiraffe 守护进程+worktree 隔离+多评审投票，填补'自主任务队列'生态位）③架构治理（Modularity 耦合分析，填补 AI 生成代码架构债务治理空白）。三线共同指向'AI 生成代码越多，代码智能+编排+治理基建越关键'。对用户研发知识库课题，code-review-graph 的 MCP 接口+neighborhood seed 是代码图谱与 agent 集成的标准路径。Cube v1.8.7 的 cube evals --security-context 是安全语义贯穿评估层的延续（与 10/9 v1.8.2 masked members 修复同向）。",
+      "detail": {
+        "why": "AI 生成代码越多，代码智能（图谱）+编排（多 agent）+治理（架构耦合）基建越关键——三线爆发是生态成熟信号。",
+        "mechanism": "code-review-graph：Tree-sitter 解析+GraphRAG 索引+MCP/CLI 接口+D3 可视化+neighborhood seed 检索。OpenGiraffe：守护进程+Project Explorer+Planner→Coder→Reviewer+多模型投票+worktree 隔离+SQLite 持久。Modularity：Balanced Coupling 三维（集成强度/距离/波动性）+review/design 双技能。Repo Wizard：人机协同 diff 全审查+多文件批量。Cube v1.8.7：SQL push down+COUNT(DISTINCT) 预聚合+evals --security-context+Trino UTC+join aliases。",
+        "deep": "OpenGiraffe 填补的生态位是'自主任务队列'——Cursor/opencode 是交互式 copilot，OpenGiraffe 是编排它们的自主队列。其'Continuous Project Explorer'自由运行 agent 循环持续探索代码库识别潜在重构/bug/缺失测试——与 10/16 Darwin-Claw 的环境自适应同向。Modularity 的 Balanced Coupling 模型把架构耦合从直觉变为可量化三维——AI 生成代码架构债务的工程治理路径。Cube v1.8.7 的 SQL push down to Cube Store 是查询执行层优化，evals --security-context 是安全评估贯穿。",
+        "apply": "①code-review-graph MCP 接口集成到 coding agent ②OpenGiraffe 守护进程模式用于自主任务队列 ③Modularity 耦合分析用于 AI 生成代码架构审查 ④Repo Wizard 人机协同模式用于变更审查 ⑤Cube v1.8.7 升级（SQL push down+evals --security-context）。",
+        "caveats": "code-review-graph 32265⭐ 但本地解析能力对超大规模代码库的性能待验证；OpenGiraffe 105⭐ 早期项目稳定性待验证；Modularity 565⭐ 需 Claude Code v1.0.33+；Cube v1.8.7 与 v1.8.8（版本 bump）连发说明发布节奏快。",
+        "business": "代码智能图谱 MCP 生态爆发是研发知识库基建投入的生态验证。OpenGiraffe 自主任务队列是 coding agent 规模化编排路径。Modularity 架构耦合分析是 AI 生成代码技术债务治理工具。",
+        "sources": [
+          {
+            "url": "https://github.com/tirth8205/code-review-graph",
+            "title": "code-review-graph: local-first code intelligence graph for MCP and CLI"
+          },
+          {
+            "url": "https://github.com/zclllyybb/OpenGiraffe",
+            "title": "OpenGiraffe: persistent daemon-based multi-agent system"
+          },
+          {
+            "url": "https://github.com/vladikk/modularity",
+            "title": "vladikk/modularity: Claude Code plugin for modular system design"
+          },
+          {
+            "url": "https://github.com/Fanzzzd/repo-wizard",
+            "title": "Repo Wizard: human-in-the-loop AI code change application"
+          }
+        ],
+        "diagram": {
+          "title": "代码智能图谱生态三线",
+          "flow": [
+            {
+              "label": "code-review-graph 32265⭐",
+              "sub": "Tree-sitter+GraphRAG MCP",
+              "type": "database"
+            },
+            {
+              "label": "OpenGiraffe 105⭐",
+              "sub": "守护进程多 agent 编排",
+              "type": "backend"
+            },
+            {
+              "label": "Modularity 565⭐",
+              "sub": "架构耦合分析",
+              "type": "security"
+            },
+            {
+              "label": "Repo Wizard 337⭐",
+              "sub": "人机协同变更审查",
+              "type": "frontend"
+            },
+            {
+              "label": "Cube v1.8.7",
+              "sub": "SQL push down+evals security",
+              "type": "database"
+            }
+          ],
+          "notes": [
+            {
+              "label": "code-review-graph",
+              "text": "32265⭐（+112 vs 10/19）"
+            },
+            {
+              "label": "OpenGiraffe",
+              "text": "Planner→Coder→Reviewer+worktree 隔离"
+            },
+            {
+              "label": "Modularity",
+              "text": "Balanced Coupling 三维"
+            },
+            {
+              "label": "Cube v1.8.7",
+              "text": "evals --security-context #12202"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "cross",
+      "title": "战略研判：Agent 可靠性投资从模型推理层下沉到接口契约与证据路径层",
+      "date": "2026-10-20",
+      "source": "综合本期 12 条情报",
+      "link": "https://hhao9817.github.io/agent-daily/",
+      "summary": "本期 12 条串成'Agent 可靠性投资从模型推理层下沉到接口契约与证据路径层'完整链路：研发线 coding agent 从生成精度转向推理过程可引导（DeskCheck 四阶段代码推理+Ace 特征驱动策略选择+VulnSAGE 引用-验证双向通道+MLOps-Bench 生产 ML 评测+CognitiveCanvas GraphRAG 记忆工作空间）；业务线 function calling 在 interface drift 下脆弱性被量化（SchemaShield-Lite 验证-修复层+Data Provenance 查询模板指纹+SQLWitness 方言无关等价反驳+HSAD 小顾问蒸馏+NL2SQL 五步自精炼）；交叉线揭示 LLM 安全监控证据路径断裂（Monitor-Validity Failures 18 例+Darwin-Claw 经验巩固）。三条线共同指向：可靠性投资从模型推理层下沉到接口契约（API schema/工具描述/候选集）与证据路径（安全监控证据达决策点）层。最核心战略研判：接口契约与证据路径是 2026-2027 Agent 可靠性投资的新焦点——评估清单从模型 pass rate 转向 interface drift 防护+证据路径回归测试+推理过程可引导性。",
+      "insight": "本期与历次共振：10/9'受治理运行时三件套'→10/15'harness 工程治理收敛'→10/19'评估三新维度'→本期'接口契约与证据路径层'——可靠性投资持续下沉。本期新维度是'interface drift'（API 字段名/描述/候选列表变更致 function calling 失败）和'证据路径断裂'（安全监控证据达决策点断裂）——两者都是部署后而非推理中的可靠性问题。对用户双主题课题：研发线 DeskCheck 四阶段+Ace 四特征是 coding agent 可引导性工程模板；业务线 SchemaShield-Lite 三层+HSAD 顾问是 function calling 部署后保障工程模板。'语义层 vs 知识图谱'双路线在本期进一步统一：Netflix RDF quad store（知识图谱承载实体/关系）+Zalando pgvector HNSW（语义层承载相似性）+Cube SQL push down（语义层承载口径）——三者互补而非互斥。",
+      "detail": {
+        "why": "可靠性投资从模型推理层下沉到接口契约与证据路径层——前者是部署后而非推理中的可靠性问题，更隐蔽更危险。",
+        "mechanism": "①接口契约层：SchemaShield-Lite（schema 验证+候选集重试+约束修复）+Data Provenance（provenance footprint 指纹）+SQLWitness（DBMS 执行引擎判定反例） ②证据路径层：Monitor-Validity Failures（canary contracts 回归测试+四族审计） ③推理过程层：DeskCheck（四阶段引导）+Ace（特征驱动策略选择）+VulnSAGE（引用-验证双向通道） ④经验巩固层：Darwin-Claw（细粒度错误归因→原型向量）+HSAD（hindsight 顾问蒸馏） ⑤评测层：MLOps-Bench（生产 ML 全生命周期）。",
+        "deep": "五层可靠性框架：接口契约层（部署后 API 变更防护）→证据路径层（安全监控证据达决策点）→推理过程层（coding agent 推理可引导）→经验巩固层（自进化可控）→评测层（生产场景能力基线）。最核心洞察：interface drift 的最大伤害源是候选集 drift（干扰工具）而非描述/schema 编辑——意味着 API 目录新增需评估对现有查询干扰。证据路径断裂不同于越狱/检测器错误——证据被识别但未达执行，更隐蔽。",
+        "apply": "①function calling 层加 SchemaShield-Lite 三件套 ②API 目录新增评估候选集 drift 干扰 ③安全监控引入 canary contracts 回归测试 ④coding agent 引入 DeskCheck 四阶段 ⑤代码编辑引入 Ace 特征驱动策略选择 ⑥SAST 裁定引入 VulnSAGE 引用-验证通道 ⑦业务 agent 引入 HSAD 顾问蒸馏 ⑧text-to-SQL 评测引入 SQLWitness 反驳。",
+        "caveats": "五层框架是本期综合研判非单篇论文；各层工程模板需分别验证；interface drift 防护需 API 变更管理流程配合；证据路径回归测试需框架内部访问；coding agent 可引导性增加延迟/成本。",
+        "business": "可靠性投资从模型推理层下沉到接口契约与证据路径层是 2026-2027 Agent 投资新焦点——评估清单从模型 pass rate 转向 interface drift 防护+证据路径回归测试+推理过程可引导性。对业务 agent，SchemaShield-Lite 零训练成本 0.580→0.805 是直接 ROI；对 coding agent，DeskCheck $0.14/实例+6-10% 是可引导性 ROI。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.23342",
+            "title": "Robust Function Calling for LLM Agents Under Interface Drift"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.23782",
+            "title": "Enforcing Code Reasoning in Agentic Scaffold"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.23362",
+            "title": "Monitor-Validity Failures"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.13000",
+            "title": "Hindsight Structured Advice Distillation"
+          }
+        ],
+        "diagram": {
+          "title": "Agent 可靠性五层框架",
+          "flow": [
+            {
+              "label": "接口契约层",
+              "sub": "SchemaShield-Lite+Provenance+SQLWitness",
+              "type": "security"
+            },
+            {
+              "label": "证据路径层",
+              "sub": "Monitor-Validity canary contracts",
+              "type": "security"
+            },
+            {
+              "label": "推理过程层",
+              "sub": "DeskCheck+Ace+VulnSAGE",
+              "type": "backend"
+            },
+            {
+              "label": "经验巩固层",
+              "sub": "Darwin-Claw+HSAD",
+              "type": "database"
+            },
+            {
+              "label": "评测层",
+              "sub": "MLOps-Bench 生产基线",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "核心研判",
+              "text": "可靠性投资从模型推理层下沉到接口契约与证据路径层"
+            },
+            {
+              "label": "interface drift",
+              "text": "最大伤害源=候选集 drift（干扰工具）"
+            },
+            {
+              "label": "证据路径",
+              "text": "断裂≠证据缺失，证据被识别但未达执行"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
