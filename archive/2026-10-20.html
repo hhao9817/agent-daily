@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI for Business 领域每日晨报</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+            --card: #ffffff;
+            --border: #d6dde8;
+            --border-strong: #adbac9;
+            --text: #111827;
+            --muted: #4b5563;
+            --accent: #2563eb;
+            --accent-soft: #dbeafe;
+            --accent2: #059669;
+            --accent2-soft: #d1fae5;
+            --warn: #b45309;
+            --warn-soft: #fef3c7;
+            --red: #dc2626;
+            --red-soft: #fee2e2;
+            --shadow: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+            --shadow-hover: 0 10px 25px -5px rgba(15,23,42,0.1), 0 8px 10px -6px rgba(15,23,42,0.05);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+      padding: 20px;
+      max-width: 920px;
+      margin: 0 auto;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    /* 长英文标识符/URL 在移动端强制换行，避免撑破卡片 */
+    p, li, h1, h2, h3, h4, .summary, .insight, .snap-title, .snap-points li,
+    .modal-sec p, .modal-body, .detail-block, .item, .snapshot, .snapshot-summary {
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    header {
+      text-align: center;
+      padding: 30px 0 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    header h1 {
+      font-size: 1.8em;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    header h1 .grad {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header .date { color: var(--muted); margin-top: 8px; font-size: 0.95em; }
+    .archive-link {
+      display: inline-block; margin-top: 12px; color: var(--accent); text-decoration: none;
+      font-size: 0.85em; border: 1px solid var(--border-strong); background: var(--card);
+      padding: 5px 14px; border-radius: 20px; box-shadow: var(--shadow);
+      transition: all .15s;
+    }
+    .archive-link:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+    /* 今日速览（结构化，按来源分类） */
+    .snapshot {
+      background: linear-gradient(135deg, var(--accent-soft), var(--accent2-soft));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow);
+    }
+    .snapshot-summary {
+      font-size: 0.98em;
+      color: var(--text);
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px dashed var(--border-strong);
+    }
+    .snapshot-summary strong { color: var(--accent); }
+    .snapshot-groups { display: flex; flex-direction: column; gap: 10px; }
+    .snap-group {
+      display: flex;
+      gap: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      box-shadow: var(--shadow);
+    }
+    .snap-bar { width: 5px; border-radius: 3px; flex-shrink: 0; }
+    .snap-bar-paper { background: var(--accent); }
+    .snap-bar-github { background: var(--accent2); }
+    .snap-bar-product { background: var(--warn); }
+    .snap-bar-blog { background: var(--red); }
+    .snap-body { flex: 1; }
+    .snap-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.85em; font-weight: 700; color: var(--text);
+      margin-bottom: 6px;
+    }
+    .snap-title .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-paper { background: var(--accent); }
+    .dot-github { background: var(--accent2); }
+    .dot-product { background: var(--warn); }
+    .dot-blog { background: var(--red); }
+    .snap-title .badge {
+      font-size: 0.7em; font-weight: 600;
+      background: var(--bg); border: 1px solid var(--border-strong);
+      color: var(--muted); padding: 1px 8px; border-radius: 20px;
+    }
+    .snap-points { list-style: none; padding: 0; margin: 0; }
+    .snap-points li {
+      font-size: 0.9em; color: var(--text);
+      padding: 3px 0 3px 18px;
+      position: relative;
+    }
+    .snap-points li::before {
+      content: "▸";
+      position: absolute; left: 2px;
+      color: var(--accent);
+    }
+
+    /* 分类区块 */
+    .section { margin-bottom: 30px; }
+    .section-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 4px; margin-bottom: 14px;
+      border-bottom: 2px solid var(--border);
+    }
+    .section-head .bar { width: 6px; height: 22px; border-radius: 3px; }
+    .section-head h2 { font-size: 1.15em; color: var(--text); flex: 1; }
+    .section-head .count { font-size: 0.8em; color: var(--muted); background: var(--card); border: 1px solid var(--border); padding: 2px 10px; border-radius: 20px; }
+    .bar-paper { background: var(--accent); }
+    .bar-github { background: var(--accent2); }
+    .bar-product { background: var(--warn); }
+    .bar-blog { background: var(--red); }
+
+    .item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: border-color .2s, transform .1s, box-shadow .2s;
+    }
+    .item:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+    .item:active { transform: scale(0.995); }
+    .item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .tag {
+      display: inline-block;
+      font-size: 0.72em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .tag-paper { background: var(--accent-soft); color: var(--accent); }
+    .tag-github { background: var(--accent2-soft); color: var(--accent2); }
+    .tag-product { background: var(--warn-soft); color: var(--warn); }
+    .tag-blog { background: var(--red-soft); color: var(--red); }
+    .detail-hint { font-size: 0.78em; color: var(--accent); opacity: .8; }
+    .item h3 { font-size: 1.1em; margin-bottom: 8px; }
+    .item h3 a { color: var(--text); text-decoration: none; }
+    .item h3 a:hover { color: var(--accent); }
+    .item .meta { color: var(--muted); font-size: 0.82em; margin-bottom: 10px; }
+    .item .summary { font-size: 0.95em; margin-bottom: 10px; color: var(--text); }
+    .item .insight {
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      padding: 8px 12px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.92em;
+      color: var(--text);
+    }
+    .item .insight strong { color: var(--accent); }
+
+    /* ===== 详情弹层（浅色） ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(30,41,59,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      overflow-y: auto;
+      padding: 30px 20px;
+    }
+    .modal.show { display: block; }
+    .modal-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 32px 36px;
+      position: relative;
+      box-shadow: var(--shadow-hover);
+      animation: pop .18s ease;
+    }
+    @keyframes pop { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .modal-close {
+      position: absolute;
+      top: 14px; right: 16px;
+      background: none; border: none;
+      color: var(--muted);
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+    .modal-close:hover { color: var(--text); background: var(--bg); }
+    .modal-content h2 {
+      font-size: 1.4em;
+      color: var(--text);
+      margin: 10px 0 6px;
+      line-height: 1.4;
+      padding-right: 30px;
+    }
+    .modal-content .meta { color: var(--muted); font-size: 0.85em; margin-bottom: 18px; }
+    .modal-body { margin-top: 8px; }
+    .modal-sec {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+    }
+    .modal-sec h4 { font-size: 0.95em; color: var(--accent); margin-bottom: 8px; }
+    .modal-sec p { font-size: 0.93em; color: var(--text); }
+    .modal-sources { background: var(--bg); }
+    .modal-business { background: var(--warn-soft); }
+    .modal-business h4 { color: var(--warn); }
+    .sources-list { list-style: none; padding: 0; margin: 0; }
+    .sources-list li { font-size: 0.88em; color: var(--text); margin-bottom: 6px; padding-left: 4px; }
+    .src-id { color: var(--accent); font-weight: 600; margin-right: 6px; }
+    .src-link { color: var(--accent); text-decoration: none; word-break: break-all; }
+    .src-link:hover { text-decoration: underline; }
+    .diagram-box {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      overflow-x: auto;
+      position: relative;
+    }
+    .diagram-svg svg { display: block; }
+    .diagram-zoom {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.82em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      z-index: 5;
+    }
+    .diagram-zoom:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ===== 架构图放大 lightbox ===== */
+    .diagram-lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.85);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      overflow: auto;
+      padding: 30px;
+    }
+    .diagram-lightbox.show { display: block; }
+    .diagram-lightbox-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .diagram-lightbox-inner .lb-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px;
+    }
+    .diagram-lightbox-inner .lb-head h3 { font-size: 1.1em; color: var(--text); }
+    .diagram-lightbox-inner .lb-tools { display: flex; align-items: center; gap: 8px; }
+    .lb-btn {
+      background: var(--accent-soft); color: var(--accent);
+      border: 1px solid var(--border-strong); border-radius: 8px;
+      padding: 5px 12px; font-size: 0.85em; font-weight: 600; cursor: pointer;
+      transition: all .15s;
+    }
+    .lb-btn:hover { background: var(--accent); color: #fff; }
+    .lb-close {
+      background: none; border: none; color: var(--muted);
+      font-size: 26px; line-height: 1; cursor: pointer; padding: 4px 8px; border-radius: 8px;
+    }
+    .lb-close:hover { color: var(--text); background: var(--bg); }
+    .diagram-lightbox-inner .lb-svg {
+      overflow: auto;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .diagram-lightbox-inner .lb-svg svg {
+      max-width: 100%;
+      height: auto;
+      transition: transform .15s ease;
+      transform-origin: center center;
+    }
+    .diagram-lightbox-inner .lb-svg svg.zoomed { transform: scale(1.6); cursor: grab; }
+    .diagram-lightbox-inner .lb-svg svg.zoomed:active { cursor: grabbing; }
+    .diagram-lightbox-inner .lb-tip { text-align: center; color: var(--muted); font-size: 0.8em; margin-top: 10px; }
+    .modal-foot {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .modal-link { color: var(--accent); font-size: 0.88em; text-decoration: none; word-break: break-all; }
+    .modal-link:hover { text-decoration: underline; }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8em;
+      padding: 30px 0 10px;
+      border-top: 1px solid var(--border);
+      margin-top: 30px;
+    }
+    .empty { color: var(--muted); text-align: center; padding: 40px; }
+    /* ===== 反馈按钮 + 提交按钮 ===== */
+    .feedback-fab {
+      position: fixed; bottom: 24px; right: 24px;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; color: #fff; font-size: 24px; cursor: pointer;
+      box-shadow: var(--shadow-hover);
+      z-index: 9000; transition: transform .15s;
+    }
+    .feedback-fab:hover { transform: scale(1.1); }
+    .modal-submit {
+      width: 100%; padding: 12px; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; font-size: 1em; font-weight: 600; cursor: pointer;
+    }
+    .modal-submit:hover { opacity: 0.9; }
+    @media (max-width: 600px) {
+      .modal-content { padding: 24px 18px; }
+      body { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🤖 <span class="grad">AI for Business</span> 每日晨报</h1>
+    <div class="date">业务知识库 · 业务语义理解 · API 精确查询 | 2026-10-20</div>
+    <a class="archive-link" href="archive/index.html">📚 历史晨报归档</a>
+  </header>
+
+  <div class="snapshot"><div class="snapshot-summary"><strong>📌 今日速览</strong><br>今日情报聚焦『Agent 可靠性的接口契约层』——研发线 coding agent 从生成精度转向推理过程可引导（DeskCheck 四阶段代码推理+Ace 特征驱动策略选择+VulnSAGE 程序结构连接 LLM 判断+MLOps-Bench 生产 ML 工程评测）；业务线 function calling 在 interface drift 下脆弱性被量化（SchemaShield-Lite 验证-修复层+Data Provenance 查询模板识别+SQLWitness 方言无关等价反驳+HSAD 小顾问模型蒸馏）；交叉线揭示 LLM 安全监控的证据路径断裂（Monitor-Validity Failures 18 例+Darwin-Claw 自进化经验巩固+code-review-graph 32k 星 MCP 代码图谱）。Netflix 知识图谱可观测性+Zalando RAG flywheel+Airbnb CASTLE 冷启动搜索是三篇企业实践标杆。三条线共同指向：可靠性投资从模型推理层下沉到接口契约与证据路径层。</div><div class="snapshot-groups"><div class="snap-group"><span class="snap-bar snap-bar-github"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-github"></span>🐙 开源项目<span class="badge">5 项</span></div><ul class="snap-points"><li>code-review-graph 32265⭐（+112 vs 10/19）：Tree-sitter+GraphRAG 本地代码图谱 MCP/CLI，D3 社区聚类可视化，neighborhood seed 检索。</li><li>OpenGiraffe 105⭐（10/12 新）：持久化守护进程多 agent 系统，基于 opencode 自动探索/计划/实现/审查代码变更，Planner→Coder→Reviewer 管道+多模型多评审投票+git worktree 隔离并行+SQLite 持久状态。</li><li>Repo Wizard 337⭐：人机协同 AI 代码变更应用工具，side-by-side diff 全审查，多文件批量变更，非黑盒自主 agent。</li><li>Modularity 565⭐：Claude Code 插件，架构级耦合分析+模块化设计，填补 AI 生成代码架构债务治理。</li><li>Cube v1.8.7（10/16）：SQL push down to Cube Store #12247+COUNT(DISTINCT dimension) 预聚合 #12294+cube evals --security-context #12202+Trino UTC 钉 #12291+MSSQL 小数保真 #12175+tesseract join aliases #12097。</li></ul></div></div></div></div>
+
+  <div class="section"><div class="section-head"><span class="bar bar-github"></span><h2>🐙 开源项目</h2><span class="count">1 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-github">🐙 GitHub</span></div><h3><a href="https://github.com/tirth8205/code-review-graph" target="_blank" rel="noopener">开源代码智能图谱生态：code-review-graph 32265⭐ + OpenGiraffe 守护进程多 agent + Modularity 架构耦合分析</a></h3><div class="meta">2026-10-20 · GitHub API search + README</div><div class="summary">GitHub 搜索揭示代码智能图谱 MCP 生态 2026 持续爆发：code-review-graph（32265⭐，+112 vs 10/19）Tree-sitter+GraphRAG 本地代码图谱 MCP/CLI，D3 社区聚类可视化，neighborhood seed 检索；OpenGiraffe（105⭐，10/12 新）持久化守护进程多 agent 系统，基于 opencode 自动探索/计划/实现/审查代码变更，Planner→Coder→Reviewer 管道+多模型多评审投票+git worktree 隔离并行+SQLite 持久状态；Modularity（565⭐）Claude Code 插件，基于 Balanced Coupling 模型（集成强度/距离/波动性三维）审查代码库耦合失衡+从功能需求设计模块化架构；Repo Wizard（337⭐）人机协同 AI 代码变更应用，side-by-side diff 全审查。Cube v1.8.7（10/16）：SQL push down to Cube Store #12247+COUNT(DISTINCT dimension) 预聚合 #12294+cube evals --security-context #12202+Trino UTC 钉 #12291+tesseract join aliases #12097。</div><div class="insight"><strong>🔍 技术视角：</strong>开源代码智能图谱生态呈现三条进化线：①图谱基建（code-review-graph Tree-sitter+GraphRAG 持续爆发，32265⭐）②多 agent 编排（OpenGiraffe 守护进程+worktree 隔离+多评审投票，填补'自主任务队列'生态位）③架构治理（Modularity 耦合分析，填补 AI 生成代码架构债务治理空白）。三线共同指向'AI 生成代码越多，代码智能+编排+治理基建越关键'。对用户研发知识库课题，code-review-graph 的 MCP 接口+neighborhood seed 是代码图谱与 agent 集成的标准路径。Cube v1.8.7 的 cube evals --security-context 是安全语义贯穿评估层的延续（与 10/9 v1.8.2 masked members 修复同向）。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 550" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="550" fill="#f8fafc"/><rect width="900" height="550" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">代码智能图谱生态三线</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">code-review-graph 32265⭐</text><text x="156.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">Tree-sitter+GraphRAG MCP</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">OpenGiraffe 105⭐</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">守护进程多 agent 编排</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Modularity 565⭐</text><text x="548.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">架构耦合分析</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Repo Wizard 337⭐</text><text x="744.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">人机协同变更审查</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Cube v1.8.7</text><text x="450.0" y="252" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">SQL push down+evals security</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">code-review-graph</tspan>　32265⭐（+112 vs 10/19）</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">OpenGiraffe</tspan>　Planner→Coder→Reviewer+worktree 隔离</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">Modularity</tspan>　Balanced Coupling 三维</text><rect x="30" y="442" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="460" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">Cube v1.8.7</tspan>　evals --security-context #12202</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>AI 生成代码越多，代码智能（图谱）+编排（多 agent）+治理（架构耦合）基建越关键——三线爆发是生态成熟信号。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>code-review-graph：Tree-sitter 解析+GraphRAG 索引+MCP/CLI 接口+D3 可视化+neighborhood seed 检索。OpenGiraffe：守护进程+Project Explorer+Planner→Coder→Reviewer+多模型投票+worktree 隔离+SQLite 持久。Modularity：Balanced Coupling 三维（集成强度/距离/波动性）+review/design 双技能。Repo Wizard：人机协同 diff 全审查+多文件批量。Cube v1.8.7：SQL push down+COUNT(DISTINCT) 预聚合+evals --security-context+Trino UTC+join aliases。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>OpenGiraffe 填补的生态位是'自主任务队列'——Cursor/opencode 是交互式 copilot，OpenGiraffe 是编排它们的自主队列。其'Continuous Project Explorer'自由运行 agent 循环持续探索代码库识别潜在重构/bug/缺失测试——与 10/16 Darwin-Claw 的环境自适应同向。Modularity 的 Balanced Coupling 模型把架构耦合从直觉变为可量化三维——AI 生成代码架构债务的工程治理路径。Cube v1.8.7 的 SQL push down to Cube Store 是查询执行层优化，evals --security-context 是安全评估贯穿。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>代码智能图谱 MCP 生态爆发是研发知识库基建投入的生态验证。OpenGiraffe 自主任务队列是 coding agent 规模化编排路径。Modularity 架构耦合分析是 AI 生成代码技术债务治理工具。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>①code-review-graph MCP 接口集成到 coding agent ②OpenGiraffe 守护进程模式用于自主任务队列 ③Modularity 耦合分析用于 AI 生成代码架构审查 ④Repo Wizard 人机协同模式用于变更审查 ⑤Cube v1.8.7 升级（SQL push down+evals --security-context）。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>code-review-graph 32265⭐ 但本地解析能力对超大规模代码库的性能待验证；OpenGiraffe 105⭐ 早期项目稳定性待验证；Modularity 565⭐ 需 Claude Code v1.0.33+；Cube v1.8.7 与 v1.8.8（版本 bump）连发说明发布节奏快。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://github.com/tirth8205/code-review-graph" target="_blank" rel="noopener" class="src-link">code-review-graph: local-first code intelligence graph for MCP and CLI</a></li><li><span class="src-id">[2]</span> <a href="https://github.com/zclllyybb/OpenGiraffe" target="_blank" rel="noopener" class="src-link">OpenGiraffe: persistent daemon-based multi-agent system</a></li><li><span class="src-id">[3]</span> <a href="https://github.com/vladikk/modularity" target="_blank" rel="noopener" class="src-link">vladikk/modularity: Claude Code plugin for modular system design</a></li><li><span class="src-id">[4]</span> <a href="https://github.com/Fanzzzd/repo-wizard" target="_blank" rel="noopener" class="src-link">Repo Wizard: human-in-the-loop AI code change application</a></li></ol></div><div class="modal-foot"><a href="https://github.com/tirth8205/code-review-graph" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://github.com/tirth8205/code-review-graph</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-blog"></span><h2>📝 技术博客</h2><span class="count">1 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-blog">📝 技术博客</span></div><h3><a href="https://netflixtechblog.com/ontology-driven-observability-building-an-end-to-end-knowledge-graph-at-netflix-scale-421392cf5adf" target="_blank" rel="noopener">Netflix Ontology-Driven Observability：QuipuDB RDF 知识图谱统一可观测性语义契约</a></h3><div class="meta">2026-10-19 · Data Engineering Weekly #292 / Netflix Tech Blog</div><div class="summary">Netflix 构建可观测性本体（Ontology）持久化在 QuipuDB——自研分布式 RDF quad store（基于 Rust redb），统一 metrics/deployments/alerts/Slack 事件为单一语义契约，解决跨隔离运维工具的语义断裂。Netflix 规模的可观测性知识图谱端到端构建实践：本体建模→RDF quad store 持久化→多源统一语义契约。DEW #292 同时收录 Airbnb CASTLE（真实查询前训练自然语言搜索，从历史预订会话合成训练查询+相关性标签，预订 listing 配对 viewed-but-skipped，LLM 生成 seed-guided 查询匹配 winner，标签构造即准确无 LLM-as-judge 循环）和 Zalando RAG Flywheel（供应商 schema 映射自动化，zero-shot LLM 冷启动+pgvector HNSW 历史映射检索+cosine×人工批准频率排序防漂移，10-60 列→55 列内部 schema 映射瓶颈消除）。</div><div class="insight"><strong>🔍 技术视角：</strong>Netflix 用 RDF quad store 构建可观测性本体是'企业知识图谱'路线的生产级标杆——与用户'语义层 vs 知识图谱双路线'课题直接相关：知识图谱承载实体/join 路径/关系（metrics↔deployments↔alerts↔Slack 事件），语义层承载口径（metrics 定义）。Netflix 选 RDF quad store 而非关系库说明知识图谱的多跳关系查询需求。Airbnb CASTLE 的'标签构造即准确'是冷启动搜索新范式——不靠 LLM-as-judge 循环，而从用户行为构造标签。Zalando RAG flywheel 的'cosine×人工批准频率排序'防漂移是 schema 映射治理工程模板。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 376" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="376" fill="#f8fafc"/><rect width="900" height="376" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">三篇企业实践对标</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Netflix QuipuDB</text><text x="156.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">RDF quad store 可观测性本体</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">metrics↔deployments↔alerts↔Slack</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">多源统一语义契约</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Airbnb CASTLE</text><text x="548.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">历史行为→合成标签</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Zalando RAG Flywheel</text><text x="744.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">zero-shot+HNSW+频率排序</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="178" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="188" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="206" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">Netflix</tspan>　Rust redb RDF quad store，生产级知识图谱</text><rect x="30" y="230" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="248" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">Airbnb</tspan>　标签构造即准确，无 LLM-as-judge 循环</text><rect x="30" y="272" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="290" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">Zalando</tspan>　cosine×人工批准频率防漂移</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>Netflix 跨隔离运维工具（metrics/deployments/alerts/Slack）语义断裂是可观测性瓶颈——需统一语义契约。企业知识图谱生产级落地标杆。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>①本体建模可观测性实体+关系 ②QuipuDB（Rust redb 上 RDF quad store）持久化 ③多源统一语义契约：metrics↔deployments↔alerts↔Slack 事件 ④端到端知识图谱查询。Airbnb CASTLE：历史预订→合成查询+标签→seed-guided 匹配→无 judge 循环。Zalando：zero-shot+pgvector HNSW+cosine×频率排序。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>Netflix 选 RDF quad store（非关系库）说明多跳关系查询是可观测性核心需求——metrics 关联部署关联告警关联事件。这与 Cube #12070 join-path hub-only 解析同向：关系查询需图引擎。QuipuDB 基于 Rust redb 说明性能优先。Airbnb CASTLE 的'标签构造即准确'避开 LLM-as-judge 循环——从用户行为（预订 vs viewed-but-skipped）构造标签，winner 已知所以标签正确。Zalando 的'cosine×人工批准频率'双重排序：语义相似+历史批准频率，防止语义近但未批准的映射漂移。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>Netflix 知识图谱可观测性是'企业知识图谱'路线的生产级标杆——向管理层论证知识图谱投入的现成案例。Airbnb CASTLE 冷启动搜索是自然语言搜索产品化的工程路径。Zalando RAG flywheel 是供应商数据治理自动化模板。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>①Netflix RDF quad store 模式迁移到业务知识图谱（实体/join 路径/关系层） ②Airbnb CASTLE 模式迁移到业务搜索冷启动（从历史行为构造标签） ③Zalando RAG flywheel 模式迁移到宽表字段语义映射（zero-shot+HNSW+频率排序） ④三篇共同：企业实践标杆可对标内部落地。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>Netflix/QuipuDB 为自研内部工具，可复现性有限（需自建 RDF quad store）；Airbnb Medium 正文 Cloudflare 拦截，分析基于 DEW 摘要；Zalando 依赖 AWS Bedrock（供应商绑定）；三篇均为工程博客非学术论文，量化数据有限。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://netflixtechblog.com/ontology-driven-observability-building-an-end-to-end-knowledge-graph-at-netflix-scale-421392cf5adf" target="_blank" rel="noopener" class="src-link">Ontology-Driven Observability: Building an End-to-End Knowledge Graph at Netflix Scale</a></li><li><span class="src-id">[2]</span> <a href="https://medium.com/airbnb-engineering/castle-training-natural-language-search-before-the-first-real-query-3818ef8b4828" target="_blank" rel="noopener" class="src-link">CASTLE: training natural language search before the first real query</a></li><li><span class="src-id">[3]</span> <a href="https://engineering.zalando.com/posts/2026/10/structure-automating-data-ingestion-with-a-rag-flywheel.html" target="_blank" rel="noopener" class="src-link">Automating Data Ingestion with a RAG Flywheel</a></li><li><span class="src-id">[4]</span> <a href="https://www.dataengineeringweekly.com/p/data-engineering-weekly-292" target="_blank" rel="noopener" class="src-link">Data Engineering Weekly #292</a></li></ol></div><div class="modal-foot"><a href="https://netflixtechblog.com/ontology-driven-observability-building-an-end-to-end-knowledge-graph-at-netflix-scale-421392cf5adf" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://netflixtechblog.com/ontology-driven-observability-building-an-end-to-end-knowledge-graph-at-netflix-scale-421392cf5adf</a></div></div></div>
+
+  
+
+  <footer>
+    由 Hermes Agent 自动生成 · 点击卡片查看深度详情 · 2026-10-20
+  </footer>
+
+  <!-- ===== 反馈按钮 + 表单弹层 ===== -->
+  <button class="feedback-fab" onclick="openFeedback()" title="提交反馈">💬</button>
+
+  <div class="modal" id="feedback-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeFeedback()" aria-label="关闭">×</button>
+      <span class="tag tag-product">💬 读者反馈</span>
+      <h2>提交意见 / 反馈</h2>
+      <div class="modal-body">
+        <p style="color:var(--muted);font-size:0.9em;margin-bottom:12px;">
+          你的反馈会帮我改进晨报内容。提交后将打开 GitHub Issue 页面，确认后我会在每天 17:00 处理。
+        </p>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">反馈类型</label>
+        <select id="fb-type" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);margin-bottom:12px;">
+          <option value="内容建议">内容建议（选题/深度/方向）</option>
+          <option value="错误报告">错误报告（链接失效/信息有误）</option>
+          <option value="格式反馈">格式/排版反馈</option>
+          <option value="其他">其他</option>
+        </select>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">你的反馈内容</label>
+        <textarea id="fb-body" rows="5" placeholder="请描述你的意见、建议或发现的问题…"
+          style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);resize:vertical;margin-bottom:12px;"></textarea>
+        <button class="modal-submit" onclick="submitFeedback()">提交反馈 →</button>
+      </div>
+      <div class="modal-foot" style="color:var(--muted);font-size:0.8em;">提交后请在打开的 GitHub 页面点击确认。</div>
+    </div>
+  </div>
+
+  <!-- ===== 架构图放大 lightbox ===== -->
+  <div class="diagram-lightbox" id="diagram-lightbox" onclick="if(event.target===this)closeDiagramZoom()">
+    <div class="diagram-lightbox-inner">
+      <div class="lb-head">
+        <h3 id="lb-title">📊 架构图</h3>
+        <div class="lb-tools">
+          <button type="button" class="lb-btn" onclick="diagramToggleZoom()">🔍 放大/缩小</button>
+          <button type="button" class="lb-close" onclick="closeDiagramZoom()" aria-label="关闭">×</button>
+        </div>
+      </div>
+      <div class="lb-svg" id="lb-svg"></div>
+      <div class="lb-tip">提示：点击「放大/缩小」切换缩放，缩放后可在图内拖动查看细节 · 按 Esc 关闭</div>
+    </div>
+  </div>
+
+  <script>
+    function openDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.add('show'); document.body.style.overflow = 'hidden'; }
+    }
+    function closeDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.remove('show'); document.body.style.overflow = ''; }
+    }
+    function openFeedback() {
+      document.getElementById('feedback-modal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeFeedback() {
+      document.getElementById('feedback-modal').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function submitFeedback() {
+      const type = document.getElementById('fb-type').value;
+      const body = document.getElementById('fb-body').value.trim();
+      if (!body) { alert('请填写反馈内容'); return; }
+      const date = '2026-10-20';
+      const title = '[网页反馈/' + type + '] ' + date;
+      const full = '反馈类型: ' + type + '\n日期: ' + date + '\n\n' + body;
+      // 生成 GitHub Issue 预填链接（不暴露 token，安全）
+      const url = 'https://github.com/hhao9817/agent-daily/issues/new?title=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(full);
+      window.open(url, '_blank');
+      closeFeedback();
+    }
+    /* ===== 架构图放大 ===== */
+    function openDiagramZoom(btn) {
+      const box = btn.closest('.diagram-box');
+      const svg = box.querySelector('.diagram-svg svg') || box.querySelector('svg');
+      if (!svg) return;
+      const title = box.querySelector('h4') ? box.querySelector('h4').textContent : '📊 架构图';
+      document.getElementById('lb-title').textContent = title;
+      const holder = document.getElementById('lb-svg');
+      holder.innerHTML = '';
+      holder.appendChild(svg.cloneNode(true));
+      const lb = document.getElementById('diagram-lightbox');
+      lb.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeDiagramZoom() {
+      document.getElementById('diagram-lightbox').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function diagramToggleZoom() {
+      const svg = document.querySelector('#lb-svg svg');
+      if (!svg) return;
+      svg.classList.toggle('zoomed');
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal.show').forEach(function(m) { m.classList.remove('show'); });
+        document.getElementById('diagram-lightbox').classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+</html>
