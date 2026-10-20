@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI for Business 领域每日晨报</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+            --card: #ffffff;
+            --border: #d6dde8;
+            --border-strong: #adbac9;
+            --text: #111827;
+            --muted: #4b5563;
+            --accent: #2563eb;
+            --accent-soft: #dbeafe;
+            --accent2: #059669;
+            --accent2-soft: #d1fae5;
+            --warn: #b45309;
+            --warn-soft: #fef3c7;
+            --red: #dc2626;
+            --red-soft: #fee2e2;
+            --shadow: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+            --shadow-hover: 0 10px 25px -5px rgba(15,23,42,0.1), 0 8px 10px -6px rgba(15,23,42,0.05);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+      padding: 20px;
+      max-width: 920px;
+      margin: 0 auto;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    /* 长英文标识符/URL 在移动端强制换行，避免撑破卡片 */
+    p, li, h1, h2, h3, h4, .summary, .insight, .snap-title, .snap-points li,
+    .modal-sec p, .modal-body, .detail-block, .item, .snapshot, .snapshot-summary {
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    header {
+      text-align: center;
+      padding: 30px 0 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    header h1 {
+      font-size: 1.8em;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    header h1 .grad {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header .date { color: var(--muted); margin-top: 8px; font-size: 0.95em; }
+    .archive-link {
+      display: inline-block; margin-top: 12px; color: var(--accent); text-decoration: none;
+      font-size: 0.85em; border: 1px solid var(--border-strong); background: var(--card);
+      padding: 5px 14px; border-radius: 20px; box-shadow: var(--shadow);
+      transition: all .15s;
+    }
+    .archive-link:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+    /* 今日速览（结构化，按来源分类） */
+    .snapshot {
+      background: linear-gradient(135deg, var(--accent-soft), var(--accent2-soft));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow);
+    }
+    .snapshot-summary {
+      font-size: 0.98em;
+      color: var(--text);
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px dashed var(--border-strong);
+    }
+    .snapshot-summary strong { color: var(--accent); }
+    .snapshot-groups { display: flex; flex-direction: column; gap: 10px; }
+    .snap-group {
+      display: flex;
+      gap: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      box-shadow: var(--shadow);
+    }
+    .snap-bar { width: 5px; border-radius: 3px; flex-shrink: 0; }
+    .snap-bar-paper { background: var(--accent); }
+    .snap-bar-github { background: var(--accent2); }
+    .snap-bar-product { background: var(--warn); }
+    .snap-bar-blog { background: var(--red); }
+    .snap-body { flex: 1; }
+    .snap-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.85em; font-weight: 700; color: var(--text);
+      margin-bottom: 6px;
+    }
+    .snap-title .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-paper { background: var(--accent); }
+    .dot-github { background: var(--accent2); }
+    .dot-product { background: var(--warn); }
+    .dot-blog { background: var(--red); }
+    .snap-title .badge {
+      font-size: 0.7em; font-weight: 600;
+      background: var(--bg); border: 1px solid var(--border-strong);
+      color: var(--muted); padding: 1px 8px; border-radius: 20px;
+    }
+    .snap-points { list-style: none; padding: 0; margin: 0; }
+    .snap-points li {
+      font-size: 0.9em; color: var(--text);
+      padding: 3px 0 3px 18px;
+      position: relative;
+    }
+    .snap-points li::before {
+      content: "▸";
+      position: absolute; left: 2px;
+      color: var(--accent);
+    }
+
+    /* 分类区块 */
+    .section { margin-bottom: 30px; }
+    .section-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 4px; margin-bottom: 14px;
+      border-bottom: 2px solid var(--border);
+    }
+    .section-head .bar { width: 6px; height: 22px; border-radius: 3px; }
+    .section-head h2 { font-size: 1.15em; color: var(--text); flex: 1; }
+    .section-head .count { font-size: 0.8em; color: var(--muted); background: var(--card); border: 1px solid var(--border); padding: 2px 10px; border-radius: 20px; }
+    .bar-paper { background: var(--accent); }
+    .bar-github { background: var(--accent2); }
+    .bar-product { background: var(--warn); }
+    .bar-blog { background: var(--red); }
+
+    .item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: border-color .2s, transform .1s, box-shadow .2s;
+    }
+    .item:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+    .item:active { transform: scale(0.995); }
+    .item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .tag {
+      display: inline-block;
+      font-size: 0.72em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .tag-paper { background: var(--accent-soft); color: var(--accent); }
+    .tag-github { background: var(--accent2-soft); color: var(--accent2); }
+    .tag-product { background: var(--warn-soft); color: var(--warn); }
+    .tag-blog { background: var(--red-soft); color: var(--red); }
+    .detail-hint { font-size: 0.78em; color: var(--accent); opacity: .8; }
+    .item h3 { font-size: 1.1em; margin-bottom: 8px; }
+    .item h3 a { color: var(--text); text-decoration: none; }
+    .item h3 a:hover { color: var(--accent); }
+    .item .meta { color: var(--muted); font-size: 0.82em; margin-bottom: 10px; }
+    .item .summary { font-size: 0.95em; margin-bottom: 10px; color: var(--text); }
+    .item .insight {
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      padding: 8px 12px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.92em;
+      color: var(--text);
+    }
+    .item .insight strong { color: var(--accent); }
+
+    /* ===== 详情弹层（浅色） ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(30,41,59,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      overflow-y: auto;
+      padding: 30px 20px;
+    }
+    .modal.show { display: block; }
+    .modal-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 32px 36px;
+      position: relative;
+      box-shadow: var(--shadow-hover);
+      animation: pop .18s ease;
+    }
+    @keyframes pop { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .modal-close {
+      position: absolute;
+      top: 14px; right: 16px;
+      background: none; border: none;
+      color: var(--muted);
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+    .modal-close:hover { color: var(--text); background: var(--bg); }
+    .modal-content h2 {
+      font-size: 1.4em;
+      color: var(--text);
+      margin: 10px 0 6px;
+      line-height: 1.4;
+      padding-right: 30px;
+    }
+    .modal-content .meta { color: var(--muted); font-size: 0.85em; margin-bottom: 18px; }
+    .modal-body { margin-top: 8px; }
+    .modal-sec {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+    }
+    .modal-sec h4 { font-size: 0.95em; color: var(--accent); margin-bottom: 8px; }
+    .modal-sec p { font-size: 0.93em; color: var(--text); }
+    .modal-sources { background: var(--bg); }
+    .modal-business { background: var(--warn-soft); }
+    .modal-business h4 { color: var(--warn); }
+    .sources-list { list-style: none; padding: 0; margin: 0; }
+    .sources-list li { font-size: 0.88em; color: var(--text); margin-bottom: 6px; padding-left: 4px; }
+    .src-id { color: var(--accent); font-weight: 600; margin-right: 6px; }
+    .src-link { color: var(--accent); text-decoration: none; word-break: break-all; }
+    .src-link:hover { text-decoration: underline; }
+    .diagram-box {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      overflow-x: auto;
+      position: relative;
+    }
+    .diagram-svg svg { display: block; }
+    .diagram-zoom {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.82em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      z-index: 5;
+    }
+    .diagram-zoom:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ===== 架构图放大 lightbox ===== */
+    .diagram-lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.85);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      overflow: auto;
+      padding: 30px;
+    }
+    .diagram-lightbox.show { display: block; }
+    .diagram-lightbox-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .diagram-lightbox-inner .lb-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px;
+    }
+    .diagram-lightbox-inner .lb-head h3 { font-size: 1.1em; color: var(--text); }
+    .diagram-lightbox-inner .lb-tools { display: flex; align-items: center; gap: 8px; }
+    .lb-btn {
+      background: var(--accent-soft); color: var(--accent);
+      border: 1px solid var(--border-strong); border-radius: 8px;
+      padding: 5px 12px; font-size: 0.85em; font-weight: 600; cursor: pointer;
+      transition: all .15s;
+    }
+    .lb-btn:hover { background: var(--accent); color: #fff; }
+    .lb-close {
+      background: none; border: none; color: var(--muted);
+      font-size: 26px; line-height: 1; cursor: pointer; padding: 4px 8px; border-radius: 8px;
+    }
+    .lb-close:hover { color: var(--text); background: var(--bg); }
+    .diagram-lightbox-inner .lb-svg {
+      overflow: auto;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .diagram-lightbox-inner .lb-svg svg {
+      max-width: 100%;
+      height: auto;
+      transition: transform .15s ease;
+      transform-origin: center center;
+    }
+    .diagram-lightbox-inner .lb-svg svg.zoomed { transform: scale(1.6); cursor: grab; }
+    .diagram-lightbox-inner .lb-svg svg.zoomed:active { cursor: grabbing; }
+    .diagram-lightbox-inner .lb-tip { text-align: center; color: var(--muted); font-size: 0.8em; margin-top: 10px; }
+    .modal-foot {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .modal-link { color: var(--accent); font-size: 0.88em; text-decoration: none; word-break: break-all; }
+    .modal-link:hover { text-decoration: underline; }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8em;
+      padding: 30px 0 10px;
+      border-top: 1px solid var(--border);
+      margin-top: 30px;
+    }
+    .empty { color: var(--muted); text-align: center; padding: 40px; }
+    /* ===== 反馈按钮 + 提交按钮 ===== */
+    .feedback-fab {
+      position: fixed; bottom: 24px; right: 24px;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; color: #fff; font-size: 24px; cursor: pointer;
+      box-shadow: var(--shadow-hover);
+      z-index: 9000; transition: transform .15s;
+    }
+    .feedback-fab:hover { transform: scale(1.1); }
+    .modal-submit {
+      width: 100%; padding: 12px; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; font-size: 1em; font-weight: 600; cursor: pointer;
+    }
+    .modal-submit:hover { opacity: 0.9; }
+    @media (max-width: 600px) {
+      .modal-content { padding: 24px 18px; }
+      body { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🤖 <span class="grad">AI for Business</span> 每日晨报</h1>
+    <div class="date">业务知识库 · 业务语义理解 · API 精确查询 | 2026-10-21</div>
+    <a class="archive-link" href="archive/index.html">📚 历史晨报归档</a>
+  </header>
+
+  <div class="snapshot"><div class="snapshot-summary"><strong>📌 今日速览</strong><br>今日 16 条情报（学术 12+博客 2+GitHub 1+战略研判 1）串成一条主线：agent 评估重心从『单点精度』转向『交付完整性×接力鲁棒性×行为-技术匹配』。研发线 5 篇新基准/研究（PACE 14% 完整交付率、SWE-Residual 接力鲁棒性、CodeHealth→token 成本、TrojanForge 自动化仓库投毒、CIPBench 索引维护单信号极限）+ai-prd-workflow 开源工作流与 PACE 形成问题-方案配对。业务线 5 篇学术论文（Imperfect Prompts 的 KG 中介实证、Same Context 的 CET 行为匹配、AIR 免训练歧义消解、Data World 影子环境合成训练、HybridResearcher 4B 跨源桥接）+dbt State 永久免费层（10/20）把『变更驱动构建』推向默认范式。交叉线 3 源共振『治理强制力分级』：TCP/IP→MCP 协议史警告+GatewayBench 网关评测+TDS Skill-vs-MCP 判据（正文待核实）。</div><div class="snapshot-groups"><div class="snap-group"><span class="snap-bar snap-bar-github"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-github"></span>🐙 开源项目<span class="badge">2 项</span></div><ul class="snap-points"><li>ai-prd-workflow（304⭐ MIT，10/8 更新）：RFC 驱动开发工作流，想法→验证 PRD→特性→规则→依赖排序 RFC→逐个实现评审，每步 markdown 工件让决策存活于会话外，/workflow-status 脚本做文档 traceability 审计（示例查出 20 处不一致），适配 Claude Code plugin/Codex/Copilot/Cursor/Gemini CLI/OpenCode/Devin——与 PACE 的 14% 交付率问题形成开源工程答案</li><li>GitHub 生态信号：code-review-graph 32285⭐（10/16 推送）持续领跑代码智能图谱赛道；Rust 系代码图谱工具活跃（octocode 513⭐ 10/20 推送 0.26.7 按会话目录路由 MCP 请求、project-orchestrator 140⭐ Neo4j+Meilisearch+Tree-sitter）——代码知识图谱与 MCP 生态加速融合（octocode/SocratiCode v1.16.1 等版本细节此前晨报已收录）</li></ul></div></div></div></div>
+
+  <div class="section"><div class="section-head"><span class="bar bar-product"></span><h2>🏢 业界动态</h2><span class="count">1 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-product">🏢 业界动态</span></div><h3><a href="https://arxiv.org/abs/2610.26394" target="_blank" rel="noopener">战略研判：Agent 能力评测的重心从『单点精度』转向『交付完整性×接力鲁棒性×行为-技术匹配』三维——治理强制力分级成为架构默认</a></h3><div class="meta">2026-10-21 · 综合研判</div><div class="summary">本期 15 条情报串成一条清晰主线：agent 能力评估与架构设计的重心正在系统性转移。研发线：PACE（PRD 完整交付率 14%）+SWE-Residual（接力鲁棒性）+CodeHealth（质量→AI 成本）证明『单点任务精度』已不足以预测生产价值，评测维度扩展到交付完整性与起始状态容错。业务线：Same Context Different Agents（CET 只在对的行为组生效）+Imperfect Prompts（KG 中介胜 schema 相似度）+AIR（执行验证的真歧义消解）证明技术选型是『行为匹配』的函数，语义基建的颗粒度（概念层桥接/值域验证）决定成败。交叉线：TCP/IP→MCP+GatewayBench+TDS Skill-vs-MCP 三源共振『治理强制力分级』——偏好用 prompt 层、能力边界用协议层、协议自身用网关审计。</div><div class="insight"><strong>🔍 技术视角：</strong>对用户的三维落地排序：①短期（本月）——业务 Agent 加歧义门（AIR 流程：竞争解释+执行验证+grounded 澄清）与工具层分层组织（GatewayBench 范式），两者都无需训练、即插即用；②中期（本季度）——行为诊断先行再选 CET（Same Context 方法论），避免语义层麻醉 investigator 型 agent；用影子业务环境（Data World 方法）启动内部训练数据积累；③长期——研发线把 PACE 式 Code Points 验收+SWE-Residual 式交接验证纳入 agent 流水线，业务线建自动 KG 中介层（Imperfect Prompts 路线）桥接业务术语与宽表 API 字段。治理强制力分级应作为所有架构评审的检查项：每条规则标注 Skill 层/MCP 层/网关层归属。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">Agent 评估重心转移：三维新工况</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">旧范式</text><text x="156.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">单点精度/干净起点</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">交付完整性</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">PACE Code Points</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">接力鲁棒性</text><text x="548.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">SWE-Residual</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">行为-技术匹配</text><text x="744.0" y="124" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">CET 诊断先行</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="277.0" y="208" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="352.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">治理强制力分级</text><text x="352.0" y="252" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">Skill/MCP/网关</text><rect x="473.0" y="208" width="150" height="58" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/><text x="548.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">新评测清单</text><text x="548.0" y="252" fill="#64748b" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">采购与验收标准</text><line x1="427.0" y1="237.0" x2="469.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">真值移动</tspan>　从隐藏测试到证据审计/意图保持/状态容错</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">行为调节</tspan>　同一技术对不同行为组的 agent 收益或毒性相反</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">落地排序</tspan>　短期歧义门+工具分层，中期行为诊断+影子环境，长期 KG 中介+交接验证</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>三条线的独立证据在本期罕见地指向同一范式转移：评估 agent 的正确问题不再是『它多准』而是『它在真实工况（完整需求/污染起点/不完美用户/膨胀工具面）下多可靠』。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>证据链：研发线三基准（PACE/SWE-Residual/CodeHealth 预注册研究）+业务线三实证（CET 行为研究/KG 中介 DSR/AIR 免训练消解）+交叉线三治理源（协议史类比/网关基准/Skill-vs-MCP 判据）+基建两信号（dbt State 免费普及变更驱动/ai-prd-workflow 规范驱动开源化）。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>深层结构：①『真值的位置』在移动——从隐藏测试（单点）到 Code Points 证据审计（交付）、从干净起点到 residual state（接力）、从准确率到意图保持（消解）；②『技术的适用性』被行为调节——同一语义层对 premature answerer 是救药对 investigator 是麻醉剂，选型前必须诊断；③『治理的强制力』被分层——prompt 劝导（4-16% 遵从）、协议结构（不可达）、网关审计（防能力洗白），规则必须按后果严重性归层。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>评测即服务的新品类正在成型：交付完整性审计（PACE 方法）、行为组诊断（CET 匹配）、工具面鲁棒性测试（GatewayBench 方法）都可能独立产品化。企业采购清单相应更新：coding agent 看 PRD 兑现率与接力保持率，data agent 看意图保持与歧义消解协议，中间件看网关治理指标。『先诊断后选型』的咨询方法论有明确市场。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>架构评审新检查单：a) 该 agent 的验收标准是单点精度还是交付完整性（Code Points）？b) 接力场景的起始状态验证在哪里？c) 上线前的行为组诊断做了吗？d) 每条治理规则属于哪一层强制力？e) 工具面规模超预算了吗（分层导航 or 动态检索）？f) 歧义门（执行验证+grounded 澄清）覆盖高风险查询了吗？</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>本期论文多为 10/14-10/19 新文（引用全部待核实/预期 0），结论的学术共识度未经时间检验；PACE 的 43 任务/CET 研究的 7 模型等样本规模都有限；TDS 一条正文未核实。战略研判是信号聚合而非定论。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2610.26394" target="_blank" rel="noopener" class="src-link">PACE: PRD-Driven Development Evaluation</a></li><li><span class="src-id">[2]</span> <a href="https://arxiv.org/abs/2610.25899" target="_blank" rel="noopener" class="src-link">SWE-Residual: Starting-State Robustness</a></li><li><span class="src-id">[3]</span> <a href="https://arxiv.org/abs/2610.20959" target="_blank" rel="noopener" class="src-link">Same Context, Different Agents: CET Behavioral Study</a></li><li><span class="src-id">[4]</span> <a href="https://arxiv.org/abs/2610.26624" target="_blank" rel="noopener" class="src-link">From TCP/IP to MCP</a></li><li><span class="src-id">[5]</span> <a href="https://arxiv.org/abs/2610.23449" target="_blank" rel="noopener" class="src-link">GatewayBench</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2610.26394" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2610.26394</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-github"></span><h2>🐙 开源项目</h2><span class="count">1 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-github">🐙 GitHub</span></div><h3><a href="https://github.com/nurettincoban/ai-prd-workflow" target="_blank" rel="noopener">开源项目：ai-prd-workflow（304⭐ MIT）——RFC 驱动开发让 Agent『先决定造什么再造』，7 大 coding agent 通用的规范驱动工作流</a></h3><div class="meta">2026-10-08 · GitHub</div><div class="summary">nurettincoban/ai-prd-workflow（304⭐，MIT，2025-03 创建，10/8 仍在更新）为 AI coding agent 提供 RFC 驱动开发工作流：想法或已有代码库→经验证的 PRD→特性清单→项目规则→按依赖排序的 RFC→逐个实现与评审。以 Agent Skills 形式适配 Claude Code（原生 plugin）、Codex、Copilot、Cursor、Gemini CLI、OpenCode、Devin。每步产出 markdown 文件供下一步读取（决策存活于会话之外），配套脚本做文档间一致性检查（/workflow-status 可审计出『F7 无对应 RFC』『HTTP 301 缓存破坏点击统计』类不一致）。作者称 RFC 驱动早于 Claude Code/Cursor 的 plan mode 与 Kiro/Spec Kit。</div><div class="insight"><strong>🔍 技术视角：</strong>与本期 PACE 论文（PRD 完整交付率仅 14%）形成完美的『问题-方案』配对：PACE 诊断出 agent 的瓶颈是需求覆盖与集成缺失，ai-prd-workflow 正是把需求覆盖结构化的开源工程答案——PRD→特性→RFC 的依赖排序链让每个需求有可追踪的实现单元，一致性检查脚本充当『文档间集成验证』。对用户研发线基建的直接价值：已建成的研发知识库可接入该工作流，让 agent 在知识库约束下做 spec-driven 开发；/workflow-status 的文档交叉审计模式可迁移到业务线（API 语义标注与业务术语表的一致性检查）。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">RFC 驱动工作流：文件即接口的决策链</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">想法/已有代码</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">输入</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">验证 PRD</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">需求重构</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">特性+规则</text><text x="548.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">markdown 工件</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">依赖排序 RFC</text><text x="744.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">逐个实现评审</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="277.0" y="208" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="352.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">一致性审计</text><text x="352.0" y="252" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">workflow-status</text><rect x="473.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="548.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">已评审代码</text><text x="548.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">可追踪交付</text><line x1="427.0" y1="237.0" x2="469.0" y2="237.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">PACE 配对</tspan>　PACE 诊断交付瓶颈，本工作流结构化需求覆盖</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">决策持久化</tspan>　每步 markdown 文件让决策存活于会话之外</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">业务迁移</tspan>　文档 traceability 审计可迁移到 API 语义标注一致性检查</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>Spec-driven development 正成为 coding agent 可靠性工程的主流路线（Kiro/Spec Kit/OpenSpec 竞品林立），本项目是其中少数 MIT 许可+多 agent 通用+自带一致性审计的实现，且与 PACE 揭示的交付瓶颈直接对症。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>文件即接口的工作流：每阶段（PRD/features/rules/RFCs/implementation/review）产出 markdown 文件，下一阶段读取上一阶段文件作为上下文；RFC 按依赖图排序逐个实现与评审（防止并行实现产生集成冲突）；workflow-status 脚本做 traceability 检查（每个 feature 有 RFC？RFC 间矛盾？）与文档对读（文档间不一致检测）。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>设计哲学与 10/15 已收录的 SpecForge（agent 行为规范自改进）互补：SpecForge 优化规范本身，ai-prd-workflow 固化规范的执行流程。『决策存活于会话之外』呼应 ExperienceIndex（10/9 收录）的工件级记忆思想——markdown 文件是最低成本的持久化决策工件。一致性检查是亮点：20 处不一致的示例（无 RFC 建 UI/缓存破坏统计）说明文档漂移是 spec-driven 流程的真实风险，静态审计脚本是廉价解法。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>Spec-driven development 工具链是 coding agent 生态的高增长细分：企业愿意为『可审计的需求-实现追踪』付费（合规+质量双驱动）。MIT 许可使其可被商业平台吸收集成——观察哪些 agent 厂商内置类似工作流可作为路线信号。咨询机会：spec-driven 流程落地服务（流程裁剪+知识库集成+审计脚本定制）。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>①研发知识库+ai-prd-workflow 组合试点：选一个中型需求走完整 PRD→RFC→评审链，度量交付完整度（对照 PACE 的 Code Points 方法）；②借鉴 workflow-status 做业务线文档审计：API 语义标注↔业务术语表↔知识库条目的 traceability 检查脚本；③多 agent 环境统一采用其 Agent Skills 格式（7 平台适配降低工具锁定）。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>304⭐ 社区规模尚小，生产案例证据有限；markdown 工作流对小任务是过度工程（作者自己也定位在中大型需求）；一致性检查脚本的覆盖面（能查什么类型的不一致）需实测验证；与 Kiro/Spec Kit 等商业方案的功能差距未系统对比。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://github.com/nurettincoban/ai-prd-workflow" target="_blank" rel="noopener" class="src-link">ai-prd-workflow: RFC-driven development for AI coding agents</a></li></ol></div><div class="modal-foot"><a href="https://github.com/nurettincoban/ai-prd-workflow" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://github.com/nurettincoban/ai-prd-workflow</a></div></div></div>
+
+  
+
+  <footer>
+    由 Hermes Agent 自动生成 · 点击卡片查看深度详情 · 2026-10-21
+  </footer>
+
+  <!-- ===== 反馈按钮 + 表单弹层 ===== -->
+  <button class="feedback-fab" onclick="openFeedback()" title="提交反馈">💬</button>
+
+  <div class="modal" id="feedback-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeFeedback()" aria-label="关闭">×</button>
+      <span class="tag tag-product">💬 读者反馈</span>
+      <h2>提交意见 / 反馈</h2>
+      <div class="modal-body">
+        <p style="color:var(--muted);font-size:0.9em;margin-bottom:12px;">
+          你的反馈会帮我改进晨报内容。提交后将打开 GitHub Issue 页面，确认后我会在每天 17:00 处理。
+        </p>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">反馈类型</label>
+        <select id="fb-type" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);margin-bottom:12px;">
+          <option value="内容建议">内容建议（选题/深度/方向）</option>
+          <option value="错误报告">错误报告（链接失效/信息有误）</option>
+          <option value="格式反馈">格式/排版反馈</option>
+          <option value="其他">其他</option>
+        </select>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">你的反馈内容</label>
+        <textarea id="fb-body" rows="5" placeholder="请描述你的意见、建议或发现的问题…"
+          style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);resize:vertical;margin-bottom:12px;"></textarea>
+        <button class="modal-submit" onclick="submitFeedback()">提交反馈 →</button>
+      </div>
+      <div class="modal-foot" style="color:var(--muted);font-size:0.8em;">提交后请在打开的 GitHub 页面点击确认。</div>
+    </div>
+  </div>
+
+  <!-- ===== 架构图放大 lightbox ===== -->
+  <div class="diagram-lightbox" id="diagram-lightbox" onclick="if(event.target===this)closeDiagramZoom()">
+    <div class="diagram-lightbox-inner">
+      <div class="lb-head">
+        <h3 id="lb-title">📊 架构图</h3>
+        <div class="lb-tools">
+          <button type="button" class="lb-btn" onclick="diagramToggleZoom()">🔍 放大/缩小</button>
+          <button type="button" class="lb-close" onclick="closeDiagramZoom()" aria-label="关闭">×</button>
+        </div>
+      </div>
+      <div class="lb-svg" id="lb-svg"></div>
+      <div class="lb-tip">提示：点击「放大/缩小」切换缩放，缩放后可在图内拖动查看细节 · 按 Esc 关闭</div>
+    </div>
+  </div>
+
+  <script>
+    function openDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.add('show'); document.body.style.overflow = 'hidden'; }
+    }
+    function closeDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.remove('show'); document.body.style.overflow = ''; }
+    }
+    function openFeedback() {
+      document.getElementById('feedback-modal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeFeedback() {
+      document.getElementById('feedback-modal').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function submitFeedback() {
+      const type = document.getElementById('fb-type').value;
+      const body = document.getElementById('fb-body').value.trim();
+      if (!body) { alert('请填写反馈内容'); return; }
+      const date = '2026-10-21';
+      const title = '[网页反馈/' + type + '] ' + date;
+      const full = '反馈类型: ' + type + '\n日期: ' + date + '\n\n' + body;
+      // 生成 GitHub Issue 预填链接（不暴露 token，安全）
+      const url = 'https://github.com/hhao9817/agent-daily/issues/new?title=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(full);
+      window.open(url, '_blank');
+      closeFeedback();
+    }
+    /* ===== 架构图放大 ===== */
+    function openDiagramZoom(btn) {
+      const box = btn.closest('.diagram-box');
+      const svg = box.querySelector('.diagram-svg svg') || box.querySelector('svg');
+      if (!svg) return;
+      const title = box.querySelector('h4') ? box.querySelector('h4').textContent : '📊 架构图';
+      document.getElementById('lb-title').textContent = title;
+      const holder = document.getElementById('lb-svg');
+      holder.innerHTML = '';
+      holder.appendChild(svg.cloneNode(true));
+      const lb = document.getElementById('diagram-lightbox');
+      lb.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeDiagramZoom() {
+      document.getElementById('diagram-lightbox').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function diagramToggleZoom() {
+      const svg = document.querySelector('#lb-svg svg');
+      if (!svg) return;
+      svg.classList.toggle('zoomed');
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal.show').forEach(function(m) { m.classList.remove('show'); });
+        document.getElementById('diagram-lightbox').classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+</html>
