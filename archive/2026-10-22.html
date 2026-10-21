@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI for Business 领域每日晨报</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+            --card: #ffffff;
+            --border: #d6dde8;
+            --border-strong: #adbac9;
+            --text: #111827;
+            --muted: #4b5563;
+            --accent: #2563eb;
+            --accent-soft: #dbeafe;
+            --accent2: #059669;
+            --accent2-soft: #d1fae5;
+            --warn: #b45309;
+            --warn-soft: #fef3c7;
+            --red: #dc2626;
+            --red-soft: #fee2e2;
+            --shadow: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+            --shadow-hover: 0 10px 25px -5px rgba(15,23,42,0.1), 0 8px 10px -6px rgba(15,23,42,0.05);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+      padding: 20px;
+      max-width: 920px;
+      margin: 0 auto;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    /* 长英文标识符/URL 在移动端强制换行，避免撑破卡片 */
+    p, li, h1, h2, h3, h4, .summary, .insight, .snap-title, .snap-points li,
+    .modal-sec p, .modal-body, .detail-block, .item, .snapshot, .snapshot-summary {
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    header {
+      text-align: center;
+      padding: 30px 0 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    header h1 {
+      font-size: 1.8em;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    header h1 .grad {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header .date { color: var(--muted); margin-top: 8px; font-size: 0.95em; }
+    .archive-link {
+      display: inline-block; margin-top: 12px; color: var(--accent); text-decoration: none;
+      font-size: 0.85em; border: 1px solid var(--border-strong); background: var(--card);
+      padding: 5px 14px; border-radius: 20px; box-shadow: var(--shadow);
+      transition: all .15s;
+    }
+    .archive-link:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+    /* 今日速览（结构化，按来源分类） */
+    .snapshot {
+      background: linear-gradient(135deg, var(--accent-soft), var(--accent2-soft));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow);
+    }
+    .snapshot-summary {
+      font-size: 0.98em;
+      color: var(--text);
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px dashed var(--border-strong);
+    }
+    .snapshot-summary strong { color: var(--accent); }
+    .snapshot-groups { display: flex; flex-direction: column; gap: 10px; }
+    .snap-group {
+      display: flex;
+      gap: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      box-shadow: var(--shadow);
+    }
+    .snap-bar { width: 5px; border-radius: 3px; flex-shrink: 0; }
+    .snap-bar-paper { background: var(--accent); }
+    .snap-bar-github { background: var(--accent2); }
+    .snap-bar-product { background: var(--warn); }
+    .snap-bar-blog { background: var(--red); }
+    .snap-body { flex: 1; }
+    .snap-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.85em; font-weight: 700; color: var(--text);
+      margin-bottom: 6px;
+    }
+    .snap-title .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-paper { background: var(--accent); }
+    .dot-github { background: var(--accent2); }
+    .dot-product { background: var(--warn); }
+    .dot-blog { background: var(--red); }
+    .snap-title .badge {
+      font-size: 0.7em; font-weight: 600;
+      background: var(--bg); border: 1px solid var(--border-strong);
+      color: var(--muted); padding: 1px 8px; border-radius: 20px;
+    }
+    .snap-points { list-style: none; padding: 0; margin: 0; }
+    .snap-points li {
+      font-size: 0.9em; color: var(--text);
+      padding: 3px 0 3px 18px;
+      position: relative;
+    }
+    .snap-points li::before {
+      content: "▸";
+      position: absolute; left: 2px;
+      color: var(--accent);
+    }
+
+    /* 分类区块 */
+    .section { margin-bottom: 30px; }
+    .section-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 4px; margin-bottom: 14px;
+      border-bottom: 2px solid var(--border);
+    }
+    .section-head .bar { width: 6px; height: 22px; border-radius: 3px; }
+    .section-head h2 { font-size: 1.15em; color: var(--text); flex: 1; }
+    .section-head .count { font-size: 0.8em; color: var(--muted); background: var(--card); border: 1px solid var(--border); padding: 2px 10px; border-radius: 20px; }
+    .bar-paper { background: var(--accent); }
+    .bar-github { background: var(--accent2); }
+    .bar-product { background: var(--warn); }
+    .bar-blog { background: var(--red); }
+
+    .item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: border-color .2s, transform .1s, box-shadow .2s;
+    }
+    .item:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+    .item:active { transform: scale(0.995); }
+    .item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .tag {
+      display: inline-block;
+      font-size: 0.72em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .tag-paper { background: var(--accent-soft); color: var(--accent); }
+    .tag-github { background: var(--accent2-soft); color: var(--accent2); }
+    .tag-product { background: var(--warn-soft); color: var(--warn); }
+    .tag-blog { background: var(--red-soft); color: var(--red); }
+    .detail-hint { font-size: 0.78em; color: var(--accent); opacity: .8; }
+    .item h3 { font-size: 1.1em; margin-bottom: 8px; }
+    .item h3 a { color: var(--text); text-decoration: none; }
+    .item h3 a:hover { color: var(--accent); }
+    .item .meta { color: var(--muted); font-size: 0.82em; margin-bottom: 10px; }
+    .item .summary { font-size: 0.95em; margin-bottom: 10px; color: var(--text); }
+    .item .insight {
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      padding: 8px 12px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.92em;
+      color: var(--text);
+    }
+    .item .insight strong { color: var(--accent); }
+
+    /* ===== 详情弹层（浅色） ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(30,41,59,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      overflow-y: auto;
+      padding: 30px 20px;
+    }
+    .modal.show { display: block; }
+    .modal-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 32px 36px;
+      position: relative;
+      box-shadow: var(--shadow-hover);
+      animation: pop .18s ease;
+    }
+    @keyframes pop { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .modal-close {
+      position: absolute;
+      top: 14px; right: 16px;
+      background: none; border: none;
+      color: var(--muted);
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+    .modal-close:hover { color: var(--text); background: var(--bg); }
+    .modal-content h2 {
+      font-size: 1.4em;
+      color: var(--text);
+      margin: 10px 0 6px;
+      line-height: 1.4;
+      padding-right: 30px;
+    }
+    .modal-content .meta { color: var(--muted); font-size: 0.85em; margin-bottom: 18px; }
+    .modal-body { margin-top: 8px; }
+    .modal-sec {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+    }
+    .modal-sec h4 { font-size: 0.95em; color: var(--accent); margin-bottom: 8px; }
+    .modal-sec p { font-size: 0.93em; color: var(--text); }
+    .modal-sources { background: var(--bg); }
+    .modal-business { background: var(--warn-soft); }
+    .modal-business h4 { color: var(--warn); }
+    .sources-list { list-style: none; padding: 0; margin: 0; }
+    .sources-list li { font-size: 0.88em; color: var(--text); margin-bottom: 6px; padding-left: 4px; }
+    .src-id { color: var(--accent); font-weight: 600; margin-right: 6px; }
+    .src-link { color: var(--accent); text-decoration: none; word-break: break-all; }
+    .src-link:hover { text-decoration: underline; }
+    .diagram-box {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      overflow-x: auto;
+      position: relative;
+    }
+    .diagram-svg svg { display: block; }
+    .diagram-zoom {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.82em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      z-index: 5;
+    }
+    .diagram-zoom:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ===== 架构图放大 lightbox ===== */
+    .diagram-lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.85);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      overflow: auto;
+      padding: 30px;
+    }
+    .diagram-lightbox.show { display: block; }
+    .diagram-lightbox-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .diagram-lightbox-inner .lb-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px;
+    }
+    .diagram-lightbox-inner .lb-head h3 { font-size: 1.1em; color: var(--text); }
+    .diagram-lightbox-inner .lb-tools { display: flex; align-items: center; gap: 8px; }
+    .lb-btn {
+      background: var(--accent-soft); color: var(--accent);
+      border: 1px solid var(--border-strong); border-radius: 8px;
+      padding: 5px 12px; font-size: 0.85em; font-weight: 600; cursor: pointer;
+      transition: all .15s;
+    }
+    .lb-btn:hover { background: var(--accent); color: #fff; }
+    .lb-close {
+      background: none; border: none; color: var(--muted);
+      font-size: 26px; line-height: 1; cursor: pointer; padding: 4px 8px; border-radius: 8px;
+    }
+    .lb-close:hover { color: var(--text); background: var(--bg); }
+    .diagram-lightbox-inner .lb-svg {
+      overflow: auto;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .diagram-lightbox-inner .lb-svg svg {
+      max-width: 100%;
+      height: auto;
+      transition: transform .15s ease;
+      transform-origin: center center;
+    }
+    .diagram-lightbox-inner .lb-svg svg.zoomed { transform: scale(1.6); cursor: grab; }
+    .diagram-lightbox-inner .lb-svg svg.zoomed:active { cursor: grabbing; }
+    .diagram-lightbox-inner .lb-tip { text-align: center; color: var(--muted); font-size: 0.8em; margin-top: 10px; }
+    .modal-foot {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .modal-link { color: var(--accent); font-size: 0.88em; text-decoration: none; word-break: break-all; }
+    .modal-link:hover { text-decoration: underline; }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8em;
+      padding: 30px 0 10px;
+      border-top: 1px solid var(--border);
+      margin-top: 30px;
+    }
+    .empty { color: var(--muted); text-align: center; padding: 40px; }
+    /* ===== 反馈按钮 + 提交按钮 ===== */
+    .feedback-fab {
+      position: fixed; bottom: 24px; right: 24px;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; color: #fff; font-size: 24px; cursor: pointer;
+      box-shadow: var(--shadow-hover);
+      z-index: 9000; transition: transform .15s;
+    }
+    .feedback-fab:hover { transform: scale(1.1); }
+    .modal-submit {
+      width: 100%; padding: 12px; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; font-size: 1em; font-weight: 600; cursor: pointer;
+    }
+    .modal-submit:hover { opacity: 0.9; }
+    @media (max-width: 600px) {
+      .modal-content { padding: 24px 18px; }
+      body { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🤖 <span class="grad">AI for Business</span> 每日晨报</h1>
+    <div class="date">业务知识库 · 业务语义理解 · API 精确查询 | 2026-10-22</div>
+    <a class="archive-link" href="archive/index.html">📚 历史晨报归档</a>
+  </header>
+
+  <div class="snapshot"><div class="snapshot-summary"><strong>📌 今日速览</strong><br>研发线聚焦『AI 代码的可见性与可控性』：从 token 级 AI 作者定位、AI PR 文档漂移实证、到生成代码安全幻觉的对比审计压力检测，构成一条『让 AI 写的代码可审计、可治理』的主线；GitHub Blog 披露 agent-scale Git 基础设施迁移（per-reference quorum）为 coding agent 大规模并发铺路。业务线聚焦『企业 Agent 的评估与工具化』：text-to-SQL 幻觉分解为复现型/涌现型、EGI-BENCH 统一八基准给企业 Agent 单一可比分、TEAL 无监督工具进化让 data-lake agent 不再每次从零开始、RetailRAG 展示异构源零售工作流范式、Data Engineering Weekly 提出『自组织数据栈』——当 Agent 回答问题时它也在维护数据模型。交叉线两条论文形成『治理证据』闭环：RSI 声称需区分产品/过程证据（114 篇审查），AI 管线复用需 fail-closed 签名闸门（Ed25519 + 依赖完整性）。GitHub 开源亮点 GRACE Marketplace——Graph-RAG 锚定的契约驱动 AI 代码工程，跨 Claude Code/Codex CLI/Kilo Code。</div><div class="snapshot-groups"><div class="snap-group"><span class="snap-bar snap-bar-github"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-github"></span>🐙 开源项目<span class="badge">1 项</span></div><ul class="snap-points"><li>GRACE Marketplace（253⭐ MIT，TypeScript）：Graph-RAG Anchored Code Engineering——契约驱动 AI 代码工程方法论，.grace XML 制品 + 知识图谱导航 + 断言 + 作用域 + 日志驱动验证，支持 Claude Code/Codex CLI/Kilo Code；V-M-* 确定性验证条目、GraceChangeSpec 变更包、fail-closed 路径逃逸防护——研发线『契约优先』与交叉线『治理强制力分级』的开源交集。</li></ul></div></div></div></div>
+
+  <div class="section"><div class="section-head"><span class="bar bar-product"></span><h2>🏢 业界动态</h2><span class="count">1 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-product">🏢 业界动态</span></div><h3><a href="https://arxiv.org/abs/2610.27863" target="_blank" rel="noopener">战略研判：AI 代码『可见可控』与企业 Agent『工具自组织』双线汇聚——治理证据分级成为架构默认</a></h3><div class="meta">2026-10-22 · 综合本期情报</div><div class="summary">本期情报串成两条汇聚主线。研发线：AI 代码可见性三件套（From Tokens 行级溯源+SPLASH 安全幻觉定位+Documentation Drift 文档债量化）+ AgenticVulHunter 本地可自建审查 + agent-scale Git 基建，构成『让 AI 写的代码可审计可治理』主线。业务线：text-to-SQL 幻觉分类学（复现/涌现）+ EGI-BENCH 统一评估 + TEAL 工具自进化 + RetailRAG 跨源路由 + 自组织数据栈，构成『企业 Agent 评估与工具化』主线。交叉线 RSI 证据审计 + AI 管线 fail-closed 闸门 + GRACE 契约驱动，汇聚为『治理证据分级成为架构默认』——不只看产品/结果，看过程/条件/证据。</div><div class="insight"><strong>🔍 技术视角：</strong>架构师视角：双主题在本期汇聚于一个共同架构原则：治理证据分级。研发线（AI 代码可溯源/安全幻觉可定位/文档债可量化）与业务线（幻觉分类学/统一评估/工具自组织）都需要『不只看结果，看过程证据』的治理层。交叉线的 RSI 审计（过程证据缺失）+ fail-closed 闸门（依赖完整性）+ GRACE（V-M-* 确定性验证）提供了该治理层的工程范式。短期落地：研发线加 AI 代码作者溯源+文档 co-change 门禁；业务线加幻觉逐步骤审计+EGI 维度验收模板。中期：TEAL 工具自进化层+自组织数据栈写回；GRACE 契约驱动 coding agent 工作流。长期：fail-closed 签名闸门贯穿双线 Agent 治理 pipeline。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 330" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="330" fill="#f8fafc"/><rect width="900" height="330" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">治理证据分级：双主题汇聚架构默认</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">研发线</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">AI 代码可见可控</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">业务线</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">Agent 评估工具化</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">交叉线</text><text x="548.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">治理证据工程</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">治理证据分级</text><text x="744.0" y="124" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">架构默认</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="178" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="188" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="206" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">汇聚原则</tspan>　双主题共需『不只看结果，看过程证据』治理层</text><rect x="30" y="230" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="248" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">工程范式</tspan>　RSI 编码方案+fail-closed 闸门+GRACE V-M-* 验证提供工程范式</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>双主题在本期汇聚于『治理证据分级』共同架构原则。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>研发线可见性三件套 + 业务线评估工具化 + 交叉线治理证据工程范式，汇聚为治理证据分级架构默认。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>汇聚点：研发线『AI 代码可溯源』与业务线『幻觉分类学』本质都是『把不可见的风险变为可分级可治理的证据』。交叉线提供工程范式——RSI 审计的编码方案（声称→评估设计）、fail-closed 闸门（依赖完整性+签名）、GRACE（V-M-* 确定性验证+制品分离）。三者共同把『信任』从『看结果』升级为『看过程证据』。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>治理证据分级=AI 系统可审计=合规可信任=降低受监管行业 AI 采用风险——双主题共同的商业价值锚点。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>短期：研发线加 AI 代码作者溯源（adapter）+文档 co-change 门禁；业务线加幻觉逐步骤审计+EGI 维度验收模板。中期：TEAL 工具自进化层+自组织数据栈写回；GRACE 契约驱动。长期：fail-closed 签名闸门贯穿双线。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>多篇论文引用待核实（Semantic Scholar 429 限流，新文预期 0）；GitHub Blog/TDS 正文 JS 渲染未抓取全文，部分洞察基于 meta description/RSS 推断。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2610.27863" target="_blank" rel="noopener" class="src-link">From Tokens to Files (研发线可见性)</a></li><li><span class="src-id">[2]</span> <a href="https://arxiv.org/abs/2610.27720" target="_blank" rel="noopener" class="src-link">Text-to-SQL 幻觉分类学 (业务线评估)</a></li><li><span class="src-id">[3]</span> <a href="https://arxiv.org/abs/2610.27610" target="_blank" rel="noopener" class="src-link">Auditing RSI (交叉线过程证据)</a></li><li><span class="src-id">[4]</span> <a href="https://arxiv.org/abs/2610.27672" target="_blank" rel="noopener" class="src-link">Reusing Assurance Evidence (交叉线 fail-closed 闸门)</a></li><li><span class="src-id">[5]</span> <a href="https://github.com/osovv/grace-marketplace" target="_blank" rel="noopener" class="src-link">GRACE Marketplace (交叉线契约驱动)</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2610.27863" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2610.27863</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-github"></span><h2>🐙 开源项目</h2><span class="count">4 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-github">🐙 GitHub</span></div><h3><a href="https://github.com/cube-js/cube/releases/tag/v1.8.9" target="_blank" rel="noopener">Cube v1.8.9：新增 /v1/sql-filters API 读写改写 SQL 查询过滤条件——语义层 API 可编程性增强</a></h3><div class="meta">2026-10-21 · GitHub cube-js/cube</div><div class="summary">Cube v1.8.9（10/21）核心新特性：/v1/sql-filters API 读取和改写 SQL API 查询的过滤条件（#10604）。Bug 修复：clickhouse-driver 预聚合 DDL 经 command() 运行（#12324）、cubesql lower/upper Unicode-aware（#12341）、cubesql 窗口 over grouped query 作外层 select 下推（#12336）、cubesql 成员过滤器下推到子查询之下让 FILTER_PARAMS 可见（#12295）、cubesql 相等字面量共享查询参数（#12348）、schema-compiler 数字开头表/列名脚手架有效化（#12256）、schema-compiler 视图度量 over rolling windows 标记累积（#12308）、schema-compiler ClickHouse/Oracle/Presto 时间过滤值解析（#12231）、tesseract NULL 键多阶段维度 null-safe join（#12228）。</div><div class="insight"><strong>🔍 技术视角：</strong>架构师视角：/v1/sql-filters 是语义层 API 可编程性的关键一步——Agent 可程序化读写改写查询过滤条件，而非只调用预定义查询。这对用户业务线『不直连数据库、通过高业务含义 API 查数』场景直接赋能：Agent 可动态构造/改写过滤条件。null-safe join on NULL keys 修复了多阶段维度 join 的数据可信度漏洞。v1.8.4-v1.8.6 已收录故不重复。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 330" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="330" fill="#f8fafc"/><rect width="900" height="330" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">Cube /v1/sql-filters：Agent 动态改写查询过滤</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">业务 Agent</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">动态构造</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">/v1/sql-filters</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">读写改写过滤</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">SQL API 查询</text><text x="548.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">执行</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">RLS/字段权限</text><text x="744.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">约束验证</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="178" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="188" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="206" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">过滤解耦</tspan>　过滤条件从查询体解耦为可独立读写改写对象</text><rect x="30" y="230" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="248" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">权限待验</tspan>　改写后过滤是否受 RLS 约束需验证</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>语义层 API 需支持 Agent 动态构造/改写查询，而非只调预定义接口。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>/v1/sql-filters 读写改写 SQL API 查询过滤条件 + 多项 SQL 方言与 schema-compiler 修复。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>sql-filters API 的意义：将过滤条件从查询体中解耦为可独立读写改写的对象——Agent 可先读现有过滤、改写、再执行，支持动态查询构造。这与自组织数据栈（Agent 维护模型）形成『Agent 改写查询+维护模型』闭环。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>语义层 API 可编程化=业务 Agent 动态查数能力解锁，降低硬编码查询模板维护成本。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>在业务 Agent 查数工作流中用 /v1/sql-filters 动态构造宽表 API 的过滤条件，替代硬编码查询模板；利用 null-safe join 修复多阶段维度数据可信度。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>sql-filters API 具体语义/权限模型需查文档；RLS 穿透与字段级权限需验证改写后过滤是否受 RLS 约束。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://github.com/cube-js/cube/releases/tag/v1.8.9" target="_blank" rel="noopener" class="src-link">Cube v1.8.9 release (sql-filters API + Unicode-aware lower/upper)</a></li></ol></div><div class="modal-foot"><a href="https://github.com/cube-js/cube/releases/tag/v1.8.9" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://github.com/cube-js/cube/releases/tag/v1.8.9</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-github">🐙 GitHub</span></div><h3><a href="https://github.com/open-metadata/OpenMetadata/releases/tag/2.0.6-release" target="_blank" rel="noopener">OpenMetadata 2.0.6：摄入精度+数据质量可信化+术语表治理——元数据治理基础持续成熟</a></h3><div class="meta">2026-10-21 · GitHub open-metadata/OpenMetadata</div><div class="summary">OpenMetadata 2.0.6（10/21）维护版：摄入更准（CockroachDB 分区去重 #34894、dbt 快照 lineage 不丢 #34930、Omni dashboard owner+lineage #35259、Teradata DBQL 使用+lineage #35258、Athena Iceberg 类型保真 #35699、Glue 视图 SQL+外部表 lineage #35607）、数据质量可信（中止测试计为失败 #34848、ODCS 规则创建关联测试用例 #34176、范围/布尔失败行数修正 #35276）、术语表治理（嵌套搜索保留父层级 #35287、CSV 重导入相关术语 #35739）、数据契约可发现性（契约链接打开所属资产 #35709）。</div><div class="insight"><strong>🔍 技术视角：</strong>架构师视角：用户业务线元数据治理基建持续成熟的关键信号。数据质量测试『中止=失败』修复（#34848）直击可信度——之前中止被误报成功使数据质量分数不可信，对 Agent 查数可信度验证是基础。术语表嵌套搜索与 CSV 重导入修复使业务术语表（用户业务语义理解子领域）治理可用。dbt catalogMapping（#35599）解决引擎 catalog 与摄入库名不匹配——对多源异构环境实用。2.0.4/2.0.5 已收录故不重复。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 330" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="330" fill="#f8fafc"/><rect width="900" height="330" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">OpenMetadata 2.0.6：可信数据质量 + 术语表治理</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">多源摄入</text><text x="156.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">lineage/owner/类型</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">数据质量</text><text x="352.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">中止=失败</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">术语表</text><text x="548.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">嵌套搜索/CSV</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">数据契约</text><text x="744.0" y="124" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">可执行校验</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="178" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="188" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="206" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">可信度基石</tspan>　中止=失败修复使数据质量分数不再虚高</text><rect x="30" y="230" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="248" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">契约可执行</tspan>　ODCS 规则→测试用例，契约从文档变校验</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>元数据摄入不准+数据质量不可信=Agent 查数基础不可靠。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>摄入精度修复（多源 lineage/owner/类型）+ 数据质量中止=失败 + 术语表嵌套治理 + 契约可发现性。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>数据质量中止=失败（#34848）是可信度基石：之前连接中断/不支持 SQL 导致测试中止被误报成功，使数据质量分数虚高——Agent 据此判断数据可信度会误信。ODCS 规则→测试用例（#34176）使数据契约从文档变为可执行校验。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>可信数据质量分数=Agent 查数可信度验证基础；术语表治理=业务语义理解基建。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>升级到 2.0.6 获取可信数据质量分数；用术语表嵌套搜索治理业务术语；用 ODCS 规则将数据契约变为 Agent 可查的可执行校验。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>维护版无破坏性新功能；升级风险低但仍需测试摄入回归。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://github.com/open-metadata/OpenMetadata/releases/tag/2.0.6-release" target="_blank" rel="noopener" class="src-link">OpenMetadata 2.0.6 release (ingestion accuracy, data quality trust, glossary governance)</a></li></ol></div><div class="modal-foot"><a href="https://github.com/open-metadata/OpenMetadata/releases/tag/2.0.6-release" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://github.com/open-metadata/OpenMetadata/releases/tag/2.0.6-release</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-github">🐙 GitHub</span></div><h3><a href="https://github.com/Canner/WrenAI/releases/tag/wren-pydantic-v0.3.1" target="_blank" rel="noopener">WrenAI wren-pydantic v0.3.1 + wren-langchain v0.2.3：SDK 以 UTF-8 读取项目制品——语义层引擎多语言兼容</a></h3><div class="meta">2026-10-20 · GitHub Canner/WrenAI</div><div class="summary">WrenAI 两 SDK 子包发布：wren-pydantic v0.3.1（10/20）与 wren-langchain v0.2.3（10/19），均修复 SDK 以 UTF-8 读取项目制品（#2764）。wren-core/semantic-core/v0.16.0 等已在 10/19 晨报收录故不重复。</div><div class="insight"><strong>🔍 技术视角：</strong>架构师视角：小修复但有意义——语义层引擎 SDK 在多语言/非 ASCII 制品（中文业务术语、宽表字段中文名）场景下需 UTF-8 正确读取。用户业务线涉及中文业务术语表与宽表字段中文标注，此修复直接影响制品读取正确性。wren-langchain SDK 支持 LangChain 集成是业务 Agent 编入语义层的接口。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 330" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="330" fill="#f8fafc"/><rect width="900" height="330" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">WrenAI SDK UTF-8 制品读取</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">语义层制品</text><text x="156.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">含中文</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">SDK UTF-8</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">正确读取</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">wren-langchain</text><text x="548.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">LangChain 集成</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">业务 Agent</text><text x="744.0" y="124" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">语义层查询</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="178" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="188" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="206" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">中文必要</tspan>　非 ASCII 制品需 UTF-8 否则语义层损坏</text><rect x="30" y="230" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="248" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">集成入口</tspan>　wren-langchain 是业务 Agent 接入语义层接口</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>非 ASCII 制品（中文业务术语/字段名）需 UTF-8 正确读取，否则语义层模型损坏。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>SDK 读取项目制品时以 UTF-8 解码（#2764）。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>UTF-8 修复看似小但对中文业务环境是必要——若 SDK 以默认编码读取含中文的语义层模型/宽表字段标注，会导致乱码→语义层解析错误→Agent 查数错误。wren-langchain 是 LangChain 集成入口，业务 Agent 经此接入语义层。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>多语言制品兼容=中文业务环境可用性保障；LangChain 集成=业务 Agent 接入语义层的标准接口。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>若用 WrenAI 语义层且制品含中文，升级两 SDK 避免读取损坏；经 wren-langchain 将语义层接入业务 Agent。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>小修复无破坏性；wren-core 主包版本未变。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://github.com/Canner/WrenAI/releases/tag/wren-pydantic-v0.3.1" target="_blank" rel="noopener" class="src-link">WrenAI wren-pydantic v0.3.1 + wren-langchain v0.2.3 (UTF-8 artifact reads)</a></li></ol></div><div class="modal-foot"><a href="https://github.com/Canner/WrenAI/releases/tag/wren-pydantic-v0.3.1" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://github.com/Canner/WrenAI/releases/tag/wren-pydantic-v0.3.1</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-github">🐙 GitHub</span></div><h3><a href="https://github.com/osovv/grace-marketplace" target="_blank" rel="noopener">GRACE Marketplace（253⭐ MIT）：Graph-RAG 锚定契约驱动 AI 代码工程——跨 Claude Code/Codex CLI/Kilo Code</a></h3><div class="meta">2026-10-22 · GitHub osovv/grace-marketplace</div><div class="summary">GRACE（Graph-RAG Anchored Code Engineering）是契约优先的 AI 工程方法论，围绕语义标记、.grace XML 制品、知识图谱导航、断言、作用域、日志驱动验证。.grace 模型含 context（需求/技术/原则）、graph（图谱投影 GD-*/M-*/DF-* 锚点）、verification（确定性 V-M-* 条目）、changes（GraceChangeSpec/GraceChangePlan 变更包）。支持 Claude Code/Codex CLI/Kilo Code。GRACE 4 用 .grace 作持久项目模型，V-M-* 验证条目声明 Cwd/TestFiles，绝对路径/..逃逸/symlink 逃逸 fail closed。TypeScript 语义分析编译器支持；Python 需运行时（__all__ 精确否则启发式）；Go/Rust/Java 等无 adapter 仅结构治理。打包版本 4.2.1。</div><div class="insight"><strong>🔍 技术视角：</strong>架构师视角：研发线『契约优先』与交叉线『治理强制力分级』的开源交集。.grace 模型把契约/图谱/验证/变更分离为可审计制品——与用户研发知识库（RAG for codebase/代码图谱）思路契合。fail-closed 路径逃逸防护（绝对路径/.. /symlink）与 Reusing Assurance Evidence 的 fail-closed 闸门同构。跨三大 coding agent CLI 支持降低采用门槛。V-M-* 确定性验证条目是『治理强制力分级』中结构性不可达的实例。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 458" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="458" fill="#f8fafc"/><rect width="900" height="458" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">GRACE：.grace 制品分层 + fail-closed 验证</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">context</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">需求/技术/原则</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">graph</text><text x="352.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">GD/M/DF 锚点</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">verification</text><text x="548.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">V-M-* 确定性</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">changes</text><text x="744.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">GraceChangeSpec</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Claude Code/Codex/Kilo</text><text x="450.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">跨 CLI</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">契约分层</tspan>　意图→结构→验证→变更闭环，制品可审计</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">fail-closed</tspan>　路径逃逸/无 adapter 语言 fail closed</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>coding agent 需契约驱动（先决定造什么）+ 可审计制品（变更可追溯）+ 治理强制力（验证 fail-closed）。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>.grace XML 制品（context/graph/verification/changes）+ 知识图谱导航 + V-M-* 确定性验证 + GraceChangeSpec 变更包 + fail-closed 路径逃逸防护。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>GRACE 4 模型的分层：context（人意图）→ graph（结构化知识）→ verification（确定性检查）→ changes（变更管理），形成『意图→结构→验证→变更』闭环。V-M-* 确定性条目（非 LLM 判断）是治理强制力的结构性实现——与 10/20 TDS Skill-vs-MCP（MCP 结构性不可达）同构。语言适配分级（TS 精确/Python 启发式/无 adapter 结构治理）体现了务实的覆盖权衡。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>契约驱动 AI 代码工程=降低 AI 代码的不可控性；可审计制品=合规可追溯——对受监管行业的 AI 代码采用有治理价值。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>评估 GRACE skills 作为 Claude Code/Codex CLI 工作流的契约驱动层；借鉴 .grace 制品分离模式管理研发知识库的 context/graph/verification；用 V-M-* 确定性验证条目模式设计 fail-closed 检查。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>253⭐ 规模较小，社区成熟度待观察；.grace 制品引入额外维护成本；无 adapter 语言仅结构治理（export parity 不分析）。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://github.com/osovv/grace-marketplace" target="_blank" rel="noopener" class="src-link">GRACE Marketplace (Graph-RAG Anchored Code Engineering) - contract-driven AI code generation skills</a></li></ol></div><div class="modal-foot"><a href="https://github.com/osovv/grace-marketplace" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://github.com/osovv/grace-marketplace</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-blog"></span><h2>📝 技术博客</h2><span class="count">1 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-blog">📝 技术博客</span></div><h3><a href="https://www.dataengineeringweekly.com/p/the-self-organizing-data-stack" target="_blank" rel="noopener">Data Engineering Weekly：自组织数据栈——当 Agent 回答问题时它也在维护数据模型</a></h3><div class="meta">2026-10-14 · Data Engineering Weekly</div><div class="summary">核心命题：『当 Agent 回答问题时，它们也能维护数据模型。这给编排引擎提出了什么新要求。』从 JSON-LD 元数据提取。作者 Ananth Packkildurai。正文为 Substack JS 渲染未抓取全文，核心论点基于 description。</div><div class="insight"><strong>🔍 技术视角：</strong>架构师视角：直击用户业务线 Agent 自治方向——Agent 不只读数据模型，还写回维护。这与语义层/元数据治理两条路线都相关：Agent 维护数据模型=自动补字段语义标注/自动发现 schema 漂移。编排引擎需支持『读写数据模型』而非纯读——对 Cube/OpenMetadata 这类语义层/元数据工具的 API 提出写回能力要求。与 TEAL（工具自进化）形成『Agent 维护工具库+数据模型』双自组织。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 458" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="458" fill="#f8fafc"/><rect width="900" height="458" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">自组织数据栈：Agent 读写数据模型</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">用户问题</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">查数</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">业务 Agent</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">回答</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">数据模型</text><text x="548.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">读写</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">副作用维护</text><text x="744.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">字段语义/漂移</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">编排引擎</text><text x="450.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">支持写回</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">读写模型</tspan>　Agent 从纯读变为读写数据模型</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">信息待核实</tspan>　正文 JS 渲染未抓取，基于 description 推断</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>传统数据栈：人维护模型，Agent 只读；自组织：Agent 也维护模型，降低人维护成本。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>Agent 在回答问题时副作用式维护数据模型（字段语义/schema 漂移检测），需编排引擎支持写回。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>自组织数据栈的关键是编排引擎需支持『读写数据模型』：Agent 发现字段语义缺失时自动标注、发现 schema 漂移时自动告警/修复。这使语义层（Cube）与元数据治理（OpenMetadata）从『人写 Agent 读』变为『Agent 读写』——要求这些工具开放写 API。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>自组织数据栈=降低元数据维护人力成本=业务 Agent 自治度提升——直击用户业务线人力瓶颈。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>评估 Cube/OpenMetadata 是否支持 Agent 写回字段语义/元数据；设计业务 Agent 的副作用式数据模型维护任务（如查数时顺带补字段标注）。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>正文未抓取（Substack JS 渲染），论点基于 description；具体编排引擎要求细节待核实。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://www.dataengineeringweekly.com/p/the-self-organizing-data-stack" target="_blank" rel="noopener" class="src-link">The Self-Organizing Data Stack - Data Engineering Weekly</a></li></ol></div><div class="modal-foot"><a href="https://www.dataengineeringweekly.com/p/the-self-organizing-data-stack" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://www.dataengineeringweekly.com/p/the-self-organizing-data-stack</a></div></div></div>
+
+  
+
+  <footer>
+    由 Hermes Agent 自动生成 · 点击卡片查看深度详情 · 2026-10-22
+  </footer>
+
+  <!-- ===== 反馈按钮 + 表单弹层 ===== -->
+  <button class="feedback-fab" onclick="openFeedback()" title="提交反馈">💬</button>
+
+  <div class="modal" id="feedback-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeFeedback()" aria-label="关闭">×</button>
+      <span class="tag tag-product">💬 读者反馈</span>
+      <h2>提交意见 / 反馈</h2>
+      <div class="modal-body">
+        <p style="color:var(--muted);font-size:0.9em;margin-bottom:12px;">
+          你的反馈会帮我改进晨报内容。提交后将打开 GitHub Issue 页面，确认后我会在每天 17:00 处理。
+        </p>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">反馈类型</label>
+        <select id="fb-type" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);margin-bottom:12px;">
+          <option value="内容建议">内容建议（选题/深度/方向）</option>
+          <option value="错误报告">错误报告（链接失效/信息有误）</option>
+          <option value="格式反馈">格式/排版反馈</option>
+          <option value="其他">其他</option>
+        </select>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">你的反馈内容</label>
+        <textarea id="fb-body" rows="5" placeholder="请描述你的意见、建议或发现的问题…"
+          style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);resize:vertical;margin-bottom:12px;"></textarea>
+        <button class="modal-submit" onclick="submitFeedback()">提交反馈 →</button>
+      </div>
+      <div class="modal-foot" style="color:var(--muted);font-size:0.8em;">提交后请在打开的 GitHub 页面点击确认。</div>
+    </div>
+  </div>
+
+  <!-- ===== 架构图放大 lightbox ===== -->
+  <div class="diagram-lightbox" id="diagram-lightbox" onclick="if(event.target===this)closeDiagramZoom()">
+    <div class="diagram-lightbox-inner">
+      <div class="lb-head">
+        <h3 id="lb-title">📊 架构图</h3>
+        <div class="lb-tools">
+          <button type="button" class="lb-btn" onclick="diagramToggleZoom()">🔍 放大/缩小</button>
+          <button type="button" class="lb-close" onclick="closeDiagramZoom()" aria-label="关闭">×</button>
+        </div>
+      </div>
+      <div class="lb-svg" id="lb-svg"></div>
+      <div class="lb-tip">提示：点击「放大/缩小」切换缩放，缩放后可在图内拖动查看细节 · 按 Esc 关闭</div>
+    </div>
+  </div>
+
+  <script>
+    function openDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.add('show'); document.body.style.overflow = 'hidden'; }
+    }
+    function closeDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.remove('show'); document.body.style.overflow = ''; }
+    }
+    function openFeedback() {
+      document.getElementById('feedback-modal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeFeedback() {
+      document.getElementById('feedback-modal').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function submitFeedback() {
+      const type = document.getElementById('fb-type').value;
+      const body = document.getElementById('fb-body').value.trim();
+      if (!body) { alert('请填写反馈内容'); return; }
+      const date = '2026-10-22';
+      const title = '[网页反馈/' + type + '] ' + date;
+      const full = '反馈类型: ' + type + '\n日期: ' + date + '\n\n' + body;
+      // 生成 GitHub Issue 预填链接（不暴露 token，安全）
+      const url = 'https://github.com/hhao9817/agent-daily/issues/new?title=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(full);
+      window.open(url, '_blank');
+      closeFeedback();
+    }
+    /* ===== 架构图放大 ===== */
+    function openDiagramZoom(btn) {
+      const box = btn.closest('.diagram-box');
+      const svg = box.querySelector('.diagram-svg svg') || box.querySelector('svg');
+      if (!svg) return;
+      const title = box.querySelector('h4') ? box.querySelector('h4').textContent : '📊 架构图';
+      document.getElementById('lb-title').textContent = title;
+      const holder = document.getElementById('lb-svg');
+      holder.innerHTML = '';
+      holder.appendChild(svg.cloneNode(true));
+      const lb = document.getElementById('diagram-lightbox');
+      lb.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeDiagramZoom() {
+      document.getElementById('diagram-lightbox').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function diagramToggleZoom() {
+      const svg = document.querySelector('#lb-svg svg');
+      if (!svg) return;
+      svg.classList.toggle('zoomed');
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal.show').forEach(function(m) { m.classList.remove('show'); });
+        document.getElementById('diagram-lightbox').classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+</html>

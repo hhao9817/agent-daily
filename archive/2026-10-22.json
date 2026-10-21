@@ -1,0 +1,1255 @@
+{
+  "date": "2026-10-22",
+  "banner": "AI for 研发：AI 代码可溯源到行级 + 文档漂移量化 + 安全幻觉检测三线齐发；AI for 业务：text-to-SQL 幻觉分类学 + 企业 Agent 统一基准 + 工具自进化 + 自组织数据栈；交叉线：RSI 证据审计 + AI 管线复用 fail-closed 闸门。",
+  "snapshot": {
+    "summary": "研发线聚焦『AI 代码的可见性与可控性』：从 token 级 AI 作者定位、AI PR 文档漂移实证、到生成代码安全幻觉的对比审计压力检测，构成一条『让 AI 写的代码可审计、可治理』的主线；GitHub Blog 披露 agent-scale Git 基础设施迁移（per-reference quorum）为 coding agent 大规模并发铺路。业务线聚焦『企业 Agent 的评估与工具化』：text-to-SQL 幻觉分解为复现型/涌现型、EGI-BENCH 统一八基准给企业 Agent 单一可比分、TEAL 无监督工具进化让 data-lake agent 不再每次从零开始、RetailRAG 展示异构源零售工作流范式、Data Engineering Weekly 提出『自组织数据栈』——当 Agent 回答问题时它也在维护数据模型。交叉线两条论文形成『治理证据』闭环：RSI 声称需区分产品/过程证据（114 篇审查），AI 管线复用需 fail-closed 签名闸门（Ed25519 + 依赖完整性）。GitHub 开源亮点 GRACE Marketplace——Graph-RAG 锚定的契约驱动 AI 代码工程，跨 Claude Code/Codex CLI/Kilo Code。",
+    "groups": {
+      "rnd": [
+        "From Tokens to Files（2610.27863）：冻结代码 LM + 双低秩 adapter（机器写/人写）算 per-token 对数似然比，在行/块/文件三级聚合，解决『文件里只有几块是 AI 写的』被全局平均淹没的问题——AI 代码可溯源到行级。",
+        "Documentation Drift in AI PRs（2610.27381）：29669 个 AI PR 分析，63.2% 改代码不更新文档（重构 77.5%）；控制规模暴露后，未文档化文件被修复概率高 8.6-11.7%——AI Agent 的文档债被规模假象掩盖。",
+        "SPLASH 安全幻觉检测（2610.26001）：对比 teacher-forced 安全审查 vs 风格审查的对数概率差（audit pressure），12 模型 63684 程序中选安全代码 74%，无需训练/CWE 规则/模型内部访问——静态分析器+生成器自身不确定度都抓不到的安全幻觉有了新解法。",
+        "AgenticVulHunter（2610.27383）：本地开源权重 LLM + 聚焦安全知识做 agentic 安全代码审查，证明不依赖商业 LLM 也能跨文件追踪漏洞逻辑——可自建方案。",
+        "Does AI-Assisted Dev Homogenize Software?（2610.24093）：50 个 Java/Python 长生命周期项目三时期对比，语义/语法相似度不升反降，质量无一致退化——『AI 让代码同质化』恐慌缺乏实证支持。",
+        "GitHub Blog：agent-scale Git 基础设施（10/21）：99.99999% 仓库已迁移 Azure，per-reference quorum 将完成剩余迁移——为 coding agent 高并发读写 Git 铺基建。"
+      ],
+      "business": [
+        "Text-to-SQL 幻觉分类学（2610.27720）：将 query 分解为递进可执行子查询，区分复现型幻觉（早期步骤已有同类错误）与涌现型（仅最终步出现），五 LLM 实测——终态正确率掩盖了中间步骤错误模式，企业部署需逐步骤审计而非只看最终 SQL。",
+        "EGI-BENCH（2610.27234）：统一 CRMARENA/HERB/PERSONABENCH/USERBENCH/MCP-UNIVERSE/MCPEVAL/BENCHFORCE/LOCOBENCH 八基准于单 CLI + 预算双模式，定义六维 Enterprise General Intelligence Score——企业 Agent 评估从单基准碎片走向可比体系。",
+        "TEAL 工具自进化（2610.27327）：data-lake coding agent 每问完即丢弃清洗/连接工作，TEAL 让 Explorer+Critic 双 agent 无监督地从数据湖与轨迹中提案可复用工具，仅当 Worker 重跑采纳且零额外步骤才保留——无标签下让 Agent 积累领域工具库。",
+        "RetailBridge/RetailRAG（2610.25096）：零售异构源（结构化订单+非结构化评论）RAG 基准，persona 驱动构造跨源链证据问题；RetailRAG 用 auto-schema briefing + source-routed plan chaining + diagnostic plan revision 超越基线——企业 RAG 的跨源路由范式参考。",
+        "Data Engineering Weekly『自组织数据栈』（10/14）：核心命题『当 Agent 回答问题时它也能维护数据模型』，但这对编排引擎提出新要求——Agent 不只读数据模型，还写回模型维护，直击用户业务线 Agent 自治方向。",
+        "Cube v1.8.9（10/21）：新增 /v1/sql-filters API 读写改写 SQL API 查询过滤条件（语义层 API 化关键一步）+ lower/upper Unicode-aware + 数字开头表/列名脚手架有效化——语义层 API 可编程性增强。",
+        "OpenMetadata 2.0.6（10/21）：摄入精度修复（CockroachDB 分区/dbt 快照 lineage/Omni dashboard owner/Teradata DBQL/Athena Iceberg）+ 数据质量测试失败计数可信化（中止=失败）+ 术语表治理（嵌套搜索/CSV 重导入相关术语）+ 数据契约可发现性——元数据治理基础持续成熟。",
+        "WrenAI wren-pydantic v0.3.1 + wren-langchain v0.2.3（10/19-20）：SDK 以 UTF-8 读取项目制品——语义层引擎的多语言制品兼容性修复。"
+      ],
+      "cross": [
+        "Auditing RSI（2610.27610）：对 114 篇 RSI 研究全文编码，90 篇自称 RSI，90% 报告了开发任务之外的产品评估（宽松标准），但过程证据（改进过程本身）严重缺失——RSI 声称需区分『产品好』与『过程真的自改进』，编码方案可复现。",
+        "Reusing Assurance Evidence（2610.27672）：AI 管线复用治理结果需两条件（依赖覆盖+签名匹配候选），Ed25519 签名参考闸门挡住 9 个中 8 个操纵场景——fail-closed 复用是 Agent 治理基线，714 条公开 DVC 管线实测依赖完整性。",
+        "GitHub Blog 密钥检测模型（10/13）：上下文感知密钥分类器，加权接受率 +11.5%，中位扫描时间 -86%——Agent 工具层的密钥泄漏治理，安全基线工程。"
+      ],
+      "github": [
+        "GRACE Marketplace（253⭐ MIT，TypeScript）：Graph-RAG Anchored Code Engineering——契约驱动 AI 代码工程方法论，.grace XML 制品 + 知识图谱导航 + 断言 + 作用域 + 日志驱动验证，支持 Claude Code/Codex CLI/Kilo Code；V-M-* 确定性验证条目、GraceChangeSpec 变更包、fail-closed 路径逃逸防护——研发线『契约优先』与交叉线『治理强制力分级』的开源交集。"
+      ]
+    }
+  },
+  "items": [
+    {
+      "tag": "rnd",
+      "title": "From Tokens to Files：AI 写的代码可溯源到行级——冻结代码 LM 双低秩 adapter 算 per-token 作者证据",
+      "date": "2026-10-20",
+      "source": "arXiv 2610.27863",
+      "link": "https://arxiv.org/abs/2610.27863",
+      "summary": "论文提出在 token 级建模 AI 作者性、在行/块/文件三级预测的框架。用冻结的代码语言模型配两个低秩 adapter（分别训练于机器写/人写文件），它们的 per-token 对数似然比提供本地 AI 作者证据，轻量聚合头在行内汇总。核心解决『文件里只有几块是 AI 写的』被全局单分平均淹没的问题。Semantic Scholar 引用待核实（429 限流，10/20 新文预期 0）。",
+      "insight": "架构师视角：用户研发线已建知识库，下一道质量门是『AI 代码可溯源』。此方法不需要生成器内部访问、不依赖水印，适配器可自建训练——可作为 codebase RAG 的审计层。与 10/21 的 SPLASH（安全幻觉定位到语句）形成『作者溯源+缺陷溯源』双维度。局限：需足量机器写/人写训练对，跨语言迁移未验证。",
+      "detail": {
+        "why": "AI 代码比例激增但不可见=不可治理；现有方法压缩成单文件分，丢掉了局部证据。",
+        "mechanism": "冻结代码 LM + 双 LoRA adapter（machine/human）→ per-token log-likelihood ratio → 行/块/文件级聚合头预测。",
+        "deep": "关键创新是『token 级证据 + 多粒度聚合』而非全局打分。当 AI 只改了文件中少数块时，全局表示会把这几块的信号稀释到噪声里；token 级对数似然比保留局部证据，聚合头按需汇总到行/块/文件。低秩 adapter 训练成本可控，冻结主干避免灾难性遗忘。",
+        "apply": "在研发知识库基础上，用本团队 codebase 的人写/AI 写 PR 对训练 adapter，作为 PR 审查门禁的 AI 代码标注层。",
+        "caveats": "需标注训练对（可从 git blame + AI 工具日志构造）；跨语言/跨领域 adapter 迁移未验证；引用数待核实。",
+        "business": "AI 代码可溯源=合规可审计=可计费（哪些行是 AI 产出影响 license/责任）。对企业『AI 代码占比』度量化、对外包代码 AI 审查都有商业价值。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.27863",
+            "title": "From Tokens to Files: Multi-Granularity Detection and Localization of AI-Involved Code"
+          }
+        ],
+        "diagram": {
+          "title": "AI 代码行级溯源：token 证据→多粒度聚合",
+          "flow": [
+            {
+              "label": "代码文件",
+              "sub": "待审源码",
+              "type": "frontend"
+            },
+            {
+              "label": "冻结代码 LM",
+              "sub": "共享主干",
+              "type": "backend"
+            },
+            {
+              "label": "LoRA-机器写",
+              "sub": "adapter A",
+              "type": "backend"
+            },
+            {
+              "label": "LoRA-人写",
+              "sub": "adapter B",
+              "type": "backend"
+            },
+            {
+              "label": "per-token 对数似然比",
+              "sub": "本地证据",
+              "type": "security"
+            },
+            {
+              "label": "聚合头",
+              "sub": "行/块/文件",
+              "type": "backend"
+            },
+            {
+              "label": "AI 作者标注",
+              "sub": "可审计输出",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "多粒度",
+              "text": "token 级证据在行/块/文件三级聚合，避免全局平均稀释"
+            },
+            {
+              "label": "自建可行",
+              "text": "冻结主干+低秩 adapter，训练成本可控，不需生成器内部访问"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "rnd",
+      "title": "Documentation Drift in AI PRs：63.2% 的 AI PR 改代码不更新文档，规模假象掩盖了文档债",
+      "date": "2026-10-19",
+      "source": "arXiv 2610.27381",
+      "link": "https://arxiv.org/abs/2610.27381",
+      "summary": "对 AIDev 数据集 2585 个仓库的 29669 个 AI 生成 PR 做 documentation co-change 分析。63.2% 的 AI PR 改代码不更新任何文档（feature 55.2%，refactor 77.5%）。未文档化文件在 30-90 天窗口内被修复概率高 8.6-11.7%。原始 PR 级比较显示相反结论（文档化 PR 大 3.9 倍→吸引更多修复），控制规模暴露后结论反转。文档化 PR 尽管更大但合并更快（中位 40 秒 vs 未文档化）。Semantic Scholar 核实引用=0（新文符合预期）。",
+      "insight": "架构师视角：与用户研发知识库课题直接相关——AI Agent 产出的 PR 是否维护文档是知识库质量的第一道指标。论文的『规模暴露控制』方法论值得复用：评估 AI PR 质量时必须控制 PR 规模，否则大而文档化的 PR 看起来修复多实则是规模效应。refactor 77.5% 不更新文档是最大风险点。",
+      "detail": {
+        "why": "AI Agent 大规模贡献 PR，但其文档实践未被刻画；文档债是知识库腐化的主因。",
+        "mechanism": "documentation co-change = 同 PR 内代码文件修改是否伴随文档文件更新；用规模暴露控制消除 PR 大小的混淆效应。",
+        "deep": "核心洞察是 Simpson 悖论式反转：粗看文档化 PR 修复多，实因它们大 3.9 倍；控制规模后未文档化文件修复多 8.6-11.7%——文档缺失是真实的质量负债。合并速度反转（文档化更快）说明文档化 PR 更成熟而非更慢。",
+        "apply": "在 coding agent 工作流加『文档 co-change 检查』门禁，尤其 refactor 类 PR；用论文的规模暴露控制法评估团队 AI PR 质量报告。",
+        "caveats": "AIDev 数据集的 AI PR 标注依赖工具检测可能有噪声；文档定义限于文件级（不含注释/AGENTS.md）。",
+        "business": "文档债=知识库维护成本。63.2% 不更新文档意味着 AI Agent 产出后人工补救成本高——这是 AI 代码工程化 ROI 的隐性成本项。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.27381",
+            "title": "Documentation Drift in AI-Generated Pull Requests"
+          }
+        ],
+        "diagram": {
+          "title": "AI PR 文档漂移：规模暴露控制消除混淆",
+          "flow": [
+            {
+              "label": "AI 生成 PR",
+              "sub": "29669 条",
+              "type": "frontend"
+            },
+            {
+              "label": "文档 co-change 检测",
+              "sub": "同 PR 文档更新?",
+              "type": "backend"
+            },
+            {
+              "label": "原始比较",
+              "sub": "文档化→修复多?",
+              "type": "security"
+            },
+            {
+              "label": "规模暴露控制",
+              "sub": "PR 大 3.9x",
+              "type": "backend"
+            },
+            {
+              "label": "反转结论",
+              "sub": "未文档化→修复多 8.6-11.7%",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "Simpson 反转",
+              "text": "控制 PR 规模后，文档缺失与后续修复正相关"
+            },
+            {
+              "label": "refactor 最差",
+              "text": "77.5% 重构 PR 不更新文档"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "rnd",
+      "title": "SPLASH：对比审计压力检测生成代码的安全幻觉——12 模型 63684 程序中选安全代码 74%，无需训练",
+      "date": "2026-10-19",
+      "source": "arXiv 2610.26001",
+      "link": "https://arxiv.org/abs/2610.26001",
+      "summary": "LLM 生成的代码常通过所有功能测试却仍不安全——这些安全幻觉普遍、高置信度写就、跨样本重复，因此生成器自身不确定度和静态分析器都抓不到。论文引入 SPLASH，由新度量 audit pressure 驱动：对比生成程序在安全审查 vs 风格审查下的 teacher-forced 对数概率，聚合到语句和程序级，基于竞争编辑的概率模型选择安全程序并定位漏洞语句。12 模型 899 任务 63684 程序上选安全代码 74%，无需模型训练/CWE 规则/生成器内部访问。Semantic Scholar 核实引用=0（新文符合预期）。",
+      "insight": "架构师视角：直击用户研发线代码审查子领域——AI 生成代码的安全 gate。audit pressure 的精妙在于『同模型不同审查视角的自对比』消除了模型间差异，且 teacher-forced 使其不依赖生成器内部。与 10/20 From Tokens to Files（作者溯源）互补：一个定位作者、一个定位缺陷。",
+      "detail": {
+        "why": "功能正确≠安全；安全幻觉高置信度且重复，现有检测器失效。",
+        "mechanism": "audit pressure = teacher-forced 安全审查 log-prob 减 风格审查 log-prob；正值倾向不安全；聚合到语句/程序级选择+定位。",
+        "deep": "创新点是用『竞争编辑的概率模型』将 audit pressure 转化为选择+定位决策：同一生成器的多个候选程序间，audit pressure 差异指向哪个更安全、哪句话是漏洞。对比视角消除模型间偏差。无需训练使其即插即用——对比加固的 SFT/DPO 方案门槛更低。",
+        "apply": "在 AI 代码审查 pipeline 加 SPLASH 式 audit pressure 门禁，对多候选生成场景（如 pass@k）选安全程序；对单候选场景定位可疑语句送人工。",
+        "caveats": "74% 非满分；依赖 teacher-forced（需可计算 log-prob，开源权重模型友好，闭源 API 需 logprob 支持）；风格审查基线选择影响效果。",
+        "business": "安全幻觉=安全债=合规风险。74% 安全选择率对受监管行业（金融/医疗）的 AI 代码 gate 有直接价值，无需训练降低落地门槛。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.26001",
+            "title": "SPLASH: Contrastive Audit Pressure for Detecting and Localizing Security Hallucinations in Generated Code"
+          }
+        ],
+        "diagram": {
+          "title": "SPLASH audit pressure：双视角对比定位安全幻觉",
+          "flow": [
+            {
+              "label": "生成程序候选",
+              "sub": "pass@k",
+              "type": "frontend"
+            },
+            {
+              "label": "teacher-forced",
+              "sub": "安全审查视角",
+              "type": "backend"
+            },
+            {
+              "label": "teacher-forced",
+              "sub": "风格审查视角",
+              "type": "backend"
+            },
+            {
+              "label": "audit pressure",
+              "sub": "对数概率差",
+              "type": "security"
+            },
+            {
+              "label": "竞争编辑模型",
+              "sub": "选择+定位",
+              "type": "backend"
+            },
+            {
+              "label": "安全程序 74%",
+              "sub": "漏洞语句",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "自对比",
+              "text": "同模型双视角消除模型间差异，不需生成器内部访问"
+            },
+            {
+              "label": "即插即用",
+              "text": "无需训练/CWE 规则，开源权重友好"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "rnd",
+      "title": "AgenticVulHunter：本地开源权重 LLM 做跨文件 agentic 安全代码审查——不依赖商业 LLM 的可自建方案",
+      "date": "2026-10-19",
+      "source": "arXiv 2610.27383",
+      "link": "https://arxiv.org/abs/2610.27383",
+      "summary": "安全代码审查中漏洞逻辑常依赖跨仓库文件的代码行，现有 AgenticSCR 类方法依赖外部商业 LLM 并一次性灌入大量安全知识。论文提出 AgenticVulHunter，用本地部署的开源权重 LLM 配聚焦且相关的安全知识做 agentic 安全代码审查。核心问题：不用商业 LLM、用更聚焦的知识，agentic 安全审查是否仍有效。Semantic Scholar 引用待核实（429 限流，新文预期 0）。",
+      "insight": "架构师视角：用户明确关注开源可自建方案，这篇直接回应『本地 LLM 能否做 agentic 安全审查』。聚焦知识而非全量灌入是可自建的关键——降低了对超大 context 的依赖，本地 7B-13B 级模型可行。与 SPLASH（无训练检测）形成『检测+审查』组合。",
+      "detail": {
+        "why": "商业 LLM 依赖=数据外泄+成本；全量知识灌入对本地模型 context 不可行。",
+        "mechanism": "本地开源权重 LLM + 聚焦安全知识检索 + agentic 跨文件探索审查漏洞逻辑。",
+        "deep": "聚焦知识策略是核心：不为本地模型灌全量安全知识库，而是按审查上下文检索相关片段，使本地模型的有限 context 也能做有效推理。agentic 探索让其跨文件追踪依赖（与单文件静态分析互补）。",
+        "apply": "用本地 Qwen/Llama 级模型 + 团队安全知识库（可复用研发知识库 RAG 基建）搭建 agentic 安全审查 CLI，集成进 PR 门禁。",
+        "caveats": "本地模型能力上限可能低于商业 LLM；聚焦知识检索质量决定效果；论文具体数值待核实（摘要未含完整结果）。",
+        "business": "可自建安全审查=数据不出域+成本可控，对金融/政务场景的 AI 代码安全 gate 有落地价值。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.27383",
+            "title": "AgenticVulHunter: Bringing Local Agentic Vulnerability Hunting to Your Terminal"
+          }
+        ],
+        "diagram": {
+          "title": "AgenticVulHunter：本地 LLM + 聚焦知识 agentic 安全审查",
+          "flow": [
+            {
+              "label": "PR/代码",
+              "sub": "待审",
+              "type": "frontend"
+            },
+            {
+              "label": "聚焦知识检索",
+              "sub": "相关安全片段",
+              "type": "database"
+            },
+            {
+              "label": "本地开源 LLM",
+              "sub": "7B-13B",
+              "type": "backend"
+            },
+            {
+              "label": "agentic 跨文件探索",
+              "sub": "追踪依赖",
+              "type": "security"
+            },
+            {
+              "label": "漏洞报告",
+              "sub": "本地输出",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "可自建",
+              "text": "本地权重+聚焦知识，不依赖商业 LLM"
+            },
+            {
+              "label": "跨文件",
+              "text": "agentic 探索追踪跨仓库漏洞逻辑"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "rnd",
+      "title": "Does AI-Assisted Dev Homogenize Software? 50 项目三时期实证——『AI 让代码同质化』缺乏证据",
+      "date": "2026-10-16",
+      "source": "arXiv 2610.24093",
+      "link": "https://arxiv.org/abs/2610.24093",
+      "summary": "对 50 个长生命周期 Java/Python 开源项目分三时期（pre-LLM/potentially LLM-assisted/detected agentic）用 Software Heritage 快照分析。相似度用 embedding 余弦（语义）+ CodeBLEU*（语法）；质量用 SonarQube（可维护性/复杂度/可靠性/安全）；演进用 LOC/函数/类/文件/语句年增长率+提交活动。结果：无一致证据显示相似度上升（语义和语法相似度反而下降），质量无一致退化。Semantic Scholar 引用待核实（429 限流）。",
+      "insight": "架构师视角：为团队决策提供实证背书——不必因『AI 同质化/质量退化』恐慌而限制 AI 工具采用。但『无一致退化』≠『无风险』，需结合 10/19 Documentation Drift（63.2% 不更新文档）看：AI 代码的债不在相似度/质量度量里，而在文档与可维护性的软指标里。",
+      "detail": {
+        "why": "AI 代码同质化/质量退化是广泛担忧但缺乏长周期实证。",
+        "mechanism": "50 项目三时期快照 + 语义/语法相似度 + SonarQube 质量 + 演进指标对比。",
+        "deep": "相似度下降可能因 AI 扩大了实现多样性（更多方案进入代码库）；质量无退化但 Document Drift 证明文档债真实——说明传统质量度量（复杂度/可靠性）抓不到文档/知识库腐化。",
+        "apply": "决策参考：不必因同质化担忧限制 AI 工具；但应补文档 co-change 与知识库一致性度量到质量门禁。",
+        "caveats": "50 项目样本有限；三时期划分依赖检测；SonarQube 不覆盖文档/AGENTS.md 质量。",
+        "business": "消除 AI 工具采用的非理性阻力；但隐含『需新度量补传统质量门禁』的基建需求。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.24093",
+            "title": "Does AI-Assisted Development Homogenize Software? An Empirical Study"
+          }
+        ],
+        "diagram": {
+          "title": "AI 代码同质化实证：三时期相似度/质量/演进对比",
+          "flow": [
+            {
+              "label": "50 项目快照",
+              "sub": "Software Heritage",
+              "type": "database"
+            },
+            {
+              "label": "三时期划分",
+              "sub": "pre-LLM/LLM/agentic",
+              "type": "backend"
+            },
+            {
+              "label": "相似度",
+              "sub": "余弦+CodeBLEU*",
+              "type": "security"
+            },
+            {
+              "label": "质量",
+              "sub": "SonarQube",
+              "type": "backend"
+            },
+            {
+              "label": "结论",
+              "sub": "无一致退化/相似度反降",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "传统度量盲区",
+              "text": "相似度/复杂度不退化，但文档债（Drift 论文）未被捕获"
+            },
+            {
+              "label": "决策背书",
+              "text": "不必因同质化恐慌限制 AI 工具采用"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "rnd",
+      "title": "GitHub Blog：通往 agent 规模 Git 基础设施的桥梁——99.99999% 仓库迁 Azure，per-reference quorum 完成",
+      "date": "2026-10-21",
+      "source": "GitHub Blog",
+      "link": "https://github.blog/engineering/architecture-optimization/the-bridge-to-agent-scale-git-infrastructure/",
+      "summary": "GitHub 披露 agent 规模 Git 基础设施迁移进展：99.99999% 的仓库已迁移至 Azure，剩余部分将通过 per-reference quorum 机制完成迁移。这是为 coding agent 高并发读写 Git 操作铺路的底层基建。meta description: 'We moved a copy of 99.99999% of GitHub\\'s repositories to Azure. Here\\'s how per-reference quorums will bring over the rest.' 正文为 JS 渲染，基于 meta description + RSS 元数据。",
+      "insight": "架构师视角：coding agent（Claude Code/Codex CLI/Aider）大规模并发读写 Git 是研发线基建瓶颈。per-reference quorum 意味着引用级（而非整仓）一致性协议——Agent 可并发操作不同引用而不阻塞。用户团队若自建 coding agent 工作流，需关注 Git 托管层是否支持引用级并发。",
+      "detail": {
+        "why": "coding agent 大规模并发读写 Git 操作挑战传统整仓一致性模型。",
+        "mechanism": "99.99999% 仓库已迁 Azure；per-reference quorum 完成剩余迁移（引用级一致性协议）。",
+        "deep": "per-reference quorum 是关键：将一致性粒度从仓库降到引用（branch/tag），允许多个 Agent 并发操作不同引用而不互锁。这是 agent-scale 开发的基础设施前提——没有它，Agent 间 Git 操作会串行化。",
+        "apply": "自建 coding agent 工作流时，验证 Git 托管层（GitHub/GitLab 自建）是否支持引用级并发；设计 Agent 间引用隔离策略避免 quorum 冲突。",
+        "caveats": "正文为 JS 渲染未抓取全文，洞察基于 meta description + 标题 + 已知 GitHub 迁移背景；具体 quorum 实现细节待核实。",
+        "business": "agent-scale Git 基建成熟=大规模 coding agent 部署的解锁条件；自建 Git 基础设施需对标此并发模型。",
+        "sources": [
+          {
+            "url": "https://github.blog/engineering/architecture-optimization/the-bridge-to-agent-scale-git-infrastructure/",
+            "title": "The bridge to agent-scale Git infrastructure - GitHub Blog"
+          }
+        ],
+        "diagram": {
+          "title": "Agent 规模 Git：引用级 quorum 并发模型",
+          "flow": [
+            {
+              "label": "GitHub 仓库",
+              "sub": "99.99999% 迁 Azure",
+              "type": "cloud"
+            },
+            {
+              "label": "per-reference quorum",
+              "sub": "引用级一致性",
+              "type": "backend"
+            },
+            {
+              "label": "Coding Agent A",
+              "sub": "操作 ref-1",
+              "type": "frontend"
+            },
+            {
+              "label": "Coding Agent B",
+              "sub": "操作 ref-2",
+              "type": "frontend"
+            },
+            {
+              "label": "并发不互锁",
+              "sub": "agent-scale",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "引用级一致性",
+              "text": "粒度从仓库降到引用，允许 Agent 并发操作不同引用"
+            },
+            {
+              "label": "信息待核实",
+              "text": "正文 JS 渲染未抓取，基于 meta description 推断"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "business",
+      "title": "Text-to-SQL 幻觉分类学：复现型 vs 涌现型——终态正确率掩盖中间步骤错误模式",
+      "date": "2026-10-20",
+      "source": "arXiv 2610.27720",
+      "link": "https://arxiv.org/abs/2610.27720",
+      "summary": "LLM 在 text-to-SQL 基准上表现强但仍有 schema 与查询逻辑错误。论文提出 drill-down 评估框架：将 text-to-SQL 查询分解为递进复杂的可执行子查询及对应自然语言问题，使基于规则的可执行子查询及对应自然语言问题，使基于规则的幻觉类别可在生成路径上检验。区分复现型幻觉（同类错误在更早步骤已出现并再现于最终查询）与涌现型（仅最终步出现，早期无）。五 LLM 实测。Semantic Scholar 引用待核实（429 限流，新文预期 0）。",
+      "insight": "架构师视角：直击用户业务线 text-to-SQL 课题——企业部署不能只看最终 SQL 正确率。复现型幻觉=模型在该错误模式上系统性偏差（需训练/示例修复），涌现型=复杂度累积导致（需分步验证/分解）。与 10/16 AIR（歧义消解）互补：AIR 防歧义输入、本方法诊断幻觉输出。用户上百字段宽表 API 场景下，逐步骤审计比终态检查更能定位可信度断点。",
+      "detail": {
+        "why": "终态正确率掩盖中间错误；企业需知道幻觉是系统性还是复杂度引发的，以选不同修复策略。",
+        "mechanism": "查询分解为递进子查询→规则检测各步幻觉类别→复现（早已有+再现）vs 涌现（仅最终步）。",
+        "deep": "复现型暗示模型在某类别上训练偏差（如 schema 字段映射错误模式固定），涌现型暗示复杂度累积超出模型推理带宽。前者需纠正训练/示例，后者需任务分解+逐步验证。这给企业部署的诊断分级提供了可操作框架。",
+        "apply": "在业务 Agent 的 text-to-SQL/宽表 API 查询链加逐步骤幻觉审计；复现型→补示例/微调，涌现型→分解为子查询+中间验证门。",
+        "caveats": "规则幻觉类别覆盖有限；五 LLM 具体数值待核实（摘要未含完整结果）；引用数待核实。",
+        "business": "幻觉分级=修复策略分级=运维成本分级。复现型一次性修复（训练），涌现型需持续分解验证——影响 Agent 运维 TCO 模型。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.27720",
+            "title": "Tracing Recurrent and Emergent Hallucination Patterns in Decomposed Text-to-SQL Generation"
+          }
+        ],
+        "diagram": {
+          "title": "Text-to-SQL 幻觉分类：复现型 vs 涌现型",
+          "flow": [
+            {
+              "label": "NL 查询",
+              "sub": "用户问题",
+              "type": "frontend"
+            },
+            {
+              "label": "子查询分解",
+              "sub": "递进复杂",
+              "type": "backend"
+            },
+            {
+              "label": "逐步规则检测",
+              "sub": "幻觉类别",
+              "type": "security"
+            },
+            {
+              "label": "复现型",
+              "sub": "早已有+再现",
+              "type": "backend"
+            },
+            {
+              "label": "涌现型",
+              "sub": "仅最终步",
+              "type": "backend"
+            },
+            {
+              "label": "分级修复",
+              "sub": "训练/分解验证",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "诊断分级",
+              "text": "复现型→系统性偏差需训练修复；涌现型→复杂度累积需分解验证"
+            },
+            {
+              "label": "宽表适配",
+              "text": "上百字段宽表 API 场景下逐步骤审计更能定位可信度断点"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "business",
+      "title": "EGI-BENCH：统一八基准给企业 Agent 单一可比分——CRM/检索/规划/工具/长上下文 SE 一体化评估",
+      "date": "2026-10-19",
+      "source": "arXiv 2610.27234",
+      "link": "https://arxiv.org/abs/2610.27234",
+      "summary": "企业 LLM agentic 工作流采用受限于跨能力弧的评估：CRM 操作、异构文档检索、个人数据理解、多轮规划、工具使用、function calling、长程研究、长上下文软件工程。这些评估散在不同仓库（CRMARENA/HERB/PERSONABENCH/USERBENCH/MCP-UNIVERSE/MCPEVAL/BENCHFORCE/LOCOBENCH），runner/依赖/评分各异。EGI-BENCH 统一于单 CLI + 双预算执行模式，定义六维 Enterprise General Intelligence (EGI) Score。Semantic Scholar 引用待核实（429 限流，新文预期 0）。",
+      "insight": "架构师视角：用户业务线 Agent 评估的基建性参考。八基准中 MCP-UNIVERSE/MCPEVAL（工具使用）、LOCOBENCH（长上下文 SE）、CRMARENA（CRM 业务操作）直接映射用户双主题。EGI Score 六维可作为团队 Agent 验收的维度模板。与 10/9 Argo-Bench（210 企业 data agent 任务）互补：EGI-BENCH 跨能力弧，Argo-Bench 聚焦 data agent。",
+      "detail": {
+        "why": "企业 Agent 评估碎片化，单基准分数掩盖能力短板。",
+        "mechanism": "八基准统一 CLI + 双预算执行模式 + 六维 EGI Score 聚合。",
+        "deep": "双预算执行模式是关键设计：相同任务在不同推理预算下表现差异暴露能力上限与成本弹性。六维 EGI Score 让跨能力比较成为单一可比数——但仍需看维度拆解避免被聚合掩盖短板。",
+        "apply": "借鉴八基准维度（CRM/检索/规划/工具/长上下文 SE）搭建团队业务 Agent 的验收维度模板；用预算双模式测成本弹性。",
+        "caveats": "八基准偏向 CRM/个人数据场景，用户宽表 API 场景需补自定义维度；EGI Score 聚合可能掩盖单维短板；引用待核实。",
+        "business": "企业 Agent 选型/验收标准化=降低评估碎片化成本；EGI 维度可作为采购/自建决策的量化框架。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.27234",
+            "title": "EGI-BENCH: An Enterprise General Intelligence Benchmark Suite"
+          }
+        ],
+        "diagram": {
+          "title": "EGI-BENCH：八基准统一 → 六维 EGI Score",
+          "flow": [
+            {
+              "label": "八基准",
+              "sub": "CRM/HERB/.../LOCO",
+              "type": "database"
+            },
+            {
+              "label": "统一 CLI",
+              "sub": "单 runner",
+              "type": "backend"
+            },
+            {
+              "label": "双预算执行",
+              "sub": "成本弹性",
+              "type": "backend"
+            },
+            {
+              "label": "六维 EGI Score",
+              "sub": "单一可比分",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "双预算",
+              "text": "相同任务不同推理预算，暴露能力上限与成本弹性"
+            },
+            {
+              "label": "维度模板",
+              "text": "CRM/检索/规划/工具/长上下文 SE 可作团队验收维度"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "business",
+      "title": "TEAL：无监督工具自进化让 data-lake agent 积累可复用工具库——Explorer+Critic 双 agent 提案",
+      "date": "2026-10-19",
+      "source": "arXiv 2610.27327",
+      "link": "https://arxiv.org/abs/2710.27327",
+      "summary": "Data-lake coding agent 每问完即丢弃清洗/连接工作，下次从零重做。工具进化跨任务自动构建精炼可复用工具是自然解法，但 data-lake 问题需专家先解才有 ground-truth，故考虑无监督设定。TEAL（Tool Evolution for Analytics over data Lakes）无标签地为给定 Worker agent 进化工具库与使用技能：双 agent 从互补证据提案工具——Explorer 从数据湖本身、Critic 从 Worker 轨迹；仅当 Worker 重跑采纳工具且零额外步骤且任何答案变化有轨迹证据支持才保留变更。Semantic Scholar 引用待核实（429 限流，新文预期 0）。",
+      "insight": "架构师视角：直击用户业务线 Agent 效率痛点——每次查数从零开始的浪费。TEAL 的无监督保留条件（Worker 重跑采纳+零额外步骤+变化有证据）是构造性拒绝的好范式：不满足即丢弃，避免工具库膨胀。与用户『不直连数据库、通过高业务含义 API 查数』约束契合——可让 Agent 积累 API 调用工具库而非每次重新理解 API schema。链接中 arxiv id 笔误（2710→2610），正确为 2610.27327。",
+      "detail": {
+        "why": "data-lake agent 每问从零=浪费+不稳定；无标签下无法用 ground-truth 判断工具好坏。",
+        "mechanism": "Explorer（数据湖证据）+Critic（轨迹证据）双 agent 提案工具→Worker 重跑采纳+零额外步骤+变化有证据→保留。",
+        "deep": "无监督保留条件是核心创新：以 Worker 自身行为（是否采纳、是否多步、变化是否有证据）作为工具质量代理指标，绕开 ground-truth。这与 10/16 AIR 的『执行验证真歧义』同构——都用执行反馈而非外部真值做判断。",
+        "apply": "在业务 Agent 的 API 查数工作流加 TEAL 式工具进化层：Agent 积累高业务含义 API 的调用模式为可复用工具，无监督保留条件防止工具库膨胀。",
+        "caveats": "无监督可能保留『省步但错答』的工具（变化有证据但不一定对）；Worker 能力影响工具质量上限；引用待核实；arxiv id 笔误需核实（2610.27327）。",
+        "business": "工具库积累=Agent 效率提升+运维成本下降。对上百字段宽表 API 场景，积累字段语义标注与查询模式为工具可直接降本。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.27327",
+            "title": "Unsupervised Tool Evolution for Coding Agents in Data-Lake Analytics (TEAL)"
+          }
+        ],
+        "diagram": {
+          "title": "TEAL 无监督工具进化：双 agent 提案 + 执行验证保留",
+          "flow": [
+            {
+              "label": "数据湖/API",
+              "sub": "异构源",
+              "type": "database"
+            },
+            {
+              "label": "Explorer",
+              "sub": "数据湖证据",
+              "type": "backend"
+            },
+            {
+              "label": "Critic",
+              "sub": "轨迹证据",
+              "type": "backend"
+            },
+            {
+              "label": "工具提案",
+              "sub": "候选",
+              "type": "security"
+            },
+            {
+              "label": "Worker 重跑",
+              "sub": "采纳+零额外步+证据",
+              "type": "backend"
+            },
+            {
+              "label": "工具库",
+              "sub": "可复用积累",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "无监督保留",
+              "text": "以 Worker 行为作质量代理，绕开 ground-truth"
+            },
+            {
+              "label": "API 适配",
+              "text": "可积累高业务含义 API 调用模式为工具"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "business",
+      "title": "RetailBridge/RetailRAG：异构源零售工作流 RAG 基准——auto-schema briefing + source-routed plan chaining",
+      "date": "2026-10-18",
+      "source": "arXiv 2610.25096",
+      "link": "https://arxiv.org/abs/2610.25096",
+      "summary": "企业零售工作流需 Agent 跨异构源链证据（结构化产品/订单记录+非结构化询盘/评论），现有 agentic RAG 基准很少覆盖。RetailBridge 用 persona 驱动模拟构造组合零售基准，问题通过链接实体和中间答案跨异构源构建，要求 Agent 识别相关源、在源间传递证据、产出接地答案。RetailRAG 框架配 auto-schema briefing（自动 schema 简报）、source-routed plan chaining（源路由计划链）、diagnostic plan revision（诊断计划修订），全面超越 agentic RAG 基线。Semantic Scholar 引用待核实（429 限流，新文预期 0）。",
+      "insight": "架构师视角：与用户业务线『异构源+宽表 API+非结构化文档』场景高度契合。auto-schema briefing 直击上百字段宽表 API 的字段语义标注痛点——自动为 Agent 生成 schema 简报而非灌全字段。source-routed plan chaining 是跨源路由的编排范式参考。persona 驱动构造法可用于生成团队业务 Agent 测试集。",
+      "detail": {
+        "why": "企业 RAG 需跨结构化+非结构化源链证据，现有基准不覆盖。",
+        "mechanism": "RetailBridge（persona 驱动跨源组合问题）+ RetailRAG（auto-schema briefing + source-routed plan chaining + diagnostic plan revision）。",
+        "deep": "auto-schema briefing 是上百字段宽表场景的关键：不灌全 schema 给 Agent，而是按问题自动生成精简 schema 简报——与 TEAL 的聚焦知识策略同构。plan revision 让 Agent 在跨源传递证据失败时诊断修订而非硬走。",
+        "apply": "借鉴 auto-schema briefing 为宽表 API 生成按问题精简的字段简报；用 source-routed plan chaining 编排跨结构化 API+非结构化文档的查询；persona 驱动法生成业务 Agent 测试集。",
+        "caveats": "零售领域偏向性；persona 模拟可能不覆盖真实业务问题分布；引用待核实。",
+        "business": "跨源 RAG 编排范式=企业业务 Agent 的通用架构参考，降低异构源集成成本。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.25096",
+            "title": "Toward Agentic RAG for Enterprise Retail Workflows over Heterogeneous Sources (RetailBridge/RetailRAG)"
+          }
+        ],
+        "diagram": {
+          "title": "RetailRAG：跨源路由 plan chaining + auto-schema briefing",
+          "flow": [
+            {
+              "label": "结构化源",
+              "sub": "订单/产品",
+              "type": "database"
+            },
+            {
+              "label": "非结构化源",
+              "sub": "询盘/评论",
+              "type": "database"
+            },
+            {
+              "label": "auto-schema briefing",
+              "sub": "按问题精简",
+              "type": "backend"
+            },
+            {
+              "label": "source-routed plan",
+              "sub": "跨源链证据",
+              "type": "backend"
+            },
+            {
+              "label": "diagnostic revision",
+              "sub": "失败修订",
+              "type": "security"
+            },
+            {
+              "label": "接地答案",
+              "sub": "超越基线",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "schema 精简",
+              "text": "auto-schema briefing 按问题生成字段简报，不灌全 schema"
+            },
+            {
+              "label": "测试集构造",
+              "text": "persona 驱动法可用于生成业务 Agent 测试集"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "blog",
+      "title": "Data Engineering Weekly：自组织数据栈——当 Agent 回答问题时它也在维护数据模型",
+      "date": "2026-10-14",
+      "source": "Data Engineering Weekly",
+      "link": "https://www.dataengineeringweekly.com/p/the-self-organizing-data-stack",
+      "summary": "核心命题：『当 Agent 回答问题时，它们也能维护数据模型。这给编排引擎提出了什么新要求。』从 JSON-LD 元数据提取。作者 Ananth Packkildurai。正文为 Substack JS 渲染未抓取全文，核心论点基于 description。",
+      "insight": "架构师视角：直击用户业务线 Agent 自治方向——Agent 不只读数据模型，还写回维护。这与语义层/元数据治理两条路线都相关：Agent 维护数据模型=自动补字段语义标注/自动发现 schema 漂移。编排引擎需支持『读写数据模型』而非纯读——对 Cube/OpenMetadata 这类语义层/元数据工具的 API 提出写回能力要求。与 TEAL（工具自进化）形成『Agent 维护工具库+数据模型』双自组织。",
+      "detail": {
+        "why": "传统数据栈：人维护模型，Agent 只读；自组织：Agent 也维护模型，降低人维护成本。",
+        "mechanism": "Agent 在回答问题时副作用式维护数据模型（字段语义/schema 漂移检测），需编排引擎支持写回。",
+        "deep": "自组织数据栈的关键是编排引擎需支持『读写数据模型』：Agent 发现字段语义缺失时自动标注、发现 schema 漂移时自动告警/修复。这使语义层（Cube）与元数据治理（OpenMetadata）从『人写 Agent 读』变为『Agent 读写』——要求这些工具开放写 API。",
+        "apply": "评估 Cube/OpenMetadata 是否支持 Agent 写回字段语义/元数据；设计业务 Agent 的副作用式数据模型维护任务（如查数时顺带补字段标注）。",
+        "caveats": "正文未抓取（Substack JS 渲染），论点基于 description；具体编排引擎要求细节待核实。",
+        "business": "自组织数据栈=降低元数据维护人力成本=业务 Agent 自治度提升——直击用户业务线人力瓶颈。",
+        "sources": [
+          {
+            "url": "https://www.dataengineeringweekly.com/p/the-self-organizing-data-stack",
+            "title": "The Self-Organizing Data Stack - Data Engineering Weekly"
+          }
+        ],
+        "diagram": {
+          "title": "自组织数据栈：Agent 读写数据模型",
+          "flow": [
+            {
+              "label": "用户问题",
+              "sub": "查数",
+              "type": "frontend"
+            },
+            {
+              "label": "业务 Agent",
+              "sub": "回答",
+              "type": "backend"
+            },
+            {
+              "label": "数据模型",
+              "sub": "读写",
+              "type": "database"
+            },
+            {
+              "label": "副作用维护",
+              "sub": "字段语义/漂移",
+              "type": "security"
+            },
+            {
+              "label": "编排引擎",
+              "sub": "支持写回",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "读写模型",
+              "text": "Agent 从纯读变为读写数据模型"
+            },
+            {
+              "label": "信息待核实",
+              "text": "正文 JS 渲染未抓取，基于 description 推断"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "Cube v1.8.9：新增 /v1/sql-filters API 读写改写 SQL 查询过滤条件——语义层 API 可编程性增强",
+      "date": "2026-10-21",
+      "source": "GitHub cube-js/cube",
+      "link": "https://github.com/cube-js/cube/releases/tag/v1.8.9",
+      "summary": "Cube v1.8.9（10/21）核心新特性：/v1/sql-filters API 读取和改写 SQL API 查询的过滤条件（#10604）。Bug 修复：clickhouse-driver 预聚合 DDL 经 command() 运行（#12324）、cubesql lower/upper Unicode-aware（#12341）、cubesql 窗口 over grouped query 作外层 select 下推（#12336）、cubesql 成员过滤器下推到子查询之下让 FILTER_PARAMS 可见（#12295）、cubesql 相等字面量共享查询参数（#12348）、schema-compiler 数字开头表/列名脚手架有效化（#12256）、schema-compiler 视图度量 over rolling windows 标记累积（#12308）、schema-compiler ClickHouse/Oracle/Presto 时间过滤值解析（#12231）、tesseract NULL 键多阶段维度 null-safe join（#12228）。",
+      "insight": "架构师视角：/v1/sql-filters 是语义层 API 可编程性的关键一步——Agent 可程序化读写改写查询过滤条件，而非只调用预定义查询。这对用户业务线『不直连数据库、通过高业务含义 API 查数』场景直接赋能：Agent 可动态构造/改写过滤条件。null-safe join on NULL keys 修复了多阶段维度 join 的数据可信度漏洞。v1.8.4-v1.8.6 已收录故不重复。",
+      "detail": {
+        "why": "语义层 API 需支持 Agent 动态构造/改写查询，而非只调预定义接口。",
+        "mechanism": "/v1/sql-filters 读写改写 SQL API 查询过滤条件 + 多项 SQL 方言与 schema-compiler 修复。",
+        "deep": "sql-filters API 的意义：将过滤条件从查询体中解耦为可独立读写改写的对象——Agent 可先读现有过滤、改写、再执行，支持动态查询构造。这与自组织数据栈（Agent 维护模型）形成『Agent 改写查询+维护模型』闭环。",
+        "apply": "在业务 Agent 查数工作流中用 /v1/sql-filters 动态构造宽表 API 的过滤条件，替代硬编码查询模板；利用 null-safe join 修复多阶段维度数据可信度。",
+        "caveats": "sql-filters API 具体语义/权限模型需查文档；RLS 穿透与字段级权限需验证改写后过滤是否受 RLS 约束。",
+        "business": "语义层 API 可编程化=业务 Agent 动态查数能力解锁，降低硬编码查询模板维护成本。",
+        "sources": [
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.8.9",
+            "title": "Cube v1.8.9 release (sql-filters API + Unicode-aware lower/upper)"
+          }
+        ],
+        "diagram": {
+          "title": "Cube /v1/sql-filters：Agent 动态改写查询过滤",
+          "flow": [
+            {
+              "label": "业务 Agent",
+              "sub": "动态构造",
+              "type": "frontend"
+            },
+            {
+              "label": "/v1/sql-filters",
+              "sub": "读写改写过滤",
+              "type": "backend"
+            },
+            {
+              "label": "SQL API 查询",
+              "sub": "执行",
+              "type": "database"
+            },
+            {
+              "label": "RLS/字段权限",
+              "sub": "约束验证",
+              "type": "security"
+            }
+          ],
+          "notes": [
+            {
+              "label": "过滤解耦",
+              "text": "过滤条件从查询体解耦为可独立读写改写对象"
+            },
+            {
+              "label": "权限待验",
+              "text": "改写后过滤是否受 RLS 约束需验证"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "OpenMetadata 2.0.6：摄入精度+数据质量可信化+术语表治理——元数据治理基础持续成熟",
+      "date": "2026-10-21",
+      "source": "GitHub open-metadata/OpenMetadata",
+      "link": "https://github.com/open-metadata/OpenMetadata/releases/tag/2.0.6-release",
+      "summary": "OpenMetadata 2.0.6（10/21）维护版：摄入更准（CockroachDB 分区去重 #34894、dbt 快照 lineage 不丢 #34930、Omni dashboard owner+lineage #35259、Teradata DBQL 使用+lineage #35258、Athena Iceberg 类型保真 #35699、Glue 视图 SQL+外部表 lineage #35607）、数据质量可信（中止测试计为失败 #34848、ODCS 规则创建关联测试用例 #34176、范围/布尔失败行数修正 #35276）、术语表治理（嵌套搜索保留父层级 #35287、CSV 重导入相关术语 #35739）、数据契约可发现性（契约链接打开所属资产 #35709）。",
+      "insight": "架构师视角：用户业务线元数据治理基建持续成熟的关键信号。数据质量测试『中止=失败』修复（#34848）直击可信度——之前中止被误报成功使数据质量分数不可信，对 Agent 查数可信度验证是基础。术语表嵌套搜索与 CSV 重导入修复使业务术语表（用户业务语义理解子领域）治理可用。dbt catalogMapping（#35599）解决引擎 catalog 与摄入库名不匹配——对多源异构环境实用。2.0.4/2.0.5 已收录故不重复。",
+      "detail": {
+        "why": "元数据摄入不准+数据质量不可信=Agent 查数基础不可靠。",
+        "mechanism": "摄入精度修复（多源 lineage/owner/类型）+ 数据质量中止=失败 + 术语表嵌套治理 + 契约可发现性。",
+        "deep": "数据质量中止=失败（#34848）是可信度基石：之前连接中断/不支持 SQL 导致测试中止被误报成功，使数据质量分数虚高——Agent 据此判断数据可信度会误信。ODCS 规则→测试用例（#34176）使数据契约从文档变为可执行校验。",
+        "apply": "升级到 2.0.6 获取可信数据质量分数；用术语表嵌套搜索治理业务术语；用 ODCS 规则将数据契约变为 Agent 可查的可执行校验。",
+        "caveats": "维护版无破坏性新功能；升级风险低但仍需测试摄入回归。",
+        "business": "可信数据质量分数=Agent 查数可信度验证基础；术语表治理=业务语义理解基建。",
+        "sources": [
+          {
+            "url": "https://github.com/open-metadata/OpenMetadata/releases/tag/2.0.6-release",
+            "title": "OpenMetadata 2.0.6 release (ingestion accuracy, data quality trust, glossary governance)"
+          }
+        ],
+        "diagram": {
+          "title": "OpenMetadata 2.0.6：可信数据质量 + 术语表治理",
+          "flow": [
+            {
+              "label": "多源摄入",
+              "sub": "lineage/owner/类型",
+              "type": "database"
+            },
+            {
+              "label": "数据质量",
+              "sub": "中止=失败",
+              "type": "security"
+            },
+            {
+              "label": "术语表",
+              "sub": "嵌套搜索/CSV",
+              "type": "backend"
+            },
+            {
+              "label": "数据契约",
+              "sub": "可执行校验",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "可信度基石",
+              "text": "中止=失败修复使数据质量分数不再虚高"
+            },
+            {
+              "label": "契约可执行",
+              "text": "ODCS 规则→测试用例，契约从文档变校验"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "WrenAI wren-pydantic v0.3.1 + wren-langchain v0.2.3：SDK 以 UTF-8 读取项目制品——语义层引擎多语言兼容",
+      "date": "2026-10-20",
+      "source": "GitHub Canner/WrenAI",
+      "link": "https://github.com/Canner/WrenAI/releases/tag/wren-pydantic-v0.3.1",
+      "summary": "WrenAI 两 SDK 子包发布：wren-pydantic v0.3.1（10/20）与 wren-langchain v0.2.3（10/19），均修复 SDK 以 UTF-8 读取项目制品（#2764）。wren-core/semantic-core/v0.16.0 等已在 10/19 晨报收录故不重复。",
+      "insight": "架构师视角：小修复但有意义——语义层引擎 SDK 在多语言/非 ASCII 制品（中文业务术语、宽表字段中文名）场景下需 UTF-8 正确读取。用户业务线涉及中文业务术语表与宽表字段中文标注，此修复直接影响制品读取正确性。wren-langchain SDK 支持 LangChain 集成是业务 Agent 编入语义层的接口。",
+      "detail": {
+        "why": "非 ASCII 制品（中文业务术语/字段名）需 UTF-8 正确读取，否则语义层模型损坏。",
+        "mechanism": "SDK 读取项目制品时以 UTF-8 解码（#2764）。",
+        "deep": "UTF-8 修复看似小但对中文业务环境是必要——若 SDK 以默认编码读取含中文的语义层模型/宽表字段标注，会导致乱码→语义层解析错误→Agent 查数错误。wren-langchain 是 LangChain 集成入口，业务 Agent 经此接入语义层。",
+        "apply": "若用 WrenAI 语义层且制品含中文，升级两 SDK 避免读取损坏；经 wren-langchain 将语义层接入业务 Agent。",
+        "caveats": "小修复无破坏性；wren-core 主包版本未变。",
+        "business": "多语言制品兼容=中文业务环境可用性保障；LangChain 集成=业务 Agent 接入语义层的标准接口。",
+        "sources": [
+          {
+            "url": "https://github.com/Canner/WrenAI/releases/tag/wren-pydantic-v0.3.1",
+            "title": "WrenAI wren-pydantic v0.3.1 + wren-langchain v0.2.3 (UTF-8 artifact reads)"
+          }
+        ],
+        "diagram": {
+          "title": "WrenAI SDK UTF-8 制品读取",
+          "flow": [
+            {
+              "label": "语义层制品",
+              "sub": "含中文",
+              "type": "database"
+            },
+            {
+              "label": "SDK UTF-8",
+              "sub": "正确读取",
+              "type": "backend"
+            },
+            {
+              "label": "wren-langchain",
+              "sub": "LangChain 集成",
+              "type": "frontend"
+            },
+            {
+              "label": "业务 Agent",
+              "sub": "语义层查询",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "中文必要",
+              "text": "非 ASCII 制品需 UTF-8 否则语义层损坏"
+            },
+            {
+              "label": "集成入口",
+              "text": "wren-langchain 是业务 Agent 接入语义层接口"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "cross",
+      "title": "Auditing RSI：114 篇递归自改进研究全文编码——90% 报产品评估但过程证据严重缺失",
+      "date": "2026-10-20",
+      "source": "arXiv 2610.27610",
+      "link": "https://arxiv.org/abs/2610.27610",
+      "summary": "递归自改进（RSI）承诺 AI 系统在产生进一步改进上变得更好。评估此承诺需区分关于最终系统的产品声称与关于改进过程本身的过程声称。现有调查规定了声称所需证据，但研究多常报告该证据未被量化。论文对 2026 年 10 月冻结的可复现 arXiv 搜索框架内 114 篇合格研究做全文编码，含 90 篇自称 RSI。编码方案将声称链接到评估设计，独立人工编码+第三读者裁决+改进者比较的单独盲编码评估信度。90 篇 RSI 研究中 90% 报告了开发任务之外的产品评估（宽松标准）。Semantic Scholar 引用待核实（429 限流，新文预期 0）。",
+      "insight": "架构师视角：交叉线治理证据主题。RSI 是 Agent 自进化的核心承诺，但 90% 只报产品评估、过程证据缺失=『系统变好了』不证明『自改进过程真的有效』。对用户评估 Agent 自进化（如 TEAL 工具进化、HarnessPro harness 自改进）时，需审查过程证据而非只看最终性能。编码方案可复现是评估方法论贡献。",
+      "detail": {
+        "why": "RSI 声称需区分产品（系统好）vs 过程（自改进真有效），但过程证据缺多少未量化。",
+        "mechanism": "114 篇全文编码 + 编码方案链接声称→评估设计 + 独立编码/第三裁决/盲编码信度评估。",
+        "deep": "产品评估宽松标准（90%）包含部分任务外评估，但过程证据（改进过程本身是否如声称运作）严重缺失。这与 10/20 Reusing Assurance Evidence（AI 管线复用需过程证据=依赖完整性）形成『过程证据』双共振：RSI 需证明改进过程，管线复用需证明依赖覆盖——都是『不只看产品/结果，看过程/条件』。",
+        "apply": "评估团队 Agent 自进化方案时，用论文编码方案审查过程证据（不只是最终性能）；对 HarnessPro/TEAL 类自改进声称要求过程证据。",
+        "caveats": "90% 宽松标准可能高估；编码者偏差；arXiv 框架冻结时点限制；引用待核实。",
+        "business": "RSI 声称可信度量化=避免为未经验证的自改进承诺买单——降低 Agent 自进化方案的投资风险。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.27610",
+            "title": "Auditing the Product, Not the Recursion: The Evaluation Evidence Behind Recursive Self-Improvement Claims"
+          }
+        ],
+        "diagram": {
+          "title": "RSI 证据审计：产品 vs 过程声称分离",
+          "flow": [
+            {
+              "label": "114 篇 RSI 研究",
+              "sub": "90 自称 RSI",
+              "type": "database"
+            },
+            {
+              "label": "全文编码",
+              "sub": "声称→评估设计",
+              "type": "backend"
+            },
+            {
+              "label": "产品评估",
+              "sub": "90% 宽松",
+              "type": "security"
+            },
+            {
+              "label": "过程证据",
+              "sub": "严重缺失",
+              "type": "security"
+            },
+            {
+              "label": "可信度量化",
+              "sub": "投资决策",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "产品≠过程",
+              "text": "系统好不证明自改进过程有效"
+            },
+            {
+              "label": "编码可复现",
+              "text": "编码方案+盲编码信度评估是方法论贡献"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "cross",
+      "title": "Reusing Assurance Evidence：AI 管线复用需 fail-closed 签名闸门——Ed25519+依赖完整性挡 8/9 操纵",
+      "date": "2026-10-20",
+      "source": "arXiv 2610.27672",
+      "link": "https://arxiv.org/abs/2610.27672",
+      "summary": "AI 管线每次变更后重跑所有治理控制昂贵，故团队复用早期结果。复用安全仅当每个控制声明的依赖覆盖所有能改变其结果的东西，且 release gate 检查复用证据描述的是待发布候选。论文显式化两条件，测量第一个条件在实践中多常失败。定义签名证据记录对候选何时有效，给出充分条件使变更局部重执行达到与全量重跑相同的发布决策。参考闸门用 Ed25519 数字签名实现，挡住 9 个操纵场景中 8 个（对比信任 planner 的闸门挡 1 个、仅验签的挡 3 个）。714 条公开 Data Version Control 管线实测依赖完整性。Semantic Scholar 引用待核实（429 限流，新文预期 0）。",
+      "insight": "架构师视角：交叉线治理基础设施。fail-closed 签名闸门是 Agent 治理基线——信任 planner（挡 1/9）和仅验签（挡 3/9）远不如 Ed25519+依赖完整性（挡 8/9）。对用户双主题都有意义：研发线 AI 管线（CI/CD agent）复用治理结果、业务线 Agent 查数复用缓存/中间结果都需此闸门。714 条公开 DVC 管线实测提供实践基准。",
+      "detail": {
+        "why": "AI 管线全量重跑昂贵，复用需保证依赖覆盖+签名匹配候选，否则操纵可注入假证据。",
+        "mechanism": "两条件（依赖覆盖+签名匹配候选）+ Ed25519 签名参考闸门 + 变更局部重执行充分条件。",
+        "deep": "关键对比：信任 planner=只挡 1/9（planner 可伪造）；仅验签=挡 3/9（签名可来自过期/不匹配候选）；Ed25519+依赖完整性=挡 8/9（签名绑定候选+依赖覆盖验证）。剩余 1 个未挡场景是论文留白。变更局部重执行的充分条件使『只重跑受影响部分』达到与全量重跑相同决策——成本优化。",
+        "apply": "Agent 治理 pipeline 加 Ed25519 签名+依赖完整性闸门；用变更局部重执行充分条件优化复用成本；用 714 DVC 管线基准评估自身依赖完整性。",
+        "caveats": "1/9 未挡场景未披露；依赖完整性依赖控制正确声明依赖（实践中常失败）；引用待核实。",
+        "business": "fail-closed 闸门=Agent 管线操纵防御基线；变更局部重执行=治理成本优化——双价值。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.27672",
+            "title": "Reusing Assurance Evidence in AI Pipelines: Validity Conditions, a Fail-Closed Release Gate"
+          }
+        ],
+        "diagram": {
+          "title": "AI 管线复用：fail-closed 签名闸门分级",
+          "flow": [
+            {
+              "label": "AI 管线变更",
+              "sub": "复用早期结果",
+              "type": "frontend"
+            },
+            {
+              "label": "两条件",
+              "sub": "依赖覆盖+签名匹配",
+              "type": "security"
+            },
+            {
+              "label": "信任 planner",
+              "sub": "挡 1/9",
+              "type": "backend"
+            },
+            {
+              "label": "仅验签",
+              "sub": "挡 3/9",
+              "type": "backend"
+            },
+            {
+              "label": "Ed25519+依赖",
+              "sub": "挡 8/9",
+              "type": "security"
+            },
+            {
+              "label": "变更局部重执行",
+              "sub": "成本优化",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "分级对比",
+              "text": "信任 planner 1/9 << 仅验签 3/9 << Ed25519+依赖 8/9"
+            },
+            {
+              "label": "成本优化",
+              "text": "变更局部重执行充分条件使部分重跑=全量决策"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "cross",
+      "title": "GitHub Blog 密钥检测模型：上下文感知分类器——加权接受率 +11.5%，扫描时间 -86%",
+      "date": "2026-10-13",
+      "source": "GitHub Blog",
+      "link": "https://github.blog/ai-and-ml/githubs-model-for-secret-detection-finding-more-secrets-with-less-noise/",
+      "summary": "GitHub 披露其上下文感知密钥分类器：改善检测质量，加权接受率提升 11.5%，中位扫描执行时间降低 86%。meta description 提供核心数据。正文为 JS 渲染未抓取全文。",
+      "insight": "架构师视角：Agent 工具层密钥泄漏治理。上下文感知（而非纯模式匹配）使密钥检测更准且更快——86% 扫描时间降低对大规模 Agent 工作流（频繁操作含密钥的配置/API）的 CI 延迟有直接价值。与 Reusing Assurance Evidence（fail-closed 闸门）形成『检测+闸门』密钥治理闭环。",
+      "detail": {
+        "why": "Agent 工作流频繁操作含密钥配置，纯模式匹配误报多+慢。",
+        "mechanism": "上下文感知密钥分类器（结合上下文判断真密钥 vs 误报）。",
+        "deep": "上下文感知是关键：纯模式匹配（如正则）对高熵字符串误报多；上下文分类器结合周围上下文（变量名/文件类型/赋值模式）判断，提升接受率（真密钥被接受）同时降扫描时间（减少误报复核）。",
+        "apply": "Agent 工具层集成上下文感知密钥检测；评估对 Agent 频繁操作配置场景的扫描延迟影响。",
+        "caveats": "正文 JS 渲染未抓取，具体模型架构/上下文特征待核实；11.5%/86% 数据来自 meta description。",
+        "business": "密钥检测准+快=Agent 工作流安全基线不拖慢 CI——对大规模 Agent 部署的运维效率有价值。",
+        "sources": [
+          {
+            "url": "https://github.blog/ai-and-ml/githubs-model-for-secret-detection-finding-more-secrets-with-less-noise/",
+            "title": "GitHub's model for secret detection: Finding more secrets with less noise"
+          }
+        ],
+        "diagram": {
+          "title": "上下文感知密钥检测：接受率↑ 扫描时间↓",
+          "flow": [
+            {
+              "label": "配置/API 文件",
+              "sub": "Agent 操作",
+              "type": "frontend"
+            },
+            {
+              "label": "上下文分类器",
+              "sub": "非纯模式",
+              "type": "security"
+            },
+            {
+              "label": "真密钥",
+              "sub": "接受率+11.5%",
+              "type": "backend"
+            },
+            {
+              "label": "误报",
+              "sub": "扫描-86%",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "上下文感知",
+              "text": "结合周围上下文判断，非纯正则"
+            },
+            {
+              "label": "信息待核实",
+              "text": "正文未抓取，数据来自 meta description"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "GRACE Marketplace（253⭐ MIT）：Graph-RAG 锚定契约驱动 AI 代码工程——跨 Claude Code/Codex CLI/Kilo Code",
+      "date": "2026-10-22",
+      "source": "GitHub osovv/grace-marketplace",
+      "link": "https://github.com/osovv/grace-marketplace",
+      "summary": "GRACE（Graph-RAG Anchored Code Engineering）是契约优先的 AI 工程方法论，围绕语义标记、.grace XML 制品、知识图谱导航、断言、作用域、日志驱动验证。.grace 模型含 context（需求/技术/原则）、graph（图谱投影 GD-*/M-*/DF-* 锚点）、verification（确定性 V-M-* 条目）、changes（GraceChangeSpec/GraceChangePlan 变更包）。支持 Claude Code/Codex CLI/Kilo Code。GRACE 4 用 .grace 作持久项目模型，V-M-* 验证条目声明 Cwd/TestFiles，绝对路径/..逃逸/symlink 逃逸 fail closed。TypeScript 语义分析编译器支持；Python 需运行时（__all__ 精确否则启发式）；Go/Rust/Java 等无 adapter 仅结构治理。打包版本 4.2.1。",
+      "insight": "架构师视角：研发线『契约优先』与交叉线『治理强制力分级』的开源交集。.grace 模型把契约/图谱/验证/变更分离为可审计制品——与用户研发知识库（RAG for codebase/代码图谱）思路契合。fail-closed 路径逃逸防护（绝对路径/.. /symlink）与 Reusing Assurance Evidence 的 fail-closed 闸门同构。跨三大 coding agent CLI 支持降低采用门槛。V-M-* 确定性验证条目是『治理强制力分级』中结构性不可达的实例。",
+      "detail": {
+        "why": "coding agent 需契约驱动（先决定造什么）+ 可审计制品（变更可追溯）+ 治理强制力（验证 fail-closed）。",
+        "mechanism": ".grace XML 制品（context/graph/verification/changes）+ 知识图谱导航 + V-M-* 确定性验证 + GraceChangeSpec 变更包 + fail-closed 路径逃逸防护。",
+        "deep": "GRACE 4 模型的分层：context（人意图）→ graph（结构化知识）→ verification（确定性检查）→ changes（变更管理），形成『意图→结构→验证→变更』闭环。V-M-* 确定性条目（非 LLM 判断）是治理强制力的结构性实现——与 10/20 TDS Skill-vs-MCP（MCP 结构性不可达）同构。语言适配分级（TS 精确/Python 启发式/无 adapter 结构治理）体现了务实的覆盖权衡。",
+        "apply": "评估 GRACE skills 作为 Claude Code/Codex CLI 工作流的契约驱动层；借鉴 .grace 制品分离模式管理研发知识库的 context/graph/verification；用 V-M-* 确定性验证条目模式设计 fail-closed 检查。",
+        "caveats": "253⭐ 规模较小，社区成熟度待观察；.grace 制品引入额外维护成本；无 adapter 语言仅结构治理（export parity 不分析）。",
+        "business": "契约驱动 AI 代码工程=降低 AI 代码的不可控性；可审计制品=合规可追溯——对受监管行业的 AI 代码采用有治理价值。",
+        "sources": [
+          {
+            "url": "https://github.com/osovv/grace-marketplace",
+            "title": "GRACE Marketplace (Graph-RAG Anchored Code Engineering) - contract-driven AI code generation skills"
+          }
+        ],
+        "diagram": {
+          "title": "GRACE：.grace 制品分层 + fail-closed 验证",
+          "flow": [
+            {
+              "label": "context",
+              "sub": "需求/技术/原则",
+              "type": "frontend"
+            },
+            {
+              "label": "graph",
+              "sub": "GD/M/DF 锚点",
+              "type": "database"
+            },
+            {
+              "label": "verification",
+              "sub": "V-M-* 确定性",
+              "type": "security"
+            },
+            {
+              "label": "changes",
+              "sub": "GraceChangeSpec",
+              "type": "backend"
+            },
+            {
+              "label": "Claude Code/Codex/Kilo",
+              "sub": "跨 CLI",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "契约分层",
+              "text": "意图→结构→验证→变更闭环，制品可审计"
+            },
+            {
+              "label": "fail-closed",
+              "text": "路径逃逸/无 adapter 语言 fail closed"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "product",
+      "title": "战略研判：AI 代码『可见可控』与企业 Agent『工具自组织』双线汇聚——治理证据分级成为架构默认",
+      "date": "2026-10-22",
+      "source": "综合本期情报",
+      "link": "https://arxiv.org/abs/2610.27863",
+      "summary": "本期情报串成两条汇聚主线。研发线：AI 代码可见性三件套（From Tokens 行级溯源+SPLASH 安全幻觉定位+Documentation Drift 文档债量化）+ AgenticVulHunter 本地可自建审查 + agent-scale Git 基建，构成『让 AI 写的代码可审计可治理』主线。业务线：text-to-SQL 幻觉分类学（复现/涌现）+ EGI-BENCH 统一评估 + TEAL 工具自进化 + RetailRAG 跨源路由 + 自组织数据栈，构成『企业 Agent 评估与工具化』主线。交叉线 RSI 证据审计 + AI 管线 fail-closed 闸门 + GRACE 契约驱动，汇聚为『治理证据分级成为架构默认』——不只看产品/结果，看过程/条件/证据。",
+      "insight": "架构师视角：双主题在本期汇聚于一个共同架构原则：治理证据分级。研发线（AI 代码可溯源/安全幻觉可定位/文档债可量化）与业务线（幻觉分类学/统一评估/工具自组织）都需要『不只看结果，看过程证据』的治理层。交叉线的 RSI 审计（过程证据缺失）+ fail-closed 闸门（依赖完整性）+ GRACE（V-M-* 确定性验证）提供了该治理层的工程范式。短期落地：研发线加 AI 代码作者溯源+文档 co-change 门禁；业务线加幻觉逐步骤审计+EGI 维度验收模板。中期：TEAL 工具自进化层+自组织数据栈写回；GRACE 契约驱动 coding agent 工作流。长期：fail-closed 签名闸门贯穿双线 Agent 治理 pipeline。",
+      "detail": {
+        "why": "双主题在本期汇聚于『治理证据分级』共同架构原则。",
+        "mechanism": "研发线可见性三件套 + 业务线评估工具化 + 交叉线治理证据工程范式，汇聚为治理证据分级架构默认。",
+        "deep": "汇聚点：研发线『AI 代码可溯源』与业务线『幻觉分类学』本质都是『把不可见的风险变为可分级可治理的证据』。交叉线提供工程范式——RSI 审计的编码方案（声称→评估设计）、fail-closed 闸门（依赖完整性+签名）、GRACE（V-M-* 确定性验证+制品分离）。三者共同把『信任』从『看结果』升级为『看过程证据』。",
+        "apply": "短期：研发线加 AI 代码作者溯源（adapter）+文档 co-change 门禁；业务线加幻觉逐步骤审计+EGI 维度验收模板。中期：TEAL 工具自进化层+自组织数据栈写回；GRACE 契约驱动。长期：fail-closed 签名闸门贯穿双线。",
+        "caveats": "多篇论文引用待核实（Semantic Scholar 429 限流，新文预期 0）；GitHub Blog/TDS 正文 JS 渲染未抓取全文，部分洞察基于 meta description/RSS 推断。",
+        "business": "治理证据分级=AI 系统可审计=合规可信任=降低受监管行业 AI 采用风险——双主题共同的商业价值锚点。",
+        "sources": [
+          {
+            "url": "https://arxiv.org/abs/2610.27863",
+            "title": "From Tokens to Files (研发线可见性)"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.27720",
+            "title": "Text-to-SQL 幻觉分类学 (业务线评估)"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.27610",
+            "title": "Auditing RSI (交叉线过程证据)"
+          },
+          {
+            "url": "https://arxiv.org/abs/2610.27672",
+            "title": "Reusing Assurance Evidence (交叉线 fail-closed 闸门)"
+          },
+          {
+            "url": "https://github.com/osovv/grace-marketplace",
+            "title": "GRACE Marketplace (交叉线契约驱动)"
+          }
+        ],
+        "diagram": {
+          "title": "治理证据分级：双主题汇聚架构默认",
+          "flow": [
+            {
+              "label": "研发线",
+              "sub": "AI 代码可见可控",
+              "type": "frontend"
+            },
+            {
+              "label": "业务线",
+              "sub": "Agent 评估工具化",
+              "type": "backend"
+            },
+            {
+              "label": "交叉线",
+              "sub": "治理证据工程",
+              "type": "security"
+            },
+            {
+              "label": "治理证据分级",
+              "sub": "架构默认",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "汇聚原则",
+              "text": "双主题共需『不只看结果，看过程证据』治理层"
+            },
+            {
+              "label": "工程范式",
+              "text": "RSI 编码方案+fail-closed 闸门+GRACE V-M-* 验证提供工程范式"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
