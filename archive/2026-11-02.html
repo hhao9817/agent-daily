@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI for Business 领域每日晨报</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+            --card: #ffffff;
+            --border: #d6dde8;
+            --border-strong: #adbac9;
+            --text: #111827;
+            --muted: #4b5563;
+            --accent: #2563eb;
+            --accent-soft: #dbeafe;
+            --accent2: #059669;
+            --accent2-soft: #d1fae5;
+            --warn: #b45309;
+            --warn-soft: #fef3c7;
+            --red: #dc2626;
+            --red-soft: #fee2e2;
+            --shadow: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+            --shadow-hover: 0 10px 25px -5px rgba(15,23,42,0.1), 0 8px 10px -6px rgba(15,23,42,0.05);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+      padding: 20px;
+      max-width: 920px;
+      margin: 0 auto;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    /* 长英文标识符/URL 在移动端强制换行，避免撑破卡片 */
+    p, li, h1, h2, h3, h4, .summary, .insight, .snap-title, .snap-points li,
+    .modal-sec p, .modal-body, .detail-block, .item, .snapshot, .snapshot-summary {
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    header {
+      text-align: center;
+      padding: 30px 0 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    header h1 {
+      font-size: 1.8em;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    header h1 .grad {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header .date { color: var(--muted); margin-top: 8px; font-size: 0.95em; }
+    .archive-link {
+      display: inline-block; margin-top: 12px; color: var(--accent); text-decoration: none;
+      font-size: 0.85em; border: 1px solid var(--border-strong); background: var(--card);
+      padding: 5px 14px; border-radius: 20px; box-shadow: var(--shadow);
+      transition: all .15s;
+    }
+    .archive-link:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+    /* 今日速览（结构化，按来源分类） */
+    .snapshot {
+      background: linear-gradient(135deg, var(--accent-soft), var(--accent2-soft));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow);
+    }
+    .snapshot-summary {
+      font-size: 0.98em;
+      color: var(--text);
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px dashed var(--border-strong);
+    }
+    .snapshot-summary strong { color: var(--accent); }
+    .snapshot-groups { display: flex; flex-direction: column; gap: 10px; }
+    .snap-group {
+      display: flex;
+      gap: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      box-shadow: var(--shadow);
+    }
+    .snap-bar { width: 5px; border-radius: 3px; flex-shrink: 0; }
+    .snap-bar-paper { background: var(--accent); }
+    .snap-bar-github { background: var(--accent2); }
+    .snap-bar-product { background: var(--warn); }
+    .snap-bar-blog { background: var(--red); }
+    .snap-body { flex: 1; }
+    .snap-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.85em; font-weight: 700; color: var(--text);
+      margin-bottom: 6px;
+    }
+    .snap-title .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-paper { background: var(--accent); }
+    .dot-github { background: var(--accent2); }
+    .dot-product { background: var(--warn); }
+    .dot-blog { background: var(--red); }
+    .snap-title .badge {
+      font-size: 0.7em; font-weight: 600;
+      background: var(--bg); border: 1px solid var(--border-strong);
+      color: var(--muted); padding: 1px 8px; border-radius: 20px;
+    }
+    .snap-points { list-style: none; padding: 0; margin: 0; }
+    .snap-points li {
+      font-size: 0.9em; color: var(--text);
+      padding: 3px 0 3px 18px;
+      position: relative;
+    }
+    .snap-points li::before {
+      content: "▸";
+      position: absolute; left: 2px;
+      color: var(--accent);
+    }
+
+    /* 分类区块 */
+    .section { margin-bottom: 30px; }
+    .section-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 4px; margin-bottom: 14px;
+      border-bottom: 2px solid var(--border);
+    }
+    .section-head .bar { width: 6px; height: 22px; border-radius: 3px; }
+    .section-head h2 { font-size: 1.15em; color: var(--text); flex: 1; }
+    .section-head .count { font-size: 0.8em; color: var(--muted); background: var(--card); border: 1px solid var(--border); padding: 2px 10px; border-radius: 20px; }
+    .bar-paper { background: var(--accent); }
+    .bar-github { background: var(--accent2); }
+    .bar-product { background: var(--warn); }
+    .bar-blog { background: var(--red); }
+
+    .item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: border-color .2s, transform .1s, box-shadow .2s;
+    }
+    .item:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+    .item:active { transform: scale(0.995); }
+    .item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .tag {
+      display: inline-block;
+      font-size: 0.72em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .tag-paper { background: var(--accent-soft); color: var(--accent); }
+    .tag-github { background: var(--accent2-soft); color: var(--accent2); }
+    .tag-product { background: var(--warn-soft); color: var(--warn); }
+    .tag-blog { background: var(--red-soft); color: var(--red); }
+    .detail-hint { font-size: 0.78em; color: var(--accent); opacity: .8; }
+    .item h3 { font-size: 1.1em; margin-bottom: 8px; }
+    .item h3 a { color: var(--text); text-decoration: none; }
+    .item h3 a:hover { color: var(--accent); }
+    .item .meta { color: var(--muted); font-size: 0.82em; margin-bottom: 10px; }
+    .item .summary { font-size: 0.95em; margin-bottom: 10px; color: var(--text); }
+    .item .insight {
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      padding: 8px 12px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.92em;
+      color: var(--text);
+    }
+    .item .insight strong { color: var(--accent); }
+
+    /* ===== 详情弹层（浅色） ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(30,41,59,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      overflow-y: auto;
+      padding: 30px 20px;
+    }
+    .modal.show { display: block; }
+    .modal-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 32px 36px;
+      position: relative;
+      box-shadow: var(--shadow-hover);
+      animation: pop .18s ease;
+    }
+    @keyframes pop { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .modal-close {
+      position: absolute;
+      top: 14px; right: 16px;
+      background: none; border: none;
+      color: var(--muted);
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+    .modal-close:hover { color: var(--text); background: var(--bg); }
+    .modal-content h2 {
+      font-size: 1.4em;
+      color: var(--text);
+      margin: 10px 0 6px;
+      line-height: 1.4;
+      padding-right: 30px;
+    }
+    .modal-content .meta { color: var(--muted); font-size: 0.85em; margin-bottom: 18px; }
+    .modal-body { margin-top: 8px; }
+    .modal-sec {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+    }
+    .modal-sec h4 { font-size: 0.95em; color: var(--accent); margin-bottom: 8px; }
+    .modal-sec p { font-size: 0.93em; color: var(--text); }
+    .modal-sources { background: var(--bg); }
+    .modal-business { background: var(--warn-soft); }
+    .modal-business h4 { color: var(--warn); }
+    .sources-list { list-style: none; padding: 0; margin: 0; }
+    .sources-list li { font-size: 0.88em; color: var(--text); margin-bottom: 6px; padding-left: 4px; }
+    .src-id { color: var(--accent); font-weight: 600; margin-right: 6px; }
+    .src-link { color: var(--accent); text-decoration: none; word-break: break-all; }
+    .src-link:hover { text-decoration: underline; }
+    .diagram-box {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      overflow-x: auto;
+      position: relative;
+    }
+    .diagram-svg svg { display: block; }
+    .diagram-zoom {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.82em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      z-index: 5;
+    }
+    .diagram-zoom:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ===== 架构图放大 lightbox ===== */
+    .diagram-lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.85);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      overflow: auto;
+      padding: 30px;
+    }
+    .diagram-lightbox.show { display: block; }
+    .diagram-lightbox-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .diagram-lightbox-inner .lb-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px;
+    }
+    .diagram-lightbox-inner .lb-head h3 { font-size: 1.1em; color: var(--text); }
+    .diagram-lightbox-inner .lb-tools { display: flex; align-items: center; gap: 8px; }
+    .lb-btn {
+      background: var(--accent-soft); color: var(--accent);
+      border: 1px solid var(--border-strong); border-radius: 8px;
+      padding: 5px 12px; font-size: 0.85em; font-weight: 600; cursor: pointer;
+      transition: all .15s;
+    }
+    .lb-btn:hover { background: var(--accent); color: #fff; }
+    .lb-close {
+      background: none; border: none; color: var(--muted);
+      font-size: 26px; line-height: 1; cursor: pointer; padding: 4px 8px; border-radius: 8px;
+    }
+    .lb-close:hover { color: var(--text); background: var(--bg); }
+    .diagram-lightbox-inner .lb-svg {
+      overflow: auto;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .diagram-lightbox-inner .lb-svg svg {
+      max-width: 100%;
+      height: auto;
+      transition: transform .15s ease;
+      transform-origin: center center;
+    }
+    .diagram-lightbox-inner .lb-svg svg.zoomed { transform: scale(1.6); cursor: grab; }
+    .diagram-lightbox-inner .lb-svg svg.zoomed:active { cursor: grabbing; }
+    .diagram-lightbox-inner .lb-tip { text-align: center; color: var(--muted); font-size: 0.8em; margin-top: 10px; }
+    .modal-foot {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .modal-link { color: var(--accent); font-size: 0.88em; text-decoration: none; word-break: break-all; }
+    .modal-link:hover { text-decoration: underline; }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8em;
+      padding: 30px 0 10px;
+      border-top: 1px solid var(--border);
+      margin-top: 30px;
+    }
+    .empty { color: var(--muted); text-align: center; padding: 40px; }
+    /* ===== 反馈按钮 + 提交按钮 ===== */
+    .feedback-fab {
+      position: fixed; bottom: 24px; right: 24px;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; color: #fff; font-size: 24px; cursor: pointer;
+      box-shadow: var(--shadow-hover);
+      z-index: 9000; transition: transform .15s;
+    }
+    .feedback-fab:hover { transform: scale(1.1); }
+    .modal-submit {
+      width: 100%; padding: 12px; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; font-size: 1em; font-weight: 600; cursor: pointer;
+    }
+    .modal-submit:hover { opacity: 0.9; }
+    @media (max-width: 600px) {
+      .modal-content { padding: 24px 18px; }
+      body { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🤖 <span class="grad">AI for Business</span> 每日晨报</h1>
+    <div class="date">业务知识库 · 业务语义理解 · API 精确查询 | 2026-11-02</div>
+    <a class="archive-link" href="archive/index.html">📚 历史晨报归档</a>
+  </header>
+
+  <div class="snapshot"><div class="snapshot-summary"><strong>📌 今日速览</strong><br>本期三条线收敛到同一个工程命题：不要再指望「模型更强」，要让每个隐含假设变成可被检查的工件。研发线四篇实证把「上下文」拆成三层可检查属性——运行时可适用性（CASE：常规检索把 16 条因特性开关/架构迁移已失效的工件当成可执行建议）、先例与意图的权威优先级（Precedent or Intent：写下来的优先级规则 59/60 vs 纯代码示例 38/60；harness 级规则把 0/120 拉到 117/120）、结构骨架（Skeleton Coding：测试误差 -48.4%、小大模型差距 -52.4%、成本降 15-26 倍）。业务线给出「语义层 vs 企业知识图谱」迄今最硬的生产证据：三层引擎架构（知识图+确定性计算引擎+多 agent LLM）在 15 个部署 11 个月里把幻觉从 7-9% 降到 &lt;1%、部署周期 6 周→2 周；KG 元数据增强 GraphRAG 在 20 题上 16/20，text-to-SQL 10/20、向量 RAG 3/20，且 6 个自信错误全部来自 text-to-SQL 的同名实体混淆——结论是「先把实体解析到标识符再读文本」。交叉线三篇把「可审计」从口号变成协议与指标：记忆文件（CLAUDE.md/AGENTS.md）是无人审的可信上下文攻击面、prefix executability 用轨迹前缀可执行率拆穿「高分靠不可执行计划」、APE 用签名 in-toto 证明把 agent 会话变成可验证工件。</div><div class="snapshot-groups"><div class="snap-group"><span class="snap-bar snap-bar-github"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-github"></span>🐙 开源项目<span class="badge">2 项</span></div><ul class="snap-points"><li>Cube v1.8.15→v1.8.16（10/29、10/31）两连发聚焦语义层正确性与访问策略成本：cubesql 一组 6 个 patch 专治同名/多路径 join 的别名与限定符错配（#12455/#12456/#12463/#12464/#12465/#12359），tesseract 让每个 view member 走自己 view 的 join path（#12483），cubesql 去掉 view 的 shared-member join hint（#12476，关掉 #10977）。</li><li>v1.8.16 的 #12488 是本期最值得抄的一行：sql-api 把 BI 工具查询「只做一次计划」并跨请求复用 access-policy SQL——字段级 RBAC 的判定不再随查询量线性付费；配套 api-gateway 用哈希替代完整结果做 WebSocket 订阅去重（#12495）、cubeorchestrator 跳过已是输出格式的时间解析（#12505）。</li></ul></div></div></div></div>
+
+  <div class="section"><div class="section-head"><span class="bar bar-github"></span><h2>🐙 开源项目</h2><span class="count">1 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-github">🐙 GitHub</span></div><h3><a href="https://github.com/cube-js/cube/releases/tag/v1.8.16" target="_blank" rel="noopener">Cube v1.8.15→v1.8.16：同名 join 语义正确性六连修 + access-policy SQL 跨请求复用</a></h3><div class="meta">2026-10-31 · GitHub cube-js/cube</div><div class="summary">Cube 在 10/29（v1.8.15）与 10/31（v1.8.16）连发两版，主线是语义层的两件苦活。其一是 cubesql 的一组六个 patch，专治同名/多路径 join 的别名与限定符错配：保留 from 侧别名当 joined 侧先被投影（#12465）、同名 join 侧列映射到自己的别名（#12455）并保留其 join 侧（#12456）、join 侧重映射到自己的限定符（#12464）、把投影推入 CubeScan 时保留 grouping 维度（#12463）、在 limited CubeScan 里保留 order 成员（#12359）；tesseract 让每个 view member 走自己 view 的 join path（#12483）；cubesql 去掉 view 的 shared-member join hint（#12476，关掉 #10977）。其二是 v1.8.16 的 #12488：sql-api 把 BI 工具查询「只做一次计划」并跨请求复用 access-policy SQL。此外 api-gateway 用哈希替代完整结果做 WebSocket 订阅去重（#12495），cubeorchestrator 跳过已是输出格式的时间解析（#12505）；v1.8.15 还有 cube-cli 安装当前平台最新二进制（#12435）、neon 1.1.2 修 N-API 异步泄漏（#12461）。</div><div class="insight"><strong>🔍 技术视角：</strong>语义层真正的技术难点不在建模 DSL，而在「同名多路径 join 的语义正确性」——两列同名时取哪一侧、别名在投影下推后是否仍指向正确表，这些错误不会报错，只会悄悄给出错数。Cube 连发六个 patch 说明这是长期存在的深水区。而 #12488 是本期最值得抄的一行：字段级 RBAC 的 access-policy SQL 过去可能随请求线性生成，现在跨请求复用，等于把治理成本从「按查询计费」变成「按策略计费」。对用户「字段级 RBAC + 读写分离」的诉求，这是可直接借鉴的优化点。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">语义层的两条曲线：join 语义正确性 × 治理成本</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">BI/Agent 查询</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">同名多路径 join</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">cubesql 重写</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">别名/限定符/投影下推</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">tesseract</text><text x="548.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">每个 view member 走自己的 join path</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">access-policy SQL</text><text x="744.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">#12488 跨请求复用</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">结果</text><text x="450.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">语义等价 + 治理成本 O(policies)</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">六连修</tspan>　#12455/12456/12463/12464/12465/12359 均针对同名列与下推后的列归属</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">#12488</tspan>　查询计划一次计算、access-policy SQL 跨请求复用——RBAC 不再随查询量线性变贵</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">维护成本</tspan>　v1.6 LTS 同步 backport（v1.6.76），多分支维护压力显现</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>自建语义层的团队通常把精力放在「怎么定义指标」，而生产事故多来自「join 语义与访问策略」这两块——前者静默出错，后者随流量线性变贵。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>v1.8.15 的六个 cubesql patch 都在修正投影下推与别名重写过程中的列归属问题：当同一列名出现在 join 两侧、或投影先于 join 被下推到 CubeScan 时，需要显式保留 grouping 维度、order 成员与限定符。v1.8.16 的 #12488 把「查询计划」与「访问策略 SQL」从每次请求计算改为一次计算多次复用。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>这类 patch 密集出现是语义层走向成熟的标志：功能层面的 DSL 早已稳定，剩下的都是「在查询重写与下推的每个角落保持语义等价」。这也解释了为什么语义层难以被轻量替代——价值不在 API，而在这些边界条件的正确性。#12488 则揭示另一条曲线：治理（RBAC）的成本模型可以被工程优化，从 O(queries) 降到 O(policies)，这对高并发看板场景是数量级差异。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>语义层产品的竞争已进入「正确性与治理成本」阶段：谁能证明自己的 join 语义在所有下推路径下等价、谁能把 RBAC 成本压到常数级，谁就能承接高并发生产负载。对自建团队的含义是——选型时看 release 节奏里的 bug 类型，比看功能列表更能判断成熟度。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>①自建语义层时把「同名多路径 join」列为专项测试集（构造两表同名列、双向 join、投影下推各一组）；②把访问策略 SQL 的生成与查询解耦，按策略缓存而非按请求生成；③对 WebSocket 类订阅去重只存哈希，避免大结果驻留内存；④关注 cube-cli 的平台二进制安装修复——对多架构部署有用。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>这些都是 bug fix 与性能优化，不改变能力边界；#12488 的复用前提是策略在请求间不变，策略动态变更（如行级权限随用户变化）时需重新验证；未给出基准数字，收益幅度未知；v1.6 LTS 分支仍在同步 backport（v1.6.76），说明多分支维护成本高。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://github.com/cube-js/cube/releases/tag/v1.8.16" target="_blank" rel="noopener" class="src-link">Cube v1.8.16 release notes</a></li><li><span class="src-id">[2]</span> <a href="https://github.com/cube-js/cube/releases/tag/v1.8.15" target="_blank" rel="noopener" class="src-link">Cube v1.8.15 release notes</a></li></ol></div><div class="modal-foot"><a href="https://github.com/cube-js/cube/releases/tag/v1.8.16" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://github.com/cube-js/cube/releases/tag/v1.8.16</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-blog"></span><h2>📝 技术博客</h2><span class="count">2 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-blog">📝 技术博客</span></div><h3><a href="https://roundup.getdbt.com/p/dbt-charts-the-markdown-of-dashboards" target="_blank" rel="noopener">dbt Charts：把仪表盘变成「agent 可写、人能审」的 spec——Dave Fowler 称其为仪表盘的 Markdown</a></h3><div class="meta">2026-10-30 · dbt Roundup（Dave Fowler × Tristan Handy 对谈）</div><div class="summary">Chartio 创始人 Dave Fowler 发布 dbt Charts：一个 Apache 2.0 的开源语言，用来定义图表与仪表盘，目标是「AI 能写、人能读、能审、能测」。他指出 AI 做图表目前只有两条烂路——让 BI 工具生成，或者生成一堆没人能读的 JavaScript/Python；中间地带是一个仍属 dashboards-as-code、但人可读可测可验证的规格，他称之为「仪表盘的 Markdown」：定义交互式仪表盘的最小规格、token 更省、仍留灵活空间。第二个观点是「BI 瓶颈」：BI 工具无法真正处理关系型数据，所以分析工程师被迫预先把一切 join 成宽表数据集；如果工具能 join，团队其实可以在更容易维护的关系层工作。他引用 Anthropic 一篇博文，其中发现 AI 在关系层上比在维度模型上表现更好。第三个观点是竞争对象已经变成「AI 生成的产物」：一旦人们能直接要一个正好符合需求的仪表盘，就不会再回到分析师做的那张；多家客户顾问委员会成员已告知 BI 厂商要离开。</div><div class="insight"><strong>🔍 技术视角：</strong>这条对用户的「语义层 vs 企业知识图谱」之争有直接冲击：dbt 阵营（语义层的老家）正在自己拆掉维度建模的护城河，主张「关系层优先、维度层可省」，并用「可审的 spec 语言」作为 agent 与数据之间的中间层。这跟三层引擎架构里「知识/关系为骨、LLM 为语言」是同向的。对用户最实用的一点是那句「最小规格 + 人可审」：宽表 API 场景下真正需要沉淀的不是一张大宽表，而是一份可读的查询规格（取哪些字段、什么过滤、什么口径、怎么 join）。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">仪表盘的三条路径与可审中间层</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">AI 需求</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">「我要一张这样的看板」</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">路径一：问 BI 工具</text><text x="352.0" y="124" fill="#64748b" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">受限于工具能力</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">路径二：生成 JS/Python</text><text x="548.0" y="124" fill="#64748b" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">没人能读</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">路径三：声明式 spec</text><text x="744.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">dbt Charts：最小规格</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">人可审 + CI</text><text x="450.0" y="252" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">diff / review / test</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">Markdown 类比</tspan>　最小规格、token 更省、仍可灵活扩展——介于 BI 输出与生成代码之间</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">BI 瓶颈</tspan>　BI 工具不会 join → 被迫预 join 宽表；若会 join 可留在关系层（Anthropic 观察：AI 在关系层更好）</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">竞争位移</tspan>　对手不再是别的 BI 工具，而是 AI 直出的产物；客户已在告知 BI 厂商要离开</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>AI 生成的分析产物正在绕过 BI 工具直接产出，企业面临的问题是「谁来审、谁来管、怎么复用」。没有可读的中间规格，AI 产物就是一次性黑盒。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>dbt Charts 以语言优先（language-first）的方式定义图表：图表类型、数据来源、维度/度量映射、主题与变量都在文本里声明，由渲染层执行；因为是最小规格，token 消耗低，agent 生成成本低，同时人能 diff、能 review、能进 CI。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>三个判断合起来是一次范式位移：①产物形态从「BI 里的对象」变成「仓库里的文本」（与 Ramp 的 WaveDash 把仪表盘变成仓库里的 SQL 文件同源）；②建模层次从「预先 join 成宽表」退回「关系层 + 声明式 join」，因为 AI 能写 join 而人不必手工预聚合；③竞争边界从「BI 工具之间」变成「BI 工具 vs AI 直出产物」。对做语义层的团队，这意味着语义层的价值要从「给人用的建模层」重定义为「给 agent 用的可审规格层」。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>数据栈的价值重心正从「存储与建模」转向「规格与治理」。对厂商：能提供 agent 友好、人类可审的声明式规格，就能守住语义层的位置；对自建团队：规格文本是可迁移资产，比绑定某个 BI 工具更安全。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>①把核心看板/查询沉淀为仓库内的声明式规格（字段、过滤、口径、join 关系），纳入 code review；②宽表 API 场景写「查询规格」而非「结果快照」：明确取哪些字段、为什么、口径是什么；③评估是否真的需要预 join 宽表，或可在语义层声明关系让 agent 自行组合；④把「AI 产物的可审性」作为选型硬指标。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>dbt Charts 尚在 beta，生态与渲染能力未验证；「关系层优于维度模型」引自 Anthropic 博文的单一观察，非受控实验；文章本身是产品对谈，含明确的产品推广立场；「BI 厂商客户要离开」为转述，无数据。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://roundup.getdbt.com/p/dbt-charts-the-markdown-of-dashboards" target="_blank" rel="noopener" class="src-link">dbt Charts: The Markdown of dashboards（dbt Roundup）</a></li></ol></div><div class="modal-foot"><a href="https://roundup.getdbt.com/p/dbt-charts-the-markdown-of-dashboards" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://roundup.getdbt.com/p/dbt-charts-the-markdown-of-dashboards</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-blog">📝 技术博客</span></div><h3><a href="https://roundup.getdbt.com/p/can-data-agents-do-real-analysis" target="_blank" rel="noopener">dbt 访谈 Shreya Shankar：Data Agent Bench 最好只有 61% pass@1，但「有语义层的 agent 显著更准」</a></h3><div class="meta">2026-10-23 · dbt Roundup（Shreya Shankar × Tristan Handy 对谈）</div><div class="summary">UC Berkeley 数据库博士、即将加入 CMU 的 Shreya Shankar（DocETL 作者、Data Agent Bench 共同作者）在访谈中给出一个清醒的数字：在她更贴近真实环境的基准上，最好的 agent 首次就答对 61% 的查询，而「坐在语义层之上的 agent 表现显著更好」。她指出既有基准要么是纯 text-to-SQL（只写查询），要么是 table QA（整表进上下文），而真实环境是多库、脏数据、部落知识、自由文本列需要转换。她还提出「内循环/外循环」框架：数据库这类工具回答已知问题很快（内循环），BI 这类工具帮人发现该问什么（外循环）；图表之所以有用是因为人不用花推理力气就能看出什么有意思，而 agent 目前没有等价物。此外她提到 agent 倾向于从两个库 select * 再在 pandas 里 join，人的 SQL 写得其实很糟但 SQL 会长期存在，以及「Who Validates the Validators?」里的 criteria drift——不先读足够多输出就无法定出评估标准，而且今天这件事主要靠在表格里读行。</div><div class="insight"><strong>🔍 技术视角：</strong>这条是用户「语义层 vs 知识图谱」路线选择的外部背书，而且是带数字的：61% pass@1 的天花板说明当前 data agent 远未可用，而「语义层显著提升」说明投语义资产比换模型更划算。更有价值的是两个诊断：①agent 爱 select * 再在 pandas join —— 这与用户宽表 API 场景的风险同构（把判断推到不可审计的客户端，且宽表全字段拉取会炸 token 与权限）；②agent 缺少图表的「视觉捷径」，意味着它必须靠推理 tokens 弥补人一眼能看出的东西，这正是上下文工程（把「什么值得看」预先结构化）的价值所在。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 504" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="504" fill="#f8fafc"/><rect width="900" height="504" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">Data Agent Bench：真实环境的三重差距</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">真实分析任务</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">多库/脏数据/部落知识/自由文本</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">无语义层 agent</text><text x="352.0" y="124" fill="#64748b" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">自由探索 schema</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">语义层之上</text><text x="548.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">字段/指标含义与关系已声明</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">pass@1 上限</text><text x="744.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">最好 61%</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">内循环/外循环</text><text x="450.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">查数快 vs 知道该问什么</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">61% pass@1</tspan>　真实环境基准的最好成绩，远未到可用</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">语义层增益</tspan>　坐在语义层之上的 agent 表现显著更好（访谈定性结论）</text><rect x="30" y="400" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="418" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">select * 风险</tspan>　agent 爱跨库 select * 再在 pandas join——语义与口径被推到不可审计处</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>团队在选路线时最缺的不是观点而是基线：语义层到底值多少、当前 agent 的天花板在哪、真实环境的差距有多大。这条给出了三个可引用的数字与一个可复用的基准（DAB）。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>Data Agent Bench 构造多数据库、含部落知识与自由文本列的查询任务，模拟初级数据分析师的工作；评分用 pass@1（首次即正确），并与「是否加语义层」做对照。访谈同时讨论了评估方法论（criteria drift）与成本问题（AI 生成的 SQL 有时代价极高）。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>「语义层显著更好」与「KG 元数据增强 16/20 vs 向量 3/20」两条证据合起来指向同一结论：结构化语义中介优于让模型自由探索 schema。差异在于层次——语义层给出「字段与指标的含义与关系」，知识图给出「实体与归属」，两者不是替代关系而是上下层。而「select * + pandas join」这个行为模式是重要警告：它把 join 语义、类型转换、去重口径全搬到不可审计的客户端，正是业务 Agent 最需要避免的。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>语义层重新获得商业正当性：不是因为「治理好听」，而是因为它是当前唯一被实测证明能提升 data agent 准确率的资产。对自建团队，投入排序应是「语义资产 &gt; 模型升级」；对厂商，「有没有语义层」将从加分项变成准入项。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>①把 DAB 作为内部基线之一，先测「加/不加语义层」的差值再决定投入；②在 Agent 的工具契约里禁止 select *：强制字段白名单与聚合下推；③给 agent 提供「结构化提示」替代视觉捷径（预置常用维度组合、Top-N 模板、异常标记）；④评估标准要先读 50-100 条真实输出再定（对抗 criteria drift）；⑤对生成的查询加成本上限与 EXPLAIN 预检。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>访谈为播客转述，「显著更好」未给具体幅度；61% 是特定基准的最好成绩，不可直接外推到用户业务；DAB 的语料与任务分布与国内业务系统差异大；语义层的增益可能部分来自「人把知识写进去了」而非层本身。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://roundup.getdbt.com/p/can-data-agents-do-real-analysis" target="_blank" rel="noopener" class="src-link">Can data agents do real analysis?（dbt Roundup，Shreya Shankar）</a></li></ol></div><div class="modal-foot"><a href="https://roundup.getdbt.com/p/can-data-agents-do-real-analysis" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://roundup.getdbt.com/p/can-data-agents-do-real-analysis</a></div></div></div>
+
+  
+
+  <footer>
+    由 Hermes Agent 自动生成 · 点击卡片查看深度详情 · 2026-11-02
+  </footer>
+
+  <!-- ===== 反馈按钮 + 表单弹层 ===== -->
+  <button class="feedback-fab" onclick="openFeedback()" title="提交反馈">💬</button>
+
+  <div class="modal" id="feedback-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeFeedback()" aria-label="关闭">×</button>
+      <span class="tag tag-product">💬 读者反馈</span>
+      <h2>提交意见 / 反馈</h2>
+      <div class="modal-body">
+        <p style="color:var(--muted);font-size:0.9em;margin-bottom:12px;">
+          你的反馈会帮我改进晨报内容。提交后将打开 GitHub Issue 页面，确认后我会在每天 17:00 处理。
+        </p>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">反馈类型</label>
+        <select id="fb-type" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);margin-bottom:12px;">
+          <option value="内容建议">内容建议（选题/深度/方向）</option>
+          <option value="错误报告">错误报告（链接失效/信息有误）</option>
+          <option value="格式反馈">格式/排版反馈</option>
+          <option value="其他">其他</option>
+        </select>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">你的反馈内容</label>
+        <textarea id="fb-body" rows="5" placeholder="请描述你的意见、建议或发现的问题…"
+          style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);resize:vertical;margin-bottom:12px;"></textarea>
+        <button class="modal-submit" onclick="submitFeedback()">提交反馈 →</button>
+      </div>
+      <div class="modal-foot" style="color:var(--muted);font-size:0.8em;">提交后请在打开的 GitHub 页面点击确认。</div>
+    </div>
+  </div>
+
+  <!-- ===== 架构图放大 lightbox ===== -->
+  <div class="diagram-lightbox" id="diagram-lightbox" onclick="if(event.target===this)closeDiagramZoom()">
+    <div class="diagram-lightbox-inner">
+      <div class="lb-head">
+        <h3 id="lb-title">📊 架构图</h3>
+        <div class="lb-tools">
+          <button type="button" class="lb-btn" onclick="diagramToggleZoom()">🔍 放大/缩小</button>
+          <button type="button" class="lb-close" onclick="closeDiagramZoom()" aria-label="关闭">×</button>
+        </div>
+      </div>
+      <div class="lb-svg" id="lb-svg"></div>
+      <div class="lb-tip">提示：点击「放大/缩小」切换缩放，缩放后可在图内拖动查看细节 · 按 Esc 关闭</div>
+    </div>
+  </div>
+
+  <script>
+    function openDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.add('show'); document.body.style.overflow = 'hidden'; }
+    }
+    function closeDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.remove('show'); document.body.style.overflow = ''; }
+    }
+    function openFeedback() {
+      document.getElementById('feedback-modal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeFeedback() {
+      document.getElementById('feedback-modal').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function submitFeedback() {
+      const type = document.getElementById('fb-type').value;
+      const body = document.getElementById('fb-body').value.trim();
+      if (!body) { alert('请填写反馈内容'); return; }
+      const date = '2026-11-02';
+      const title = '[网页反馈/' + type + '] ' + date;
+      const full = '反馈类型: ' + type + '\n日期: ' + date + '\n\n' + body;
+      // 生成 GitHub Issue 预填链接（不暴露 token，安全）
+      const url = 'https://github.com/hhao9817/agent-daily/issues/new?title=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(full);
+      window.open(url, '_blank');
+      closeFeedback();
+    }
+    /* ===== 架构图放大 ===== */
+    function openDiagramZoom(btn) {
+      const box = btn.closest('.diagram-box');
+      const svg = box.querySelector('.diagram-svg svg') || box.querySelector('svg');
+      if (!svg) return;
+      const title = box.querySelector('h4') ? box.querySelector('h4').textContent : '📊 架构图';
+      document.getElementById('lb-title').textContent = title;
+      const holder = document.getElementById('lb-svg');
+      holder.innerHTML = '';
+      holder.appendChild(svg.cloneNode(true));
+      const lb = document.getElementById('diagram-lightbox');
+      lb.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeDiagramZoom() {
+      document.getElementById('diagram-lightbox').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function diagramToggleZoom() {
+      const svg = document.querySelector('#lb-svg svg');
+      if (!svg) return;
+      svg.classList.toggle('zoomed');
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal.show').forEach(function(m) { m.classList.remove('show'); });
+        document.getElementById('diagram-lightbox').classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+</html>
