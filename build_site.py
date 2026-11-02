@@ -31,12 +31,18 @@ import html
 from diagram_gen import gen_flow_svg
 
 TAG_LABEL = {
+    "rnd": "🧪 研发线",
+    "business": "💼 业务线",
+    "cross": "🔀 交叉线",
     "paper": "📄 论文",
     "github": "🐙 GitHub",
     "product": "🏢 业界动态",
     "blog": "📝 技术博客",
 }
 TAG_CLASS = {
+    "rnd": "tag-paper",
+    "business": "tag-product",
+    "cross": "tag-github",
     "paper": "tag-paper",
     "github": "tag-github",
     "product": "tag-product",
@@ -146,6 +152,9 @@ def render(data, mode="interactive"):
 
     # 分类区块元信息（顺序即展示顺序）
     SECTION_META = [
+        ("rnd", "🧪 研发线（AI for Engineering）", "bar-paper"),
+        ("business", "💼 业务线（AI for Business）", "bar-product"),
+        ("cross", "🔀 交叉线（共享基建）", "bar-github"),
         ("paper", "📄 学术论文", "bar-paper"),
         ("product", "🏢 业界动态", "bar-product"),
         ("github", "🐙 开源项目", "bar-github"),

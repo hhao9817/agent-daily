@@ -11,6 +11,10 @@
 
 ## 已应用的改进（按时间倒序）
 
+### 2026-11-03
+- 修复 `build_site.py` 的分类区块缺口：`SECTION_META` 此前只有 paper/product/github/blog，导致 tag 为 rnd/business/cross 的条目在网页端**从不渲染**（历史页面实际只有速览 + 少量条目）。已新增三线 section 与 `TAG_LABEL`/`TAG_CLASS` 映射，首页从 20KB 恢复到 128KB，16 条全部可点开。
+- 发布链路新状况：`git push` 在 HTTP/2 下会挂起（>120s），设置 `GIT_HTTP_VERSION=HTTP/1.1` 后一次成功；后续发布脚本宜默认带上该环境变量。
+
 ### 2026-08-06
 - 选题从"数据分析 Agent / 业务 Agent"聚焦到"AI for Business / 业务知识库"。
 - 纳入关键约束：不直连数据库、通过业务含义 API 查数、上百字段宽表 API。
@@ -33,6 +37,14 @@
 - GitHub 搜索新增研发线组（coding agent/code review AI/test generation/RAG codebase）。
 - 博客新增研发线来源（OpenAI Blog/GitHub Blog/Cursor Blog）。
 - 排除规则：不收录 WorkBuddy/Glean/Moveworks 等 no-code/low-code 不可编程扩展 SaaS 产品。
+
+## 2026-11-03 运行记录（本次）
+- arXiv API（export.arxiv.org）今日可用，直接走 `id_list` 批量取摘要；最新批次为 10/29-10/30 提交的 2610.41xxx-42xxx（11/02 已被昨日简报覆盖 2610.38xxx-40xxx，无重叠）。Semantic Scholar 依旧全程 429 限流，5 篇抽查全部失败，引用数统一标注"引用待核实（Semantic Scholar 限流，新文预期 0）"。
+- blogwatcher 正常（7 源 20 条，TDS 10 条）。DEW #294 用 Googlebot UA + `<article>` 抽取成功（Teradata Loom / LinkedIn agent 数据平台 / Zepto 30-35% 成本）；TDS 正文仍被 Cloudflare 拦截，未收录 TDS 条目；dbt roundup 无 10/31 后新文，Anthropic RSS 无可解析条目。
+- GitHub API 认证通道正常：新增 `wlsdks/ontology-atlas`（147⭐，MIT，一概念一 Markdown + MCP + Git 审阅）作为研发线代码知识库样本；业务线取 Cube v1.8.17（11/02，`/v1/cubesql` 列式响应 `responseFormat=columnar` + 滚动窗口尊重自定义 granularity origin 的财年修正）。WrenAI v0.17.1（10/30）为小版本，未单列。
+- 本次精选 16 条：研发 6（5 论文 + ontology-atlas）/ 业务 6（4 论文 + Cube + DEW 博客）/ 交叉 4。学术 13 篇全部经 arXiv 摘要逐条核实，数字均取自原文摘要。
+- 主线判断：研发线收敛到"证据"——失败记忆里原始 transcript 比自写 lesson 多解 12.2pp、Soei 实测 23.4% 改码无独立检查、Caper 用沙箱预执行把有害率从 14.8% 压到 6.7%；业务线收敛到"口径"——Post-SQLFix 用静态属性层修掉 77.8% 执行反馈修不了的错、口径修订后 63/144 个"当前快照能跑对"的查询其实已错、多工具检索完整率仅 8-17%（缺一个 API 时 39 次只成 2 次）。
+- 发布成功（`GIT_HTTP_VERSION=HTTP/1.1`），归档索引 63 期；grounded-citations 记录 16 条来源（[487]-[502]）。首次发布因 build_site 分类缺口产出空卡片页，已修复并重发，同时删除中间版本 2026-11-03-071309 避免归档噪音。
 
 ## 2026-10-09 运行记录（本次）
 - arXiv API（export.arxiv.org）search_arxiv.py 今日可用。search_arxiv.py "text-to-SQL" --sort date --max 15 返回 843 结果（9/5 时 806→843），筛出 10/1-10/7 新文：2610.10091 ExperienceIndex（Madden/Cafarella/Andreas/Downey MIT/UW，artifact-grounded memory 工件经验记忆）/2610.09396 ARCS（structured disambiguation 替代对话澄清）/2610.04156 Sentinel（临床 text-to-SQL 轨迹派生置信三决策点）/2610.06914 Text2Dashboard（DataBrain 受治理 Agent 架构 typed tools+确定性 Hooks）/2610.03524 FLINT（生产金融库 opaque keys 通用方法<50%+lookup agent）/2610.02739 Beyond Correctness（执行正确≠underspecification 已解决）/2610.02122 Argo-Bench（210 企业级 data agent 任务）/2610.01064 JoinGR（join 图作检索空间）/2610.02770 AptMQL-Bench（text-to-MQL）/2610.00791 ERS（企业表示简化）。arxiv.org abs 页 python urllib+Googlebot UA 抓取 8 篇摘要全部成功（与 9/3-9/5 abs 页 ConnectionReset 不同，今日可用）。
