@@ -1,994 +1,765 @@
 {
-  "date": "2026-11-08",
-  "banner": "代码图谱只在定位时省 token、失败预测器其实在猜题；业务侧把流程与行为写成可校验的文本/契约，MCP agent 仍有 77% 认不出「目标不可达」。",
-  "snapshot": {
-    "summary": "今日主线是「把隐性约束变成可执行、可校验的工件」。研发侧：代码表示只在定位瓶颈时省 token（-25~39%），失败预测器基本在猜题目难度（0.92 vs 0.62 AUROC），Skillware 用「类型契约+确定性代码+单测」让小模型反超前沿模型（token -84.8%），Terminal-Bench 审计出约 30% 题目腐化、修复后准确率 +10pp。业务侧：tok 给 BPMN/DMN 一套省 2.2x token 且 98.2% 可校验的文本语法；ABE 与 AgentTrustCI 分别用「行为契约 + pass^k 门禁」和「trace 三层断言 + CI 回放」把 agent 治理工程化；交接摘要会被后继实例当指令（越权 24→7/120）；API 的 AI 就绪度开始有六维评分（~35 信号）。交叉侧：MCPHallu 显示「目标不可达」只有 23.2% 能识别，构造性拒绝仍是能力短板。",
-    "groups": {
-      "rnd": [
-        "代码表示是独立设计变量：五种 repository map 让 Claude Code 在 LinuxFLBench 上 recall@10 0.757-0.829（基线 0.717）、token 降 25-39%，但 SWE-bench Pro 解决率 44.3-50.6% 对 49.0% 基本持平，且全部增加延迟——图表示是导航层，不是正确率银弹。",
-        "失败预测器在猜题：题目难度参考分（不看轨迹）达 0.92 AUROC，轨迹预测器约 0.62；扣掉难度与模型能力后轨迹增益≈0，per-issue 模型切换留出集无收益，重试只能救 run 级噪声、救不了能力之外的题。",
-        "Skillware 把「技能」做成 typed JSON 契约 + 确定性 Python + 单测的能力包：3B-8B 小模型在复杂多步流程上稳定超过未装备的前沿模型，token -84.8%、成本 -97.3%、参数错误归零。",
-        "Benchmark 也是软件：Terminal-Bench 2.0 审计出约 30% 题目有缺陷，修复成 2.1 后准确率 +10pp 以上、名次最多动 3 位（ρ=0.958）；wall-clock 时限可抹平 20pp 的 harness 差距，是隐藏自变量。",
-        "px0 把「评审」做成轻量工作台：Go 单二进制、无 Electron、自述冷启动 <1ms、常驻 20-30MB，面向 agent 生成代码的 diff/搜索/quick-fix/handoff。"
-      ],
-      "business": [
-        "tok 为 BPMN 2.0.2 / DMN 1.5 提供纯文本语法：token 比最小 XML 少 2.2x、比原样导出少 7.7x；1,411 个注入故障检出 98.2%（XSD+bpmnlint 85.8%）；配 lean skill + checker 后模型写 tok 合法率 97.6-100%。",
-        "ABE 把 Design by Contract 搬进 agent：规则 ID 化的行为契约（必须/禁止/证据不足弃答）、场景库、单向引用、pass^k 门禁、权威外置，并把「缺证据」与「已验证否定」分开。",
-        "AgentTrustCI 用 Java/JUnit5 在 CI 里对录制 trace 做 policy / grounding / trajectory 三类断言 + 确定性回放：55 个合成用例中 30 故障 + 25 控制全部分类正确，12 个关键用例零漏检。",
-        "交接摘要会变成指令：模型自写的「需要审批」被后继实例当真，中和误批准后越权动作 24→7/120；把系统提示改成说明「要求来自哪里」，不支持的限制从 5.0% 降到 1.8%。",
-        "API 的 AI 就绪度可打分：Jentic Scorecard 按 JAIRF 六维、约 35 个信号评估 OpenAPI，含 ARAX（语义清晰度）与 AU（多步编排可用性），本地 Docker 内评分并用 Overlay 做非破坏性修复。",
-        "DEW 观点：agent 时代数据模型的职责是「把决策暴露给人审」——定义来源、推断 vs 确认、未决问题必须可核对，而不是只交一张跑通测试的表。"
-      ],
-      "cross": [
-        "MCPHallu 用 358 任务 / 36 个生产 MCP server / 14 个 agent 测出平均 0.642，其中「目标不可达」仅 0.458、23.2% 通过——agent 倾向继续调用或宣称成功，构造性拒绝是能力短板而非措辞问题。",
-        "状态化工具调用的结构审计：依赖深度、候选数、状态宽度、快照可见性四轴可控；residue cache、预计算计划、索引化选择有效，隐藏状态重采样给出成功率硬上限。",
-        "Printing Press（4.9k★）把 API 压成 Go CLI + skill + MCP：本地 SQLite 镜像 + 复合命令把多轮调用合成一次（50ms 级），CLI 通常比几十个 MCP 工具更省上下文。"
-      ],
-      "github": [
-        "px0（MIT，1.9k★）：Go 单二进制评审工作台，无 Electron/Node/CGO，冷启动 <1ms、常驻 20-30MB，原生 Git/GitHub + 280 语言分词。",
-        "jentic/jentic-api-scorecard：OpenAPI 的 AI 就绪度六维评分（~35 信号），附 api-improve skill 用 OpenAPI Overlay 生成非破坏性补丁。",
-        "mvanhorn/cli-printing-press（4.9k★）：从文档/社区实现/网页嗅探生成 Go CLI + skill + MCP server，已产出 ESPN、flight-goat、linear-pp-cli。"
-      ]
+ "date": "2026-11-09",
+ "banner": "研发线：迁移后「能跑但算错」的错误修复有 41% 能过典型输入门禁，一条边界输入压到 6.5%；GitHub 单周 12 亿 commit 但 PR 评审 +441%。业务线：自然语言谓词筛选走三级级联给出误差界，数据清洗高分被证明依赖「认识实体」（换名后 91%→18%），客服路由靠「模型提议+代码校验」做到零误派发。",
+ "snapshot": {
+  "summary": "今日 13 条情报的主线是「验证」：研发侧，Accepted but Wrong 用预注册实验证明典型输入的测试门禁会放行 41% 的错误迁移修复，Reaper 把历史 fix 变成可复用的缺陷规则，HEELO 用同 backbone 把真实任务完成数从 9 提到 39——能力差距在 harness 与验证回路，不在模型。业务侧，RouteBR 用「模型提议、代码校验」把动作准确率 94% 但最终路径仅 41% 的假象纠正为 97.5% 零误派发；CoRE 用改名对照揭穿数据清洗高分里的世界知识依赖；CascadeFilter 让自然语言谓词筛选有成本与误差界。开源侧，阿里 UModel 与 NVIDIA auto-ontology 分别代表「对象图 + SPL」与「本体作为语义模型补充层」两种路线，共同把 provenance 与定义对齐做进架构。",
+  "groups": {
+   "rnd": [
+    "门禁度量要换：迁移修复里 41.0% 的错误能过「典型输入 + 全部断言」，一条从 release note 写的边界输入降到 6.5%；加入 233 个「典型输入上与旧输出一致」的干扰项后，仍有 16.8%/15.3% 的困难错误程序通过——说明对抗集是门禁的必需品。",
+    "复杂改造先写规格：Req2Rust 用 MRS（必须保持的行为）+ RDS（目标侧设计）+ 三类校验器做回路，C++→Rust 测试通过率 69.5%→91.9%、OpenHarmony 模块 45.4%→87.9%。",
+    "知识资产化：Reaper 把历史 bug fix 抽象成 trigger/validation profile 投影到语法兄弟，在 MariaDB/MySQL/OceanBase/CockroachDB 挖出 61 个新 bug（57 确认/13 已修）；ReConMem 把对话记忆与代码实体建成双图，LoCoEval Pass@1 +7.9pp。",
+    "GitHub 数据校准：单周 12 亿 commit（+400% YoY），但 PR 评审停留 +441%；agentic engineering 的瓶颈在 Verify/Observe，不在 Build。"
+   ],
+   "business": [
+    "语义筛选工程化：CascadeFilter 三级级联（SLM 看证据 → SLM 看全文 → oracle），阈值联合搜索 + 有限总体校准，6 数据集 13 设置中 12 个取得最佳准确率与 macro-F1，并给出与 oracle 的一致率下界。",
+    "可信度验证必须反事实：CoRE 用名字替身测试证明清洗高分含世界知识——DeepSeek-V4-Pro 年份准确率 91%→18%，且模型在已知实体上仍会违背表格证据改写（0-40.4%）。",
+    "路由要 fail-closed：RouteBR 一次模型调用提议 + 代码校验标识符/注册/版本规则，最终路径精确匹配 97.5%（无规则基线动作 94.0% 但路径仅 41.0%），166 例非派发场景零误派发。",
+    "两条路线合流：alibaba/UnifiedModel（对象图 + SPL/.entity/.topo + MCP，Apache-2.0）与 NVIDIA/auto-ontology（本体从元数据生成、跨系统定义调和、查询按 certified definitions + lineage 校验并附 provenance，10.3k★）都把「定义对齐 + 来源」做成架构组件，而非 prompt 技巧。"
+   ],
+   "cross": [
+    "harness 决定上限：HEELO 的 agent-native primitives 在同一 backbone 上把 Terminal-Bench 4.0 从 37.3% 提到 55.5%，46 个真实任务完成数 9→39（经 MCP 接入），单任务耗时降 1.9-2.3x、成本降 1.55x。",
+    "长时任务的正确姿势是「挂起 + 审批」：agent-autoloop（4,096★，v1.6.4 于 11/08）把等待人工回答做成不占进程、不花 token 的可恢复会话，卡片推到飞书/钉钉/企微/Slack。"
+   ],
+   "github": [
+    "alibaba/UnifiedModel（454★，Go，Apache-2.0）：model pack 定义对象/数据集/链接/拓扑，SPL 三命名空间查询，AgentGateway + MCP 接入；开源核心不含多租户授权与审计，需自建治理层。",
+    "NVIDIA/auto-ontology（10,338★，Python，Apache-2.0）：Discover/Ground/Validate/Expose/Learn 五段，答案附 provenance，明确「补充已有语义模型」；绑定 NIM 与 Postgres+pgvector，不接受外部贡献。",
+    "KKKKhazix/agent-autoloop（4,096★，TypeScript）：零依赖调度内核 + 可插拔事件源/Agent/通知/流水线，v1.6.4（11/08）。"
+   ]
+  }
+ },
+ "items": [
+  {
+   "tag": "rnd",
+   "title": "「能跑通但算错」：迁移后 41% 的错误修复能过全部断言，一条边界输入把它压到 6.5%",
+   "date": "2026-11-05",
+   "source": "arXiv",
+   "link": "https://arxiv.org/abs/2611.08269",
+   "summary": "论文做了一项预注册研究：73 个任务、覆盖 CPython、SQLite 及另一个运行时（arXiv 摘要中链接被剥离）的 60 处有文档的 API 变更，让 LLM 修复迁移后的代码，再用真实运行时 + 未公开的契约（withheld contracts）验证。结果是最刺眼的：只用「典型输入」上的全部断言做发布门禁，会放行 41.0% 的错误修复——它们跑得干净、返回错误结果。仅补一条从 release note 写出的边界输入，错误放行率降到 6.5%，在 15 个未见过的集群上为 6.1%；由一个从未看过程序的盲写模型（GPT-5.6-luna）写 3 条输入也能到 7.0%。作者随后把菜单扩到 1491 个片段，再加入 233 个「在典型输入上与旧输出完全一致」的困难干扰项：边界输入与前沿模型写作仍能通过预注册检验，但分别有 16.8% 和 15.3% 的困难错误程序蒙混过关；两个本地小模型写作未通过预注册。跨四个模型家族、三个菜单，边界输入在三个开源权重家族上都把「每次尝试的错误发布率」压低（例如 0.233→0.057），且不降低正确完成率。自测（self-tests）帮助更小。另有一个盲 AI 审计指出 34 条契约比需求更严，删掉这些争议检查后判定结果零变化。",
+   "insight": "这条直接打在「AI 代码审查/测试门禁」的度量上：我们平时报的「测试通过率」在分布偏移后几乎失效，真正该报的是「错误发布率（wrong-release rate）」。工程上可复现的做法有三点：①门禁输入必须从变更说明（release note / 迁移指南）反推，而不是复用历史用例；②把「典型输入上输出与旧实现一致」当作对抗样本筛选条件，专门构造干扰项来压力测试门禁，否则通过率会虚高 2-3 倍；③门禁要跨模型家族验证泛化，本地小模型写不出有效边界用例。对已建研发知识库的团队，这提供了一个高价值的知识库条目类型：每个 API 变更都挂一条「边界契约」，让 review agent 检索复用。",
+   "detail": {
+    "why": "LLM 修迁移代码的失败模式不是编译不过，而是「语义悄悄变了但测试全绿」。这类缺陷在生产上是事故级的（金额、日期、权限判断），而现有 CI 门禁几乎完全无法发现。",
+    "mechanism": "预注册 + 真实运行时执行：每个候选修复都在 CPython/SQLite 等真实运行时上跑，并对 withheld contracts（作者保留、模型不可见的契约断言）求值。变量是「门禁输入从哪来」：典型输入、release note 手写边界输入、盲写模型生成输入；再叠加菜单规模（1491 片段）与困难干扰项（在典型输入上与 legacy 输出一致）两个压力维度。",
+    "deep": "三个反直觉结论：①「全部断言通过」在典型输入上是弱信号，41% 的错误修复能过；②干扰项让门禁重新变脆——因为干扰项专门匹配旧输出，任何只看典型行为的门禁都会被骗过，错误放行率反弹到 15-17%；③自测（模型自己写测试）帮助有限，说明「生成者自证」不可靠，验证必须来自变更文档或独立写作者。此外「盲 AI 审计契约严格性」删掉 34 条争议检查后判定不变，提示契约本身也有 over-specification 风险，需要人审边界。",
+    "apply": "把发布门禁改成三段：a) 从变更说明抽取「必须保持的行为」写成契约；b) 每条契约至少一条边界输入（可由独立模型盲写，不要用修复模型自测）；c) 用「典型输入 + 边界输入 + 与旧输出一致的干扰输入」三组跑，报告错误发布率而不是通过率。在 CI 里对高风险模块（计费、时间、权限）强制开启。",
+    "caveats": "研究规模是 73 任务/60 变更，集中在标准库与数据库 API 迁移，不代表大型业务系统的跨服务迁移；「错误」由 withheld contracts 定义，契约若有争议（34 条被判过严）会影响结论；论文明确「没有执行任何模型写的代码」，安全结论不外推；语义 Scholar 引用数本次 429 限流未能核实，11/05 新文预期为 0。",
+    "business": "对外包/迁移类项目这是报价与验收的抓手：验收标准应从「测试通过」改为「变更契约 + 边界输入覆盖」，可直接写进交付条款，降低返工与事故赔付风险。对内部平台团队，这意味着「迁移即服务」的产品化需要内置契约库，而不是卖模型调用。",
+    "sources": [
+     {
+      "url": "https://arxiv.org/abs/2611.08269",
+      "title": "Accepted but Wrong: Silent Failures of LLM Code Repairs after API Migrations"
+     }
+    ],
+    "diagram": {
+     "title": "错误修复如何穿过典型输入门禁",
+     "flow": [
+      {
+       "label": "API 变更说明",
+       "sub": "release note / 迁移指南",
+       "type": "external"
+      },
+      {
+       "label": "LLM 修复",
+       "sub": "73 任务 / 60 变更",
+       "type": "backend"
+      },
+      {
+       "label": "典型输入断言",
+       "sub": "放行 41.0% 错误修复",
+       "type": "frontend"
+      },
+      {
+       "label": "边界输入门禁",
+       "sub": "6.5% / 未见集群 6.1%",
+       "type": "security"
+      },
+      {
+       "label": "干扰项压力测试",
+       "sub": "反弹 16.8% / 15.3%",
+       "type": "database"
+      }
+     ],
+     "notes": [
+      {
+       "label": "核心风险",
+       "text": "错误修复跑得干净、返回错误结果，CI 全绿"
+      },
+      {
+       "label": "有效输入",
+       "text": "一条从变更文档手写的边界输入即可降一个数量级"
+      },
+      {
+       "label": "别自证",
+       "text": "模型自测帮助有限，需独立写作者或文档派生"
+      },
+      {
+       "label": "对抗集",
+       "text": "在典型输入上与旧输出一致的干扰项是门禁的照妖镜"
+      }
+     ]
     }
+   }
   },
-  "items": [
-    {
-      "tag": "rnd",
-      "title": "代码表示即设计变量：五种仓库地图让 Claude Code 省 25-39% token，但只在定位瓶颈时提分",
-      "date": "2026-11-05",
-      "source": "arXiv",
-      "link": "https://arxiv.org/abs/2611.07286",
-      "summary": "论文把「agent 如何看代码」当成独立设计变量，比较五种 repository map 工作流：AST、调用图、模块依赖、文档增强检索、以及混合视图，每种都以可查询的仓库地图形式暴露给 agent。用 Claude Code + Haiku 4.5 在四个仓库级任务上对照 raw-tool 基线：故障定位（LinuxFLBench）、仓库级生成与修复（SWE-bench Pro）、测试生成（SWT-bench）、安全补丁（SecBench）。定位任务上五种视图都把 recall@10 从 0.717 提到 0.757-0.829，token 降 25-39%；SWE-bench Pro 解决率 44.3-50.6% 对基线 49.0%，基本持平但 token 降 17-26%；SecBench 上调用图补丁解决率最高（34.3% vs 28.9%）。",
-      "insight": "对已经建好研发知识库的团队，这条的实操含义是：代码图谱的 ROI 集中在「检索与定位」环节，不要指望它直接提升补丁与测试的质量。更合理的做法是把 map 做成按需调用的工具（定位阶段开启），而不是每轮都全量注入上下文——否则 SWT-bench 那种「更贵更慢、只多 3 个点」的结果会反复出现。",
-      "detail": {
-        "why": "大多数 coding agent 仍把仓库当纯文本，用 grep + shell 探索；但「看什么」决定了 token 花在哪、能不能定位到正确文件。作者要回答的是：换一种仓库表示到底改变了什么。",
-        "mechanism": "离线为仓库构建五种索引：AST、调用图、模块依赖、文档增强索引、混合索引；再以「仓库地图」的查询接口暴露给 agent（可查符号、依赖、影响面），而不是把索引结果直接塞进 prompt。评测固定同一 agent harness（Claude Code + Haiku 4.5），只替换 map 工作流，四个任务分别测定位、修复、测试、安全补丁，并同时记录 token、延迟。",
-        "deep": "三个值得记住的细节：①收益与瓶颈位置强相关——当「找到正确位置」是决定性步骤时，图视图明显省 token 且提 recall；当决定性步骤是「写出正确补丁/测试」时，视图带来的成功率增益收窄到噪声级。②所有工作流都增加延迟，说明建图/查询本身有成本，需缓存与增量更新。③文档增强检索（Docs）在测试生成上接近混合视图（47.2% vs 47.8%），意味着「高质量文档 + 词法检索」是被低估的低成本方案。",
-        "apply": "先只在定位/影响面分析链路接入图视图，用 token 与 recall@10 做 A/B；把索引做成增量更新（提交触发），并允许 agent 按需查询而不是预注入；对补丁与测试生成，把预算放回更强的验证器与测试反馈，而不是更大的上下文。",
-        "caveats": "单一模型（Haiku 4.5）与固定 harness，结论未必外推到更强模型；四个 benchmark 各自的样本量有限，SecBench/SWT-bench 的差异在样本内；延迟代价未量化成成本。",
-        "business": "知识库产品的差异化不在「存了什么」，而在「能否按任务切换视图」。把代码图谱定位成「省 token 的导航层」比定位成「提升正确率的银弹」更接近可交付价值，也更容易向业务方解释 ROI。",
-        "sources": [
-          {
-            "url": "https://arxiv.org/abs/2611.07286",
-            "title": "How Should Agents See Code? Rethinking Code Representations for Agentic Software Engineering"
-          }
-        ],
-        "diagram": {
-          "title": "五种仓库表示工作流与评测回路",
-          "flow": [
-            {
-              "label": "代码仓库",
-              "sub": "多语言 / 多模块",
-              "type": "database"
-            },
-            {
-              "label": "索引器",
-              "sub": "AST / 调用图 / 模块依赖 / 文档",
-              "type": "backend"
-            },
-            {
-              "label": "仓库地图 API",
-              "sub": "按需查询：符号·依赖·影响面",
-              "type": "backend"
-            },
-            {
-              "label": "Coding Agent",
-              "sub": "Claude Code + Haiku 4.5",
-              "type": "frontend"
-            },
-            {
-              "label": "四类任务",
-              "sub": "定位 / 修复 / 测试 / 安全补丁",
-              "type": "cloud"
-            }
-          ],
-          "notes": [
-            {
-              "label": "定位收益",
-              "text": "LinuxFLBench recall@10 0.757-0.829 vs 0.717，token 降 25-39%"
-            },
-            {
-              "label": "补丁无增益",
-              "text": "SWE-bench Pro 44.3-50.6% vs 49.0%，省 token 但不提解决率"
-            },
-            {
-              "label": "延迟代价",
-              "text": "五种工作流全部增加延迟，需增量索引与缓存"
-            }
-          ]
-        }
+  {
+   "tag": "rnd",
+   "title": "ReConMem：对话记忆与代码实体各建一张图，仓库级多轮任务 Pass@1 提升 7.9pp",
+   "date": "2026-11-05",
+   "source": "arXiv",
+   "link": "https://arxiv.org/abs/2611.07759",
+   "summary": "论文指出通用对话记忆系统在仓库级开发中不够用：它们不把「对话里说过什么」与「对话指向的代码实体」协调起来。ReConMem 建双图——语义记忆图（蒸馏后的对话记忆）与结构记忆图（与对话相关的代码实体），并随交互演进维护跨图关联。召回时用「代码草稿」做 query grounding，把自然语言查询落到代码符号上；再沿图内与跨图关系扩展；最后按结构粒度压缩检索到的代码。在 LoCoEval 上，单跳与多跳子集的 Pass@1 分别比最强基线高 7.917 和 7.292 个百分点，上下文压缩率相当；在 CodeAssistBench 上达到 27.61% Correct、44.03% Partially Correct，比「全量历史」基线高 4.10 和 7.09 个百分点，交互质量也更好。",
+   "insight": "研发知识库的下一层不是「更好的代码检索」，而是「对话与代码的联合索引」。已有代码图谱/RAG 的团队，边际收益最大的增量是把 PR review 讨论、issue 争论、设计决策绑定到符号节点上，形成可跨会话复用的结构记忆；同时 ReConMem 的「按结构粒度压缩」提示我们：检索回来的不该是整文件，而是函数/类/调用片段级的裁剪结果，这直接决定上下文预算。",
+   "detail": {
+    "why": "多轮仓库级开发里，agent 反复丢失「上次为什么这么改」，只能重读文件；而通用记忆把对话压成摘要后，又丢掉了对话指向的具体代码实体。两边都缺一个显式的关联层。",
+    "mechanism": "两张图：语义图存蒸馏对话记忆，结构图存 conversation-relevant 代码实体；跨图边随交互更新。召回三步：code-draft-based query grounding（用正在写的代码草稿锚定查询）→ 沿 intra/inter-graph 关系扩展 → 按结构粒度（文件/类/函数/块）压缩。评测用 LoCoEval（长程上下文管理）与 CodeAssistBench（真实项目多轮协助）。",
+    "deep": "关键设计是「查询锚定在代码草稿上」而不是自然语言上：开发者/agent 正在写的那段代码本身就是最好的检索意图表达，这比把问题改写成搜索词更稳。第二个细节是跨图关联要随交互演进维护，意味着写入成本高于静态图谱，但换来的是跨会话一致性。指标上「压缩率相当但 Pass@1 更高」说明收益来自关联结构而非更多上下文——这对成本敏感的团队是好消息。",
+    "apply": "落地可拆三步：①在现有代码索引上增加「实体-讨论」边（PR 评论、issue、ADR 链接到符号 ID）；②检索入口接受「代码草稿」作为 query（选中片段/未完成函数）；③返回按语法粒度裁剪的片段并带跨图邻居。先在一个高频模块试点，用「同一问题的第二次提问」命中率衡量收益。",
+    "caveats": "两个 benchmark 均为学术构造，CodeAssistBench 上 27.61% Correct 的绝对水平仍低，说明任务本身很难；双图维护的写入/更新成本论文未给生产级数据；引用数未能核实（Semantic Scholar 429，11/05 新文预期 0）。",
+    "business": "如果把研发知识库当内部产品，这是明确的差异化功能点：竞品大多只做代码 RAG，谁能把「决策上下文」持久化，谁就能减少重复解释成本。对管理者，可量化的收益是 onboarding 与跨人接手时间。",
+    "sources": [
+     {
+      "url": "https://arxiv.org/abs/2611.07759",
+      "title": "ReConMem: A Graph-Based Dual Memory System for Repository-Oriented Conversations"
+     }
+    ],
+    "diagram": {
+     "title": "双图记忆的检索路径",
+     "flow": [
+      {
+       "label": "代码草稿",
+       "sub": "正在写的片段",
+       "type": "frontend"
+      },
+      {
+       "label": "Query Grounding",
+       "sub": "落到代码符号",
+       "type": "backend"
+      },
+      {
+       "label": "语义记忆图",
+       "sub": "蒸馏对话",
+       "type": "database"
+      },
+      {
+       "label": "结构记忆图",
+       "sub": "代码实体",
+       "type": "database"
+      },
+      {
+       "label": "粒度压缩",
+       "sub": "函数/类级片段",
+       "type": "backend"
       }
-    },
-    {
-      "tag": "rnd",
-      "title": "失败预测器其实在猜题：题目难度单项 0.92 AUROC，轨迹信号≈0，重试只能救「坏 run」",
-      "date": "2026-11-05",
-      "source": "arXiv",
-      "link": "https://arxiv.org/abs/2611.08285",
-      "summary": "论文检验 SWE-bench Verified 上的轨迹式失败预测器到底学到了什么。结果显示两个与 run 无关的因素主导性能：其一是题目难度——一个完全不看轨迹、只看该题对其它模型有多难的参考分数就能达到 0.92 AUROC，而轨迹预测器只有约 0.62；其二是模型能力——同一题内只要知道是哪个模型在跑，就比预测器更准。扣除难度与能力后，轨迹带来的增益在统计上等同于零。后续动作也站不住：模型切换所依据的「最佳单模型 vs any-model oracle」差距不超过随机波动，per-issue 切换在留出集上没有收益；重复运行实验显示同模型同题有时成有时败，重试能修复「坏 run」，但救不了超出模型能力的题。",
-      "insight": "这条对 agent 平台的控制面是直接的否定证据：不要用「轨迹置信度」做自动熔断或自动切模型，它很可能只是在复述题目难度。可落地的替代是把重试策略分成两类——同题多次重试（对 bad run 有效，值得给预算）与跨模型路由（收益被高估）。评估一个「自愈/自愈路由」方案时，必须先扣掉难度与模型能力这两个基线。",
-      "detail": {
-        "why": "工程界普遍相信「看轨迹能提前判断这轮会不会失败」，并据此做 early-stop、retry、model-switch。作者要问的是：这些预测器究竟学到了 run 本身，还是学到了题目与模型的先验。",
-        "mechanism": "构造 run-independent 基线：用题目在其他模型上的通过率作为难度参考分，用模型历史通过率作为能力分；把轨迹预测器的 AUROC 与这两个基线对比，并在同题内做分层分析。再用三类干预验证预测是否有用：early-stop、per-issue 模型切换、同题多次重试，分别在留出集上测收益。",
-        "deep": "最有价值的反直觉结论是「切换模型的 oracle 差距是随机波动」：best-single 与 any-model oracle 之间的差距常被当作路由空间的上界，但如果这个差距本身落在随机波动范围内，路由就没有可赚的钱。而重复运行实验给出的正信号是：失败有相当比例来自 run 级随机性，因此 pass@k 式重试是真实杠杆——这与「多采样 + 验证器筛选」的工程实践一致，而不是与「智能路由」一致。",
-        "apply": "把失败分成三层：题目难度（不可救）、模型能力（换模型才有用）、run 噪声（重试有用）。生产上先做同题重试与更好的验证器，再考虑路由；任何路由方案上线前，用难度+能力基线做对照，避免把「难题本来就会失败」当成路由的功劳。",
-        "caveats": "只在 SWE-bench Verified 与单次尝试设定下验证，真实业务请求的难度分布不同；「轨迹增益为零」是针对现有预测器与现有轨迹特征，不能排除更好的过程信号（如工具报错模式）有效。",
-        "business": "对做「Agent 可观测性/自愈」的产品：卖点不该是「预测失败」，而应是「区分可救与不可救的失败」，并把预算自动分配给可救的那一类。这类能力更容易被客户用成本曲线验证，也更难被证伪。",
-        "sources": [
-          {
-            "url": "https://arxiv.org/abs/2611.08285",
-            "title": "Hard Issue, Weak Model, or Bad Run? Rethinking Failure Prediction for Coding Agents"
-          }
-        ],
-        "diagram": {
-          "title": "失败归因：难度 / 能力 / run 噪声三分",
-          "flow": [
-            {
-              "label": "任务",
-              "sub": "SWE-bench Verified",
-              "type": "database"
-            },
-            {
-              "label": "难度参考分",
-              "sub": "其它模型通过率（不看轨迹）",
-              "type": "backend"
-            },
-            {
-              "label": "模型能力分",
-              "sub": "同题内模型身份",
-              "type": "backend"
-            },
-            {
-              "label": "轨迹预测器",
-              "sub": "≈0.62 AUROC",
-              "type": "frontend"
-            },
-            {
-              "label": "动作",
-              "sub": "early-stop / 切模型 / 重试",
-              "type": "cloud"
-            }
-          ],
-          "notes": [
-            {
-              "label": "0.92 vs 0.62",
-              "text": "题目难度基线 0.92 AUROC，轨迹预测器约 0.62"
-            },
-            {
-              "label": "路由无收益",
-              "text": "any-model oracle 差距不超过随机波动，per-issue 切换留出集无增益"
-            },
-            {
-              "label": "重试有边界",
-              "text": "pass@k 能救坏 run，救不了能力之外的题"
-            }
-          ]
-        }
+     ],
+     "notes": [
+      {
+       "label": "跨图边",
+       "text": "对话记忆与代码实体显式关联，随交互更新"
+      },
+      {
+       "label": "收益来源",
+       "text": "同压缩率下 Pass@1 +7.9pp，说明是结构不是长度"
+      },
+      {
+       "label": "成本",
+       "text": "双图写入与关联维护比静态索引贵"
       }
-    },
-    {
-      "tag": "rnd",
-      "title": "Skillware：把技能做成「类型契约 + 确定性代码 + 单测」的软件包，3B-8B 小模型反超前沿模型",
-      "date": "2026-11-05",
-      "source": "arXiv",
-      "link": "https://arxiv.org/abs/2611.07652",
-      "summary": "论文批评当前「让模型动态写代码、猜 API 载荷、靠 prompt 记约束」的假设，提出 Skillware：一个开放架构与能力注册表，把「想做什么」和「怎么做」正式分离。每个能力包由 typed JSON 输入契约、确定性 Python 实现、任务指令、随包数据集、自动化单测组成，通过 in-process adapter 翻译成任意模型的原生 tool 声明（云端前沿 API 到本地开源权重均可）。在 23 个前沿与开源模型、368 个基准条件上，装备 Skillware 的 3B-8B 小模型在复杂多步工作流上稳定超过未装备的前沿模型；token 最多降 84.8%，推理成本最多降 97.3%，参数错误被完全消除。",
-      "insight": "这是对 AGENTS.md / skills 热潮的一记工程化纠偏：自然语言 skill 适合「指导」，不适合「承载执行」。对用户团队的宽表 API 场景尤其直接——与其让模型读两百个字段的文档并猜参数，不如把高频查询写成带 JSON Schema 的能力包，模型只负责选能力、填参数、读结果。可靠性来自确定性代码与契约，而不是更大的模型。",
-      "detail": {
-        "why": "agent 生产化的主要成本与故障源是上下文与参数猜测：prompt 里塞约束会烧 context、抬账单，并产生不可预测的失败。作者主张把这些约束从「文本」迁移到「可执行、可测试的软件包」。",
-        "mechanism": "能力包 = 类型化输入契约 + 确定性 Python + 指令 + 数据集 + 单测；注册表负责版本化与发现；in-process adapter 把能力包编译成各模型原生的 tool 声明，从而避免网络往返与协议开销。评测把同一批任务分配给「装备/未装备」两组模型，跨 23 个模型、368 个条件比较成功率、token 与成本。",
-        "deep": "两点最值得架构师注意：①「小模型 + 确定性能力」在复杂多步流程上打败「大模型 + 自由发挥」，说明能力上限常由接口设计而非模型规模决定；②参数错误归零，意味着类型契约把一类高频故障直接消灭，而不是靠模型变强去降低概率。这也解释了为什么「给 agent 一堆 MCP 工具 + 文档」效果不稳定：工具是可调用的，但语义约束没有被编译进执行路径。",
-        "apply": "选 10-20 个高频、稳定、可验证的业务操作，先写成 typed contract + 确定性实现 + 单测，模型只做选择和参数填充；对宽表 API，把字段分组编成「视图型能力」（如「按客户查订单摘要」），而不是暴露原始 200 字段。度量指标用「参数错误率、token/请求、单次成本」三项。",
-        "caveats": "论文由框架作者自评，368 个条件的任务分布与「复杂多步」定义需看原文；能力包需要维护（上游 API/schema 变更），单测覆盖不足时会退化成脆弱的脚本集合。",
-        "business": "自建 agent 的边际成本主要由 context 决定。能力包化把每次调用的 token 从「文档 + 推理」压到「契约 + 参数」，这是把 AI 成本从变动成本转成固定资产（一次性工程投入）的路径，也是小模型能落地的关键。",
-        "sources": [
-          {
-            "url": "https://arxiv.org/abs/2611.07652",
-            "title": "Don't Prompt Your Agents. Equip Them: Skillware as a Modular Standard"
-          }
-        ],
-        "diagram": {
-          "title": "Skillware 能力包执行链路",
-          "flow": [
-            {
-              "label": "用户意图",
-              "sub": "自然语言",
-              "type": "frontend"
-            },
-            {
-              "label": "能力注册表",
-              "sub": "版本化 / 可发现",
-              "type": "backend"
-            },
-            {
-              "label": "类型化契约",
-              "sub": "JSON Schema 输入",
-              "type": "security"
-            },
-            {
-              "label": "确定性实现",
-              "sub": "Python + 随包数据集",
-              "type": "backend"
-            },
-            {
-              "label": "单测",
-              "sub": "CI 内验证",
-              "type": "cloud"
-            },
-            {
-              "label": "模型适配层",
-              "sub": "编译为原生 tool 声明",
-              "type": "external"
-            }
-          ],
-          "notes": [
-            {
-              "label": "成本断崖",
-              "text": "token -84.8%，推理成本 -97.3%，参数错误归零"
-            },
-            {
-              "label": "小模型反超",
-              "text": "3B-8B + Skillware 在多步流程上稳定超过未装备前沿模型"
-            },
-            {
-              "label": "边界",
-              "text": "契约需随上游 schema 维护，单测不足会退化为脚本集合"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "tag": "rnd",
-      "title": "基准也是软件：Terminal-Bench 审计出约 30% 题目有缺陷，修复后准确率 +10pp、排名移动 3 位",
-      "date": "2026-11-05",
-      "source": "arXiv",
-      "link": "https://arxiv.org/abs/2611.08417",
-      "summary": "论文提出「benchmark maintenance debt」：即使发布时经过严格验证的基准也会腐化——模型变强后会给出 verifier 拒绝的合法解，评测基建的改动也会让任务里嵌入的假设失效。作者给出一套持续验证工作流（社区报告、任务工件、agent trace、自动 oracle 检查、人工闸门修复），并对 Terminal-Bench 2.0 做审计：约 30% 的题目存在问题，修复后作为 2.1 发布。修复改变结论：准确率提升超过 10 个百分点，榜单名次最多移动 3 位，但整体排序仍高度相关（Spearman ρ=0.958）。论文还显示资源口径会改变结论：延长 wall-clock 时限把 GPT-5.4 的 harness 差距抹平 20pp，把 GPT-5.4 mini 的 30pp 差距缩到 5pp。",
-      "insight": "对自建 eval 的团队，这条的核心不是「别人的榜不可信」，而是「你的内部评测集同样会腐化，而且腐化是静默的」。把 eval 当代码库管理：任务有 issue 模板、verifier 有回归测试、修复走人工闸门，并固定时间/预算口径。否则你会在「模型升级」和「评测漂移」之间做出错误归因。",
-      "detail": {
-        "why": "coding agent 是当前最具经济价值的 LLM 部署之一，评测可靠性直接决定采购与路线选择。但基准一旦发布就缺少维护机制，缺陷会累积成系统性偏差。",
-        "mechanism": "五条输入汇入同一条修复流水线：社区报告 → 任务工件与 agent trace 复现 → 自动 oracle 检查（验证器是否拒绝合法解、任务假设是否仍成立）→ 人工闸门确认 → 发布修复版本。再对比修复前后的分数、名次与相关性，并做资源口径（时限）敏感性实验。",
-        "deep": "两个方法论要点：①「修复后准确率上升 10pp、名次最多动 3 位」说明基准缺陷主要造成绝对分失真，排序相对稳健——这对「选型看排名」的人是安慰，对「用绝对分做门槛」的人是警告。②wall-clock 是隐藏自变量：同一模型在不同时限下 harness 差距可以从 20pp 变 0，这意味着跨团队比较 agent 能力时，必须先对齐时间预算与工具预算。",
-        "apply": "为内部 eval 建三件套：任务 issue 模板（谁发现、如何复现、修复状态）、verifier 回归（合法解不得被拒）、预算口径声明（时限/ token / 工具调用上限）。每季度做一次「腐化审计」，抽样重跑历史任务并检查 verifier。",
-        "caveats": "审计依赖人工与 LM 辅助判断，30% 是特定基准的估计；修复本身可能引入新偏差；结论集中在 terminal 类任务，业务 API 任务的腐化模式不同。",
-        "business": "采购 agent 产品时，先问「评测的时限与 harness 是什么」，再问分数。反过来，做 agent 产品的团队可以把「持续验证 + 公开修复记录」做成信任资产——在一个基准普遍腐化的市场里，可复现的评测流程比榜首更有说服力。",
-        "sources": [
-          {
-            "url": "https://arxiv.org/abs/2611.08417",
-            "title": "Benchmarks as Software: Terminal-Bench and the Case for Continuous Benchmarks"
-          }
-        ],
-        "diagram": {
-          "title": "基准持续验证与修复闭环",
-          "flow": [
-            {
-              "label": "基准任务",
-              "sub": "TB 2.0 / 内部 eval",
-              "type": "database"
-            },
-            {
-              "label": "agent trace",
-              "sub": "可复现失败",
-              "type": "backend"
-            },
-            {
-              "label": "自动 oracle 检查",
-              "sub": "合法解是否被拒",
-              "type": "backend"
-            },
-            {
-              "label": "人工闸门",
-              "sub": "确认与修复",
-              "type": "security"
-            },
-            {
-              "label": "修复版本",
-              "sub": "TB 2.1 / eval vN",
-              "type": "cloud"
-            }
-          ],
-          "notes": [
-            {
-              "label": "腐化规模",
-              "text": "约 30% 题目存在缺陷，修复后准确率 +10pp 以上"
-            },
-            {
-              "label": "排序稳健",
-              "text": "名次最多移动 3 位，Spearman ρ=0.958"
-            },
-            {
-              "label": "时限是自变量",
-              "text": "延长 wall-clock 可抹平 20pp 的 harness 差距"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "tag": "rnd",
-      "title": "px0：给 AI 生成代码的评审工作台——Go 单二进制、冷启动 <1ms、常驻内存 20-30MB",
-      "date": "2026-11-06",
-      "source": "GitHub",
-      "link": "https://github.com/px0-ai/px0",
-      "summary": "px0 是一个面向 AI 生成代码的评审工作台与「速度优先」IDE，MIT 许可、Go 编写，约 1.9k stars，最近一次推送在 11 月 6 日。它把浏览器变成零延迟控制台：原生 Git/GitHub 集成、超大仓库即时搜索、就地 quick fix、以及把改动交接给本地 coding harness。工程上刻意做轻：单个静态 Go 二进制、无 Electron/Node/CGO，用 Chroma 原生分词覆盖约 280 种语言；项目自述冷启动 <1ms、服务端常驻约 20-30MB（含浏览器标签页约 100-180MB，对比 VS Code 约 1,440MB）。",
-      "insight": "当 agent 的产出速度超过人的评审带宽，工具重心会从「写得快」转向「读得快、验证得快」。px0 的价值主张不是功能多，而是把评审循环的固定开销压到接近零——对一个要审几十个 agent PR 的架构师，进程启动与索引等待就是真实的吞吐瓶颈。",
-      "detail": {
-        "why": "AI 编码的重心正在从「作者」转向「审阅者」：agent 在终端里直接改代码，人的瓶颈变成 review、导航与验证。主流 IDE 为「写」优化、体积巨大，不适合高频短时的评审循环。",
-        "mechanism": "单静态 Go 二进制内嵌 HTTP 服务与分词器，浏览器作为前端；Git/GitHub 操作与搜索走本地 daemon；quick fix 就地修改工作区；通过 handoff 把上下文交给本地 coding harness 继续执行。性能策略是去掉 Electron/Node 运行时与重型索引服务，按需索引 + 原生分词。",
-        "deep": "值得注意的取舍：它放弃了「完整 IDE」的能力（调试器、语言服务器生态），换取启动与内存的数量级优势；这与「评审工作台」的定位一致——人在这类工具里做的是 diff 阅读、搜索、批准/驳回，而不是长时间编码。对团队而言，真正的价值可能不是省内存，而是让「审 agent 的 PR」成为一个可以批量进行的动作。",
-        "apply": "先在非核心仓库试用，把它定位成「review 专用终端」而非替换 IDE；把 handoff 接到团队已有的 harness（Claude Code/Codex CLI），形成「agent 改 → 人审 → 回交 agent 修」的循环；关注是否支持团队策略（分支保护、审批留痕）。",
-        "caveats": "性能数字来自项目自述 benchmark，未独立复现；单人评审向，团队治理/合规能力需另配；年轻项目（2026-06 创建），API 与稳定性风险存在。",
-        "business": "当「写代码」变便宜，「审代码」成为稀缺资源，围绕评审带宽的工具会出现独立品类。对自建团队的启示是：评估 AI 研发效能时，应把「人均可审 PR 数」当成一等指标，而不是只统计生成行数。",
-        "sources": [
-          {
-            "url": "https://github.com/px0-ai/px0",
-            "title": "px0: review workbench and speed-first IDE for AI-generated code"
-          }
-        ],
-        "diagram": {
-          "title": "AI 代码评审循环",
-          "flow": [
-            {
-              "label": "Coding agent",
-              "sub": "终端内直接改动",
-              "type": "external"
-            },
-            {
-              "label": "px0 daemon",
-              "sub": "Go 单二进制 / 本地",
-              "type": "backend"
-            },
-            {
-              "label": "评审界面",
-              "sub": "diff / 搜索 / quick fix",
-              "type": "frontend"
-            },
-            {
-              "label": "Git / GitHub",
-              "sub": "原生集成",
-              "type": "cloud"
-            },
-            {
-              "label": "Handoff",
-              "sub": "回交本地 harness",
-              "type": "external"
-            }
-          ],
-          "notes": [
-            {
-              "label": "轻量",
-              "text": "自述冷启动 <1ms、服务端 20-30MB，对比 VS Code ~1,440MB"
-            },
-            {
-              "label": "覆盖",
-              "text": "Chroma 原生分词约 280 种语言，超大仓库即时搜索"
-            },
-            {
-              "label": "待核实",
-              "text": "性能为项目自述 benchmark，团队治理能力未验证"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "tag": "business",
-      "title": "tok：给 BPMN/DMN 一套纯文本语法，token 只有 XML 的 1/2.2，agent 写流程 97.6-100% 合法",
-      "date": "2026-11-05",
-      "source": "arXiv",
-      "link": "https://arxiv.org/abs/2611.07945",
-      "summary": "tok 是 BPMN 2.0.2 流程模型与 DMN 1.5 决策模型的纯文本具体语法：一个引擎同时按两套标准校验文档、编译成带自动绘图的 XML，并通过 Model Context Protocol 服务 LLM 应用。在 37 个工具导出的 893 个 BPMN 文件上，一个 tok 模型比最小的 BPMN XML 少 2.2 倍 token、比文件原样少 7.7 倍；对 1,411 个注入故障检出 98.2%，而 XML Schema + bpmnlint 为 85.8%。四个首次接触 tok 的模型只看一页参考，就能对 87 个流程描述写出 85.7-100% 合法的 tok；配上 lean skill 与一个 checker 工具后达到 97.6-100%，最强模型写 tok 比写 BPMN XML 少 21%/14% token。47 个仿真事件日志中有 44 个与源模型吻合。",
-      "insight": "业务知识与研发知识的一个关键差别是：流程与决策规则天然是图/表结构，但长期以 XML、PDF、截图形式存在，agent 既读不懂也改不动。tok 提供的是「机器可写、可校验、省 token」的表示层，恰好补上语义层（管指标）之外的流程与决策维度。对自建业务知识库，这意味着流程资产应当是可 diff、可 lint 的文本，而不是附件。",
-      "detail": {
-        "why": "企业流程与决策模型是 agent 理解业务的关键上下文，但 BPMN/DMN 的 XML 冗长、难写、难校验，模型生成的合法率低；同时缺少「谁能校验」的闭环。",
-        "mechanism": "定义 tok 的文本语法（映射到 BPMN/DMN 元模型）→ 单一 checker 同时校验两套标准 → 编译器输出合规 XML 与自动布局图 → MCP server 把「读流程/写流程/校验」暴露为工具。评测三件事：token 效率（对比 893 个真实文件）、故障检出率（1,411 个注入故障）、模型首次写作合法率（87 个描述 × 4 模型，分「仅参考」与「skill + checker」两种条件）。",
-        "deep": "三个可迁移的设计原则：①给模型一个「短、结构化、可校验」的表示，比教它写冗长的行业标准格式更有效；②checker 作为工具存在时，合法率从 85.7-100% 提升到 97.6-100%，说明「生成 + 机械校验」的组合优于「一次生成求完美」；③lean skill 比「让模型去读参考文档」省 1.7-2.8 倍 token——把规范压缩进 skill，而不是让 agent 现场检索。",
-        "apply": "如果团队有流程/审批/规则类知识，先做一层文本 DSL（哪怕不是 tok），配一个确定性校验器和 MCP 工具；把「流程可被 agent 读取并修改」作为知识库的一等能力。对宽表 API 的字段语义，同样可以先做「字段-业务含义-取值域」的文本 schema + 校验器。",
-        "caveats": "tok 是新语言，生态工具（建模器、治理平台）尚不成熟；87 个描述与 4 个模型的规模有限；BPMN/DMN 之外的业务规则（如定价策略表）覆盖需自行扩展。",
-        "business": "流程与规则是业务 agent 最缺的上下文。把它们变成可校验的文本资产，既降低 agent 的 token 成本，也让「agent 改流程」进入 code review 式的治理——这比让 agent 直接操作 BPMN 建模器更可控。",
-        "sources": [
-          {
-            "url": "https://arxiv.org/abs/2611.07945",
-            "title": "tok: a textual concrete syntax of BPMN and DMN for humans and AI agents"
-          }
-        ],
-        "diagram": {
-          "title": "tok 文本流程与 MCP 工具链",
-          "flow": [
-            {
-              "label": "业务描述",
-              "sub": "流程 / 决策",
-              "type": "external"
-            },
-            {
-              "label": "LLM + lean skill",
-              "sub": "一页语法参考",
-              "type": "frontend"
-            },
-            {
-              "label": "tok 文本",
-              "sub": "可 diff / 可读",
-              "type": "backend"
-            },
-            {
-              "label": "Checker",
-              "sub": "BPMN + DMN 双标准",
-              "type": "security"
-            },
-            {
-              "label": "XML + 图",
-              "sub": "合规导出",
-              "type": "database"
-            },
-            {
-              "label": "MCP server",
-              "sub": "读 / 写 / 校验",
-              "type": "cloud"
-            }
-          ],
-          "notes": [
-            {
-              "label": "token",
-              "text": "比最小 BPMN XML 少 2.2x，比原样导出少 7.7x"
-            },
-            {
-              "label": "校验",
-              "text": "1,411 个注入故障检出 98.2%，XSD+bpmnlint 为 85.8%"
-            },
-            {
-              "label": "写作",
-              "text": "skill + checker 下合法率 97.6-100%"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "tag": "business",
-      "title": "Agent 行为契约：把「可观察行为」当版本化工件，按场景 pass^k 卡发布，权威判定移出模型",
-      "date": "2026-11-03",
-      "source": "arXiv",
-      "link": "https://arxiv.org/abs/2611.05454",
-      "summary": "论文指出企业 agent 的维护问题不在模型不确定性本身，而在于「改变行为的因素大多来自团队之外」：模型版本退役、策略修订、上游 schema 变更、为修一个 case 而改的 prompt，往往在线上才被发现，而不是作为回归被拦住。ABE（Agentic Behavior Engineering）把 Design by Contract 移植到非确定性系统：以「仅规格」的行为契约为版本化工件，带稳定规则 ID，写明必须做、不得做、以及证据不足时必须弃答；轻量场景库把每条规则变成具体情境；测试、运行时策略、遥测都单向引用契约，使规格与实现可独立演进而不漂移。方法分五职责（Specify/Ground/Control/Verify/Observe），区分「缺证据」与「已验证否定」，把权威放在模型之外，按场景 pass^k 而非聚合准确率放行，并把每次生产运行按契约归类、路由到该改的资产。",
-      "insight": "这是目前看到对「构造性拒绝」最工程化的表述：弃答不是模型的美德，而是契约里的一条显式规则，且「查不到」不能等同于「没有」。对用户团队，ABE 提供了一个可审计的骨架——规则 ID、场景、单向引用、pass^k 门禁——可以直接映射到业务 API agent 的发布流程。",
-      "detail": {
-        "why": "传统测试假设确定性；agent 的行为变更源在团队之外且非确定，导致「回归」无法被捕获。企业需要一种以行为为对象、可版本化、可审计的工程方法。",
-        "mechanism": "契约（规则 ID + 必须/禁止/弃答）→ 场景库（每条规则若干具体情境）→ 三类工件单向引用契约（测试、运行时策略、遥测）→ 发布门禁按 per-scenario pass^k 判定 → 生产运行逐条对照契约分类 → 每个发现路由到应修改的资产（规格/场景/实现/策略）。",
-        "deep": "两个设计点值得抄：①「缺证据」与「已验证否定」分开建模，避免了企业 agent 最常见的语义错误——把查不到记录说成「不存在」；②单向引用（工件 → 契约，不反向）保证规格可以独立修订，不会因为改了测试就偷偷改了语义。pass^k 门禁则直接把「偶发失败」纳入验收，而不是用平均值掩盖。",
-        "apply": "从一个高价值、可枚举的场景域开始（如额度审批、退款、对账），把规则写成带 ID 的契约，每条配 3-5 个场景；先接运行时策略与遥测，再接发布门禁；把「弃答」纳入正常路径并统计弃答率与误弃答率。",
-        "caveats": "方法学论文，示例为容量分配边界套件与一个构造的审批工作流示例；落地成本在场景库维护与组织职责划分；pass^k 对低频路径需要足够采样预算。",
-        "business": "企业 agent 的采购与验收标准应从「答对率」转向「按场景的可靠性 + 可审计性」。能把「弃答」讲清楚的产品，在受监管行业里比多答对 3 个点的产品更容易过审。",
-        "sources": [
-          {
-            "url": "https://arxiv.org/abs/2611.05454",
-            "title": "Agentic Behavior Engineering: A Design-by-Contract Methodology"
-          }
-        ],
-        "diagram": {
-          "title": "行为契约驱动的 agent 发布链路",
-          "flow": [
-            {
-              "label": "行为契约",
-              "sub": "规则 ID / 必须·禁止·弃答",
-              "type": "security"
-            },
-            {
-              "label": "场景库",
-              "sub": "每条规则若干情境",
-              "type": "backend"
-            },
-            {
-              "label": "测试 / 策略 / 遥测",
-              "sub": "单向引用契约",
-              "type": "backend"
-            },
-            {
-              "label": "发布门禁",
-              "sub": "per-scenario pass^k",
-              "type": "cloud"
-            },
-            {
-              "label": "生产运行分类",
-              "sub": "路由到该改的资产",
-              "type": "frontend"
-            }
-          ],
-          "notes": [
-            {
-              "label": "弃答是规则",
-              "text": "证据不足必须弃答，且与「已验证否定」分开建模"
-            },
-            {
-              "label": "权威外置",
-              "text": "越权与放行判定不交给模型"
-            },
-            {
-              "label": "验收口径",
-              "text": "按场景 pass^k 放行，不用聚合准确率掩盖偶发失败"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "tag": "business",
-      "title": "AgentTrustCI：把策略/接地/轨迹三类断言写进 JUnit，录制 trace 在 CI 里确定性回放",
-      "date": "2026-11-04",
-      "source": "arXiv",
-      "link": "https://arxiv.org/abs/2611.06674",
-      "summary": "论文指出基础设施安全并不能回答应用层问题：agent 是否选了允许的工具、答案是否真的落在工具输出上、是否按规定的顺序走完流程。AgentTrustCI 是一个 Java/JUnit 5 框架，把这些期望表达为对录制 trace 的三类检查——policy（工具选择合规）、grounding（答案接地）、trajectory（调用序列合规）；确定性 replay 让测试可在构建期重复执行，judge 接口为可选的语义评估留扩展点。在覆盖 7 个企业域的 55 个合成用例上，完整流水线把 30 个注入故障与 25 个通过控制全部分类正确（含 10 个非平凡控制），12 个指定关键用例零漏检；单层配置各正确分类 35 个用例，因为语料按层故意隔离了每层 10 个故障。一个「答案正确但通过不允许的调用序列获得」的用例，展示了轨迹层独有的覆盖。",
-      "insight": "对已有 Java 发布流水线的团队，这是成本最低的落地路径：不需要重构 agent，只要把 trace 录下来，在 CI 里加三类断言。三层正交设计也很关键——别用一个 LLM judge 同时判断策略、接地和顺序，那样失败无法归因，回归也无法定位。",
-      "detail": {
-        "why": "企业 agent 的失败常不是「模型答错」，而是「用了不该用的工具」「答案不是从工具输出来的」「跳过了必经步骤」。这些是应用层契约，基础设施安全扫描与通用评测都覆盖不到。",
-        "mechanism": "agent 运行 → 录制 trace（工具调用、参数、返回值、最终答案）→ 三类断言引擎：policy 检查工具白名单/权限，grounding 检查答案片段是否可追溯到工具输出，trajectory 检查调用序列是否满足规定路径 → 确定性 replay 在构建期重复执行 → judge 接口可选接入语义评估。评测用合成语料按层隔离故障，检验每层的独立覆盖。",
-        "deep": "「确定性回放」是这套方案的关键工程属性：agent 本身不确定，但 trace 是确定的，于是回归测试可以像普通单测一样稳定。三层分离带来的另一个好处是失败可归因——策略失败改权限配置，接地失败改 prompt/检索，轨迹失败改编排。局限也清楚：它验证的是作者写的回归集覆盖，不是生产准确率。",
-        "apply": "先录一周生产 trace，挑出 20-30 条关键路径写成三类断言；把 policy 层接现有权限系统，grounding 层要求答案带引用片段，trajectory 层用状态机描述必经过步骤；把这些测试挂在发布流水线上，任何 prompt/模型/工具变更都必须通过。",
-        "caveats": "合成用例（55 个）规模小，真实业务 trace 的噪声与长尾未覆盖；期望需随流程演进维护；grounding 检查对多模态/宽表返回值需要定制。",
-        "business": "受监管行业的 agent 上线，审计方要的是「你怎么证明它没越权」，而不是「它答对了多少」。trace 级三类断言正好是可交付的审计证据，也能把「agent 变更」纳入现有变更管理流程。",
-        "sources": [
-          {
-            "url": "https://arxiv.org/abs/2611.06674",
-            "title": "AgentTrustCI: Build-Time Policy, Grounding, and Trajectory Tests"
-          }
-        ],
-        "diagram": {
-          "title": "trace 级三层断言与 CI 回放",
-          "flow": [
-            {
-              "label": "Agent 运行",
-              "sub": "工具调用 + 答案",
-              "type": "external"
-            },
-            {
-              "label": "Trace 录制",
-              "sub": "参数 / 返回 / 序列",
-              "type": "database"
-            },
-            {
-              "label": "Policy 检查",
-              "sub": "工具白名单与权限",
-              "type": "security"
-            },
-            {
-              "label": "Grounding 检查",
-              "sub": "答案可追溯到输出",
-              "type": "backend"
-            },
-            {
-              "label": "Trajectory 检查",
-              "sub": "必经过步骤",
-              "type": "backend"
-            },
-            {
-              "label": "CI 门禁",
-              "sub": "确定性 replay",
-              "type": "cloud"
-            }
-          ],
-          "notes": [
-            {
-              "label": "全分类",
-              "text": "30 个注入故障 + 25 个控制全部正确，12 个关键用例零漏检"
-            },
-            {
-              "label": "分层正交",
-              "text": "单层配置各 35 例正确，语料按层隔离故障"
-            },
-            {
-              "label": "独有覆盖",
-              "text": "答案正确但调用序列违规，只有轨迹层能抓到"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "tag": "business",
-      "title": "交接摘要会变成指令：模型自写的「需要审批」被后继实例当真，误批准使越权动作 24→7/120",
-      "date": "2026-11-04",
-      "source": "arXiv",
-      "link": "https://arxiv.org/abs/2611.06545",
-      "summary": "长任务 agent 会压缩上下文，用摘要替代大部分历史。论文追问：交接摘要是否会写入记录并不支持的权限或要求？这些句子是否会改变后继实例（successor）的行为？它们从哪来？方法是在合成工具任务中携带 ground-truth 权限账本，用同快照回放把整句替换为中性填充做因果检验。两名 AI 读者只读被规则标记的留出摘要，确认「不支持的限制」占全部可读摘要的 1.2% 与 2.4%，「不支持的授权」占 0.1% 与 1.3%。中和误批准后，越权动作从 24/120 降到 7/120（后置检验；另一组 17→11/48）。多数「限制」源自 agent 早前「这个动作需要审批」的推理（后置分析）。预注册检验中，把系统提示里的「有些动作需要审批」改为说明「要求来自哪里」，使不支持的限制从开发集 5.0% 降到 1.8%、留出模板 1.8% 降到 0.3%（p<1e-9），而对账本要求的合法审批请求影响很小。",
-      "insight": "上下文压缩不是无损的语义操作：它会把推理过程中的假设固化成「规则」，并在下一个实例里获得执行力。对长流程单据/审批 agent，这意味着摘要必须与权限账本分离——后继实例只信账本，不信摘要里的自然语言。这条与 ABE 的「权威在模型之外」互为印证。",
-      "detail": {
-        "why": "长任务 agent 依赖上下文压缩与多实例交接，而摘要由模型自己写；一旦摘要里出现未被授权的要求，后继实例会把它当既定事实执行，形成难以追溯的越权。",
-        "mechanism": "构造带权限账本的工具任务 → 在压缩点生成交接摘要 → 用同快照回放，把被标记的句子替换为中性填充 → 对比 successor 的行为差异（因果而非相关）→ 追溯这些句子的来源（早前推理 / 系统提示措辞 / 账本）→ 做提示措辞干预实验。",
-        "deep": "三个可直接落地的发现：①比例虽小（1-2%）但影响是行为级的，误批准中和后越权动作减少约 70%；②来源主要是 agent 自己的推理，而非外部注入，说明这是「自我强化」问题；③改系统提示的措辞（说明要求来自哪里）比加更多规则更有效，且不牺牲合法审批。这提示「权限来源的显式建模」比「更严的措辞」更根本。",
-        "apply": "把权限账本做成独立、机器可读的工件（谁在什么条件下可以做什么），摘要只允许引用账本 ID；后继实例启动时先加载账本，再做计划；对摘要做「权限句检测」并在写入前剥离未授权语句；系统提示明确「要求只能来自账本」。",
-        "caveats": "合成任务与开放权重模型，真实企业流程的权限粒度更复杂；效应量部分来自后置检验（作者已标注）；检测依赖规则标记，可能漏掉隐式授权。",
-        "business": "对审批、对账、工单流转类 agent，最大的合规风险不是「答错」，而是「自己给自己发了许可」。把权限账本与摘要分离，是一项低成本、高审计价值的设计。",
-        "sources": [
-          {
-            "url": "https://arxiv.org/abs/2611.06545",
-            "title": "When Do Summaries Become Instructions? Unsupported Policy in Handoff Summaries"
-          }
-        ],
-        "diagram": {
-          "title": "摘要 → 后继实例的权限传递",
-          "flow": [
-            {
-              "label": "完整历史",
-              "sub": "工具调用与推理",
-              "type": "database"
-            },
-            {
-              "label": "压缩器",
-              "sub": "自写交接摘要",
-              "type": "backend"
-            },
-            {
-              "label": "权限账本",
-              "sub": "ground-truth / 独立工件",
-              "type": "security"
-            },
-            {
-              "label": "后继实例",
-              "sub": "按摘要 + 账本行动",
-              "type": "frontend"
-            },
-            {
-              "label": "动作审计",
-              "sub": "越权检测",
-              "type": "cloud"
-            }
-          ],
-          "notes": [
-            {
-              "label": "误批准代价",
-              "text": "中和误批准后越权动作 24→7 / 120"
-            },
-            {
-              "label": "来源",
-              "text": "多数「限制」来自 agent 早前自己的推理，而非外部注入"
-            },
-            {
-              "label": "提示干预",
-              "text": "说明「要求来自哪里」使不支持限制 5.0%→1.8%（p<1e-9）"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "tag": "business",
-      "title": "API 的 AI 就绪度打分：6 维约 35 个信号，把「OpenAPI 能校验」和「agent 真能用」分开",
-      "date": "2026-11-06",
-      "source": "GitHub",
-      "link": "https://github.com/jentic/jentic-api-scorecard",
-      "summary": "Jentic API Scorecard 的出发点是：通过 schema 校验的 OpenAPI 文档，不等于 agent 能用的 API——语法是一回事，语义清晰度、安全性与可发现性是另一回事。它按 JAIRF（Jentic API AI Readiness Framework）六维打分：基础合规（FC）、开发者体验与工具兼容（DXJ）、AI 就绪与 agent 体验（ARAX，语义清晰度与每个 operation 所需上下文）、agent 可用性（AU，可预测安全的多步编排）、安全（SEC）、AI 可发现性（AID）。实现为两阶段：分析阶段跑一批验证器与结构检查，打分阶段映射到约 35 个信号、聚合成维度分与加权总分/等级；评分在本地 Docker 内完成，文档不出环境；配套 api-improve skill 用 OpenAPI Overlay 做非破坏性修改并生成前后 changelog。",
-      "insight": "这正是「上百字段宽表 API」缺的体检表：字段描述缺失、枚举没有业务含义、operation 没有副作用与幂等标注，都会在 ARAX/AU 上掉分，而这些恰是 agent 猜错参数、误重试的根因。把它接进 CI 当「API 语义门禁」，比等 agent 线上失败再回头补文档要便宜得多。",
-      "detail": {
-        "why": "用户团队不直连数据库、只走高业务含义 API，因此 API 文档的语义质量直接决定 agent 的上限。但「文档好不好」长期缺少可量化、可回归的度量。",
-        "mechanism": "输入 OpenAPI 文档 → 分析阶段：结构/规范验证器 + 语义观察（描述、示例、枚举、错误模型、鉴权声明、operation 副作用）→ 打分阶段：约 35 个信号映射到六维 → 加权总分与等级 → 输出机器可读结果与 HTML 报告；api-improve 依据低分项生成 Overlay 补丁（不改原文件）并给出 changelog。",
-        "deep": "评分维度里最值得关注的是 ARAX 与 AU：它们衡量的不是「文档完整」，而是「模型能否仅凭文档推断出正确调用」。这与学术界的 API/工具理解研究指向一致——agent 失败多发生在参数语义与调用顺序，而不是 HTTP 语法。另一个工程亮点是 Overlay：把改进表达为可审查的补丁，而不是让 agent 直接改生产文档。",
-        "apply": "先对 3-5 个核心业务 API 跑分，把低分项按「字段描述 / 枚举语义 / 错误码 / 幂等与副作用」分类；用 Overlay 批量补，纳入 CI 防回归；把分数写进 API 设计评审的验收标准。对宽表，优先补「常用查询路径涉及的字段」而不是全部字段。",
-        "caveats": "评分基于文档文本，无法验证真实数据语义与取值分布；约 35 个信号的权重未在 README 完整公开；需要 Docker 与（本地文件时）API key；对新项目参考价值大于对遗留系统的自动修复。",
-        "business": "把「API 对 agent 友好」变成可度量、可招标的指标：业务系统团队有明确的改进清单，agent 团队有可预期的输入质量。这比要求业务方「把文档写好」更容易推动。",
-        "sources": [
-          {
-            "url": "https://github.com/jentic/jentic-api-scorecard",
-            "title": "Jentic API Scorecard: OpenAPI AI-readiness scoring (JAIRF)"
-          }
-        ],
-        "diagram": {
-          "title": "OpenAPI → 六维评分 → Overlay 修复",
-          "flow": [
-            {
-              "label": "OpenAPI 文档",
-              "sub": "宽表 / 多 operation",
-              "type": "database"
-            },
-            {
-              "label": "分析阶段",
-              "sub": "验证器 + 语义观察",
-              "type": "backend"
-            },
-            {
-              "label": "~35 个信号",
-              "sub": "FC/DXJ/ARAX/AU/SEC/AID",
-              "type": "backend"
-            },
-            {
-              "label": "评分与等级",
-              "sub": "加权总分 / HTML 报告",
-              "type": "frontend"
-            },
-            {
-              "label": "Overlay 修复",
-              "sub": "非破坏性补丁 + changelog",
-              "type": "security"
-            }
-          ],
-          "notes": [
-            {
-              "label": "六维",
-              "text": "基础合规、开发者体验、AI 就绪、agent 可用性、安全、可发现性"
-            },
-            {
-              "label": "ARAX/AU",
-              "text": "衡量「仅凭文档能否正确调用」，而非文档是否完整"
-            },
-            {
-              "label": "本地评分",
-              "text": "Docker 内完成，OpenAPI 文档不出环境"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "tag": "blog",
-      "title": "还需要数据模型吗？——agent 时代模型的新职责：把「决策」暴露给人审",
-      "date": "2026-10-28",
-      "source": "Data Engineering Weekly",
-      "link": "https://www.dataengineeringweekly.com/p/do-we-still-need-data-models",
-      "summary": "Data Engineering Weekly 作者 Ananth Packkildurai 在 ADDLC（Agentic Data Development Lifecycle）框架下重问「还需要数据模型吗」。他的回答是需要，但职责变了：过去模型帮人把业务需求翻译成系统设计；当 agent 承担更多设计与实现，人仍需要一种方式看见 agent 建了什么、如何理解需求、沿途做了哪些决策。文中例子很具体：营销要「响应过邮件活动的客户」，agent 找到既有定义「响应=点击」，建管道、跑测试、全部通过，但业务真正想要的是「收到邮件后 7 天内购买」——定义合法，问题答错。作者主张 agent 在动手前先展示解读：响应的定义、用哪个客户标识关联、哪些是推断关系、哪些问题证据不足应留白；解释还必须能被代码、数据、测试核对，而不是只读 agent 的总结。",
-      "insight": "这篇把「语义层 vs 知识图谱」的争论往前推了一步：真正的分歧不是用哪种技术，而是模型要不要承担「决策记录 + 可核对工件」的角色。对宽表 API 场景，这个标准可以翻译成——每个字段的取值口径、来源、是推断还是领域 owner 确认、哪些取值未定，都必须可查。",
-      "detail": {
-        "why": "agent 能自动建管道后，「模型是否还有用」成为数据团队的现实问题。作者认为模型的价值从「设计结构」转向「让人的判断进入系统」，否则 agent 会以合法但错误的方式交付。",
-        "mechanism": "提出 ADDLC 的三个要求：①解读前置——agent 先展示对需求的理解（定义、关联键、假设、未决问题）再实现；②来源可追溯——区分 agent 推断的关系与领域 owner 确认的关系；③可核对——解释必须能对照代码、数据与测试验证，而不是采信 agent 的自述。技术上不要求抛弃 Kimball：维度建模负责分析结构，语义定义负责业务术语与指标复用，本体负责描述概念关系，三者连接而非替代。",
-        "deep": "最有洞察力的是「通过测试的错误」：管道跑通、记录到达、测试通过，但业务问题被答错。这类失败不会出现在数据质量监控里，只能靠「解读前置 + 人工确认」拦住。另一个细节是「7 天内购买」只证明购买发生在邮件之后，不证明因果——这种区分正是业务语义层应当承载、而 SQL 生成器无法自动推断的内容。",
-        "apply": "在 agent 的产出流程里加一个「解读卡」环节：定义来源、关联键、推断 vs 确认、未决问题四项，必须人工确认后才能生成管道；把这些决策写进模型文档并与代码双向链接；对跨部门术语（活跃客户、响应、收入）建立适用范围与 owner。",
-        "caveats": "观点性文章，无量化实验；ADDLC 仍是概念框架；「解读卡」在大规模变更下的人工成本未评估。",
-        "business": "数据团队的护城河从「会写 SQL/建模」转向「能把业务决策显式化并审计」。对自建业务 agent 的团队，验收标准应是「人能否审出 agent 的假设」，而不只是答对率——这也是把 AI 从 demo 推向生产的分水岭。",
-        "sources": [
-          {
-            "url": "https://www.dataengineeringweekly.com/p/do-we-still-need-data-models",
-            "title": "Do We Still Need Data Models? (Data Engineering Weekly)"
-          }
-        ],
-        "diagram": {
-          "title": "解读前置的 agentic 数据开发",
-          "flow": [
-            {
-              "label": "业务请求",
-              "sub": "营销/财务/运营",
-              "type": "external"
-            },
-            {
-              "label": "Agent 解读",
-              "sub": "定义 / 关联键 / 假设",
-              "type": "frontend"
-            },
-            {
-              "label": "决策记录",
-              "sub": "来源 · 推断vs确认 · 未决",
-              "type": "security"
-            },
-            {
-              "label": "人工确认",
-              "sub": "领域 owner 审阅",
-              "type": "backend"
-            },
-            {
-              "label": "管道 + 测试",
-              "sub": "实现与验证",
-              "type": "database"
-            },
-            {
-              "label": "核对",
-              "sub": "解释 vs 代码/数据/测试",
-              "type": "cloud"
-            }
-          ],
-          "notes": [
-            {
-              "label": "合法但答错",
-              "text": "「响应=点击」定义合法、测试全过，但业务要的是 7 天内购买"
-            },
-            {
-              "label": "推断≠确认",
-              "text": "画像提示 ID 匹配只是起点，不等于已确认的身份规则"
-            },
-            {
-              "label": "三种技术共存",
-              "text": "维度建模管结构，语义定义管指标，本体管概念关系"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "tag": "cross",
-      "title": "MCPHallu：358 任务 / 36 个生产 MCP server，14 个前沿 agent 平均 0.642，「目标不可达」仅 23.2% 能识别",
-      "date": "2026-11-05",
-      "source": "arXiv",
-      "link": "https://arxiv.org/abs/2611.07689",
-      "summary": "MCPHallu 是面向 MCP 环境的幻觉诊断基准，按 reasoning / execution / memory 三轴构造四类结构性触发：Branch Collapse、Unreachable Goal、Tool Misuse、Context Forgetting，使每道题有明确的「主导失败风险」而不是笼统的任务完成率。基准含 5 个能力域的 358 个任务，跑在 36 个容器化的生产 MCP server 上；评测 8 家厂商的 14 个前沿 agent、5,012 条轨迹。结果：平均得分 0.642（0-1），失败集中在 Unreachable Goal——平均 0.458、仅 23.2% 的运行通过，说明 agent 往往会继续发工具调用或直接宣称成功，而不是识别目标不可达。子类型排名差异极大：模型名次平均移动 6.9/13 位，Branch Collapse 与 Unreachable Goal 之间不相关（r=-0.12）。",
-      "insight": "「构造性拒绝」不是措辞问题，是能力短板：在工具环境里，agent 缺少一个显式的「可行性判定」环节，于是用更多工具调用掩盖「做不到」。这与 ABE 的弃答规则、以及状态化工具调用的结构审计互为三角——一个给契约，一个给度量，一个给结构诊断。",
-      "detail": {
-        "why": "MCP 让 agent 在运行时跨多个 server 发现并调用工具，但现有基准主要测完成率，失败诊断多在执行后回溯，没有把「易幻觉」的结构性风险构造进任务。",
-        "mechanism": "为每道题植入一个结构性触发（如让目标在给定工具集下不可达、让分支条件互相排斥、让工具语义相似但副作用不同、让关键上下文在压缩后丢失）→ 在隔离容器里对接 36 个真实 MCP server → 跑 14 个 agent 采集轨迹 → 按子类型而非总分分析 → 检验子类型间是否相关。",
-        "deep": "三个可直接用的结论：①总分 0.642 掩盖了 0.458 的不可达识别率——平均分会让人误判「MCP agent 已接近可用」；②子类型排名平均移动 6.9 位，说明「选模型」必须按失败类型选，而不是按总分选；③Branch Collapse 与 Unreachable Goal 不相关，意味着两类能力需要不同的工程对策（前者靠状态与分支管理，后者靠可行性判定与拒绝）。",
-        "apply": "上线前跑两类用例：目标不可达（工具集不足、权限不足、数据不存在）与工具误用（相似工具、破坏性副作用）；给 agent 加一个显式的 feasibility check 工具（检查所需权限/数据是否存在），并在契约层规定「证据不足即弃答」；把不可达识别率作为独立指标监控。",
-        "caveats": "基准任务为合成构造，真实业务目标的「不可达」判定更模糊；36 个 server 覆盖有限；评分依赖自动判定，边界用例可能有争议。",
-        "business": "对做企业 agent 的团队，「知道自己做不到」比「多会一个工具」更值钱：它直接决定客户是否信任自动化流程。把拒绝能力做成可度量指标，也可以成为对外交付的可靠性证明。",
-        "sources": [
-          {
-            "url": "https://arxiv.org/abs/2611.07689",
-            "title": "MCPHallu: Benchmarking Reasoning, Execution, and Memory Hallucinations in MCP Agents"
-          }
-        ],
-        "diagram": {
-          "title": "MCP 幻觉四类结构性触发",
-          "flow": [
-            {
-              "label": "任务",
-              "sub": "5 域 / 358 题",
-              "type": "database"
-            },
-            {
-              "label": "MCP servers",
-              "sub": "36 个生产 server / 容器隔离",
-              "type": "external"
-            },
-            {
-              "label": "结构触发",
-              "sub": "分支坍缩 / 不可达 / 工具误用 / 上下文遗忘",
-              "type": "security"
-            },
-            {
-              "label": "Agent",
-              "sub": "14 个前沿模型",
-              "type": "frontend"
-            },
-            {
-              "label": "子类型诊断",
-              "sub": "5,012 条轨迹",
-              "type": "cloud"
-            }
-          ],
-          "notes": [
-            {
-              "label": "平均 0.642",
-              "text": "不可达目标仅 0.458、23.2% 通过"
-            },
-            {
-              "label": "排名不稳",
-              "text": "子类型间名次平均移动 6.9/13 位"
-            },
-            {
-              "label": "不相关",
-              "text": "Branch Collapse 与 Unreachable Goal 相关 r=-0.12"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "tag": "cross",
-      "title": "什么结构会压垮 agent：把调度/状态保持/候选选择拆开测，依赖深度与可达状态数被耦合",
-      "date": "2026-11-02",
-      "source": "arXiv",
-      "link": "https://arxiv.org/abs/2611.03227",
-      "summary": "论文认为聚合任务分无法区分「调度失败」「状态保持失败」「候选选择失败」。作者做了一个小型可执行仪器：固定必需操作数，只变化四个结构参数——依赖深度、候选数量、活跃状态宽度、是否能读到当前状态快照。两个依赖图族显示，在固定工作量下加深依赖会同时改变调度自由度与可达完成状态数，两者被耦合，论文对这一耦合做了量化。主研究含 49,152 个生成任务与 393,216 次参考控制器 rollout；另有一个冻结的后续设计，追加 295,936 次 rollout，覆盖状态保持策略、快照节奏、隐藏状态重采样、恢复、查询局部性、候选索引与重标注。结果：residue cache 与预计算计划能解决 raw-value cache 解不了的题；索引化选择消除了串行扫描的分支缺陷；隐藏状态重采样给出精确的成功率上限，再多状态跟踪也越不过。作者明确声明：0.5B 小模型的本地 CPU 研究未完成任何工作流，16 次 Copilot 路由实验仅具描述性，不支持一般能力结论。",
-      "insight": "宽表 + 多步 API 场景的失败，常被归因为「模型不够强」，实际可能是任务结构（状态宽度、候选爆炸、依赖深度）超过了工作记忆。工程对策不是换更大模型，而是外部化状态（residue cache/快照）与索引化候选——这两条都能直接落到 API 编排层。",
-      "detail": {
-        "why": "agent 在多步工具调用中的失败缺少可归因的结构解释。作者用可控仪器把「任务结构」与「模型能力」分离，回答「什么样的结构会压垮 agent」。",
-        "mechanism": "生成器按依赖深度、候选数、状态宽度、快照可见性四轴产生任务，同时固定必需操作数 → 参考控制器执行 rollout 记录可达状态与成功率 → 对状态保持策略（raw-value cache / residue cache / 预计算计划）、候选索引、隐藏状态重采样做对照实验 → 用分析校准解释耦合关系。",
-        "deep": "三点实用结论：①「加深依赖」不只是变长，它同时改变调度自由度与可达状态数，所以「多步任务更难」的原因是复合的，调试时要分开测；②residue cache（保留中间结果而非原始值）与预计算计划是有效的状态外部化手段；③隐藏状态重采样存在精确成功率上限——这条对评测很重要：某些失败是结构决定的，增加跟踪无效。作者的自我限定也值得尊重：小模型实验没有支撑一般结论。",
-        "apply": "编排层引入显式状态存储（每步输出结构化落盘，而不是靠上下文记忆）；候选选择先建索引再让模型挑（避免长列表串行扫描）；对超长依赖链做分段检查点与恢复；用「状态宽度/候选数」给请求分级，对超宽请求走确定性流程而不是自由 agent。",
-        "caveats": "仪器化任务与真实业务 API 差距大；作者自述不支持一般能力结论；状态外部化会增加工程复杂度与延迟。",
-        "business": "对「上百字段宽表 API」尤其相关：字段多、取值多本身就是候选爆炸。把候选先收窄（索引/分组/视图），比让模型在 200 个字段里挑更可靠，也更省 token。",
-        "sources": [
-          {
-            "url": "https://arxiv.org/abs/2611.03227",
-            "title": "What Structurally Breaks an Agent? Auditing Difficulty in Stateful Tool-Use Workflows"
-          }
-        ],
-        "diagram": {
-          "title": "状态化工具调用的结构压力测试",
-          "flow": [
-            {
-              "label": "任务生成器",
-              "sub": "深度 / 候选数 / 状态宽度 / 快照",
-              "type": "backend"
-            },
-            {
-              "label": "参考控制器",
-              "sub": "49,152 任务 / 393,216 rollout",
-              "type": "backend"
-            },
-            {
-              "label": "状态策略对照",
-              "sub": "raw-value vs residue cache",
-              "type": "database"
-            },
-            {
-              "label": "候选索引",
-              "sub": "消除串行扫描分支缺陷",
-              "type": "security"
-            },
-            {
-              "label": "成功率上限",
-              "sub": "隐藏状态重采样",
-              "type": "cloud"
-            }
-          ],
-          "notes": [
-            {
-              "label": "耦合",
-              "text": "固定工作量下加深依赖，同时改变调度自由度与可达状态数"
-            },
-            {
-              "label": "有效手段",
-              "text": "residue cache、预计算计划、索引化选择"
-            },
-            {
-              "label": "硬上限",
-              "text": "隐藏状态重采样给出精确上限，更多跟踪无效"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "tag": "cross",
-      "title": "Printing Press：把任意 API/网站压成 token 高效的 Go CLI + skill + MCP server（4.9k★）",
-      "date": "2026-11-07",
-      "source": "GitHub",
-      "link": "https://github.com/mvanhorn/cli-printing-press",
-      "summary": "CLI Printing Press 的主张是「设计良好的 CLI 是 agent 的肌肉记忆」：不用翻文档、不绕路、不浪费 token。它读取官方 API 文档、研究流行的社区 CLI 与 MCP server、甚至嗅探没有公开文档的接口，然后产出一个 token 高效的 Go CLI（带本地 SQLite 镜像、复合命令、agent 原生 flag）+ Claude Code skill + MCP server。三个已生成的例子：ESPN（无官方 API，嗅探而来）一次调用返回「今晚季后赛 + 比分 + 系列赛状态 + 两队得分王数据 + 24 小时伤病/阵容新闻」；flight-goat 把 Kayak 与 Google Flights 两个来源缝进一次查询；linear-pp-cli 用本地 SQLite 镜像做到 50ms，并支持 API 本身答不了的复合查询（「所有被阻塞超过一周的 issue」）。项目约 4.9k stars，11 月 7 日仍在推送。",
-      "insight": "对「不直连数据库、只走高业务含义 API」的路线，这是一条被低估的中间层：把高频查询模式固化成复合命令 + 本地镜像，既省 token 又避免模型现场拼参数。更重要的判断是 CLI 与 MCP 的分工——一个命令可以替代多轮 tool call，在上下文成本上通常优于暴露几十个 MCP 工具。",
-      "detail": {
-        "why": "agent 调用 API 的常见浪费：为理解接口读大量文档、多轮试探参数、每次都要重新组装相同的查询。把「常用调用路径」预编译成 CLI，可以把这些成本一次性消掉。",
-        "mechanism": "输入 API 文档/社区实现/网页抓取 → 归纳出高频查询模式与字段语义 → 生成 Go CLI（子命令 + 复合查询 + 本地 SQLite 镜像 + 结构化输出）→ 同步生成 skill（告诉 agent 何时用哪个命令）与 MCP server（给只能用 MCP 的宿主）→ 用 golden tests 验证输出。",
-        "deep": "三个架构启示：①「本地镜像 + 复合命令」把多轮 API 调用压成一次，既降 token 又降延迟（50ms 级）；②skill 与 CLI 配套，解决「agent 不知道有这个命令」的发现问题；③同一套能力同时以 CLI 与 MCP 暴露，说明工具形态应当由宿主决定，而不是由后端决定。风险面也很清楚：嗅探未公开接口存在合规与稳定性问题，生成的 CLI 需要人工验收。",
-        "apply": "盘点 10 个最高频的业务问法，把它们写成复合命令（一次返回业务需要的全部字段），本地镜像做缓存与联表；skill 里写清「什么问题用哪个命令」；保留 MCP 作为兼容层。度量：每次问答的 tool call 数、token、端到端延迟。",
-        "caveats": "嗅探非公开 API 有法律与稳定性风险；生成质量依赖文档完备度，需 golden test 与人工 review；本地镜像带来一致性/权限问题（镜像里的数据是否越权可见）。",
-        "business": "企业内部同样适用：把宽表 API 的常用查询封装成「业务命令」，是让非技术用户与 agent 都能稳定取数的最低成本路径。它把「API 语义理解」的负担从模型转移到工程侧，一次投入、长期摊薄。",
-        "sources": [
-          {
-            "url": "https://github.com/mvanhorn/cli-printing-press",
-            "title": "CLI Printing Press: agent-native CLIs, skills and MCP servers for any API"
-          }
-        ],
-        "diagram": {
-          "title": "API → CLI/skill/MCP 的生成链路",
-          "flow": [
-            {
-              "label": "API 文档 / 社区实现",
-              "sub": "含未公开接口嗅探",
-              "type": "external"
-            },
-            {
-              "label": "模式归纳",
-              "sub": "高频查询 / 字段语义",
-              "type": "backend"
-            },
-            {
-              "label": "Go CLI",
-              "sub": "复合命令 + SQLite 镜像",
-              "type": "backend"
-            },
-            {
-              "label": "Skill",
-              "sub": "何时用哪个命令",
-              "type": "frontend"
-            },
-            {
-              "label": "MCP server",
-              "sub": "兼容宿主",
-              "type": "cloud"
-            }
-          ],
-          "notes": [
-            {
-              "label": "一次调用",
-              "text": "ESPN 示例：比分+系列赛+得分王+24h 伤病，一次返回"
-            },
-            {
-              "label": "本地镜像",
-              "text": "linear-pp-cli 50ms，支持 API 答不了的复合查询"
-            },
-            {
-              "label": "形态分工",
-              "text": "CLI 省上下文，MCP 兼容宿主，skill 解决发现问题"
-            }
-          ]
-        }
-      }
+     ]
     }
-  ]
+   }
+  },
+  {
+   "tag": "rnd",
+   "title": "Req2Rust：先写「必须保持的行为」再迁移，C++→Rust 测试通过率 69.5%→91.9%",
+   "date": "2026-11-05",
+   "source": "arXiv",
+   "link": "https://arxiv.org/abs/2611.07442",
+   "summary": "项目级 C++ 转 Rust 的两难是：保留源码结构能追踪底层行为，但会把 C++ 的组织方式、unsafe 惯用法和项目假设一起搬进 Rust；让 agent 自由重写则语义覆盖取决于模型能否识别必须保留的行为——而 C++ 的行为常藏在对象模型、析构驱动的生命周期协议里，极难定位。Req2Rust 的做法是先产出证据支撑的 Migration Requirements Specification（MRS，记录必须保持的行为与约束），再合成 Rust Design Specification（RDS）并落地为初始 Rust 项目；随后把该项目视为「可执行精化状态」，用编译器、语义校验器、unsafe 削减校验器产出报告，迭代改进可构建性、行为对齐与 unsafe 使用。在通用 C++ 项目与 OpenHarmony 大规模代码库模块上，均产出可构建 crate；测试通过率从 69.5% 提到 91.9%（通用项目）、从 45.4% 提到 87.9%（OpenHarmony），基线为 ClaudeCode。",
+   "insight": "这是「规格先行」的 agent harness 范式：复杂改造不应让模型直接翻译代码，而应先产出可核验的行为清单，再让编译器/测试/静态检查构成验证回路。对做架构辅助的团队，MRS 这一层可以直接复用到任何「行为必须等价」的改造（框架升级、服务拆分、语言迁移）：把隐式假设显式化，是 agent 能自我纠错的前提。",
+   "detail": {
+    "why": "语言迁移的正确性标准是行为等价，而行为等价无法靠「看起来像」判断；C++ 的析构、RAII、对象模型让行为隐式化，模型直接翻译极易丢掉生命周期语义。",
+    "mechanism": "三阶段：MRS（从源码与文档抽取必须保持的行为/约束，证据支撑）→ RDS（Rust 侧设计规格）→ 初始 Rust 项目；之后进入 refining loop：编译器校验可构建、语义校验行为对齐、unsafe-reduction 校验减少 unsafe，报告驱动下一轮修改。",
+    "deep": "「把初始项目当作可执行精化状态」是本文最有价值的概念：不是一次性生成，而是把「当前代码 + 校验报告」当作状态，每次迭代都在缩小与规格的差距，这让长任务有了可中断、可审计的中间态。另一个细节是显式的 unsafe 削减目标——多数迁移工具只看编译通过，而 Rust 迁移的真实价值在安全性，这条约束把「能编译」提升为「更安全」。",
+    "apply": "做框架/语言迁移时，先让 agent 产出 MRS（每条带源码证据与测试引用），人审后再让它写目标侧设计；CI 里挂三类校验（构建、行为测试、unsafe/坏味道计数），把报告回灌给 agent。MRS 本身可作为知识库资产，后续同类迁移直接复用。",
+    "caveats": "评测以测试通过率为代理，测试集未必覆盖全部行为；OpenHarmony 模块样本量未在摘要中给出；unsafe 削减的度量方式需看全文；引用数未核实（S2 429）。",
+    "business": "存量系统现代化是明确的付费场景（内存安全合规驱动）。这套「规格 + 校验回路」的方法论可产品化为迁移评估报告，先卖诊断（MRS + 风险清单）再卖执行，降低交付风险。",
+    "sources": [
+     {
+      "url": "https://arxiv.org/abs/2611.07442",
+      "title": "Req2Rust: A Requirements-Guided Agent Harness for Project-Level C++-to-Rust Migration"
+     }
+    ],
+    "diagram": {
+     "title": "规格先行的迁移回路",
+     "flow": [
+      {
+       "label": "C++ 源码",
+       "sub": "对象模型/析构协议",
+       "type": "database"
+      },
+      {
+       "label": "MRS 行为规格",
+       "sub": "证据支撑的约束",
+       "type": "frontend"
+      },
+      {
+       "label": "RDS + 初始项目",
+       "sub": "可执行精化状态",
+       "type": "backend"
+      },
+      {
+       "label": "三类校验器",
+       "sub": "编译/语义/unsafe",
+       "type": "security"
+      },
+      {
+       "label": "迭代收敛",
+       "sub": "91.9% / 87.9%",
+       "type": "cloud"
+      }
+     ],
+     "notes": [
+      {
+       "label": "关键转变",
+       "text": "从「翻译代码」到「保持行为」"
+      },
+      {
+       "label": "可审计中间态",
+       "text": "规格与校验报告都可人审、可复用"
+      },
+      {
+       "label": "安全目标",
+       "text": "unsafe 削减与编译通过同等重要"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "tag": "rnd",
+   "title": "Reaper：把历史 bug fix 抽象成规则再投影到「语法兄弟」，在四个数据库里挖出 61 个新 bug",
+   "date": "2026-11-05",
+   "source": "arXiv",
+   "link": "https://arxiv.org/abs/2611.07739",
+   "summary": "DBMS 用语法驱动的 dispatch handler 实现 SQL 构造，不同 SQL 构造的 handler 往往共享同一套实现模式（取参、类型检查、权限校验）。于是修好一个 handler 的历史 bug 后，它的「语法兄弟」可能仍然带着同一个语义缺陷——论文称之为 sibling bugs。Reaper 先从历史 fix 推断 trigger profile（缺陷暴露条件）与 validation profile（区分错误/正确的语义证据），再用 grammar-guided test mutation 把 trigger profile 投影到语法兄弟上生成测试，最后用 validation profile 做分阶段验证以压低误报。在 MariaDB、MySQL、OceanBase、CockroachDB 上共发现 61 个此前未知 bug，57 个被开发者确认，13 个已修复。",
+   "insight": "历史缺陷库是被严重低估的资产：把每个 fix 抽象成「触发条件 + 判据」两条规则，就能在结构相似的代码上批量复用。这给自建 AI 代码审查提供了一条不依赖大模型「悟性」的路径——先做结构同构检索（同一模式家族的 handler），再用规则化测试验证，模型只负责把 fix 翻译成 profile。对研发知识库，bug fix 应带结构化元数据（触发条件、判据、影响构造），而不是只存 diff 文本。",
+   "detail": {
+    "why": "同一个语义缺陷常在多个同构入口重复出现，人工审查只盯着被报的那一处；现有 bug-finding 技术很少系统性利用历史修复里的语义知识。",
+    "mechanism": "trigger profile（何时暴露）→ grammar-guided mutation 投影到语法兄弟 → 生成走相同语义路径的测试 → validation profile 分阶段验证（先廉价筛，再深验）降低误报。",
+    "deep": "两个工程要点：①「语法兄弟」的识别靠语法结构而非文本相似度，因此跨文件、跨模块也能命中；②分阶段验证是可用性的关键——DBMS 行为复杂，单阶段判定误报会高到没法用。61/57/13 的漏斗（发现/确认/修复）说明这类工具的真实产出应以「被确认」计，而不是「被报告」计。",
+    "apply": "在代码审查流水线里加一步：对每个修复 PR，检索同模式家族的其它入口，生成定向测试。初期可只做「同文件同模式」，再扩展到跨模块；用确认率而非发现数衡量效果。",
+    "caveats": "方法依赖「语法兄弟共享实现模式」这一前提，对架构风格差异大的代码库效果未知；评测限于 DBMS 的 SQL handler，通用业务代码需重做 grammar 映射；引用数未核实。",
+    "business": "对数据库/中间件厂商这是可直接产品化的审计服务（按确认漏洞计费）；对普通研发团队，价值在于把「修一个漏一个」的系统性风险量化，作为代码质量投入的论据。",
+    "sources": [
+     {
+      "url": "https://arxiv.org/abs/2611.07739",
+      "title": "Fix One, Miss Another: Leveraging Historical Bug Fixes to Uncover Residual Bugs in Database Systems"
+     }
+    ],
+    "diagram": {
+     "title": "从历史修复到兄弟缺陷",
+     "flow": [
+      {
+       "label": "历史 bug fix",
+       "sub": "diff + 讨论",
+       "type": "database"
+      },
+      {
+       "label": "Trigger Profile",
+       "sub": "暴露条件",
+       "type": "frontend"
+      },
+      {
+       "label": "语法兄弟定位",
+       "sub": "同构 handler",
+       "type": "backend"
+      },
+      {
+       "label": "变异测试生成",
+       "sub": "grammar-guided",
+       "type": "backend"
+      },
+      {
+       "label": "分阶段验证",
+       "sub": "61 新 / 57 确认",
+       "type": "security"
+      }
+     ],
+     "notes": [
+      {
+       "label": "资产化",
+       "text": "fix 要存「触发条件+判据」，不只存 diff"
+      },
+      {
+       "label": "度量",
+       "text": "以被开发者确认的漏洞数计产出"
+      },
+      {
+       "label": "误报控制",
+       "text": "分阶段验证是能否上流水线的前提"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "tag": "rnd",
+   "title": "DiagDBench：6,940 条可执行数据库故障样本，最强 agent 只考 56.24 分",
+   "date": "2026-11-05",
+   "source": "arXiv",
+   "link": "https://arxiv.org/abs/2611.07339",
+   "summary": "数据库诊断与异常修复需要 agent 在活的 DBMS 环境里观察、交互、修复，但大规模构造可复现的异常环境很难，导致缺少可执行样本。DiagDBench 的每个样本把「用户请求（问题描述 + 异常已验证的工作负载）」与「自包含可执行 DBMS 环境」配对，支持实时监控、交互诊断、修复与工作负载重跑。构造用两条流水线：Manual-Guided Anomaly Synthesis（按 DBA 手册与官方文档顺序合成请求、库改动、注入脚本）与 Incident-Guided Anomaly Reproduction（从企业真实在线诊断事故端到端重建）。经样本过滤、专家复核后，含 6,940 条合成训练样本 + 454 条专家标注的 held-out 测试集，覆盖三种硬件配置、两种 DBMS、三种 schema。多模型评测中最好的 ReAct + GPT-6 Astra 仅 56.24 分，多数 agent 低于 45。",
+   "insight": "两个可迁移的点：①「可执行环境 + 注入脚本 + 验证工作负载」是 agent 训练数据的通用工厂，业务系统同样可以造 sandbox（脱敏数据 + 故障注入 + 判据），这比人工标注轨迹便宜得多；②数据库诊断是 agent 能力的长尾，最好模型 56 分意味着运维自动化仍有明显空间，别把 demo 当产能。对自建业务 agent 的团队，这套「环境即样本」的思路可直接用于 API 层的故障/边界场景构造。",
+   "detail": {
+    "why": "运维类 agent 的评测长期靠静态问答，无法验证「诊断对不对、修复后系统是否恢复」；缺少可执行样本也限制了训练。",
+    "mechanism": "样本 = 请求 + 可执行环境；两条合成流水线分别从文档与真实事故生成；异常注入后用验证工作负载确认异常存在；评测要求 agent 在环境里多轮交互，最后按诊断/修复/（可选）性能优化打分。",
+    "deep": "值得注意的是训练集与测试集的分离方式：合成 6,940 条用于训练，454 条专家标注用于 held-out，且覆盖三种硬件/两种 DBMS/三种 schema，目的是测跨环境泛化而非记忆。56.24 的天花板说明当前 agent 在「多轮观测 + 因果定位」上仍弱——这与研发线「定位比修复更难」的结论一致。",
+    "apply": "做业务系统 agent 时照搬三件套：脱敏数据快照、故障/边界注入脚本、恢复判据（不是「看起来对」而是可执行断言）。先用它做回归评测，再考虑训练。",
+    "caveats": "场景集中在 DBMS 运维，与业务查询 agent 的任务分布不同；合成样本可能带入文档里的「标准答案」偏差；GPT-6 Astra 等模型为论文评测配置，分数不可直接横比；引用数未核实。",
+    "business": "DBA 人力昂贵且难招，56 分的上限说明现阶段应做「辅助诊断 + 人确认」而非全自动修复；产品定价可按「减少的 MTTR」而非「自动化率」叙事。",
+    "sources": [
+     {
+      "url": "https://arxiv.org/abs/2611.07339",
+      "title": "DiagDBench: Evaluating Agentic LLMs on Interactive Database Diagnosis and Anomaly Remediation"
+     }
+    ],
+    "diagram": {
+     "title": "环境即样本的构造流水线",
+     "flow": [
+      {
+       "label": "DBA 手册/文档",
+       "sub": "Manual-Guided",
+       "type": "external"
+      },
+      {
+       "label": "真实诊断事故",
+       "sub": "Incident-Guided",
+       "type": "cloud"
+      },
+      {
+       "label": "异常注入脚本",
+       "sub": "可执行环境",
+       "type": "database"
+      },
+      {
+       "label": "验证工作负载",
+       "sub": "确认异常存在",
+       "type": "backend"
+      },
+      {
+       "label": "专家复核",
+       "sub": "454 held-out",
+       "type": "security"
+      }
+     ],
+     "notes": [
+      {
+       "label": "数据工厂",
+       "text": "环境+注入+判据，比人工标轨迹便宜"
+      },
+      {
+       "label": "天花板",
+       "text": "最强 56.24，多数 <45，别高估运维自动化"
+      },
+      {
+       "label": "泛化设计",
+       "text": "3 硬件 / 2 DBMS / 3 schema 交叉"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "tag": "blog",
+   "title": "GitHub：一周 12 亿次 commit，PR 评审却长了 441%——agentic engineering 的瓶颈已从写码移到验证与观测",
+   "date": "2026-11-06",
+   "source": "GitHub Blog",
+   "link": "https://github.blog/ai-and-ml/github-copilot/beyond-code-generation-a-developers-guide-to-agentic-engineering/",
+   "summary": "GitHub 披露 2026 年 10 月单周 commit 超过 12 亿次，同比增长 400%+，一周的量超过 2025 年全年。但文章开篇就问：你感觉自己效率提升了 400% 吗？引用的 Faros AI 研究给出答案的一半：团队从低 AI 采用率升到高采用率时，PR 在评审环节停留时间增加 441%。文章因此把 agentic engineering 拆成 Plan / Build / Verify / Observe 四段：Plan 阶段把散落在设计工具、Slack、旧 PR 里的上下文聚成可评审的计划与验收标准；Build 阶段让 agent 任务独立推进、跨设备续接会话；Verify 阶段先让 agent 清掉例行检查与修复、把 diff 变小，让人的注意力放在「是否实现了意图、哪里会出错」；Observe 阶段把生产证据与工程上下文合起来，产出事故记录、后续 issue，并回灌成下一次任务的指导。",
+   "insight": "这条是给管理层的度量校准：commit 数、代码行数是「生成量」指标，已经不是产能指标；真正的约束在评审与观测。对研发知识库团队的直接含义是——知识库要服务的对象从「写码时的补全」变成「评审时的意图比对」和「事故时的证据聚合」，即需要把需求、验收标准、变更历史、线上指标串成同一条可检索链路。开源可自建方案（Claude Code / Codex CLI + 自建评审 agent）完全能复刻 Verify/Observe 两段，Plan 段的难点在上下文连接器而非模型。",
+   "detail": {
+    "why": "AI 让实现变便宜后，瓶颈迁移到人的注意力：评审排队、事故定位、需求澄清。如果继续用「生成量」衡量收益，会得到与实际体验相反的结论。",
+    "mechanism": "四阶段工作流：Plan（上下文聚合 → 可评审计划 + 显式验收标准 + 切分 issue）、Build（任务独立推进、跨设备续接、共享项目知识）、Verify（agent 先跑例行检查与修复，缩小 diff，人审意图与风险）、Observe（日志/发布历史/客户报告聚合 → 事故文档 + follow-up issue → 回灌）。",
+    "deep": "441% 这个数字值得单独记住：它是「AI 提高编码速度」的直接副作用——PR 变多、变大、变杂（格式化、生成测试、连带改动），评审成为新的排队系统。文章给的解法不是「更快的评审工具」，而是从两端缩短队列：让变更更小更干净（agent 先做 routine），让评审者只看意图与风险。这与学术线「错误发布率」的结论互补：评审要审的是语义等价性，不是风格。",
+    "apply": "可自建的最小闭环：①在 CI 里加「routine 清理 agent」（格式化、lint、明显重复测试合并）先把 diff 变小；②给评审 agent 喂验收标准与变更说明，输出「意图是否达成 + 风险点」清单，而非逐行评论；③Observe 段把 on-call 面板、release 记录、issue 接到同一个检索入口。度量改看「PR 首次评审等待时长」与「返工轮次」。",
+    "caveats": "数据来自 GitHub 平台口径与 Faros AI 研究，存在样本选择偏差（采用 AI 的团队本身可能交付节奏更快）；文章是产品视角，Plan/Observe 的能力绑定 Copilot 生态，自建需替换为对应开源组件；未给出 441% 的统计口径细节。",
+    "business": "采购决策应从「补全工具 license」转向「评审与观测环节的自动化」，因为那里的等待时间才是成本。对内部平台，把「缩短首次评审等待」作为 OKR 比「AI 生成代码占比」更能反映真实收益。",
+    "sources": [
+     {
+      "url": "https://github.blog/ai-and-ml/github-copilot/beyond-code-generation-a-developers-guide-to-agentic-engineering/",
+      "title": "Beyond code generation: A developer's guide to agentic engineering"
+     }
+    ],
+    "diagram": {
+     "title": "瓶颈从 Build 迁移到 Verify / Observe",
+     "flow": [
+      {
+       "label": "Plan",
+       "sub": "上下文聚合 + 验收标准",
+       "type": "frontend"
+      },
+      {
+       "label": "Build",
+       "sub": "agent 独立推进",
+       "type": "backend"
+      },
+      {
+       "label": "Verify",
+       "sub": "先清 routine，再人审意图",
+       "type": "security"
+      },
+      {
+       "label": "Observe",
+       "sub": "生产证据回灌",
+       "type": "cloud"
+      }
+     ],
+     "notes": [
+      {
+       "label": "规模信号",
+       "text": "单周 12 亿 commit，+400% YoY"
+      },
+      {
+       "label": "真实瓶颈",
+       "text": "PR 评审停留 +441%"
+      },
+      {
+       "label": "度量换轨",
+       "text": "看首次评审等待与返工轮次，而非生成量"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "tag": "business",
+   "title": "CascadeFilter：自然语言谓词筛选走三级级联，用小模型看证据、大模型兜底，并给出误差界",
+   "date": "2026-11-05",
+   "source": "arXiv",
+   "link": "https://arxiv.org/abs/2611.08367",
+   "summary": "语义筛选（判断一条记录是否满足自然语言谓词）是 LLM 数据分析里的高频操作，但逐条调用大模型成本高。已有 cascade 方法接受便宜模型的判断、把不确定记录转给 oracle，但阈值校准是在级联装配后按既定顺序调整，而不是在阈值组合上最小化成本。CascadeFilter 用三级：小模型先看抽取出的证据、再看全文，仍未解决的记录转 oracle；对固定级联，把阈值选择建模为「在 oracle 相对误差约束下最小化 token 感知成本」，并在预设网格中选最省且可认证的配置；用有限总体校准 + 固定序列检验分配多重检验预算，给选择后的误差界。另结合 lexical + dense 检索、rerank 与邻域支持的置信度改进证据抽取与路由。在 6 个数据集、13 个评测设置中，12 个设置取得最高准确率与 macro-F1（论文声明这些是报告工作点，保证针对与 oracle 的一致性）。",
+   "insight": "把「自然语言谓词」当成一个可优化的算子，而不是一次 prompt：先用便宜模型在「抽取出的证据」上判断（证据比原文短，省 token），不确定才升级。对用户的宽表 API 场景高度契合——宽表返回上百字段，先用小模型抽取与谓词相关的 3-5 个字段值作为 evidence，再判定「这条记录是否属于某类业务对象」，可把成本压一个量级；阈值要用校准集选，且必须报告「与人工判定的一致率下界」，否则无法向业务方承诺可信度。",
+   "detail": {
+    "why": "业务分析里大量问题是「筛出满足某条件的记录」（高风险客户、异常订单、符合条件的合同），逐条大模型判断贵到不可用；而便宜模型单独用又不确定哪里不可信。",
+    "mechanism": "三级级联：SLM(evidence) → SLM(full doc) → oracle；阈值联合搜索（不是顺序调参）以最小化 token 成本、受 oracle 相对误差约束；有限总体校准 + fixed-sequence 多重检验给认证界；检索/rerank/邻域置信提升 evidence 质量。",
+    "deep": "三个方法要点：①「先看证据再看全文」是成本结构的关键，证据抽取质量直接决定第一级能拦下多少；②阈值是联合搜索而非逐级调，因为级联各段的通过率互相影响，顺序调参容易落在次优组合；③认证界是相对 oracle 而非绝对真值——工程上这意味着你要先有一个可信的 oracle 抽样集。",
+    "apply": "在业务 API 之上做「语义过滤服务」：为每类谓词维护 evidence 字段集（从宽表字段里选），小模型只读这些字段；不确定记录进人工/oracle 抽样队列；每月用抽样集重校准阈值并复核误差界。计费与 SLA 按「每千条记录成本 + 一致率下界」定。",
+    "caveats": "oracle 本身可能是人或有偏模型，「相对 oracle 误差」不等于绝对正确；13 个设置中仍有 1 个未取最佳，说明并非普适；级联增加了系统复杂度与延迟；引用数未核实（S2 429）。",
+    "business": "这是把「LLM 分析」从按条付费变成可预算服务的关键工程：成本可预测、误差可承诺，才敢卖给业务方。对内部团队，可作为宽表 API 的增值层（筛选/打标/风控初筛）单独计价。",
+    "sources": [
+     {
+      "url": "https://arxiv.org/abs/2611.08367",
+      "title": "CascadeFilter: Cost-Efficient Semantic Filtering with Joint Threshold Selection"
+     }
+    ],
+    "diagram": {
+     "title": "语义筛选的三级成本结构",
+     "flow": [
+      {
+       "label": "宽表记录",
+       "sub": "上百字段",
+       "type": "database"
+      },
+      {
+       "label": "证据抽取",
+       "sub": "相关字段 3-5 个",
+       "type": "backend"
+      },
+      {
+       "label": "SLM 判证据",
+       "sub": "拦下大部分",
+       "type": "frontend"
+      },
+      {
+       "label": "SLM 判全文",
+       "sub": "边界记录",
+       "type": "backend"
+      },
+      {
+       "label": "oracle 兜底",
+       "sub": "误差界约束",
+       "type": "security"
+      }
+     ],
+     "notes": [
+      {
+       "label": "成本杠杆",
+       "text": "证据比全文短，第一级越准越省"
+      },
+      {
+       "label": "阈值",
+       "text": "联合搜索，不按级顺序调参"
+      },
+      {
+       "label": "承诺",
+       "text": "给的是与 oracle 的一致率下界"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "tag": "business",
+   "title": "CoRE：数据清洗的高分有多少是「认识这些实体」？换个名字，年份修复准确率从 91% 掉到 18%",
+   "date": "2026-11-05",
+   "source": "arXiv",
+   "link": "https://arxiv.org/abs/2611.08106",
+   "summary": "公开数据清洗 benchmark 上的高分可能只反映模型「认识这些实体」，无法评估它修复陌生数据的能力。CoRE 设计对照协议：公开 benchmark vs 新鲜真实记录 vs 成对的名字替身（用英文单词或音节替换实体名，保留错误位置与非身份值，同时转移 benchmark 的错误机制）。在 21 张受控表、8 个 LLM 上：Hospital 上修复表现随实体名显著变化，商业模型在 Movies 上也如此；改名字会删掉修复所需的信息（如影片标识映射），即使候选仍可用也会影响——把实体名换成词基替身，DeepSeek-V4-Pro 的年份准确率从 91% 降到 18%。Hospital/Movies 上商业模型在新鲜记录上的分数高于词基替身。一个带筛选的续写探针未发现这些模型记忆 benchmark 行的正证据。熟悉事实会与任务冲突：即便给了明确的「以表格证据为准」指令，商业模型在已知影片上改写指定导演的比率仍为 0.000-0.404。参考评分也可能与外部记录不一致：Rayyan 上一条与标题匹配的 PubMed 记录相符的 ISSN 修正拿不到分，而 TabClean 被记分的修复里有 94% 只是复现了参考的日期变换。",
+   "insight": "这是给「LLM 做数据修复/补全」的一记警钟：benchmark 分数里混入了世界知识，业务数据恰恰是模型不认识的（内部编码、客户名、自定义枚举）。做可信度验证必须加 counterfactual 对照——把实体名替换成无语义替身，看准确率掉多少；掉得越多，说明系统越依赖「猜」，越不能用于陌生业务数据。另一个细节同样重要：模型在「已知实体」上会违背表格证据去改写（0-40.4%），所以「以数据为准」的指令不能替代代码级校验。",
+   "detail": {
+    "why": "如果清洗/补全能力主要来自对公开实体（医院、电影）的记忆，那么换到企业内部数据就会崩；而现有 benchmark 无法区分「会清洗」与「认识」。",
+    "mechanism": "三组对照：原 benchmark、新鲜真实记录、名字替身（保留错误位置+非身份值，转移错误机制）；8 个模型 × 21 张受控表；另设续写探针检测行级记忆，并测「表格证据指令」下模型是否仍按世界知识改写。",
+    "deep": "91%→18% 的落差是最硬的证据：年份修复本应只依赖上下文，却大幅依赖实体名，说明模型在做「实体级记忆检索」而非局部推理。0.000-0.404 的导演改写率说明指令遵循在「知识冲突」时不可靠。评分侧的问题（ISSN 修正不得分、94% 记分修复只是复现参考变换）提示：自建评测的 rubric 若只比对参考输出，会奖励「猜中格式」而非「修对值」。",
+    "apply": "给自建数据修复/补全流水线加三道检查：①名字替身对照测试（内部数据用假名/假编码重建一版，比较准确率）；②世界知识冲突测试（构造与模型常识相反但表格自洽的记录）；③rubric 审计（是否存在仅复现参考变换就能得分的项）。通过后再上线，并把「替身测试准确率」写进 SLA。",
+    "caveats": "替身构造可能破坏真实语义依赖（影片标识映射），因此落差部分来自信息缺失而非纯记忆；21 张表规模有限；探针只给「无正证据」而非「证明无记忆」；引用数未核实。",
+    "business": "采购数据清洗/补全能力时，要求供应商在「去标识化 + 新实体」的数据上做 POC，否则 benchmark 分数无意义；这条也能解释为什么很多 demo 在客户数据上翻车。对内部平台，替身测试是可复用的验收资产。",
+    "sources": [
+     {
+      "url": "https://arxiv.org/abs/2611.08106",
+      "title": "Cleaning or Recalling? Knowledge Dependence in LLM-based Data Cleaning"
+     }
+    ],
+    "diagram": {
+     "title": "记忆依赖的对照实验",
+     "flow": [
+      {
+       "label": "公开 benchmark",
+       "sub": "熟悉实体",
+       "type": "database"
+      },
+      {
+       "label": "名字替身版",
+       "sub": "保留错误机制",
+       "type": "frontend"
+      },
+      {
+       "label": "8 个 LLM 修复",
+       "sub": "21 张受控表",
+       "type": "backend"
+      },
+      {
+       "label": "准确率落差",
+       "sub": "91% → 18%（年份）",
+       "type": "security"
+      }
+     ],
+     "notes": [
+      {
+       "label": "核心测法",
+       "text": "counterfactual rename，落差=记忆依赖度"
+      },
+      {
+       "label": "指令失效",
+       "text": "已知实体上仍改写，0-40.4%"
+      },
+      {
+       "label": "评分陷阱",
+       "text": "只比对参考输出会奖励「猜格式」"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "tag": "business",
+   "title": "RouteBR：模型只提议、代码做校验，客服路由 97.5% 最终路径匹配且 166 例零误派发",
+   "date": "2026-11-05",
+   "source": "arXiv",
+   "link": "https://arxiv.org/abs/2611.07534",
+   "summary": "金融机构的 LLM 客服系统必须在回复前选定下游服务，而「分类器/路由器给出相关标签」不等于「组合系统能完成派发」——还要校验派发权限与实体注册。论文把这个问题定义为 boundary-aware pre-response routing，提出 RouteBR：一次模型调用提议主服务动作与注册对象，随后由确定性代码检查标识符与版本化规则，才允许派发或给出指定的「不派发」结果；排名更低的候选不能替换被阻断的主路由。作者用某真实金融机构反复出现的保密请求模式构造 600 个隐私保护场景，由三名工程师共同复核场景与标签。在 200 例 CONFIRM MAIN 划分上，RouteBR 最终路径精确匹配 97.5%；同样规则下的单次调用基线 95.5%；没有规则程序的诊断基线动作准确率 94.0%，但最终路径精确匹配只有 41.0%。在 166 个非派发（MAIN/FLIP）案例上，RouteBR 零误派发。工件把 1,960 条预测行与原始回执配对，且模型请求中排除 gold 与 reviewer 字段。",
+   "insight": "94.0% 的动作准确率 vs 41.0% 的最终路径匹配，是「意图分类指标」最典型的假象：模型知道该干什么，但系统不知道该不该让它干。对用户的业务查询 agent 直接对应——API 调用的对象校验、参数合法性、版本化权限规则必须是代码，不能写进 prompt；模型只负责「提议调用哪个 API、操作哪个对象」，编排层负责 fail-closed。这条也给出可审计性的具体形态：所有预测行与原始回执配对，模型看不到 gold。",
+   "detail": {
+    "why": "在高监管场景，错误派发（把钱/请求送到错误部门或对象）比「答不上来」严重得多；而 LLM 路由器的评测通常只看标签准确率，掩盖了系统级的派发失败。",
+    "mechanism": "一次模型调用产出 primary action + registered object；确定性代码校验标识符、对象注册状态与版本化规则；通过则派发，不通过则进入明确的 non-dispatch 结果；低排名候选不得替换被阻断的主路由（避免「降级绕过」）。",
+    "deep": "最值得抄的是「不允许次级候选顶替」：很多系统在首选被权限拦住时会自动 fallback 到第二选择，等于绕过了规则；RouteBR 明确禁止。另外「模型请求里排除 gold 与 reviewer 字段」是评测卫生的基本功，防止标签泄漏。1,960 条预测全部带原始回执，意味着每条决策都可复盘——这是可审计性的最低标准。",
+    "apply": "业务 agent 的编排层照此分层：LLM 输出结构化提议（API、对象 ID、参数）→ 代码做 schema/权限/版本校验 → 失败则构造性拒绝并说明原因 → 记录提议与校验回执。禁止自动降级到次级候选，除非次级候选也走完整校验。",
+    "caveats": "600 个场景来自单一金融机构的保密请求模式，分布窄；97.5% 是「最终路径」匹配，不等于客户满意度；规则程序需持续维护版本；引用数未核实。",
+    "business": "金融/运营商等强监管客户的采购门槛就是「可审计 + 不误派发」，这套架构可直接作为投标材料的架构图；对内部团队，它把「模型不可靠」变成可接受风险——因为关键动作由代码把关。",
+    "sources": [
+     {
+      "url": "https://arxiv.org/abs/2611.07534",
+      "title": "Route Before Response: Fail-Closed Routing for LLM-Enabled Customer-Service Software"
+     }
+    ],
+    "diagram": {
+     "title": "Fail-closed 编排：提议与执行分离",
+     "flow": [
+      {
+       "label": "用户请求",
+       "sub": "客服/查数意图",
+       "type": "frontend"
+      },
+      {
+       "label": "模型提议",
+       "sub": "action + object",
+       "type": "backend"
+      },
+      {
+       "label": "代码校验",
+       "sub": "标识符/注册/版本规则",
+       "type": "security"
+      },
+      {
+       "label": "派发 or 拒绝",
+       "sub": "禁止次级顶替",
+       "type": "cloud"
+      },
+      {
+       "label": "回执留痕",
+       "sub": "1,960 行可复盘",
+       "type": "database"
+      }
+     ],
+     "notes": [
+      {
+       "label": "假指标",
+       "text": "动作准确率 94% 但最终路径仅 41%"
+      },
+      {
+       "label": "禁止降级",
+       "text": "被阻断的主路由不得由次选替换"
+      },
+      {
+       "label": "可审计",
+       "text": "提议与校验回执成对保存"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "tag": "github",
+   "title": "alibaba/UnifiedModel：把企业对象、拓扑、遥测建成一张对象图，用 SPL 而非 SQL 供 agent 查询",
+   "date": "2026-11-04",
+   "source": "GitHub",
+   "link": "https://github.com/alibaba/UnifiedModel",
+   "summary": "UModel 是阿里开源的厂商中立语义运行时（Go，Apache-2.0，454★，活跃更新至 11/04）。它把碎片化的 schema、实体、业务对象、遥测链接与拓扑关系收敛为 workspace 级的图上下文：通过 model pack 定义企业对象、运营对象、数据集、链接、存储与拓扑语义；用统一 SPL 查询面（`.umodel`、`.entity`、`.topo`）查询模型、实体与拓扑；提供本地 Web UI、AgentGateway 与 MCP 接入、REST/CLI/SDK 公共契约。仓库含本地服务、umctl CLI、MCP server、OpenAPI 契约、React UI、示例 pack 与 Docker/Compose。开源核心聚焦本地运行与建模/agent 集成，云控制面、多租户授权、以及 Query Service 之外的领域读 API 不在公开核心内。",
+   "insight": "这是「语义层」与「企业知识图谱」两条路线合流的具体形态：不是二选一，而是用对象图承载实体/关系/拓扑，用 SPL 作为面向 agent 的查询方言（而不是让模型写 SQL）。对用户的「不直连数据库、走业务 API」场景，可借鉴的是它的建模粒度——把业务对象、其关联对象、以及提供数据的接口/存储显式建模成 link，agent 只需在图上导航并由 Query Service 生成受控查询。注意它是数据平台视角（CMDB/AIOps/可观测），不是业务 API 目录，字段级语义与 API schema 标注仍需自建。",
+   "detail": {
+    "why": "企业里「同一个客户」在 CMDB、监控、工单、数仓里各有一套标识与关系，agent 无法自行对齐；UModel 试图用一份模型 pack + 图查询把它们统一，且不绑定单一厂商。",
+    "mechanism": "model pack（对象/数据集/链接/拓扑）→ 图存储 → Query Service 暴露 SPL 三个命名空间 → AgentGateway/MCP/CLI/REST 供 agent 与系统消费；Web UI 用于探查与调试；SDK 由 OpenAPI 生成。",
+    "deep": "三个设计选择值得注意：①自造 SPL 而非复用 SQL，回避了「让模型写 SQL 再执行」的权限与正确性难题；②把 .topo 单独作为查询面，说明拓扑/邻接是 agent 最常用的导航原语；③明确划出「云控制面/多租户授权不在开源核心」，意味着自建时要自己补 RBAC 与审计——这正是治理与安全子领域的缺口。",
+    "apply": "可先借它的 model pack 结构做「业务对象建模」模板：对象、对象间 link、对象到数据源（API/表）的 mapping 三段式；再用 MCP 暴露「按对象查关联」的工具给现有 agent。RBAC 与字段级权限需自建，建议在 Query Service 前加策略层。",
+    "caveats": "454★ 相对新，生产案例未公开；核心不含多租户授权与审计，直接用于强合规场景需补齐；SPL 是私有方言，团队需学习成本，且生态工具少；示例以可观测/CMDB 域为主，业务域建模需自行验证。",
+    "business": "对做企业级 agent 平台的团队，这是一个可复用的「对象图 + 受控查询」骨架，能显著缩短 POC 时间；但商业化差异点不在图本身，而在行业模型 pack 与治理能力（权限、审计、血缘）。",
+    "sources": [
+     {
+      "url": "https://github.com/alibaba/UnifiedModel",
+      "title": "alibaba/UnifiedModel — vendor-neutral semantic runtime for enterprise AI"
+     }
+    ]
+   }
+  },
+  {
+   "tag": "github",
+   "title": "NVIDIA/auto-ontology：10.3k★ 的本体层，明确把自己定位为「已有语义模型的补充」",
+   "date": "2026-11-07",
+   "source": "GitHub",
+   "link": "https://github.com/NVIDIA/auto-ontology",
+   "summary": "Auto Ontology 是 NVIDIA 开源（Python，Apache-2.0，10,338★，创建于 2026-04-27，11/07 仍在更新）的上下文层库。它的问题陈述很直接：agent 能检索文档、查询数据库，但可靠性才是 agentic analytics 的门槛——「更快的收入指标如果数字是错的就毫无价值」。它从企业元数据生成本体、连接已有本体与语义模型、构建 AI-ready 知识图谱；为指标/实体/关系提供可信业务含义并跨系统调和冲突定义；用 certified definitions 与 lineage 校验生成的查询，每个答案附带 provenance；通过 MCP、CLI、API 暴露给任意 agent harness；并把经过认证的修正与使用情况回灌本体，让共享上下文随提问变好。技术栈为 Next.js 16 前端、FastAPI + LangChain 后端、Postgres + pgvector、可选 Vault；推理走 NVIDIA NIM（默认 nemotron-3.5-lightning-30b-a3b + 1b embedding + rerank）。README 明确「目前不接受外部贡献」。",
+   "insight": "这条对「语义层 vs 企业知识图谱」的路线之争给了一个务实答案：不做替代，做补充层——语义模型继续承载指标与聚合口径，本体层负责「数据在哪、是什么意思、该不该用、怎么用、从哪来、什么相似」，并把 lineage 与 provenance 变成答案的一部分。对用户最有迁移价值的是「Validate」环节：用认证定义与血缘校验生成结果，而不是只看 SQL 能否执行。需注意它强绑定 Postgres 元数据库与 NIM，且不接受外部贡献，属于「可读可自建但不可共建」。",
+   "detail": {
+    "why": "agentic analytics 的失败大多不是生成不出查询，而是选错表、用错口径、把不可信字段当权威；企业已有 dbt/Cube 之类的语义模型，但缺少一个跨系统对齐定义并给出来源的上下文层。",
+    "mechanism": "Discover（从元数据生成本体/连接已有语义模型）→ Ground（指标/实体/关系语义 + 跨系统定义调和）→ Validate（用认证定义与 lineage 校验查询，返回 provenance）→ Expose（MCP/CLI/API）→ Learn（认证修正回灌）。",
+    "deep": "三个值得记的判断：①「provenance with every answer」把可解释性从 UI 功能变成数据契约；②「reconcile inconsistent definitions across systems」直指大企业的真实痛点——同一个「活跃客户」在 CRM、 billing、数仓定义不同；③「complements the semantic models customers already own」是商业上的聪明定位：不要求客户抛弃既有语义层，降低采用阻力。",
+    "apply": "即使不用它，也可照搬五段式设计自建：元数据摄取 → 定义对齐（冲突检测 + 人工裁决队列）→ 查询校验（认证指标 + 血缘）→ MCP 暴露 → 修正回灌。校验层可先做「指标白名单 + 必需 lineage」两条硬规则。",
+    "caveats": "不接受外部贡献，路线图不可控；依赖 NIM 与 Postgres/pgvector，替换成本高；本体自动生成的质量与领域强相关，需人工裁决冲突；10.3k★ 增长快但生产案例未公开；text-to-SQL 评测在独立仓库（ontology-sql-eval）。",
+    "business": "NVIDIA 用开源本体层卡位「企业上下文」这一层，商业意图是带动 NIM 推理消费；对使用方，这意味着免费拿到一套参考架构，但要评估推理绑定。对自建团队，这是最好的「需求清单」：定义对齐、provenance、回灌三件事缺一不可。",
+    "sources": [
+     {
+      "url": "https://github.com/NVIDIA/auto-ontology",
+      "title": "NVIDIA/auto-ontology — ontology & semantic layer for agentic analytics"
+     }
+    ]
+   }
+  },
+  {
+   "tag": "cross",
+   "title": "HEELO：同一模型换 harness，Terminal-Bench 37.3%→55.5%；真实任务完成数 9→39",
+   "date": "2026-11-05",
+   "source": "arXiv",
+   "link": "https://arxiv.org/abs/2611.07461",
+   "summary": "论文先给出差距：Terminal-Bench 4.0 上 GPT-5.6 Sol + Codex 解决 37.3%，Claude Opus 5 + Claude Code 解决 51.8%，失败集中在「够到资源之后不会用」这一步，作者称为 last mile to the real world。现有做法把资源放到手边，却把「怎么用」留给调用方，于是每个 harness 都要重造这份能力。他们提出 agent-native primitives——给每个资源配一个驻留 LLM、能在上下文中应用该资源并与其他 primitive 通信的可复用单元，以及 HEELO 框架：按任务把所需 primitive 组合成任务特定图，用环境证据验证结果，修正失败牵涉的 primitive，验证通过后接纳新 primitive。八个 primitive 家族、二十多个 benchmark：Dev-Primitives 把 Terminal-Bench 4.0 从 37.3% 提到 55.5%（同 backbone）；Harness Primitives 把 Terminal-Bench 2.0 Pass@1 从 60.0% 提到 72.2%；Tool Primitives 把 ToolBench 通过率 55.8%→75.1%；Navigation Primitives 把 GAIA-Text-103 从 45.6% 提到 58.3%。在 46 个真实任务上，Claude Opus 5.5 + Claude Code 单独完成 9 个，接入 HEELO（MCP server）后完成 39 个；GPT-6.1 Sol + Codex 从 9 到 35，单任务耗时降 1.9x/2.3x，成本降 1.55x。",
+   "insight": "这是「harness 比模型更重要」的量化版本：同一 backbone、只换 harness，真实任务完成数翻四倍。对同时做研发与业务 agent 的团队，含义是能力应沉淀为可复用 primitive（资源 + 驻留 LLM + 通信协议），而不是每个场景重写 prompt 链；且 primitive 要能被验证与替换，否则会变成新的技术债。MCP 作为接入方式（9→39）也说明协议标准化能直接放大已有 harness 的覆盖面。",
+   "detail": {
+    "why": "真实任务的失败点常常不是「找不到工具/文档」，而是拿到之后的调用顺序、参数、错误恢复；每个 harness 各自重建这套知识，导致同样的模型在不同产品里表现差异巨大。",
+    "mechanism": "primitive = 资源 + 驻留 LLM（在该资源语境里执行）+ 与其他 primitive 的通信接口；HEELO 按任务组合成 graph → 用环境证据验证 → 定位失败涉及的 primitive 并修正 → 验证后入库。八个家族分别面向开发、harness、工具、导航等任务类型。",
+    "deep": "两个结构性洞察：①「驻留 LLM」把「怎么用这个资源」的知识从调用方移到资源侧，等价于把 prompt 工程变成组件工程；②「验证后才接纳」是防退化的关键——否则 primitive 库会像 prompt 库一样腐烂。数据上最有力的是 46 个真实任务 9→39，因为 benchmark 提升可能来自过拟合，而真实任务是端到端交付。",
+    "apply": "把团队现有能力清单改写成 primitive 清单：每个 primitive 声明输入/输出、适用场景、自带示例与自检；用 MCP 暴露；建立「验证后入库」的评审门。先挑 3 个高频资源（如内部 API 目录、指标字典、部署脚本）做试点。",
+    "caveats": "primitive 库的构建与维护成本未量化；「驻留 LLM」意味着每个 primitive 都有推理成本，规模化后费用结构需重算；46 个任务样本仍小；benchmark 与真实任务结论不完全一致（Harness Primitives 60→72.2 与 Dev-Primitives 37.3→55.5 不可直接相加）；引用数未核实。",
+    "business": "这为「agent 平台」的价值主张提供证据：卖的不是模型调用，而是可复用、可验证的能力库。对采购方，评估供应商时应看 primitive 库的覆盖与验证机制，而不是看 demo 里的单次成功率。",
+    "sources": [
+     {
+      "url": "https://arxiv.org/abs/2611.07461",
+      "title": "The Last Mile to the Real World: Agent-Native Primitives as Reusable Building Blocks for Solving Real-World Tasks"
+     }
+    ],
+    "diagram": {
+     "title": "Agent-native primitive 的组合与验证",
+     "flow": [
+      {
+       "label": "资源",
+       "sub": "工具/文档/API",
+       "type": "database"
+      },
+      {
+       "label": "驻留 LLM",
+       "sub": "就地会用",
+       "type": "backend"
+      },
+      {
+       "label": "任务图组合",
+       "sub": "按需拼装",
+       "type": "frontend"
+      },
+      {
+       "label": "环境证据验证",
+       "sub": "失败定位到 primitive",
+       "type": "security"
+      },
+      {
+       "label": "验证后入库",
+       "sub": "MCP 暴露",
+       "type": "cloud"
+      }
+     ],
+     "notes": [
+      {
+       "label": "核心数据",
+       "text": "同 backbone 37.3%→55.5%；真实任务 9→39"
+      },
+      {
+       "label": "知识搬家",
+       "text": "「怎么用」从调用方移到资源侧"
+      },
+      {
+       "label": "防腐烂",
+       "text": "验证通过才接纳新 primitive"
+      }
+     ]
+    }
+   }
+  },
+  {
+   "tag": "cross",
+   "title": "agent-autoloop：给命令行 agent 装一个「后台接活 + 卡片审批」的调度内核，4,096★",
+   "date": "2026-11-08",
+   "source": "GitHub",
+   "link": "https://github.com/KKKKhazix/agent-autoloop",
+   "summary": "Agent Autoloop 是一个极轻量的本地自动化中台（TypeScript，4,096★，2026-11-03 创建，11/08 发布 v1.6.4）。它要解决的是「人守着终端用 Claude Code / Codex」的断点问题：关掉窗口或人走开，任务就断了。做法是把调度做成零外部依赖的内核，把事件来源、Agent、通知通道、甚至上线流水线都拆成可插拔插件；一台电脑一条命令即可运行，不用云服务器、不开放公网端口；接入新 Agent 只需一行配置（能接收提示词并打印最后一条回复的 CLI 都能接）；没有后台界面，需要拍板时把卡片推到飞书/钉钉/企微/Slack/Discord 或桌面通知，看进展敲一行命令；等待人工回答时「不占进程、不花 Token」，回答后可从原会话继续。支持 Windows/macOS/Linux，需 Node 24+。",
+   "insight": "长时 agent 的真实瓶颈往往不是能力而是「人不在场」：任务卡在一个需要确认的问题上，进程和 token 却一直烧着。把 human-in-the-loop 做成异步卡片 + 可恢复会话，是一个成本极低但收益明显的模式；对自建业务 agent 同样适用——需要业务方确认口径/授权时，挂起而不是空转，确认后从检查点继续。它的插件化（事件源/Agent/通知/流水线）也说明「编排层与执行层解耦」已是共识。",
+   "detail": {
+    "why": "Claude Code/Codex 这类 CLI agent 是同步交互模型，适合「人盯着」，不适合「挂机跑一批任务」；而企业里很多任务是长尾、需要中途确认的。",
+    "mechanism": "零依赖内核做任务调度与状态机；插件层接事件来源（定时/外部触发）、Agent（任意 CLI）、通知（IM 卡片）、流水线；会话挂起时释放进程与 token，回答后按会话 ID 恢复。",
+    "deep": "三个工程决策值得借鉴：①「不占进程、不花 Token」的挂起语义，本质是把 agent 会话当作可持久化状态而非长连接；②「一行配置接新 Agent」用「stdin 提示词 / stdout 最后一条回复」这种最小契约，避免为每个 Agent 写 SDK；③没有后台 UI 反而是优势——审批走 IM，符合现有工作流，降低采用门槛。风险在于本地单机部署的可靠性与多任务并发。",
+    "apply": "自建业务 agent 时可照搬「检查点 + 挂起 + 卡片审批」：把需要人确认的动作（口径选择、写操作授权、超预算）转成待办卡片，agent 状态落盘；确认后从检查点恢复。事件源可接定时任务或上游数据变更。",
+    "caveats": "4,096★ 增长很快但项目仅数日历史（11/03 创建），生产稳定性未知；本地单机、无多租户与审计，不适合直接承载合规业务；插件生态质量参差；中文文档为主，国际化有限。",
+    "business": "这类工具把「agent 值班」变成可落地的工作方式，适合小团队用极低成本试水自动化运维/数据任务；对企业客户，价值在概念验证，真要上线仍需补权限、审计与高可用。",
+    "sources": [
+     {
+      "url": "https://github.com/KKKKhazix/agent-autoloop",
+      "title": "KKKKhazix/agent-autoloop — background CLI agent loop with human approval cards"
+     }
+    ]
+   }
+  }
+ ]
 }
