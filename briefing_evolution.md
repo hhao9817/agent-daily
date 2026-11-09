@@ -423,3 +423,45 @@
 - 落地要点：短期=研发线加 AI 代码作者溯源（adapter）+文档 co-change 门禁；业务线加幻觉逐步骤审计+EGI 维度验收模板。中期=TEAL 工具自进化层（无监督保留条件防膨胀）+自组织数据栈写回（评估 Cube/OpenMetadata 写 API）+GRACE 契约驱动 coding agent 工作流。长期=fail-closed 签名闸门（Ed25519+依赖完整性）贯穿双线 Agent 治理 pipeline。架构评审新检查单：AI 代码可见性/文档 co-change/幻觉分级/工具自进化保留条件/过程证据审查/fail-closed 闸门分级/契约制品分离。
 - 发布成功：publish_site.py 本地生成成功（归档索引更新至 58 期，data.json 66051 字节 17 items，index.html 生成），但 github.com:443 前两次 75s timeout（publish_site 内 3 次全失败），第 4 次手动 git push origin main 成功（c4cbc48..2826703），GitHub Pages 30s 后刷新显示 2026-10-22。SSH 推送不可用（publickey denied）。grounded-citations sources.py 记录 17 条来源（[430]-[446] 新增+[193] 复用历史）。
 - 基础设施备忘：①search_arxiv.py query 关键词过滤对多词组合仍失效（单关键词如 code generation 可用），需用多组单关键词搜+arxiv.org abs 页 Googlebot UA 抓摘要；②TDS 正文 IP 级 403 持续，r.jina.ai 超时/空持续，仅 RSS feed 元数据可用；③GitHub Blog 正文 JS 渲染仅得 meta description，但 meta description 常含核心数据可提炼；④DEW Substack 正文 JS 渲染但 JSON-LD description 可提取核心论点；⑤Semantic Scholar 429 限流加剧（15-20s 间隔仍频繁失败）；⑥github.com push 需 3-4 次重试（75s 超时/次），第 4 次手动 push 成功——publish_site.py 内 3 次失败后需手动补 push；⑦OpenAI Blog 正文 403（openai.com/index/* 对 curl 全面拒绝）。
+
+## 2026-11-05 运行记录（本次）
+- briefing_evolution.md 读取成功（323,486 字节）。文末"待应用反馈"为"（暂无）"，无强制方向变更；双主题定义与最低保证（rnd≥3+business≥4+cross≥1+总计≥8）沿用。
+- 去重核查：grep archive/ + data.json 核查候选 link。剔除已收录：ontology-atlas(5 次)、claude-plugins(6)、MegaMemory(8)、LeanRAG(14)、OpenSPG(16)、SQLBot(14)、jimureport(14)、saiku(0 但 Mondrian 老项目无新版)、Cube v1.8.17（11/02，v1.8.18 已于 11/04 收录）。终选 13 条全部 NONE。
+- arXiv 采集：本地 ax.py 走 export.arxiv.org/api/query（Googlebot UA）。关键发现是 11/03 批次（2611.04x-05x）密集出现"验证/审计"主题，11/04 批次稀疏。semantic layer / text-to-SQL / schema linking / wide table / agent memory / document extraction / coding agent / repository-level / MCP / tool use+API 共 9 组查询。
+- Semantic Scholar：11 篇中 6 篇核实（2611.02383/2611.05094/2611.03555/2611.05173 等均 cites=0/infl=0），其余 5 篇 429 限流标注"引用待核实（429 限流，新文预期 0）"。
+- blogwatcher 正常（20 条）。今日 TDS 全为无关内容（选票权/DAX/语音助手/量子），dbt 仅 Fivetran Gartner 营销稿（按规则排除），OpenAI 仅有 DevRev 企业自助（403 不可读）与 Pierre 收购（排除）。最终收录 Google Research Blog 11/04《Agile Deliberation》，Googlebot UA 抓正文成功，机制（concept scoping + concept iteration、18 场真人会话、开源）完整可核。
+- GitHub：两条 search API 均成功。发现 FalkorDB/QueryWeaver（1,089★，11/03 更新）——schema-as-graph + relevancy/taxonomy/healer agent 流水线 + MCP 暴露，README 与 api/agents/README.md 已读，机制逐条核实；Cube/WrenAI releases 无新版本。
+- 本次精选 13 条（rnd 4+business 4+blog 1+cross 3+github 1）。主线："agent 的自审全线不可靠，唯一稳定生效的是外部机械检查；把不确定性关进性能边界而非结果边界"。研发线四篇同证自审失效（CR-Bench KDDR≈33%、Foresight-SWE FRR 6.13-24.53%、SDD 工作流 288/581 且 orchestrator 自判 11 次告警只停 4 次、AGENTS.md 16.1% 段落互相矛盾）。业务线四篇把可靠性还原为"评测口径/披露口径"问题（SpecBridge 开放请求仅 15-58% 披露双口径、EnterpriseSynth endpoint 48.9%→参数级 21.3%、SLATE 千工具 5.0%、KG Lakehouse 图即视图）。交叉线 MCP 双侧确认缺失（90% 服务端无确认 / 32-41 宿主默认无审批）+ Correctness Firewalls（advisory/guarded/certified 三级）。
+- 发布成功：publish_site.py 一次通过，"✅ 已推送 GitHub Pages"，归档索引 65 期，commit 18cee95；Pages 缓存约 45s 后刷新为 2026-11-05/13 items。grounded-citations 记录 13 条来源（[503]-[515]）。
+- 基础设施备忘：①本地 ax.py 直连 API 稳定，search_arxiv.py 的 --query 过滤仍不可靠；②openai.com 仍 403；③GitHub API 认证通道稳定，但 search API 对 "semantic layer" 关键词返回大量疑似刷星垃圾仓库（s79347061 类），需按 star 与 pushed_at 双过滤；④Semantic Scholar 429 仍常态，12s 间隔仅约半数成功。
+
+## 2026-11-08 运行记录（本次）
+- briefing_evolution.md 读取成功；「待应用的反馈」为（暂无），无强制方向变更；最低保证（rnd≥3 + business≥4 + cross≥1 + 总计≥8）沿用。
+- 去重核查：grep archive/ 近 5 期（11/03-11/07）全部 tag/link；剔除已收录 SocratiCode（15 次）、octocode（10）、claude-plugins、ontology-atlas、px0-10/12 已收录但本次作为「评审瓶颈」新角度复用需谨慎——最终未与近 5 期重复。终选 14 条：rnd 5 / business 5 / cross 3 / blog 1。
+- 采集路径：arxiv 直连 API 多关键词抓取（11/05 批次为主，最新发布日 2026-11-05），逐条核对量级数字后撰写；Semantic Scholar 对全部 11 篇新论文均返回 None（未索引或 429），未引用任何引用数，避免编造。
+- 博客：订阅源本周仅 TDS 两条不相关；改用 Data Engineering Weekly「Do We Still Need Data Models?」作为 blog 项（10/28，近 5 期未收录），并核查 dbt/Cube/anthropic/Google Research 首页均无本周相关新文。
+- GitHub：本次不用 star 榜常客，改按「本周推送 + 与用户问题直接相关」筛选，得 jentic-api-scorecard（OpenAPI 六维 AI 就绪度，~35 信号）与 cli-printing-press（4.9k★，API→CLI/skill/MCP），均已 verified README。
+- 内容主线：把隐性约束变成可执行工件——研发侧代码表示/失败归因/Skillware/基准腐化；业务侧 tok 流程语法、ABE 行为契约、AgentTrustCI trace 断言、交接摘要越权、API 就绪度评分；交叉侧 MCPHallu 不可达识别 23.2%、状态化工具调用结构审计。
+- 发布成功：publish_site.py 一次通过，「✅ 已推送 GitHub Pages」，归档 68 期，commit 535d385；Pages 约 45s 后刷新为 2026-11-08 / 14 items。
+- 基础设施备忘：①本地 ax.py 不可用（路径不存在），改直连 export.arxiv.org API 稳定；②Semantic Scholar 对本批新 arXiv id 全部 None，勿据此写引用数；③GitHub search API 对 topic: 组合查询返回空，需用普通 q= 关键词 + pushed: 过滤；④Pages 首次 curl 可能仍返回上一期，需 sleep 45s + cache-bust 再核验；⑤Cube v1.8.20 仅为 bugfix，未收录。
+
+## 2026-11-09 运行记录（本次）
+- briefing_evolution.md 读取成功；「待应用的反馈」为（暂无），无强制方向变更；最低保证（rnd≥3 + business≥4 + cross≥1 + 总计≥8）满足：rnd 线 6（5 论文 + 1 GitHub Blog）/ business 线 5（3 论文 + 2 GitHub）/ cross 2 / 合计 13。
+- 去重核查：对 12 个候选关键词（auto-ontology/UnifiedModel/ReConMem/Accepted but Wrong/Req2Rust/DiagDBench/CascadeFilter/Reaper/agent-autoloop/beyond code generation/agentic analytics harness/dsh-superagent）grep 整份档案，命中数均为 0，确认与历史期不重复；上一期（11/08）的 2611.07286 repository map 与本期 ReConMem 角度不同（表示为输入 vs 记忆为状态），已在正文主动区分。
+- 学术采集：search_arxiv.py 按 id 逐个取元数据可用，但摘要被截断到 ~400 字符；改用 arxiv.org/abs 页 urllib + Googlebot UA 抓 `<blockquote class="abstract">` 全量摘要，7+7 篇全部成功。本期 10 篇全部来自 11/05 批次（2611.07xxx-08xxx），逐条数字均取自原文摘要（0.410/0.065/0.168、7.917/7.292pp、69.5→91.9、61/57/13、56.24、12/13 设置、91%→18%、97.5%/41.0%、37.3→55.5、9→39）。
+- Semantic Scholar：batch 与单篇 lookup 全部 429（间隔 6-8s 重试仍失败），本期不引用任何 citationCount，统一在 caveats 标注「引用待核实（S2 429，11/05 新文预期 0）」。
+- 博客：TDS 正文今日 Googlebot UA 也返回 403（Cloudflare 收紧），DEW 最新仍为 #294（11/02，已收录），Cube 三篇 agentic analytics 文经 article:published_time 核实为 7/30-9/3 旧文不采用；改抓 github.blog/feed（11/06《Beyond code generation》，441% 评审时长 + Plan/Build/Verify/Observe），用普通 Chrome UA 抓正文成功。
+- GitHub：gh 认证通道正常。两条业务线项目均逐条核对 README 与 repo 元数据：alibaba/UnifiedModel（454★，Go，Apache-2.0，SPL/.entity/.topo + MCP，核心不含多租户授权）、NVIDIA/auto-ontology（10,338★，创建 2026-04-27，五段式 + provenance + NIM 绑定 + 不接受外部贡献）；cross 取 KKKKhazix/agent-autoloop（4,096★，11/03 创建，11/08 发 v1.6.4，挂起不占进程/不花 token）。
+- 主线判断：本期收敛到「验证」——研发侧门禁要报「错误发布率」而非通过率（41%→6.5%，干扰项反弹 16.8%）、迁移先写 MRS 再执行（91.9%）、历史 fix 变可复用规则（61 新 bug）、harness 决定上限（同 backbone 9→39）；业务侧「模型提议 + 代码校验」把 94% 动作准确率/41% 路径匹配的假象纠正为 97.5% 零误派发、改名对照揭穿清洗高分（91%→18%）、语义筛选给出成本与误差界；开源侧 UModel（对象图+SPL）与 auto-ontology（本体作语义模型补充层）代表两条路线合流，共同把「定义对齐 + provenance」做进架构。
+- 发布成功：publish_site.py 一次通过，「✅ 已推送 GitHub Pages」，归档 69 期，index.html 99,842 字节，13 条标题全部渲染；grounded-citations 记录 13 条来源（[529]-[541]）。
+- 基础设施备忘：①search_arxiv.py `--id` 可用但摘要截断，全量摘要走 abs 页；②TDS 对 Googlebot UA 已 403，改用 Chrome UA + `<p>` 抽取；③Cube 博客需读 `article:published_time` 而非页面上的 PostCard 日期（列表块日期会误导）；④GitHub search `created:>date` 排序会混入大量与主题无关的新晋爆款仓库，需按 README 核实相关性再收录。
+
+## 2026-11-10 运行记录（本次）
+- briefing_evolution.md 读取成功；「待应用的反馈」为（暂无），无强制方向变更；最低保证满足：rnd 4 / business 4 / cross 5 / github 3 / blog 1，合计 17。
+- 去重核查：候选 17 条逐条 grep archive/ 近 5 期，命中为 0（code-review-graph 与 apache/ossie 已存在于 ledger #321/#79，但未在任何一期 data.json 收录，属首次入刊）。
+- 学术采集：export.arxiv.org API 直连 + abs 页 Googlebot UA 取全量摘要；本期 11 篇集中 2611.01x-09x。Semantic Scholar 多数返回 None（新文未索引），仅 2 篇返回 0，正文未引用任何 citationCount，caveats 统一标注限流/未索引。
+- 博客：DEW #295（11/09）正文抓取成功，含「语义层 vs text-to-SQL 准确率」研究复盘 + Mercury/Klaviyo 生产案例；github.blog wp-json /posts 接口拿正文（比 feed 的 meta description 完整），得 12 亿 commit/周、评审 +441%、Plan/Build/Verify/Observe。openai.com 仍 403。
+- GitHub：gh 认证通道正常。code-review-graph（32,672★，MIT，README 有 docs/REPRODUCING.md 的 6 仓 13 commit 基准）、NVIDIA/auto-ontology（11,002★，v1.2.0，11-04 接入 ossie-converters）、apache/ossie（2,670★，原 OSI）。注意 search API 的 created:> 排序混入大量刷星仓库（graphify 14.5万★ 等），已按 README 可验证性剔除。
+- 主线判断：研发线瓶颈从生成转向验证（12 亿 commit vs 评审 +441%、调试隧道视野、链式任务 18.5%、AGENTS.md 腐化）；业务线语义层与知识图谱开始合流成可交换规范（auto-ontology 明确「complements existing semantic models」+ Ossie 规范）；交叉线核心是 harness 层的信任边界（Compaction Laundering 87-100% vs role-typed 0%）与执行前形式化护栏（LeanGuard 57.9%→5.9%）。
+- 发布成功：publish_site.py 一次通过，「✅ 已推送 GitHub Pages」，归档 70 期，commit 0051713；线上已确认 12 亿 commit / 441% 文案。grounded-citations 记录 17 条来源（[542]-[558]）。
+- 基础设施备忘：①本机 grounded-citations 实际路径在 ~/.hermes/hermes-agent/skills/research/，任务给的 ~/.hermes/skills/research/ 不存在；②GitHub Blog 用 /wp-json/wp/v2/posts?search= 取 content.rendered 最省事；③SITE_META 按 tag 分节，主题线与来源节不可兼得，沿用 11-09 约定：论文按主题线打 tag、仓库打 github、博客打 blog。
