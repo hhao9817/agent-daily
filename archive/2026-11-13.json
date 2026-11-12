@@ -14,8 +14,8 @@
         "FERN（arXiv 2611.14477）：三个冻结检索器融合出 100 个候选表，用最多 120 个特征 + LightGBM ranker 重排，全程不调用生成式 LLM（对照 RASL 用 Claude 3.5 抽关键词+选表）。Spider 上 complete@5 从 83.9% 提到 95.6%，BIRD 单题中位延迟 208ms/单卡 A100；但迁移到 BEAVER 时 complete@15 只有 49.6%（两个 BEAVER 训练过的检索器是 54.5%/62.0%），Fiben 上 recall@15 54.2% vs 69.2%——「检索可以不用 LLM，但排序特征不跨域」。",
         "PAF「编译上下文」（arXiv 2611.13055）：交付物不再是文档，而是携带 compiled context、证据、provenance 与后续交互规则的 package。400 道冻结问题 × 12,000 次响应：hosted governed reader 96% vs 「指令+原始文件 RAG」86%（Holm 校正 p<10^-7）；离线 0.8B reader 的 -1（答错或越权）率 2.9%，而只给原文+指令时高达 56%。企业 agent 的护城河是「何时拒答」，不是「答得多准」。",
         "NVIDIA Auto-Ontology（Apache-2.0，12.2k⭐）：从 metadata 自动生成企业 ontology（术语 term / 关系 relationship / SQL 属性），人工 certify 后用 lineage 校验生成查询、每个答案附 provenance，再通过 MCP/CLI/API 只读暴露给任意 agent harness，并把 certified correction 回灌本体。支持 Apache Ossie YAML 导入导出，Postgres+pgvector 单机可跑——语义层与企业知识图谱在这里不是二选一，而是「图承载语义、lineage 承载可信」。",
-        "SeqoFlow（arXiv 2611.04248）：语义查询服务层的运行时问题——跨查询的到达与资源需求动态变化、查询内 LLM operator 的成本/选择率随 batch 漂移，且两者循环依赖（调度需要剩余 LLM 工作量估计，而工作量取决于运行时计划选择）。做法是枚举保等价计划、按 batch 边界做计划切换与抢占、用轻量推测估计成本。语义层不只建模，还要有「查询调度器」。",
-        "企业分析 agent 评测（arXiv 2611.14493）：在冻结 trace 上比三种范式——trace-based LLM 评判 F1=0.90 最优；text-only 评判 recall 持平但假警报多 5 倍；确定性启发式最弱。Phase 3 发现 24 个新失效，功能测试与安全红队**零重叠**。结论是双框架策略：functional 用 trace、security 用 adversarial red-team。"
+        "企业分析 agent 评测（arXiv 2611.14493）：在冻结 trace 上比三种范式——trace-based LLM 评判 F1=0.90 最优；text-only 评判 recall 持平但假警报多 5 倍；确定性启发式最弱。Phase 3 发现 24 个新失效，功能测试与安全红队**零重叠**。结论是双框架策略：functional 用 trace、security 用 adversarial red-team。",
+        "Saiku 4.x（Apache-2.0，1,339⭐，v4.8.0）：2010 年的 Mondrian OLAP 浏览器在 2026 年重建为语义层（Mondrian 4.8.1.x + Calcite planner），对 agent 暴露 typed REST `/ai/*`——`/ai/cubes`、`/ai/schema` 可发现度量/维度/同义词，`POST /ai/query` 把 JSON 问题翻译成校验后 MDX 并返回 typed cells，失败带 `{status, field, available}` 让 agent 自纠；另捆 `saiku-mcp`，`model diff` 支持 Mondrian XML/Ossie YAML 的 rename-aware 影响面分析。"
       ],
       "cross": [
         "ReTrace（arXiv 2611.14492）：把 SOP + 少量已记录轨迹蒸馏成「下一步由代码选、而非 LLM 选」的可执行工作流——从每次工具调用附带的 reasoning 里抽条件、跨轨迹合并成 rule document、再编译到目标编排平台（只有最后一步与平台相关）。79 条生产流程 93.8% vs agent 96.8%，单任务成本 -24%；τ²-Bench 75.8% vs 80.6%，但延迟 1.3s vs 170s；三轮 repair 可把 k=2 工作流从 66.7% 提到 81.2%。",
@@ -24,7 +24,8 @@
       "github": [
         "code-review-graph（32.7k⭐，MIT，Python）：Tree-sitter 解析出函数/类/import/调用/测试覆盖的图，落 SQLite，增量更新，经 MCP 把 blast radius 与 risk score 交给 agent；README 的 flask 案例里全库读取 143,594 token、图回答 2,196 token（65x）。`code-review-graph install` 自动探测并配置 18 种 agent（Codex/Claude Code/Cursor/Copilot/Hermes 等），Codex 侧还会落一个全局 Skill。",
         "NVIDIA/auto-ontology（12.2k⭐，Apache-2.0）：见业务线第 3 条——它是目前唯一把「自动生成本体 + 人工 certify + lineage 校验 + MCP 只读暴露 + Ossie 互操作」串成完整闭环的开源实现，可直接对着 Wide World Importers 跑 Docker Compose 做 POC。",
-        "Cube v1.8.22（2026-11-11）：backend-shared 加固 SQL 参数插值（#11576）、api-gateway 加强 WS 消息校验（#12712）、cubesql 在 Parse 阶段本地 describe 参数化语句而不再回调 Cube（#12668）、ClickHouse driver 杀死被取消查询并丢弃半成品表（#12337）。语义层作为「唯一查询入口」后，它自己就成了安全与资源治理的关键路径。"
+        "Cube v1.8.22（2026-11-11）：backend-shared 加固 SQL 参数插值（#11576）、api-gateway 加强 WS 消息校验（#12712）、cubesql 在 Parse 阶段本地 describe 参数化语句而不再回调 Cube（#12668）、ClickHouse driver 杀死被取消查询并丢弃半成品表（#12337）。语义层作为「唯一查询入口」后，它自己就成了安全与资源治理的关键路径。",
+        "Saiku（1,339⭐，Apache-2.0）：语义层作为 agent 查询接口的最小完整实现——typed REST + 结构化错误 envelope + MCP + 模型 diff，四件套可直接对照自研查询层。"
       ],
       "blog": [
         "GitHub Blog（11-12）《Build once, run on any agent: A practical guide to agent skills》：agent skill 是以 SKILL.md 为核心的版本化目录，frontmatter 声明「何时用」；可跨 agent 复用，但工具、凭据、权限仍由宿主提供（skill 描述如何查库，但不授予库权限）。三条工程原则：self-verification is not verification（独立 verifier 返回 PASS/FAIL/PARTIAL）、项目细节放 manifest 而非硬编码进 skill、需要稳定接口/共享状态/审计/模型外权限时应该做 application 而不是 skill。",
@@ -443,135 +444,67 @@
     },
     {
       "tag": "business",
-      "title": "Auto-Ontology：NVIDIA 把「语义层 vs 知识图谱」合成一条可跑通的路线",
+      "title": "Saiku 4.x：老牌 OLAP 语义层重建成 agent 接口——MDX 不出门、错误可自纠",
       "date": "2026-11-12",
       "source": "GitHub",
-      "link": "https://github.com/NVIDIA/auto-ontology",
-      "summary": "Auto-Ontology 是 Apache-2.0 的 Python 框架，用五个动词组织能力：Discover（从 metadata 生成企业 ontology、接入已有 ontology 与语义模型、构建 AI-ready 知识图谱）、Ground（给 agent 可信的业务含义：指标、实体、关系，并跨系统调和冲突定义）、Validate（用 certified definition 与 lineage 校验生成查询，每个答案带 provenance）、Expose（通过 MCP、CLI、API 把上下文提供给任意 agent harness）、Learn（把 certified correction 与使用情况回灌本体）。工作流是三段式：自动生成草稿 ontology → 人工 certify 术语/描述/SQL 属性 → 服务端用 lineage 校验并执行。架构为 FastAPI + LangChain 后端、Postgres 17 + pgvector（catalog/ontology/向量）、FastMCP 只读 MCP server，另有 Next.js 前端；支持 Apache Ossie YAML 导入导出，可与 Wide World Importers 数据集用 Docker Compose 直接跑通。仓库 12.2k⭐，2026-11-12 仍在活跃提交。",
-      "insight": "这是目前最接近「用户两条路线合一」的开源实现：本体（图）承载业务语义，lineage 承载可信度，MCP 承载暴露面，Ossie 承载互操作。它回答了一个关键架构问题——语义层不必是「cube/metric store」这一种形态；以 term/relationship/SQL attribute 为原子、以图组织、以 lineage 校验，同样能提供 deterministic query generation，而且更适合「上百字段宽表 + 高业务含义 API」这种既有结构又缺语义的场景。",
+      "link": "https://github.com/spiculedata/saiku",
+      "summary": "Saiku 2010 年起是 Mondrian 的开源 OLAP 浏览器，2026 年被重建为现代语义层：Mondrian 4.8.1.x（Spicule fork）+ 基于 Calcite 的 SQL planner（默认，可用 -Dmondrian.backend=legacy 退回旧 SqlQuery builder）。面向 LLM agent 暴露 typed REST：`/rest/saiku/api/ai/*` 下 `/ai/cubes`、`/ai/schema` 可发现 hierarchies/levels/measures/synonyms，`POST /ai/query` 把问题的 JSON 描述翻译成校验过的 MDX 执行，返回 typed `{value, formatted, unit}` 单元格；任何校验失败都带 `{status, field, available}` envelope，让 agent 无需翻日志即可自纠。用 Ossie 建模的数据集有 SQL 侧孪生 `/ai/ossie/*`（同样的 list→schema→query 形状、同样的 VALIDATION_ERROR envelope，另有 `/ai/ossie/ask` 自然语言提问），`/ai/anomaly`、`/ai/forecast` 共用同一 envelope。容器内捆绑 `saiku-mcp` stdio MCP server，一行 docker 配置即可接入 Claude Desktop/Cursor/Cline。治理侧 `saiku model diff` 可 diff Mondrian XML 或 Ossie YAML，把 rename 识别为 rename，并列出所有仍指向被删成员的已存查询、看板与应用；`model generation` 指向数仓即可生成 Ossie 语义模型草稿与决策理由文档。仓库 1,339⭐、Apache-2.0、v4.8.0（2026-09-15），2026-11-12 仍在提交。",
+      "insight": "这条给「语义层 vs 企业知识图谱」之争补了第三条实证：老语义层不必改造成知识图谱，只要把契约做对——agent 永远看不到 MDX，只看到可发现的 schema、typed 结果、可自纠的结构化错误。`{status, field, available}` 是全文最值钱的设计：把校验失败变成「错在哪、哪个字段、可选值是什么」的结构化反馈，等价于给 agent 一个 type checker，自纠循环不再依赖模型猜。model diff 的 rename-aware 与「谁还在引用被删成员」则命中了语义层的运维痛点：模型演进会静默打断下游，而这个信息通常散落在 BI 平台里查不到。",
       "detail": {
-        "why": "用户明确想同时研究「语义层」与「企业知识图谱」两条路线。Auto-Ontology 是少数把二者在同一套抽象里落地、还带 MCP 暴露与开放交换格式（Ossie）的工程实现，可直接做 POC 而非只读论文。",
-        "mechanism": "①元数据接入（表/列/外键/注释/查询日志）→ LLM 生成草稿 ontology（term、relationship、SQL attribute）；②人在 UI 里 certify，纠正定义；③查询时 agent 沿 ontology 关系走到需要的 join，服务端校验 filter 值是否存在于数据、校验答案是否可用（answerability），再执行；④MCP server 以只读工具暴露 ask_question，按用户身份鉴权并记录使用；⑤certified correction 回流本体。",
-        "deep": "「certify + lineage 校验」是它区别于纯 RAG-over-schema 的核心：RAG 只能保证「相关」，lineage 能保证「这个指标的口径确实来自这些字段」。这也解释了为什么它需要 Postgres + pgvector 同时存关系与向量——语义图与向量检索各司其职。Ossie（Apache 孵化中的开放语义交换规范）支持则意味着模型定义可以跨工具迁移，避免被单一 BI 厂商锁定。",
-        "apply": "①用它做「业务对象图谱」的骨架：先覆盖 3-5 个核心实体（订单/客户/商品/库存/结算），certify 术语后再放 agent。②把「answerability 校验」作为 agent 的强制前置，不通过就构造性拒绝。③MCP 只读暴露 + 用户级鉴权，正好匹配「不直连数据库、走 API」的合规要求。④用 Ossie 做导入导出，保留换引擎的自由。",
-        "caveats": "依赖 NVIDIA NIM 推理端点（可自托管但需 GPU 资源）；ontology 自动生成质量决定后续一切，metadata 质量差的遗留系统会放大错误；12.2k⭐ 但项目仅 2026-04 创建，生产案例与社区插件生态尚浅；certify 是人工瓶颈，规模化需要治理流程配套。",
-        "business": "数据治理厂商的中间地带正在被开源侵蚀：自动本体生成 + lineage 校验 + MCP 暴露，原本是商业语义层（Cube/AtScale/dbt Semantic Layer）的收费点。对自建团队，这意味着「语义层」的采购决策可以改为「组装决策」；对厂商，护城河转向 certify 工作流、行业本体库与治理合规认证。",
+        "why": "多数语义层对 agent 的暴露方式是「让模型写 SQL/MDX + 出错就重试」，错误处理靠日志。Saiku 把接口契约、错误契约、模型变更契约三件事一起做了，且完全开源可自建，可直接当作自研查询层的设计参照。",
+        "mechanism": "四层：①模型层 Mondrian 4.8.1.x schema（cube/dimension/measure/hierarchy）+ Calcite planner；②AI 契约层 `/ai/cubes`、`/ai/schema` 与 `POST /ai/query`（JSON 问题描述 → 校验后 MDX → typed cells），失败返回 `{status, field, available}`；③接入层 `saiku-mcp` 把同一契约包装成 stdio MCP 工具；④治理层 `model diff` 跨 Mondrian XML / Ossie YAML 做 rename-aware diff，并列出受影响的已存查询与看板。",
+        "deep": "「MDX 不出门」是关键的抽象边界：业务 agent 不该学 SQL，正如它不该学 MDX——语义层要提供的是「可发现的度量/维度 + 受控的查询语法 + 类型化结果」。把错误做成 envelope 而非异常文本，是让 agent 可靠自纠的前提：它把「解析错误/字段不存在/值不在域内」区分开，并给出可选值，模型不需要靠猜。model diff 解决的是语义层的「迁移」问题——语义模型本质是 schema，schema 变更需要 migration 与影响面分析，这一步在多数语义层产品里是缺失的。",
+        "apply": "①自研查询层照抄三段式：discover（cubes/schema）→ query（typed JSON）→ error envelope（status/field/available）。②对上百字段的宽表 API 建 `saiku.semantic.*` 式注解命名空间（业务名、同义词、单位、枚举值域），让 agent 可发现。③把语义模型纳入 CI：任何模型 PR 自动跑 diff，列出受影响查询与看板，作为 breaking change 门禁。④先用 `saiku-mcp` 做概念验证，再决定自研或复用。",
+        "caveats": "1,339⭐ 属小众项目，社区与文档深度不及 Cube/dbt；Mondrian/Calcite 栈偏传统 OLAP，面对「上百字段宽表 API」这类非立方体数据模型需要额外适配；`/ai/ossie/*` 依赖 Ossie 规范的成熟度；README 未给性能与并发基准；4.x 是重建版本，生产案例尚少。",
+        "business": "语义层的竞争点正从「建模 GUI」转向「agent 契约」：可发现 schema + typed 结果 + 结构化错误 + 模型 diff，四件套齐了才有资格当企业 agent 的数据入口。对自建团队，这套契约可以只借接口设计、不引入整个 Saiku，边际成本极低；对厂商，semantic model 的 diff/migration 是尚未被充分产品化的收费点。",
         "sources": [
           {
-            "url": "https://github.com/NVIDIA/auto-ontology",
-            "title": "NVIDIA Auto Ontology: semantic, graph-based reasoning layer over enterprise data"
+            "url": "https://github.com/spiculedata/saiku",
+            "title": "Saiku: open-source semantic layer with AI Query API, MCP server and Apache Ossie support"
           }
         ],
         "diagram": {
-          "title": "Auto-Ontology 的五段闭环",
+          "title": "Saiku 的 agent 契约四层",
           "flow": [
             {
-              "label": "Metadata 接入",
-              "sub": "表 / 列 / 外键 / 日志",
-              "type": "database"
-            },
-            {
-              "label": "LLM 生成本体",
-              "sub": "term / relation / SQL attr",
-              "type": "backend"
-            },
-            {
-              "label": "人工 Certify",
-              "sub": "口径确认",
+              "label": "Agent / Claude",
+              "sub": "JSON 问题描述",
               "type": "frontend"
             },
             {
-              "label": "Lineage 校验",
-              "sub": "定义 + 可答性",
-              "type": "security"
-            },
-            {
-              "label": "MCP 只读暴露",
-              "sub": "FastMCP + 用户鉴权",
+              "label": "saiku-mcp",
+              "sub": "stdio MCP 包装",
               "type": "cloud"
             },
             {
-              "label": "Correction 回灌",
-              "sub": "本体持续进化",
-              "type": "backend"
-            }
-          ],
-          "notes": [
-            {
-              "label": "路线合流",
-              "text": "图承载语义、lineage 承载可信、MCP 承载暴露，本体即语义层。"
-            },
-            {
-              "label": "互操作",
-              "text": "支持 Apache Ossie YAML 导入导出，避免语义模型被锁定。"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "tag": "business",
-      "title": "SeqoFlow：语义查询的运行时调度——计划与并发要一起自适应",
-      "date": "2026-11-03",
-      "source": "arXiv",
-      "link": "https://arxiv.org/abs/2611.04248",
-      "summary": "LLM 驱动的语义查询把关系处理与多个 LLM operator 混合在非结构化数据上，服务化时面临两层耦合的动态性：跨查询的到达与异构资源需求不断改变调度优先级；查询内部细粒度 batch 的异构性使 operator 成本与选择率在执行中漂移，静态优化计划不可靠。二者形成循环依赖——跨查询调度需要估计剩余 LLM 工作量，而剩余工作量取决于运行时计划选择，其成本只有在执行中才可观测。SeqoFlow 联合自适应查询计划与并发调度：在 operator 依赖下枚举保等价计划、把查询拆成细粒度单元以支持 batch 边界上的安全计划切换与抢占，并用轻量推测估计（而非穷举 profile 候选计划）捕获运行时成本，让估计同时驱动计划适配与调度。实验显示相比现有语义查询系统、自适应查询处理技术与常规调度策略，端到端延迟显著降低。",
-      "insight": "语义层讨论通常停在建模（metric、dimension、join），这篇把镜头推到执行层：当查询里混着 LLM operator，传统 DB 的「优化器 + 调度器」假设全部失效——成本不可预知、选择率随数据漂移、且计划与调度互为因果。SeqoFlow 的解法（保等价计划枚举 + batch 边界抢占 + 推测估计）本质是把「自适应查询处理」搬到 LLM 语义查询上，这会是下一代语义层引擎的必备能力。",
-      "detail": {
-        "why": "自建业务查询 agent 一旦并发上来，瓶颈往往不是 SQL 生成质量，而是「多个 LLM operator 混跑时的排队与超时」。这篇给出了可借鉴的运行时架构，而不是又一篇 prompt 技巧。",
-        "mechanism": "①把语义查询编译成含关系算子与 LLM 算子的 DAG；②在算子依赖约束下枚举保等价（结果不变）的计划变体；③把查询切成分 batch 的细粒度执行单元，在 batch 边界做计划切换与抢占；④用轻量 speculative estimator 估计各计划的剩余 LLM 成本与选择率；⑤估计值同时喂给计划适配与跨查询调度，闭环。",
-        "deep": "「循环依赖」是核心洞察：调度器要 priors，priors 又依赖执行中的选择。传统做法是离线 profile 或静态代价模型，在 LLM 场景下都太贵或太不准；SeqoFlow 用运行时推测把估计成本压到可接受，从而允许在线决策。对架构师的启示是：语义层的 SLA 由「可抢占的细粒度执行单元」决定，而非由模型速度决定。",
-        "apply": "①自建查询 agent 时把「计划」与「执行单元」解耦，保证任一 batch 边界可切换/取消，避免单个慢查询拖垮队列。②为 LLM operator 建在线成本/选择率估计器（哪怕粗糙），用于准入控制与超时预算。③对多租户场景按查询优先级做抢占，而不是简单并发限流。",
-        "caveats": "论文以延迟为核心指标，未系统报告成本/准确率的权衡；保等价计划枚举在含自由文本生成的算子上边界模糊；推测估计器的误差对尾延迟的影响未充分展开；工程落地需要自研执行引擎，改造成本高。",
-        "business": "语义层正在从「建模工具」变成「查询运行时」。谁能提供「可抢占、可估算、可调度」的语义查询引擎，谁就能承接企业内高并发的自助分析流量——这比再做一个 BI 前端更有壁垒。",
-        "sources": [
-          {
-            "url": "https://arxiv.org/abs/2611.04248",
-            "title": "Navigating Runtime Dynamism in Semantic Query Serving"
-          }
-        ],
-        "diagram": {
-          "title": "SeqoFlow 的计划-调度联合自适应",
-          "flow": [
-            {
-              "label": "语义查询",
-              "sub": "关系 + LLM 算子",
-              "type": "frontend"
-            },
-            {
-              "label": "保等价计划枚举",
-              "sub": "依赖约束下",
+              "label": "/ai/cubes · schema",
+              "sub": "度量 / 维度可发现",
               "type": "backend"
             },
             {
-              "label": "细粒度 batch 切分",
-              "sub": "可抢占边界",
+              "label": "POST /ai/query",
+              "sub": "JSON → 校验后 MDX",
               "type": "backend"
             },
             {
-              "label": "推测成本估计",
-              "sub": "不穷举 profile",
+              "label": "Mondrian + Calcite",
+              "sub": "SQL planner / 数据源",
               "type": "database"
             },
             {
-              "label": "跨查询调度",
-              "sub": "优先级 / 抢占",
-              "type": "cloud"
-            },
-            {
-              "label": "端到端延迟降低",
-              "sub": "对比 AQP / 常规调度",
+              "label": "typed 结果 / 错误",
+              "sub": "{value} 或 {field, available}",
               "type": "security"
             }
           ],
           "notes": [
             {
-              "label": "循环依赖",
-              "text": "调度需剩余工作量估计，而工作量取决于运行时计划选择。"
+              "label": "抽象边界",
+              "text": "MDX 不出门：agent 只见 schema、typed cells 与结构化错误。"
             },
             {
-              "label": "架构含义",
-              "text": "语义层 SLA 取决于执行单元粒度，而非模型速度。"
+              "label": "模型演进",
+              "text": "model diff 识别 rename 并列出受影响查询/看板，可做 CI 门禁。"
             }
           ]
         }
@@ -782,142 +715,6 @@
       }
     },
     {
-      "tag": "github",
-      "title": "code-review-graph：把 codebase 压成一张图，review 上下文从 143k token 降到 2.2k",
-      "date": "2026-11-12",
-      "source": "GitHub",
-      "link": "https://github.com/tirth8205/code-review-graph",
-      "summary": "code-review-graph 是 local-first 的代码智能图，面向 MCP 与 CLI：用 Tree-sitter 把仓库解析成 AST，存成节点（函数、类、import）与边（调用、继承、测试覆盖）构成的图，落 SQLite 并增量更新；review 时图被查询出「最小必要文件集」，agent 只读这些文件。README 的 flask 案例对比：读全库 143,594 token，图回答 2,196 token（65x 更少）。MCP 工具返回 blast radius 与 risk score；`code-review-graph install` 自动探测本机 agent 并写入 MCP server 条目、hooks 与 skills，支持 18 种平台（Codex、Claude Code、Cursor、Copilot CLI、Hermes Agent、DeepSeek Harness 等），并提供 `doctor` 诊断与 `uninstall --dry-run` 回滚。仓库 32.7k⭐、MIT、Python，2026-11-12 仍在活跃提交。",
-      "insight": "这是「研发知识库」从「向量检索代码片段」升级为「结构图 + blast radius」的成熟开源样本，而且抓住了 review 这个高频、上下文敏感的入口：review 不需要读全库，只需要读「这次改动影响到的子图」。65x 的 token 压缩不是靠摘要，而是靠结构剪枝，因此不损失精确定位。对已建知识库的团队，它可以直接作为 MCP 侧的结构检索层，与既有向量库互补。",
-      "detail": {
-        "why": "大多数 code RAG 方案在 review 场景下把整文件塞进上下文，既贵又不准。这个项目用 AST 图 + 增量更新 + MCP 暴露，给出了可复现的 token 压缩与「最小 review 集」方案，且开箱支持多 agent。",
-        "mechanism": "①Tree-sitter 解析多语言源码为 AST；②抽取节点（函数/类/import）与边（调用/继承/测试覆盖）写入 SQLite 图；③增量更新：只重解析变更文件；④review 时以 diff 为种子做图遍历，算出 blast radius（受影响子图）与 risk score；⑤通过 MCP 工具把「最小文件集 + 风险说明」交给 agent，hooks 在 git/editor 事件触发增量更新。",
-        "deep": "65x 的差距本质是「结构剪枝 vs 全量灌注」：图能在不读源码的情况下判断「哪些文件与这次改动有调用/继承/测试关系」，从而把上下文从 O(repo) 降到 O(blast radius)。risk score 把「测试覆盖缺失 + 高扇出」这类结构性风险显式化，让 review 从「逐行看」变成「按风险看」。工程上值得注意的是「不做隐式 build」——图缺失或过期时不会偷偷重建，避免 agent 在 review 中触发昂贵的全库解析。",
-        "apply": "①在 CI 的 PR 事件上跑 `detect-changes --brief`，把 blast radius 注入 review agent 的上下文。②与内部知识库结合：图负责「结构定位」，向量库负责「语义/历史决策」，两者按文件路径对齐。③把 risk score 作为 review 优先级排序，先看高扇出 + 无测试覆盖的改动。④用 `uninstall --dry-run` 做试点回滚预案。",
-        "caveats": "图的质量取决于语言支持与动态特性（反射、DI、猴子补丁会漏边）；65x 是单仓库案例，跨语言大 monorepo 的收益需自测；SQLite 图在超大仓库的查询性能与并发更新未公开基准；MCP 工具返回的 risk score 是启发式，不宜直接当门禁。",
-        "business": "code review 是 agent 最容易量化的 ROI 场景：省的是「读代码」的 token 与「漏看影响面」的返工。这类工具会快速商品化，真正壁垒在「图 + 团队规则 + 历史决策」的组合，而非图本身。",
-        "sources": [
-          {
-            "url": "https://github.com/tirth8205/code-review-graph",
-            "title": "code-review-graph: local-first code intelligence graph for MCP and CLI"
-          }
-        ],
-        "diagram": {
-          "title": "code-review-graph 的建图与查询",
-          "flow": [
-            {
-              "label": "Repository",
-              "sub": "多语言源码",
-              "type": "database"
-            },
-            {
-              "label": "Tree-sitter AST",
-              "sub": "解析",
-              "type": "backend"
-            },
-            {
-              "label": "SQLite 图",
-              "sub": "节点 + 边",
-              "type": "database"
-            },
-            {
-              "label": "增量更新",
-              "sub": "git / editor hooks",
-              "type": "cloud"
-            },
-            {
-              "label": "Blast Radius",
-              "sub": "最小 review 集",
-              "type": "backend"
-            },
-            {
-              "label": "MCP 工具",
-              "sub": "risk score 输出",
-              "type": "frontend"
-            }
-          ],
-          "notes": [
-            {
-              "label": "压缩比",
-              "text": "flask 全库 143,594 token → 图回答 2,196 token（65x）。"
-            },
-            {
-              "label": "多 agent",
-              "text": "一键 install 支持 18 种平台，含 Codex / Claude Code / Hermes。"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "tag": "github",
-      "title": "Cube v1.8.22：语义层作为唯一查询入口后的安全与资源补课",
-      "date": "2026-11-11",
-      "source": "GitHub",
-      "link": "https://github.com/cube-js/cube/releases/tag/v1.8.22",
-      "summary": "Cube v1.8.22（2026-11-11）是一批偏底层加固的修复：backend-shared 加固 SQL 参数插值（#11576）、api-gateway 加强 WebSocket 消息校验（#12712）、cubesql 在 Parse 阶段本地 describe 参数化语句而不再回调 Cube（#12668，关闭 #12459）、ClickHouse driver 杀死被取消的查询并丢弃构建到一半的表（#12337）、cubesql 把 CUBESQL_REWRITE_MAX_NODES 默认值提到 100000（#12669）以支持更大查询图、DuckDB 支持 DATEDIFF 下推（#12665）、Oracle driver 支持库内预聚合（#12601）、schema-compiler 修复跨数据源 originalSql join 的栈溢出（#12621）。",
-      "insight": "这些条目单独看都是 bug fix，合起来说明语义层成熟后的真实问题域：当 Cube 成为所有 agent/BI 的唯一查询入口，它自己就变成注入面、DoS 面与资源泄漏面。SQL 参数插值加固与 WS 校验是安全；查询取消后杀查询、丢半成品表是资源治理；rewrite 节点上限与 DATEDIFF 下推是「大查询图」的现实压力。对自建语义层的团队，这是一份免费的「上线检查清单」。",
-      "detail": {
-        "why": "语义层的价值在于「收敛入口」，但收敛也意味着单点风险集中。这个 release 正好暴露了收敛后必须补的工程债，且都是可迁移到自研系统的通用问题。",
-        "mechanism": "参数插值加固针对动态 SQL 拼接路径；WS 消息校验针对 api-gateway 的实时订阅面；cubesql 在 Parse 阶段本地 describe 参数化语句，避免每次解析都回调 Cube 主服务；ClickHouse driver 在查询取消时向数据库发送 kill 并清理半成品表；rewrite 节点上限提升支持更复杂的查询图。",
-        "deep": "「Parse 阶段不回调 Cube」是一条值得学的架构原则：编译期信息应在本地解析器中自足，避免控制面与数据面耦合导致解析成为瓶颈。查询取消的清理逻辑则揭示了一个常被忽略的失败模式——取消不等于终止，后端可能继续消耗资源甚至留下半成品对象。这两点对「agent 生成 SQL → 语义层重写 → 数据仓库执行」的链路尤其关键，因为 agent 会频繁超时与重试。",
-        "apply": "①自建语义层必须实现「取消即 kill + 清理临时对象」，否则 agent 的重试会放大资源消耗。②把 SQL 拼接路径统一改为参数化，禁止字符串插值。③对 rewrite 后的查询图设节点上限并监控，防止 agent 生成的病态 SQL 打爆优化器。④长会话（WS）场景要做消息校验与配额。",
-        "caveats": "release notes 未给出性能与安全影响的量化；部分修复（如 Oracle 库内预聚合）需特定数据源才生效；升级涉及 schema/图格式时需按 changelog 顺序处理。",
-        "business": "语义层厂商的竞争点正从「建模体验」转向「运行时可靠性」：能不能扛住 agent 产生的高频、畸形、易超时的查询。对企业选型，这比多看几个 chart 类型更重要。",
-        "sources": [
-          {
-            "url": "https://github.com/cube-js/cube/releases/tag/v1.8.22",
-            "title": "Cube v1.8.22 release notes"
-          }
-        ],
-        "diagram": {
-          "title": "语义层收敛入口后的风险面",
-          "flow": [
-            {
-              "label": "Agent / BI",
-              "sub": "高频查询",
-              "type": "frontend"
-            },
-            {
-              "label": "api-gateway",
-              "sub": "WS 消息校验",
-              "type": "security"
-            },
-            {
-              "label": "cubesql 重写",
-              "sub": "本地 Parse / 节点上限",
-              "type": "backend"
-            },
-            {
-              "label": "SQL 参数化",
-              "sub": "禁止插值拼接",
-              "type": "security"
-            },
-            {
-              "label": "ClickHouse Driver",
-              "sub": "取消即 kill",
-              "type": "database"
-            },
-            {
-              "label": "预聚合 / 下推",
-              "sub": "Oracle / DuckDB",
-              "type": "cloud"
-            }
-          ],
-          "notes": [
-            {
-              "label": "收敛即集中",
-              "text": "唯一查询入口同时也是唯一注入面与资源泄漏面。"
-            },
-            {
-              "label": "易漏点",
-              "text": "取消不等于终止，需主动 kill 并清理半成品表。"
-            }
-          ]
-        }
-      }
-    },
-    {
       "tag": "blog",
       "title": "GitHub：agent skill 怎么做到「一次编写，跨 agent 运行」",
       "date": "2026-11-12",
@@ -1048,6 +845,210 @@
             {
               "label": "分层策略",
               "text": "稳定语义进仓库，实时状态走工具调用。"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "Auto-Ontology：NVIDIA 把「语义层 vs 知识图谱」合成一条可跑通的路线",
+      "date": "2026-11-12",
+      "source": "GitHub",
+      "link": "https://github.com/NVIDIA/auto-ontology",
+      "summary": "Auto-Ontology 是 Apache-2.0 的 Python 框架，用五个动词组织能力：Discover（从 metadata 生成企业 ontology、接入已有 ontology 与语义模型、构建 AI-ready 知识图谱）、Ground（给 agent 可信的业务含义：指标、实体、关系，并跨系统调和冲突定义）、Validate（用 certified definition 与 lineage 校验生成查询，每个答案带 provenance）、Expose（通过 MCP、CLI、API 把上下文提供给任意 agent harness）、Learn（把 certified correction 与使用情况回灌本体）。工作流是三段式：自动生成草稿 ontology → 人工 certify 术语/描述/SQL 属性 → 服务端用 lineage 校验并执行。架构为 FastAPI + LangChain 后端、Postgres 17 + pgvector（catalog/ontology/向量）、FastMCP 只读 MCP server，另有 Next.js 前端；支持 Apache Ossie YAML 导入导出，可与 Wide World Importers 数据集用 Docker Compose 直接跑通。仓库 12.2k⭐，2026-11-12 仍在活跃提交。",
+      "insight": "这是目前最接近「用户两条路线合一」的开源实现：本体（图）承载业务语义，lineage 承载可信度，MCP 承载暴露面，Ossie 承载互操作。它回答了一个关键架构问题——语义层不必是「cube/metric store」这一种形态；以 term/relationship/SQL attribute 为原子、以图组织、以 lineage 校验，同样能提供 deterministic query generation，而且更适合「上百字段宽表 + 高业务含义 API」这种既有结构又缺语义的场景。",
+      "detail": {
+        "why": "用户明确想同时研究「语义层」与「企业知识图谱」两条路线。Auto-Ontology 是少数把二者在同一套抽象里落地、还带 MCP 暴露与开放交换格式（Ossie）的工程实现，可直接做 POC 而非只读论文。",
+        "mechanism": "①元数据接入（表/列/外键/注释/查询日志）→ LLM 生成草稿 ontology（term、relationship、SQL attribute）；②人在 UI 里 certify，纠正定义；③查询时 agent 沿 ontology 关系走到需要的 join，服务端校验 filter 值是否存在于数据、校验答案是否可用（answerability），再执行；④MCP server 以只读工具暴露 ask_question，按用户身份鉴权并记录使用；⑤certified correction 回流本体。",
+        "deep": "「certify + lineage 校验」是它区别于纯 RAG-over-schema 的核心：RAG 只能保证「相关」，lineage 能保证「这个指标的口径确实来自这些字段」。这也解释了为什么它需要 Postgres + pgvector 同时存关系与向量——语义图与向量检索各司其职。Ossie（Apache 孵化中的开放语义交换规范）支持则意味着模型定义可以跨工具迁移，避免被单一 BI 厂商锁定。",
+        "apply": "①用它做「业务对象图谱」的骨架：先覆盖 3-5 个核心实体（订单/客户/商品/库存/结算），certify 术语后再放 agent。②把「answerability 校验」作为 agent 的强制前置，不通过就构造性拒绝。③MCP 只读暴露 + 用户级鉴权，正好匹配「不直连数据库、走 API」的合规要求。④用 Ossie 做导入导出，保留换引擎的自由。",
+        "caveats": "依赖 NVIDIA NIM 推理端点（可自托管但需 GPU 资源）；ontology 自动生成质量决定后续一切，metadata 质量差的遗留系统会放大错误；12.2k⭐ 但项目仅 2026-04 创建，生产案例与社区插件生态尚浅；certify 是人工瓶颈，规模化需要治理流程配套。",
+        "business": "数据治理厂商的中间地带正在被开源侵蚀：自动本体生成 + lineage 校验 + MCP 暴露，原本是商业语义层（Cube/AtScale/dbt Semantic Layer）的收费点。对自建团队，这意味着「语义层」的采购决策可以改为「组装决策」；对厂商，护城河转向 certify 工作流、行业本体库与治理合规认证。",
+        "sources": [
+          {
+            "url": "https://github.com/NVIDIA/auto-ontology",
+            "title": "NVIDIA Auto Ontology: semantic, graph-based reasoning layer over enterprise data"
+          }
+        ],
+        "diagram": {
+          "title": "Auto-Ontology 的五段闭环",
+          "flow": [
+            {
+              "label": "Metadata 接入",
+              "sub": "表 / 列 / 外键 / 日志",
+              "type": "database"
+            },
+            {
+              "label": "LLM 生成本体",
+              "sub": "term / relation / SQL attr",
+              "type": "backend"
+            },
+            {
+              "label": "人工 Certify",
+              "sub": "口径确认",
+              "type": "frontend"
+            },
+            {
+              "label": "Lineage 校验",
+              "sub": "定义 + 可答性",
+              "type": "security"
+            },
+            {
+              "label": "MCP 只读暴露",
+              "sub": "FastMCP + 用户鉴权",
+              "type": "cloud"
+            },
+            {
+              "label": "Correction 回灌",
+              "sub": "本体持续进化",
+              "type": "backend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "路线合流",
+              "text": "图承载语义、lineage 承载可信、MCP 承载暴露，本体即语义层。"
+            },
+            {
+              "label": "互操作",
+              "text": "支持 Apache Ossie YAML 导入导出，避免语义模型被锁定。"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "code-review-graph：把 codebase 压成一张图，review 上下文从 143k token 降到 2.2k",
+      "date": "2026-11-12",
+      "source": "GitHub",
+      "link": "https://github.com/tirth8205/code-review-graph",
+      "summary": "code-review-graph 是 local-first 的代码智能图，面向 MCP 与 CLI：用 Tree-sitter 把仓库解析成 AST，存成节点（函数、类、import）与边（调用、继承、测试覆盖）构成的图，落 SQLite 并增量更新；review 时图被查询出「最小必要文件集」，agent 只读这些文件。README 的 flask 案例对比：读全库 143,594 token，图回答 2,196 token（65x 更少）。MCP 工具返回 blast radius 与 risk score；`code-review-graph install` 自动探测本机 agent 并写入 MCP server 条目、hooks 与 skills，支持 18 种平台（Codex、Claude Code、Cursor、Copilot CLI、Hermes Agent、DeepSeek Harness 等），并提供 `doctor` 诊断与 `uninstall --dry-run` 回滚。仓库 32.7k⭐、MIT、Python，2026-11-12 仍在活跃提交。",
+      "insight": "这是「研发知识库」从「向量检索代码片段」升级为「结构图 + blast radius」的成熟开源样本，而且抓住了 review 这个高频、上下文敏感的入口：review 不需要读全库，只需要读「这次改动影响到的子图」。65x 的 token 压缩不是靠摘要，而是靠结构剪枝，因此不损失精确定位。对已建知识库的团队，它可以直接作为 MCP 侧的结构检索层，与既有向量库互补。",
+      "detail": {
+        "why": "大多数 code RAG 方案在 review 场景下把整文件塞进上下文，既贵又不准。这个项目用 AST 图 + 增量更新 + MCP 暴露，给出了可复现的 token 压缩与「最小 review 集」方案，且开箱支持多 agent。",
+        "mechanism": "①Tree-sitter 解析多语言源码为 AST；②抽取节点（函数/类/import）与边（调用/继承/测试覆盖）写入 SQLite 图；③增量更新：只重解析变更文件；④review 时以 diff 为种子做图遍历，算出 blast radius（受影响子图）与 risk score；⑤通过 MCP 工具把「最小文件集 + 风险说明」交给 agent，hooks 在 git/editor 事件触发增量更新。",
+        "deep": "65x 的差距本质是「结构剪枝 vs 全量灌注」：图能在不读源码的情况下判断「哪些文件与这次改动有调用/继承/测试关系」，从而把上下文从 O(repo) 降到 O(blast radius)。risk score 把「测试覆盖缺失 + 高扇出」这类结构性风险显式化，让 review 从「逐行看」变成「按风险看」。工程上值得注意的是「不做隐式 build」——图缺失或过期时不会偷偷重建，避免 agent 在 review 中触发昂贵的全库解析。",
+        "apply": "①在 CI 的 PR 事件上跑 `detect-changes --brief`，把 blast radius 注入 review agent 的上下文。②与内部知识库结合：图负责「结构定位」，向量库负责「语义/历史决策」，两者按文件路径对齐。③把 risk score 作为 review 优先级排序，先看高扇出 + 无测试覆盖的改动。④用 `uninstall --dry-run` 做试点回滚预案。",
+        "caveats": "图的质量取决于语言支持与动态特性（反射、DI、猴子补丁会漏边）；65x 是单仓库案例，跨语言大 monorepo 的收益需自测；SQLite 图在超大仓库的查询性能与并发更新未公开基准；MCP 工具返回的 risk score 是启发式，不宜直接当门禁。",
+        "business": "code review 是 agent 最容易量化的 ROI 场景：省的是「读代码」的 token 与「漏看影响面」的返工。这类工具会快速商品化，真正壁垒在「图 + 团队规则 + 历史决策」的组合，而非图本身。",
+        "sources": [
+          {
+            "url": "https://github.com/tirth8205/code-review-graph",
+            "title": "code-review-graph: local-first code intelligence graph for MCP and CLI"
+          }
+        ],
+        "diagram": {
+          "title": "code-review-graph 的建图与查询",
+          "flow": [
+            {
+              "label": "Repository",
+              "sub": "多语言源码",
+              "type": "database"
+            },
+            {
+              "label": "Tree-sitter AST",
+              "sub": "解析",
+              "type": "backend"
+            },
+            {
+              "label": "SQLite 图",
+              "sub": "节点 + 边",
+              "type": "database"
+            },
+            {
+              "label": "增量更新",
+              "sub": "git / editor hooks",
+              "type": "cloud"
+            },
+            {
+              "label": "Blast Radius",
+              "sub": "最小 review 集",
+              "type": "backend"
+            },
+            {
+              "label": "MCP 工具",
+              "sub": "risk score 输出",
+              "type": "frontend"
+            }
+          ],
+          "notes": [
+            {
+              "label": "压缩比",
+              "text": "flask 全库 143,594 token → 图回答 2,196 token（65x）。"
+            },
+            {
+              "label": "多 agent",
+              "text": "一键 install 支持 18 种平台，含 Codex / Claude Code / Hermes。"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "tag": "github",
+      "title": "Cube v1.8.22：语义层作为唯一查询入口后的安全与资源补课",
+      "date": "2026-11-11",
+      "source": "GitHub",
+      "link": "https://github.com/cube-js/cube/releases/tag/v1.8.22",
+      "summary": "Cube v1.8.22（2026-11-11）是一批偏底层加固的修复：backend-shared 加固 SQL 参数插值（#11576）、api-gateway 加强 WebSocket 消息校验（#12712）、cubesql 在 Parse 阶段本地 describe 参数化语句而不再回调 Cube（#12668，关闭 #12459）、ClickHouse driver 杀死被取消的查询并丢弃构建到一半的表（#12337）、cubesql 把 CUBESQL_REWRITE_MAX_NODES 默认值提到 100000（#12669）以支持更大查询图、DuckDB 支持 DATEDIFF 下推（#12665）、Oracle driver 支持库内预聚合（#12601）、schema-compiler 修复跨数据源 originalSql join 的栈溢出（#12621）。",
+      "insight": "这些条目单独看都是 bug fix，合起来说明语义层成熟后的真实问题域：当 Cube 成为所有 agent/BI 的唯一查询入口，它自己就变成注入面、DoS 面与资源泄漏面。SQL 参数插值加固与 WS 校验是安全；查询取消后杀查询、丢半成品表是资源治理；rewrite 节点上限与 DATEDIFF 下推是「大查询图」的现实压力。对自建语义层的团队，这是一份免费的「上线检查清单」。",
+      "detail": {
+        "why": "语义层的价值在于「收敛入口」，但收敛也意味着单点风险集中。这个 release 正好暴露了收敛后必须补的工程债，且都是可迁移到自研系统的通用问题。",
+        "mechanism": "参数插值加固针对动态 SQL 拼接路径；WS 消息校验针对 api-gateway 的实时订阅面；cubesql 在 Parse 阶段本地 describe 参数化语句，避免每次解析都回调 Cube 主服务；ClickHouse driver 在查询取消时向数据库发送 kill 并清理半成品表；rewrite 节点上限提升支持更复杂的查询图。",
+        "deep": "「Parse 阶段不回调 Cube」是一条值得学的架构原则：编译期信息应在本地解析器中自足，避免控制面与数据面耦合导致解析成为瓶颈。查询取消的清理逻辑则揭示了一个常被忽略的失败模式——取消不等于终止，后端可能继续消耗资源甚至留下半成品对象。这两点对「agent 生成 SQL → 语义层重写 → 数据仓库执行」的链路尤其关键，因为 agent 会频繁超时与重试。",
+        "apply": "①自建语义层必须实现「取消即 kill + 清理临时对象」，否则 agent 的重试会放大资源消耗。②把 SQL 拼接路径统一改为参数化，禁止字符串插值。③对 rewrite 后的查询图设节点上限并监控，防止 agent 生成的病态 SQL 打爆优化器。④长会话（WS）场景要做消息校验与配额。",
+        "caveats": "release notes 未给出性能与安全影响的量化；部分修复（如 Oracle 库内预聚合）需特定数据源才生效；升级涉及 schema/图格式时需按 changelog 顺序处理。",
+        "business": "语义层厂商的竞争点正从「建模体验」转向「运行时可靠性」：能不能扛住 agent 产生的高频、畸形、易超时的查询。对企业选型，这比多看几个 chart 类型更重要。",
+        "sources": [
+          {
+            "url": "https://github.com/cube-js/cube/releases/tag/v1.8.22",
+            "title": "Cube v1.8.22 release notes"
+          }
+        ],
+        "diagram": {
+          "title": "语义层收敛入口后的风险面",
+          "flow": [
+            {
+              "label": "Agent / BI",
+              "sub": "高频查询",
+              "type": "frontend"
+            },
+            {
+              "label": "api-gateway",
+              "sub": "WS 消息校验",
+              "type": "security"
+            },
+            {
+              "label": "cubesql 重写",
+              "sub": "本地 Parse / 节点上限",
+              "type": "backend"
+            },
+            {
+              "label": "SQL 参数化",
+              "sub": "禁止插值拼接",
+              "type": "security"
+            },
+            {
+              "label": "ClickHouse Driver",
+              "sub": "取消即 kill",
+              "type": "database"
+            },
+            {
+              "label": "预聚合 / 下推",
+              "sub": "Oracle / DuckDB",
+              "type": "cloud"
+            }
+          ],
+          "notes": [
+            {
+              "label": "收敛即集中",
+              "text": "唯一查询入口同时也是唯一注入面与资源泄漏面。"
+            },
+            {
+              "label": "易漏点",
+              "text": "取消不等于终止，需主动 kill 并清理半成品表。"
             }
           ]
         }
