@@ -26,13 +26,15 @@
 - （暂无）
 
 ## 2026-11-16 运行记录（本次）
-- 读取本档案；「待应用的反馈」为（暂无），无强制方向变更；最低保证满足：rnd 4 / business 5 / cross 3 / 合计 13（另含 github 组 2 条速览）。
-- 去重核查：对 10 篇候选 arXiv ID（2611.15596/14952/16116/13395/14697/16304/14925/15006/15223/15797）grep 全部 archive/*.json 命中 0；px0、Cube「agentic analytics harness」博客、TDS「6 Agentic GraphRAG Patterns」三者也确认 0 命中（11/12 备注中 px0 属"考虑过未收录"，非重复收录）。
+- 读取本档案；「待应用的反馈」为（暂无），无强制方向变更；最低保证满足：tag 计数 rnd 4 / business 4 / cross 3 / blog 1 / github 1，合计 13（业务线内容 5 条 = business 4 + Cube harness 博客）。
+- 去重核查：对 10 篇候选 arXiv ID（2611.15596/14952/16116/13395/14697/16304/14925/15006/15223/15797）grep 全部 archive/*.json 命中 0；Cube「agentic analytics harness」博客与 TDS「6 Agentic GraphRAG Patterns」亦 0 命中。**关键词 grep 不可靠**：px0 用关键词法判为 0 命中，实际在 11-08 期已收录（link 级比对才暴露），故去重口径改为按 item.link 与全量 archive 求差集。
 - 学术：arXiv export API id_list 批量取摘要（一次 12 篇），数字全部取自摘要原文（1,050 bug / 312 漏检 / 81% vs 4.5%、ATS 87.69% vs ASR 51.52%、43.9%-56.5%、69.6% vs 39.8%、45.5→55.2 与 62.2→56.1、Spearman 0.04→0.43-0.50、56.2% 与 +3.0pp/+10.7/+7.9）。Semantic Scholar 对本批新文几乎全部返回 null（仅 guardscope 返回 0/0），故正文不引用任何引用数。
 - 博客：TDS 站内抓取今日 403（Cloudflare 收紧，jina reader 亦不可达），改为读 TDS RSS（pubDate 11-13/11-14/11-15）取副标题级事实，并对仅凭摘要成文的条目在 caveats 明示「付费墙/未逐条核实」。Cube 两篇（harness 五经验、data modeling→system design）用 curl 抓正文成功，页面无发布时间，date 标注为 2026-11 并在 caveats 说明。
-- GitHub：gh 认证通道正常；search API（stars 排序）与 releases API 均可用。新增 px0（1,953★，MIT，Go，冷启动 <1ms / 20-30MB，浏览器审 PR + 派发本地 harness）与 Cube v1.8.26（cubestore LIMIT 下推 + tesseract filter 成员 join path 匹配预聚合）。OpenMetadata 2.1.0-rc2 的 release body 为空（API 返回 null），故未收录，避免无据推断。
+- GitHub：gh 认证通道正常；search API（stars 排序）与 releases API 均可用。**踩坑**：初版收了 px0（1,953★，审阅工作台），但脚本化「link vs archive 全量比对」发现它已在 2026-11-08 期收录（此前 grep 关键词法漏判），遂替换为 AOCI-CODE（1,922★，Go，FSL-1.1-MIT，v0.2.0-rc1，agent 为每文件/每表写条目 + Git 版本化 + aligned 状态机 + 9 个 MCP 工具，约 1 小时/20 万行）。另一条为 Cube v1.8.26（cubestore LIMIT 下推 + tesseract 按 filter 成员 join path 匹配预聚合）。OpenMetadata 2.1.0-rc2 的 release body 为空（API 返回 null），故未收录，避免无据推断。
+- 结构检修：初版 tag 计数为 business 2（另 2 条业务线内容挂在 blog/github tag 下），与「business ≥4」口径不一致；已把 Cube v1.8.26 与 TDS Context Graph 两条改标 business，并把 speed 组（rnd/business/cross/github）压到 1-3 条/组，避免速览膨胀。
 - 主线判断：研发侧「验证器优于审查器」——符号执行+agent 找到 1,050 个带复现测试的 bug，其中 312 个是同一模型纯读代码漏掉的；配合 JoyFrontBench（ATS 87.69% vs ASR 51.52%）与 Robo-SWE（最强 56.5%）说明评测必须从「任务分」转向「应用级验收 + 可执行证据」。业务侧「语义层是唯一可执行接口」——Cube 五条 harness 经验给出定义/权限编译期强制、上下文分层加载、结果截断协议、按需刷新搜索的完整答案，并援引 Anthropic 自助分析准确率一个月 95%→65% 的维护性衰减；StateAlign 证明「该问却直接干」是可训练的（BFCL 多轮 45.5→55.2，但 no-tool hallucination 仍 56.1%，运行时确定性校验不可省）。交叉侧收敛到「运行期策略」——ToolTurns 显示整段对话完成率仅 39.8%、EvoX 换 harness 差 10.7 个点、guardscope 证明 15 条动作路径中网关只覆盖经过它的那些。
-- 发布成功：publish_site.py 一次通过，「✅ 已推送 GitHub Pages」，归档 76 期，archive/2026-11-16.json 已生成；index.html 102,534 字节，13 条全部渲染（2611.15596/px0/guardscope 均可检索到），线上页面 50s 后刷新确认。grounded-citations 记录 15 条来源（[1]-[15]）。
+- 发布成功：publish_site.py 两次运行（第二次覆盖首版）后「✅ 已推送 GitHub Pages」，归档 77 期并清理中间版本 2026-11-16-071330（含 archive/index.html 引用）；archive/2026-11-16.json 为终版 13 条；index.html 103,533 字节，aoci-code 5 处、px0 0 处。grounded-citations 记录 16 条来源。
+- 验证方式（临时脚本，非项目测试套件）：`$TMPDIR/hermes-verify-briefing.py` 校验 schema 键、tag 配额（rnd 4 / business 4 / cross 3 / blog 1 / github 1，共 13）、每条的 detail 六段与 sources/diagram（节点类型白名单）、日期格式、summary 句数、组内 1-3 条，以及**与全部历史 archive 的 link 级去重**，最终 ERRORS=0。该 link 级比对今后应固化为发布前步骤。
 
 ## 2026-08-23 主题调整记录
 - 晨报从"AI for Business 单主题"调整为"AI for 研发 + AI for 业务 双主题"。
