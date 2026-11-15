@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "id": 1,
+      "url": "https://arxiv.org/abs/2611.06294",
+      "title": "A.S.E 2.0: Understanding How Repository Context Impacts the Security of LLM-Generated Code",
+      "accessed": "2026-11-06"
+    },
+    {
+      "id": 2,
+      "url": "https://arxiv.org/abs/2611.06563",
+      "title": "EPISTEME: Trustworthy Coding Agents Through Tool Call Intent",
+      "accessed": "2026-11-06"
+    },
+    {
+      "id": 3,
+      "url": "https://arxiv.org/abs/2611.06099",
+      "title": "SWEOps-Bench: Evaluating Agents for End-to-End Resolution of Software-Induced Cloud Incidents",
+      "accessed": "2026-11-06"
+    },
+    {
+      "id": 4,
+      "url": "https://arxiv.org/abs/2611.06506",
+      "title": "Trace2Eval: Contextualized Evaluation of Coding Agents from Real-World Traces",
+      "accessed": "2026-11-06"
+    },
+    {
+      "id": 5,
+      "url": "https://arxiv.org/abs/2611.04248",
+      "title": "Navigating Runtime Dynamism in Semantic Query Serving",
+      "accessed": "2026-11-06"
+    },
+    {
+      "id": 6,
+      "url": "https://arxiv.org/abs/2611.05761",
+      "title": "BobFlow: Towards Human-Agent Collaborative Data Science Using Dataflows",
+      "accessed": "2026-11-06"
+    },
+    {
+      "id": 7,
+      "url": "https://arxiv.org/abs/2611.05753",
+      "title": "Toward a Compositional Knowledge Architecture for a Shared Organizational Cortex",
+      "accessed": "2026-11-06"
+    },
+    {
+      "id": 8,
+      "url": "https://arxiv.org/abs/2611.06481",
+      "title": "ArcRAG: Agentic Compositional Retrieval over Knowledge Graphs",
+      "accessed": "2026-11-06"
+    },
+    {
+      "id": 9,
+      "url": "https://arxiv.org/abs/2611.06897",
+      "title": "MCP-Eco: A Linked Dataset of MCP Servers, Consumers, and Development Activity",
+      "accessed": "2026-11-06"
+    },
+    {
+      "id": 10,
+      "url": "https://arxiv.org/abs/2611.06764",
+      "title": "Rethinking Access Control for AI Agents: Recent Advances and Open Challenges",
+      "accessed": "2026-11-06"
+    },
+    {
+      "id": 11,
+      "url": "https://github.com/tirth8205/code-review-graph",
+      "title": "code-review-graph: Local-first code intelligence graph for MCP and CLI",
+      "accessed": "2026-11-06"
+    },
+    {
+      "id": 12,
+      "url": "https://github.com/cube-js/cube/releases/tag/v1.8.19",
+      "title": "Cube v1.8.19 Release Notes",
+      "accessed": "2026-11-06"
+    },
+    {
+      "id": 13,
+      "url": "https://github.com/NVIDIA/auto-ontology",
+      "title": "NVIDIA Auto Ontology: semantic, graph-based reasoning layer over data",
+      "accessed": "2026-11-06"
+    },
+    {
+      "id": 14,
+      "url": "https://www.getdbt.com/blog/context-engineering-data-warehouse",
+      "title": "Why context engineering belongs in the data warehouse (dbt Labs, Nov 5 2026)",
+      "accessed": "2026-11-06"
+    },
+    {
+      "id": 15,
+      "url": "https://www.getdbt.com/blog/how-to-assess-your-ai-readiness",
+      "title": "How to assess your organization's AI readiness (dbt Labs, Nov 5 2026)",
+      "accessed": "2026-11-06"
+    }
+  ]
+}

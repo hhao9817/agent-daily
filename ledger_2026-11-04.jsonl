@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "id": 1,
+      "url": "https://arxiv.org/abs/2610.38977",
+      "title": "Beyond Passing Tests: A Controlled Re-evaluation of Techniques for LLM-Generated Unit Tests",
+      "accessed": "2026-11-04"
+    },
+    {
+      "id": 2,
+      "url": "https://arxiv.org/abs/2610.30635",
+      "title": "Specification-Oracle Gaps in Repository-Level Software Engineering Benchmarks",
+      "accessed": "2026-11-04"
+    },
+    {
+      "id": 3,
+      "url": "https://arxiv.org/abs/2610.36584",
+      "title": "Req2Test-Bench: A Benchmark for Requirement-to-Test Generation",
+      "accessed": "2026-11-04"
+    },
+    {
+      "id": 4,
+      "url": "https://arxiv.org/abs/2610.36894",
+      "title": "ASNER: Architecture-Aware Repository-Level Structure Recovery",
+      "accessed": "2026-11-04"
+    },
+    {
+      "id": 5,
+      "url": "https://arxiv.org/abs/2610.28612",
+      "title": "TraceLite: Efficient Trace Reduction for SWE Agents",
+      "accessed": "2026-11-04"
+    },
+    {
+      "id": 6,
+      "url": "https://arxiv.org/abs/2611.03551",
+      "title": "Can LLM Agents Be Forward-Deployed Engineers? Requirement Discovery and Delivery for Enterprise Text-to-SQL",
+      "accessed": "2026-11-04"
+    },
+    {
+      "id": 7,
+      "url": "https://arxiv.org/abs/2611.02314",
+      "title": "GRIPS: An Empirical Study of Pre-SQL Grounding Information for SQL Generation",
+      "accessed": "2026-11-04"
+    },
+    {
+      "id": 8,
+      "url": "https://arxiv.org/abs/2610.19836",
+      "title": "EGCForest: Structured Agent Memory Organization for Enterprise Group Chats",
+      "accessed": "2026-11-04"
+    },
+    {
+      "id": 9,
+      "url": "https://arxiv.org/abs/2611.00171",
+      "title": "Reimagining Text-to-SQL: A Paradigm-Oriented Survey",
+      "accessed": "2026-11-04"
+    },
+    {
+      "id": 10,
+      "url": "https://arxiv.org/abs/2609.34971",
+      "title": "Action-Space Shaping over Tool-Schemas for LLM Agents",
+      "accessed": "2026-11-04"
+    },
+    {
+      "id": 11,
+      "url": "https://github.com/cube-js/cube/releases/tag/v1.8.18",
+      "title": "Cube v1.8.18 Release Notes",
+      "accessed": "2026-11-04"
+    },
+    {
+      "id": 12,
+      "url": "https://cube.dev/blog/data-modeling-is-becoming-system-design",
+      "title": "Building the Data Model Factory (Cube Blog)",
+      "accessed": "2026-11-04"
+    }
+  ]
+}
