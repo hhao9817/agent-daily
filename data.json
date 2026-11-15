@@ -5,17 +5,14 @@
     "summary": "研发线：符号执行 + coding agent 的组合在 115 万行 Python 上找到 1050 个可复现 bug，其中 312 个是同一模型「只读代码」漏掉的，说明 AI review 的天花板在方法不在模型；同时前端 agent 任务分 87.69% 而应用成功率仅 51.52%、机器人栈 236 个可执行任务最强 agent 也只有 56.5%，两个新 benchmark 都在把评测从「任务分」推向「应用级验收」。业务线：Cube 公开了 agentic analytics harness 的五条生产经验（Semantic SQL、工具要解释失败、上下文是预算、业务上下文多形态、按需搜索语义模型），并引用 Anthropic 自助分析准确率一个月从 95% 漂到 65% 的教训；StateAlign 用状态对比 RL 把「该问却直接干」的 tool hallucination 压下来，BFCL v4 多轮 45.5→55.2。交叉线：ToolTurns 显示单轮 69.6%、整段对话只剩 39.8%；EvoX 把 harness 当运行期策略，同一模型换 harness 差 10.7 个点；guardscope 证明 agent 有 15 条动作路径，网关只看得见其中一条。",
     "groups": {
       "rnd": [
-        "符号执行 + agent（arXiv 2611.15596）：agent 自动为 5,406 个函数注入契约、为数据库合成约束感知的符号环境，使 CrossHair 可执行函数比例从 4.5% 升到 81%；11 个开源 Web 应用 115.6 万行代码上找到 1,050 个 bug，每个都附「未修改应用上可复现」的测试，其中 312 个被「同一 LLM 直接读代码」的 baseline 漏掉。",
-        "JoyFrontBench（arXiv 2611.14952）：用 goal-oriented acceptance contracts 区分「部分实现」与「应用成功」，100 题/764 任务/2,596 条原子标准；OpenHands 下 5 个模型平均任务分 87.69%，但平均应用成功率仅 51.52%，且排名随 harness 变化、同模型多次运行波动。",
-        "Robo-SWE（arXiv 2611.16116）：从 28 个机器人仓库已合并 PR 挖出 236 个可执行任务（pre-fix 容器 + 开发者测试 + 1,567 个候选 PR 的淘汰理由台账），5 种 agent 配置 3,540 次尝试，resolve 率 43.9%-56.5%，最强 Claude Opus 5.5 为 56.5%。",
-        "SWT-Bench 失败学（arXiv 2611.13395）：对 AssertFlip / OpenHands 两个最高分开源框架做失败分类学，机械性与实现性失败占多数；工具生成方式影响 precision/coverage，模型推理能力影响「缺问题特定上下文」类失败——该分类学可反用作补 issue 描述的指引。"
+        "**符号执行 + coding agent 把「审查」变成「验证」**：1,156,044 行 Python、11 个 Web 应用上找到 1,050 个 bug，全部附可在未改动应用上复现的测试；CrossHair 对 5,406 个带契约函数的执行覆盖从 4.5% 升到 81%，其中 312 个 bug 是「同一 LLM 直接读代码」漏掉的（arXiv 2611.15596）。",
+        "**评测必须从「任务分」转向「应用级验收」**：JoyFrontBench 用验收契约判定，任务分 87.69% 而应用成功率仅 51.52%；Robo-SWE 从 28 个机器人仓库造出 236 个可执行任务（1,567 个候选 PR 的淘汰台账），最强 agent 56.5%。",
+        "**测试生成先修 harness 再换模型**：SWT-Bench 上失败以机械性与实现性为主，分类学可反用作补 issue 描述的字段清单。"
       ],
       "business": [
-        "Cube 生产经验（Cube Blog）：语义层是唯一可执行接口（Semantic SQL 的 MEASURE() 组合由语义层在正确聚合粒度解析并套权限），拒绝让 agent 写裸 warehouse SQL；工具必须区分「跑了没保存」「零行不等于完成」「部分结果要说明省略了什么」；查询只回前 100 行 + 总行数 + query ID 并显式声明截断。",
-        "同一篇给出的两个外部数据点：Anthropic 自助分析团队离线准确率一个月内从约 95% 漂到 65%，直到把 skill 文档维护当工程问题、与数据模型同步更新才止住；OpenAI 内部数据 agent 组合 schema、人工标注、代码抽取上下文、机构知识与记忆，部分自动刷新、部分靠人解释。",
-        "StateAlign（arXiv 2611.16304）：agent 在该索要信息/该检索/该拒绝时仍直接执行，即便 reasoning 已指出信息缺失；用「任务状态构建 + 配对状态 token 级对比」的 RL，Qwen3-8B 的 BFCL v4 多轮 45.5%→55.2%，no-tool hallucination 62.2%→56.1%。",
-        "表级表示（arXiv 2611.14697）：轻量 schema/文本指纹在「部分视图一致性」等四项指标上强于 TabPFN/ConTextTab 的池化状态；冻结编码器、只用 SCDM 分布对齐目标学「合成规则」，Spearman 从 0.04 提到 0.43-0.50（合成数据）——宽表要的是表级指纹，不是更大的表格模型。",
-        "知识图谱路线（TDS 11-15）：主张把静态 KG 变成会生长的 Context Graph，把决策、用户意图、操作历史写回图里，以 6 种 agentic GraphRAG 模式组织；与语义层路线互补：前者管判断的历史，后者管可执行的度量与权限。"
+        "**语义层是 agent 唯一可执行的接口**：Cube 五条生产经验——Semantic SQL 编译期强制权限、工具必须解释「发生了什么」、上下文按预算截断（前 100 行 + 总行数 + query ID）、业务上下文分层存放、语义模型按需刷新搜索；文中援引 Anthropic 自助分析准确率一个月 95%→65% 的维护性衰减。",
+        "**宽表要表级指纹，不要更大的表格模型**：12 种方法里轻量 schema/文本指纹最强，TabPFN/ConTextTab 池化后仍落后；改用 SCDM 学合成规则后 Spearman 0.04→0.43-0.50。**构造性拒绝可训练**：StateAlign 把 BFCL v4 多轮 45.5→55.2、no-tool hallucination 62.2→56.1。",
+        "**「语义层 vs 知识图谱」两条路线各有新进展**：TDS 提出 Context Graph（把决策/意图/历史写回图）；Cube v1.8.26 两个补丁正中 agent 查询高频路径——cubestore LIMIT 下推、tesseract 按 filter 成员的 join path 匹配预聚合。"
       ],
       "cross": [
         "ToolTurns（arXiv 2611.14925）：2,620 题 / 1,827 工具 / 11,004 个 API endpoint，对话以故意欠定的请求开头 + 2 个追问；9 个模型里最好的单请求 69.6%、完整对话 39.8%，所有模型追问成功率都低于首轮，对话质量 rubric 与任务成功率排序可以完全不同。",
@@ -23,8 +20,8 @@
         "guardscope（arXiv 2611.15223）：静态预测 + 内核级对账，量化运行期控制对 agent 15 条动作路径的覆盖，把动作分为 checked/bypassed/prevented；在 Microsoft agent governance toolkit、agentgateway 等真实控制上实验，代码开源。"
       ],
       "github": [
-        "px0（MIT，Go，1,953★）：为 AI 生成代码重写的 review workbench，单静态二进制、冷启动 <1ms、守护进程 20-30MB（VS Code 约 1,440MB），浏览器内审 PR、审未 push 的 commit、把对话锚定代码区间，并一键派发给 Claude Code / Codex / Cursor Agent / Aider / Goose。",
-        "Cube v1.8.26：cubestore 对无 ORDER BY/GROUP BY 的查询把 LIMIT 下推到 worker；tesseract 匹配预聚合时改用 filter 成员的 join path 比对——正对 agent 的「分页取数」与「按被 join 维度过滤」两种高频查询形态。"
+        "**AOCI-CODE**（1,922★，Go，FSL-1.1-MIT）：让 agent 为每个文件与每张库表写一条「职责/关系/契约/边界」，落成 Git 里的受治理纯文本索引，配 aligned 状态机与 9 个 MCP 工具；首次索引约 1 小时/20 万行，可中断续跑。",
+        "**Cube v1.8.26**：补丁级发布，但两条修复都落在 agent 生成的查询形态上（分页取数的 LIMIT 下推、join 维度过滤的预聚合匹配），说明语义层开放给 agent 后最脆弱的代码路径是成员解析/预聚合匹配/分页。"
       ]
     }
   },
@@ -204,7 +201,8 @@
               "text": "不使用模型自写测试，避免「自己判自己」。"
             }
           ]
-        }
+        },
+        "business": "领域评测数据集本身就是可售资产：带 provenance 台账与容器化判定的「领域 SWE-bench」可同时服务模型选型、agent 采购验收与内部培训，比通用榜单更贴近采购决策。"
       }
     },
     {
@@ -261,7 +259,8 @@
               "text": "按分类学补 issue 描述字段，可直接提升生成质量。"
             }
           ]
-        }
+        },
+        "business": "测试生成工具的定价应按「有效复现率」而非生成条数；把失败分类学产品化（自动分桶 + 补齐 issue 字段建议）是低成本的差异化功能。"
       }
     },
     {
@@ -452,7 +451,7 @@
       }
     },
     {
-      "tag": "github",
+      "tag": "business",
       "title": "Cube v1.8.26：两个小补丁，正对 agent 生成查询的两条高频路径",
       "date": "2026-11-15",
       "source": "GitHub",
@@ -510,7 +509,7 @@
       }
     },
     {
-      "tag": "blog",
+      "tag": "business",
       "title": "知识图谱正在变成「上下文图」：把决策、意图与操作历史写回图里",
       "date": "2026-11-15",
       "source": "Towards Data Science",
@@ -757,57 +756,62 @@
     },
     {
       "tag": "github",
-      "title": "review 成了瓶颈，于是有人把 IDE 重写成「审阅工作台」：Go 单二进制、冷启动 <1ms",
-      "date": "2026-11-06",
+      "title": "让 agent 把整个系统写成一份可 Git 审阅的索引：1,922★ 的 AOCI-CODE 把「代码+库表」认知做成受治理工件",
+      "date": "2026-11-13",
       "source": "GitHub",
-      "link": "https://github.com/px0-ai/px0",
-      "summary": "px0（MIT，Go，1,953★，2026-06 建仓、11-06 最近推送）把自己定位为「为 AI 生成代码准备的 review workbench + 速度优先 IDE」：单静态二进制，无 Electron/Node/CGO，冷启动 <1ms，守护进程约 20-30MB（含浏览器标签约 100-180MB，对比 VS Code 约 1,440MB），原生分词约 280 种语言。功能围绕审阅回路：在浏览器里审 GitHub/GitLab/Gitea/Forgejo/Bitbucket 的 PR（scoped merge-base diff、行内评论、agentic rebase 解冲突、squash/merge）、审尚未 push 的本地 commit、把对话锚定到代码区间并以 SSE 流式展示工具执行、批量行内编辑，一键派发给 Claude Code / Cursor Agent / OpenCode / Codex / Aider / Goose。",
-      "insight": "这与 11-14 GitHub 官方博客的数据（写码快 400%、PR 审查长 441%）互为印证：agent 时代工程效率的约束点从「写」转到「审」。px0 的架构选择值得借鉴——不做编辑器内核，只做「diff + 派发」这层薄壳，执行留给本地 harness（Claude Code/Codex/Aider），自己负责上下文定位与人机交接。对研发知识库的含义是：审阅工作台是知识沉淀的最佳埋点——行内评论可以沉淀为规则，再进 AGENTS.md。",
+      "link": "https://github.com/aoci-spec/aoci-code",
+      "summary": "AOCI-CODE（Go，FSL-1.1-MIT，1,922★，2026-08 建仓、11-13 最近推送，v0.2.0-rc1）把自己定位成 coding agent 与软件系统之间的一层：由模型为每个被管理文件与每张库表写一条「这是什么、连着什么、什么不能坏」，落成项目内受治理的纯文本索引（aoci.txt 根 / aoci.meta.txt 标签字典与 FRAS 规则 / aoci.code.txt 代码条目 / aoci.database.txt 表级条目），随代码进 Git，可 diff、评审、回滚。首次建索引约每 20 万行代码 1 小时，分批执行、中断可续；运行时只读源码与库表目录（MySQL 5.7.6+、PostgreSQL、openGauss 6.0.5，MariaDB 不支持），不碰业务数据、不出网、凭据只按环境变量名引用。工作流三阶段：受治理地建索引 → 动手前先读 Whole-Index → 代码与测试稳定后被 MCP 工作流要求把受影响条目更新回 aligned 状态；另配 CodeGraph（符号与调用图）做精确取码，索引管「懂系统」，图管「取代码」。",
+      "insight": "这正是「研发知识库」从 RAG 走向「受治理工件」的形态：索引不是一次性摘要，而是带状态（aligned/drift）、带作者规则、能被 git blame 的产物；「动手前先读」把上下文从检索变成加载。对业务线的迁移价值更大——表级索引（表/字段/约束）与代码索引同源同格式，等于给「宽表字段语义标注」提供了一个已被验证的载体：agent 写条目、Git 审阅、状态机保证不腐化，比散落在 wiki 的字段说明可靠得多。",
       "detail": {
-        "why": "AI 生成代码的瓶颈在人工审阅，而主流 IDE 是为「写」优化的重客户端；把审阅单独产品化是这一年的结构性变化。",
-        "mechanism": "单二进制 + 浏览器前端 + 原生分词，把启动与内存成本压到可忽略；协议层面通过派发对接多个本地 CLI agent，避免重造 agent 能力。",
-        "deep": "「派发到本地 harness」这一设计比「内置 AI」更稳：模型与 harness 迭代极快，把执行外包给专门工具，产品只守住 diff 呈现、上下文锚定与审查记录，衰减最慢。",
-        "apply": "不必替换 IDE；把「review 工作台 + 派发本地 CLI agent」作为人机分工默认形态，把行内评论结构化为规则来源。",
-        "caveats": "项目新（2026-06 建仓），长期维护与生态未知；超大 monorepo 的索引成本未公开验证；星标增长快但企业采用证据不足。",
-        "business": "「AI 代码审阅」的产品形态正从「AI 帮你评论」转向「让人审得更快的壳」——后者更贴近付费意愿，也更容易与既有 CI 共存。",
+        "why": "研发知识库普遍停在「向量检索 + 片段召回」，条目无归属、无状态、无法审阅，几个月后就与代码漂移。AOCI-CODE 把「认知」当代码资产治理，直接把漂移问题变成状态机问题。",
+        "mechanism": "模型以 index 角色为每个 managed object 写条目（职责、强关系、公开契约、事务边界、兼容性约束）；MCP 服务器（9 个工具）治理写入范围与条目格式；scan 的文件清单取自 Git，因此索引文件必须入库；三阶段工作流在「验证过的变更」之后才要求更新条目。",
+        "deep": "关键设计是「索引与图分工」：Whole-Index 负责一次读懂的全局认知（省掉反复搜索），CodeGraph 负责任务中的精确源码与调用路径。两者叠加相当于把上下文预算花在稳定认知上、把检索留给具体任务——与今天 Cube 那篇 harness 经验里的「上下文是预算」是同一约束的两种解法。",
+        "apply": "自建研发知识库时，把「每文件/每表一条目 + 状态机 + Git 审阅」作为最小骨架：条目模板固定五段（职责/关系/契约/边界/禁改），CI 检查 aligned 状态，PR 必须更新受影响条目；数据库侧先做表级索引，再谈字段级。",
+        "caveats": "首次索引成本高（约 1 小时/20 万行），大仓需分批与续跑；FSL-1.1 有商用限制（非纯 OSI 许可）；模型撰写的条目仍有幻觉风险，需人工评审入口；数据库仅覆盖 MySQL/PostgreSQL/openGauss。",
+        "business": "「认知资产化」是可售形态：索引可迁移、可审计、可交接，天然适合作为咨询交付物或团队交接件；对工具厂商，卖「索引维护的治理协议」比卖「再一个 RAG」更难被替代。",
         "sources": [
           {
-            "url": "https://github.com/px0-ai/px0",
-            "title": "px0 — review workbench & speed-first IDE for AI-generated code (GitHub)"
+            "url": "https://github.com/aoci-spec/aoci-code",
+            "title": "aoci-spec/aoci-code — AOCI-CODE: persistent, Git-versioned codebase + schema cognition index for coding agents (GitHub README)"
           }
         ],
         "diagram": {
-          "title": "审阅工作台与本地 harness 的分工",
+          "title": "索引作为受治理工件",
           "flow": [
             {
-              "label": "AI 生成的改动",
-              "sub": "PR / 未 push 的 commit",
-              "type": "frontend"
+              "label": "源码 + 库表目录",
+              "sub": "只读 / 不出网",
+              "type": "database"
             },
             {
-              "label": "px0 diff 工作台",
-              "sub": "merge-base 范围 + 行内评论",
+              "label": "模型写条目",
+              "sub": "每文件/每表一条",
               "type": "backend"
             },
             {
-              "label": "派发本地 CLI agent",
-              "sub": "Claude Code / Codex / Aider / Goose",
-              "type": "external"
+              "label": "MCP 治理写入",
+              "sub": "9 个工具 / managed scope",
+              "type": "security"
             },
             {
-              "label": "规则沉淀",
-              "sub": "评论 → AGENTS.md",
-              "type": "security"
+              "label": "Git 版本化索引",
+              "sub": "diff / review / rollback",
+              "type": "cloud"
+            },
+            {
+              "label": "aligned 状态机",
+              "sub": "改动后必须回写",
+              "type": "frontend"
             }
           ],
           "notes": [
             {
-              "label": "薄壳更稳",
-              "text": "不做编辑器内核，只守 diff 呈现与上下文锚定，衰减最慢。"
+              "label": "读在前，做在后",
+              "text": "agent 先读 Whole-Index 再动手，把「检索」变成「加载」，上下文预算花在稳定认知上。"
             },
             {
-              "label": "成本对比",
-              "text": "守护进程 20-30MB vs VS Code 约 1,440MB，冷启动 <1ms。"
+              "label": "与 CodeGraph 分工",
+              "text": "索引管全局理解，符号调用图管精确取码，避免把两者混成一个检索器。"
             }
           ]
         }
