@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI for Business 领域每日晨报</title>
+  <style>
+    :root {
+      --bg: #f5f7fa;
+            --card: #ffffff;
+            --border: #d6dde8;
+            --border-strong: #adbac9;
+            --text: #111827;
+            --muted: #4b5563;
+            --accent: #2563eb;
+            --accent-soft: #dbeafe;
+            --accent2: #059669;
+            --accent2-soft: #d1fae5;
+            --warn: #b45309;
+            --warn-soft: #fef3c7;
+            --red: #dc2626;
+            --red-soft: #fee2e2;
+            --shadow: 0 1px 3px rgba(15,23,42,0.06), 0 1px 2px rgba(15,23,42,0.04);
+            --shadow-hover: 0 10px 25px -5px rgba(15,23,42,0.1), 0 8px 10px -6px rgba(15,23,42,0.05);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+      padding: 20px;
+      max-width: 920px;
+      margin: 0 auto;
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    /* 长英文标识符/URL 在移动端强制换行，避免撑破卡片 */
+    p, li, h1, h2, h3, h4, .summary, .insight, .snap-title, .snap-points li,
+    .modal-sec p, .modal-body, .detail-block, .item, .snapshot, .snapshot-summary {
+      overflow-wrap: break-word;
+      word-break: break-word;
+    }
+    header {
+      text-align: center;
+      padding: 30px 0 16px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+    header h1 {
+      font-size: 1.8em;
+      color: var(--text);
+      letter-spacing: -0.02em;
+    }
+    header h1 .grad {
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    header .date { color: var(--muted); margin-top: 8px; font-size: 0.95em; }
+    .archive-link {
+      display: inline-block; margin-top: 12px; color: var(--accent); text-decoration: none;
+      font-size: 0.85em; border: 1px solid var(--border-strong); background: var(--card);
+      padding: 5px 14px; border-radius: 20px; box-shadow: var(--shadow);
+      transition: all .15s;
+    }
+    .archive-link:hover { border-color: var(--accent); background: var(--accent-soft); }
+
+    /* 今日速览（结构化，按来源分类） */
+    .snapshot {
+      background: linear-gradient(135deg, var(--accent-soft), var(--accent2-soft));
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 22px;
+      margin-bottom: 28px;
+      box-shadow: var(--shadow);
+    }
+    .snapshot-summary {
+      font-size: 0.98em;
+      color: var(--text);
+      margin-bottom: 16px;
+      padding-bottom: 14px;
+      border-bottom: 1px dashed var(--border-strong);
+    }
+    .snapshot-summary strong { color: var(--accent); }
+    .snapshot-groups { display: flex; flex-direction: column; gap: 10px; }
+    .snap-group {
+      display: flex;
+      gap: 12px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      box-shadow: var(--shadow);
+    }
+    .snap-bar { width: 5px; border-radius: 3px; flex-shrink: 0; }
+    .snap-bar-paper { background: var(--accent); }
+    .snap-bar-github { background: var(--accent2); }
+    .snap-bar-product { background: var(--warn); }
+    .snap-bar-blog { background: var(--red); }
+    .snap-body { flex: 1; }
+    .snap-title {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 0.85em; font-weight: 700; color: var(--text);
+      margin-bottom: 6px;
+    }
+    .snap-title .dot { width: 8px; height: 8px; border-radius: 50%; }
+    .dot-paper { background: var(--accent); }
+    .dot-github { background: var(--accent2); }
+    .dot-product { background: var(--warn); }
+    .dot-blog { background: var(--red); }
+    .snap-title .badge {
+      font-size: 0.7em; font-weight: 600;
+      background: var(--bg); border: 1px solid var(--border-strong);
+      color: var(--muted); padding: 1px 8px; border-radius: 20px;
+    }
+    .snap-points { list-style: none; padding: 0; margin: 0; }
+    .snap-points li {
+      font-size: 0.9em; color: var(--text);
+      padding: 3px 0 3px 18px;
+      position: relative;
+    }
+    .snap-points li::before {
+      content: "▸";
+      position: absolute; left: 2px;
+      color: var(--accent);
+    }
+
+    /* 分类区块 */
+    .section { margin-bottom: 30px; }
+    .section-head {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 4px; margin-bottom: 14px;
+      border-bottom: 2px solid var(--border);
+    }
+    .section-head .bar { width: 6px; height: 22px; border-radius: 3px; }
+    .section-head h2 { font-size: 1.15em; color: var(--text); flex: 1; }
+    .section-head .count { font-size: 0.8em; color: var(--muted); background: var(--card); border: 1px solid var(--border); padding: 2px 10px; border-radius: 20px; }
+    .bar-paper { background: var(--accent); }
+    .bar-github { background: var(--accent2); }
+    .bar-product { background: var(--warn); }
+    .bar-blog { background: var(--red); }
+
+    .item {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-bottom: 14px;
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      transition: border-color .2s, transform .1s, box-shadow .2s;
+    }
+    .item:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+    .item:active { transform: scale(0.995); }
+    .item-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .tag {
+      display: inline-block;
+      font-size: 0.72em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-weight: 600;
+    }
+    .tag-paper { background: var(--accent-soft); color: var(--accent); }
+    .tag-github { background: var(--accent2-soft); color: var(--accent2); }
+    .tag-product { background: var(--warn-soft); color: var(--warn); }
+    .tag-blog { background: var(--red-soft); color: var(--red); }
+    .detail-hint { font-size: 0.78em; color: var(--accent); opacity: .8; }
+    .item h3 { font-size: 1.1em; margin-bottom: 8px; }
+    .item h3 a { color: var(--text); text-decoration: none; }
+    .item h3 a:hover { color: var(--accent); }
+    .item .meta { color: var(--muted); font-size: 0.82em; margin-bottom: 10px; }
+    .item .summary { font-size: 0.95em; margin-bottom: 10px; color: var(--text); }
+    .item .insight {
+      background: var(--accent-soft);
+      border-left: 3px solid var(--accent);
+      padding: 8px 12px;
+      border-radius: 0 8px 8px 0;
+      font-size: 0.92em;
+      color: var(--text);
+    }
+    .item .insight strong { color: var(--accent); }
+
+    /* ===== 详情弹层（浅色） ===== */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(30,41,59,0.5);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      overflow-y: auto;
+      padding: 30px 20px;
+    }
+    .modal.show { display: block; }
+    .modal-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 32px 36px;
+      position: relative;
+      box-shadow: var(--shadow-hover);
+      animation: pop .18s ease;
+    }
+    @keyframes pop { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+    .modal-close {
+      position: absolute;
+      top: 14px; right: 16px;
+      background: none; border: none;
+      color: var(--muted);
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
+    }
+    .modal-close:hover { color: var(--text); background: var(--bg); }
+    .modal-content h2 {
+      font-size: 1.4em;
+      color: var(--text);
+      margin: 10px 0 6px;
+      line-height: 1.4;
+      padding-right: 30px;
+    }
+    .modal-content .meta { color: var(--muted); font-size: 0.85em; margin-bottom: 18px; }
+    .modal-body { margin-top: 8px; }
+    .modal-sec {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 18px;
+      margin-bottom: 14px;
+    }
+    .modal-sec h4 { font-size: 0.95em; color: var(--accent); margin-bottom: 8px; }
+    .modal-sec p { font-size: 0.93em; color: var(--text); }
+    .modal-sources { background: var(--bg); }
+    .modal-business { background: var(--warn-soft); }
+    .modal-business h4 { color: var(--warn); }
+    .sources-list { list-style: none; padding: 0; margin: 0; }
+    .sources-list li { font-size: 0.88em; color: var(--text); margin-bottom: 6px; padding-left: 4px; }
+    .src-id { color: var(--accent); font-weight: 600; margin-right: 6px; }
+    .src-link { color: var(--accent); text-decoration: none; word-break: break-all; }
+    .src-link:hover { text-decoration: underline; }
+    .diagram-box {
+      background: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      overflow-x: auto;
+      position: relative;
+    }
+    .diagram-svg svg { display: block; }
+    .diagram-zoom {
+      position: absolute;
+      top: 8px; right: 8px;
+      background: var(--accent-soft);
+      color: var(--accent);
+      border: 1px solid var(--border-strong);
+      border-radius: 8px;
+      padding: 4px 10px;
+      font-size: 0.82em;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+      z-index: 5;
+    }
+    .diagram-zoom:hover { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+    /* ===== 架构图放大 lightbox ===== */
+    .diagram-lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(15,23,42,0.85);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      overflow: auto;
+      padding: 30px;
+    }
+    .diagram-lightbox.show { display: block; }
+    .diagram-lightbox-inner {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      position: relative;
+    }
+    .diagram-lightbox-inner .lb-head {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 14px;
+    }
+    .diagram-lightbox-inner .lb-head h3 { font-size: 1.1em; color: var(--text); }
+    .diagram-lightbox-inner .lb-tools { display: flex; align-items: center; gap: 8px; }
+    .lb-btn {
+      background: var(--accent-soft); color: var(--accent);
+      border: 1px solid var(--border-strong); border-radius: 8px;
+      padding: 5px 12px; font-size: 0.85em; font-weight: 600; cursor: pointer;
+      transition: all .15s;
+    }
+    .lb-btn:hover { background: var(--accent); color: #fff; }
+    .lb-close {
+      background: none; border: none; color: var(--muted);
+      font-size: 26px; line-height: 1; cursor: pointer; padding: 4px 8px; border-radius: 8px;
+    }
+    .lb-close:hover { color: var(--text); background: var(--bg); }
+    .diagram-lightbox-inner .lb-svg {
+      overflow: auto;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+    }
+    .diagram-lightbox-inner .lb-svg svg {
+      max-width: 100%;
+      height: auto;
+      transition: transform .15s ease;
+      transform-origin: center center;
+    }
+    .diagram-lightbox-inner .lb-svg svg.zoomed { transform: scale(1.6); cursor: grab; }
+    .diagram-lightbox-inner .lb-svg svg.zoomed:active { cursor: grabbing; }
+    .diagram-lightbox-inner .lb-tip { text-align: center; color: var(--muted); font-size: 0.8em; margin-top: 10px; }
+    .modal-foot {
+      margin-top: 18px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+    .modal-link { color: var(--accent); font-size: 0.88em; text-decoration: none; word-break: break-all; }
+    .modal-link:hover { text-decoration: underline; }
+
+    footer {
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.8em;
+      padding: 30px 0 10px;
+      border-top: 1px solid var(--border);
+      margin-top: 30px;
+    }
+    .empty { color: var(--muted); text-align: center; padding: 40px; }
+    /* ===== 反馈按钮 + 提交按钮 ===== */
+    .feedback-fab {
+      position: fixed; bottom: 24px; right: 24px;
+      width: 52px; height: 52px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none; color: #fff; font-size: 24px; cursor: pointer;
+      box-shadow: var(--shadow-hover);
+      z-index: 9000; transition: transform .15s;
+    }
+    .feedback-fab:hover { transform: scale(1.1); }
+    .modal-submit {
+      width: 100%; padding: 12px; border: none; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; font-size: 1em; font-weight: 600; cursor: pointer;
+    }
+    .modal-submit:hover { opacity: 0.9; }
+    @media (max-width: 600px) {
+      .modal-content { padding: 24px 18px; }
+      body { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🤖 <span class="grad">AI for Business</span> 每日晨报</h1>
+    <div class="date">业务知识库 · 业务语义理解 · API 精确查询 | 2026-11-17</div>
+    <a class="archive-link" href="archive/index.html">📚 历史晨报归档</a>
+  </header>
+
+  <div class="snapshot"><div class="snapshot-summary"><strong>📌 今日速览</strong><br>今日研发线最值得看的是“把不确定性关进确定性笼子”：HerAgent 用语义 setup block 统一环境搭建的断点/回滚，ProdPilot 用 50 条规则 + checker 门禁修 vibe-coded 项目的上线缺陷（88% 规则无需模型生成），行为轨迹研究则证明同类解决率的 agent 行为差异极大、scaffold 会系统性改变行为。业务线出现三条互补路线：Bridge 用列歧义图做数据库接地消歧（+11.60% EX），MEM-SQL 把历史查询当记忆（37.1%→50.0%，token -76.6%），LuthorSQL 用 7B 单次前向做“System 1 门控”（BIRD hidden 68.03%，成本 -33.3%），同时揭示 benchmark 污染对 text2SQL 评测的真实威胁。交叉线是 harness 与上下文工程的可学习化（ModHarness-RL、CarryOn），GitHub 侧 hygieia 把“语义层体检/静默错误率”做成了可离线运行的 CLI 与 agent skill，给“语义层 vs 知识图谱”之争提供了一个可量化的裁判工具。</div><div class="snapshot-groups"><div class="snap-group"><span class="snap-bar snap-bar-github"></span><div class="snap-body"><div class="snap-title"><span class="dot dot-github"></span>🐙 开源项目<span class="badge">4 项</span></div><ul class="snap-points"><li>【语义层体检 CLI】hygieia（106★，MIT，Python，仅依赖 pyyaml + sqlglot 做 AST 级 SQL 解析，全离线）提供 audit / eval / rot / report 四条命令，核心指标是“静默错误率”（给出错误数字但既不报错也不澄清）；在 Apache Ossie 公开 TPC-DS 语义模型上，price、location、profit 三个日常词各自指向两个定义，audit 在跑任何查询前就报出三处同义词冲突。</li><li>【两臂评测与漂移注入】内置 ecom fixture（6 张表、20 个中文问题）live run（2026-11-06，deepseek-v4-flash）：无语义层 16/20 正确、4/20 静默错误；有语义层 19/20、1/20。rot 注入列重命名、定义篡改、孤儿指标、过期别名、来源新鲜度冲突五类漂移后重跑 audit，命中 6 个新增问题；manifest 固定 prompt/问题集/语料/语义层哈希与模型，哈希不一致时 report 拒绝承认两次运行可比，并可输出 SARIF 2.1.0 + --fail-on 用于 CI 门禁。</li><li>【语义元数据标准化在推进】apache/ossie（2,732★，Apache-2.0，2026-11-16 仍在更新）定位为跨 analytics/AI/BI 交换语义元数据的行业规范；WrenAI 0.17 起已提供 ossie 的 import/export，hygieia 也以它的 TPC-DS 模型做公开验证——语义层正在形成“可移植的中间表示”，这对自建业务语义层是重要的解耦信号。</li><li>【Malloy 路线可自建】mprove（340★，Apache-2.0，TypeScript）是带 Malloy 语义层的开源 BI，支持 Helm 与 docker-compose 部署；Malloy 把“语义即代码”写在建模层，适合与现有仓库/CI 流程一起管理。</li></ul></div></div></div></div>
+
+  <div class="section"><div class="section-head"><span class="bar bar-paper"></span><h2>🧪 研发线（AI for Engineering）</h2><span class="count">4 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-paper">🧪 研发线</span></div><h3><a href="https://arxiv.org/abs/2611.18443" target="_blank" rel="noopener">HerAgent：用语义 setup block 把 coding agent 的环境搭建变成可断点、可回滚的工程流程</a></h3><div class="meta">2026-11-13 · arXiv</div><div class="summary">HerAgent 指出既有环境搭建 agent 的进度控制粒度不对：单命令级太细，清不掉被污染的中间状态；整脚本级太粗，一失败就丢光全部进度。它提出“语义 setup block”作为唯一的进度控制抽象，同一抽象同时用于执行、校验、checkpoint、修复与回滚。作者在 4 个环境搭建数据集上与 6 个既有 agent 对比，setup 成功率全部提升，Installamatic-Bench 从 52.0% 到 85.0%，SetupBench 从 46.3% 到 70.4%，同时把搭建成本最多压低 94.5%。</div><div class="insight"><strong>🔍 技术视角：</strong>这是把“可复现性”当成 agent 的一等公民：block 边界既是回滚点也是验证单位，等于给环境搭建加了事务语义。对自建研发 agent 的意义在于——测试、调试、补丁验证都依赖干净环境，环境失败会被误判成模型能力不足，先修这一层收益比换模型高。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 458" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="458" fill="#f8fafc"/><rect width="900" height="458" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">语义 setup block 的执行 / 校验 / 回滚闭环</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Setup 脚本切块</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">语义完整的最小可验证单元</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Block 执行</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">依赖/服务/迁移</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">断言校验</text><text x="548.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">健康检查 + 可执行断言</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Checkpoint</text><text x="744.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">镜像层/文件系统快照</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">失败回滚</text><text x="450.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">只回到上一 block 边界</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">粒度选择</tspan>　单命令太细清不掉污染，整脚本太粗丢进度；block 是折中点。</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">收益</tspan>　Installamatic-Bench 52.0%→85.0%，SetupBench 46.3%→70.4%，成本最多降 94.5%。</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>coding agent 的 SWE 任务几乎都要先装依赖、配服务、跑迁移；这一步的失败会被上层 benchmark 记成“模型不会修 bug”。HerAgent 把失败定位到环境层，并给出可在自建流水线复刻的控制粒度。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>把安装脚本切成语义完整的 block（一个 block 对应一个可验证目标），每块执行后立即校验并落 checkpoint；失败时只回滚到上一个 block 边界，而不是整脚本重跑或单命令重试。修复动作也作用在 block 上，因此重试不会留下半装状态。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>论文的隐含结论是：agent 环境的熵主要来自“部分成功”。单命令粒度无法表达“这一组命令共同构成一个可验证状态”，整脚本粒度又无法保留已获得的进展。block 把一个连续过程离散化为可提交事务，这与数据库的 savepoint 思路同构。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>环境搭建是“AI 研发效能”里最容易被忽略的成本项：团队若把 agent 失败归因于模型，会持续买更贵的模型而收效甚微。把 setup 做成可断点流程，等于把不可控的试错成本转成可预算的镜像与存储成本。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>自建方案可先在 Docker 层做落地：把 setup 脚本按“依赖装完 / 服务起好 / 迁移完成 / 健康检查通过”切成 block，每块后写一个轻量快照（commit layer 或文件系统 diff），失败只回到最近 savepoint；再给每个 block 配一个可执行断言，让“成功”由断言而非退出码定义。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>block 的切分质量依赖人工或模型对项目结构的理解，切错会把一次失败放大成多次回滚；成本下降 94.5% 是相对基线而言，绝对开销与镜像存储仍需核算；论文未覆盖多机/分布式环境与带外部状态的数据库迁移。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2611.18443" target="_blank" rel="noopener" class="src-link">HerAgent: A Block-Level Checkpointing Harness for Coding-Agent Environment Setup</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2611.18443" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2611.18443</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-paper">🧪 研发线</span></div><h3><a href="https://arxiv.org/abs/2611.17381" target="_blank" rel="noopener">ProdPilot：50 条规则 + checker 门禁，88% 的上线缺陷修复不需要模型写代码</a></h3><div class="meta">2026-11-11 · arXiv</div><div class="summary">ProdPilot 是一个本地 MCP server，专门审计 vibe-coded 的 http/React 项目在首次部署时的运维缺陷：源码里的凭据、缺失的安全中间件、没有容器定义、没有健康端点、没有交付流水线。它把 50 条生产就绪规则按“修复需要什么”分类：28 条是固定模板，16 条用从项目抽取的值填充，只有 6 条需要 IDE agent 的模型来写，即 88.0% 的规则集不需要模型生成内容，而 499 个真实仓库中 93.5% 的违规落在这些类里。任何修复只有让“当初报出该规则的 checker 现在通过”才被接受；23 个样本项目的全链路运行中，模板与抽取式修复按原样应用后的通过率为 87.6% 与 95.0%，独立验证驳回了 237 条“已应用”修复中的 25 条。</div><div class="insight"><strong>🔍 技术视角：</strong>它给出了一个非常实用的架构原则：agent 系统里凡是能判定对错的环节，都应该从“生成”退化为“模板 + 抽取 + 校验”。模型只保留在真正需要判断的 12% 规则上，系统稳定性立刻从概率问题变成工程问题。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 458" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="458" fill="#f8fafc"/><rect width="900" height="458" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">规则分层 + checker 复验的修复闭环</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">MCP Server</text><text x="156.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">本地、无模型依赖</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">50 条规则审计</text><text x="352.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">凭据/中间件/容器/健康检查/CI</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">分层修复</text><text x="548.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">28 模板 + 16 抽取 + 6 模型</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Checker 复验</text><text x="744.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">通过才接受</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">部署 + 冒烟 + CI</text><text x="450.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">82 秒闭环</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">关键比例</tspan>　88.0% 规则无需模型；真实仓库 93.5% 违规落在模板/抽取类。</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">独立验证</tspan>　237 条自称修复中驳回 25 条，说明必须外部裁决。</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>vibe coding 的产出通常能跑 demo 但过不了第一次上线：这不是智力问题而是清单问题。ProdPilot 把清单变成可执行 checker，并把 MCP 当作分发通道，让同一个 server 被不同 IDE agent 复用。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>规则库按修复方式分层：模板类直接落文件，抽取类从项目里读端口、包管理器、环境变量名等填模板，判断类交给 IDE 模型；每层修复后回到原 checker 复验，形成“报错—修复—复验”的有界循环，超过轮次即拒绝。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>独立验证驳回 25/237（约 10.5%）说明“agent 自称已修复”不可信，必须由外部 checker 裁决；可部署性模型在 684 次真实部署上训练、留出集 0.909 ROC AUC，意味着“能不能上线”本身可以被预测，而不是靠试。ProdPilot 自身不跑模型，这让它可在离线与合规环境部署。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>这条路线直接对应“AI 交付质量”的商业卖点：能给出通过率、驳回率、可部署性 AUC 的服务，比只承诺“AI 写代码”的服务更容易被采购方审计；同时 MCP 分发让工具可以嵌进客户已有的 IDE，而不是替换它。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>自建研发流水线可复用同一模式：把 code review 的规则分成“可模板化 / 可抽取 / 需判断”三类，前两类交给确定性工具并写回归断言，第三类才进 LLM；所有修复一律以静态检查或测试通过为合并前提，且保留“驳回原因”作为评测集。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>规则集绑定 http/React 技术栈，换栈要重建规则；模板修复可能掩盖设计问题（例如补了健康端点但服务本身不可用）；82 秒部署是样本项目上的结果，含外部依赖的真实项目会显著更慢。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2611.17381" target="_blank" rel="noopener" class="src-link">ProdPilot: A Layered Model Context Protocol System for Automated Production Readiness and Deployment of Vibe-Coded Projects</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2611.17381" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2611.17381</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-paper">🧪 研发线</span></div><h3><a href="https://arxiv.org/abs/2611.17440" target="_blank" rel="noopener">14 万条轨迹的行为画像：解决率相同的 coding agent，做事方式可以完全不同</a></h3><div class="meta">2026-11-12 · arXiv</div><div class="summary">作者分析 143,209 条执行轨迹，覆盖 125 种 agent 配置、117 个不同模型，并用规则解析器把原始 trace 映射到仓库搜索、文件编辑、测试执行等高阶动作（在 500 个事件上与六模型共识标注做审计）。结论是：解决率相近的 agent 在探索、修改、验证上的行为分布可以差异很大；更关键的是，在完全不使用任务结果、token 数与工具名作为特征的情况下，聚合行为画像仍能把 agent stack 跨不相交仓库集与编程语言识别出来。进一步分析显示，scaffold 选择与 reasoning effort 会系统性改变搜索、编辑、测试行为。</div><div class="insight"><strong>🔍 技术视角：</strong>评测不该只报 pass@1：行为分布是比分数更稳的指纹，能用来做回归检测、模型替换评估和“为什么这次变差了”的定位。对自建研发知识库而言，这意味着可以把 agent 的探索路径沉淀成可对比的组织资产。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 458" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="458" fill="#f8fafc"/><rect width="900" height="458" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">从原始 trace 到可比较的行为画像</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">143,209 条轨迹</text><text x="156.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">125 配置 / 117 模型</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">规则解析器</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">归一为高阶动作</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">行为画像聚合</text><text x="548.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">搜索/编辑/测试模式</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">跨仓库检索匹配</text><text x="744.0" y="124" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">不用结果/token/工具名</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">scaffold 漂移检测</text><text x="450.0" y="252" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">回归与选型</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">核心发现</tspan>　同解决率、不同行为；scaffold 与 reasoning effort 系统性改变行为。</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">用途</tspan>　换模型/换 scaffold 的行为漂移告警与前置筛选。</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>团队换模型或换 scaffold 时，往往只看到成功率的小幅波动，却不知道行为已经整体漂移；这类漂移会带来成本、风险和可维护性的长期变化。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>先用规则解析器把异构接口的 trace 归一成动作标签，再对每个 agent 配置聚合出行为画像（搜索/编辑/测试的频次与顺序模式），最后做跨仓库、跨语言的检索匹配；解析器与标注全量公开。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>行为画像能跨仓库识别 stack，说明 scaffold 留下的“操作习惯”具有强辨识度，甚至强于任务内容；这对“scaffold 即产品”的判断是实证支持。论文也承认跨仓库设置下任务构成未被完全控制，属于该结论的主要限制。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>如果行为画像能稳定识别 scaffold，那么“agent 评测/可观测性”本身就是可产品化的基础设施——卖点不是排行榜，而是换模型时的风险可控性与回归证据。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>落地可做三件事：在 CI 里对 agent 行为分布做漂移告警（而不只测通过率）；用行为画像给候选 scaffold 做 A/B 前置筛选；把“测试执行占比过低”“编辑前不搜索”等模式设为质量门禁指标。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>规则解析器依赖动作可观测性，闭源 agent 的 trace 粒度可能不足以还原动作；117 个模型的配置矩阵不等于生产分布；行为与最终质量之间的因果链未建立。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2611.17440" target="_blank" rel="noopener" class="src-link">Interpreting Coding Agents Through Their Behavioral Trajectories</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2611.17440" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2611.17440</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-paper">🧪 研发线</span></div><h3><a href="https://arxiv.org/abs/2611.15159" target="_blank" rel="noopener">维护者眼中的 AI slop PR：2026 年 5 月见顶，多为 additive、极少合并、3 天内关闭</a></h3><div class="meta">2026-11-11 · arXiv</div><div class="summary">这篇实证研究只看被维护者明确标记为 slop 的 PR，用混合方法追踪其来源、量化体量、刻画特征并归纳标记/关闭理由。结果显示：维护者识别的 AI slop PR 在 2025 年中开始上升、2026 年 5 月达到峰值；这些 PR 大多是 additive（只加不改）、极少被 merge、通常在 3 天内被关闭；作者中仅 14% 主动披露使用了 AI，另有 1% 是在维护者要求后才披露；多数 PR 被关闭或标记时维护者并未给出理由，而编码后的理由从具体的构建失败一直到“看起来像 AI”这样的直觉判断。</div><div class="insight"><strong>🔍 技术视角：</strong>这是对“AI 提高贡献吞吐”叙事的一记反证：低成本生成把筛选成本转移给了维护者。对做 AI code review/质量门禁的团队，结论是可操作的——门禁要能判断“这次改动是否解决了一个真实存在的问题”，而不只是“代码是否语法正确”。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 330" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="330" fill="#f8fafc"/><rect width="900" height="330" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">AI slop PR 的识别与处置路径</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">低成本生成 PR</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">additive 为主</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">维护者初筛</text><text x="352.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">构建失败/无关改动/直觉</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">标记或关闭</text><text x="548.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">多无理由、3 天内</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">注意力成本转移</text><text x="744.0" y="124" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">评审成为瓶颈</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="178" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="188" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="206" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">时间线</tspan>　2025 年中上升，2026 年 5 月峰值。</text><rect x="30" y="230" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="248" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">披露</tspan>　14% 主动披露，1% 被要求后披露。</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>AI 生成 PR 的边际成本接近零，评审的边际成本不变，于是瓶颈从写代码迁移到判断意图；理解这一迁移才能设计对的工具。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>以维护者标记为锚点而非模型判定，避免“研究者定义 slop”的偏差；再对 PR 做开放编码，归纳体积、改动类型、存活时间、披露行为与关闭理由。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>3 天内关闭、极少 merge 说明维护者识别效率其实不低，真正被消耗的是注意力与情绪劳动；14% 披露率意味着“AI 参与”在多数情况下不可见，review 工具若想拦截，只能依赖行为与内容特征（例如无 issue 关联、additive-only、无测试）。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>对开源项目与企业内源平台，这意味着评审容量会成为新瓶颈，围绕“意图验证 / 贡献者信誉 / 变更影响面”的工具会比“更强的代码生成”更有付费理由。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>自建 review 门禁可加三条低成本规则：PR 是否关联 issue/复现步骤、是否只增不改且无测试、是否触碰与描述无关的文件；把“意图证据缺失”作为需人工确认的软门禁，而非直接拒绝。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>样本是“被标记”的 PR，未覆盖未被发现的 slop，因此是下界；FOSS 生态的激励结构与公司内部仓库不同；研究自述处于现象早期阶段。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2611.15159" target="_blank" rel="noopener" class="src-link">An Empirical Study of Maintainer-Identified AI Slop Pull Requests in Free and Open Source Software Projects</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2611.15159" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2611.15159</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-product"></span><h2>💼 业务线（AI for Business）</h2><span class="count">5 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-product">💼 业务线</span></div><h3><a href="https://arxiv.org/abs/2611.17770" target="_blank" rel="noopener">Bridge：用列歧义图做“数据库接地”的交互式消歧，BIRD-dev 去掉 evidence 仍 +11.60% EX</a></h3><div class="meta">2026-11-13 · arXiv</div><div class="summary">Bridge 观察到 text-to-SQL 的多数歧义错误其实来自“列接地”歧义，而既有交互式澄清方法过度依赖 LLM 参数知识做临时推理，效果有限且成本高。它在离线阶段用互补的数据库接地信号筛出潜在歧义列对、再用 LLM 验证，构建 Column Ambiguity Graph；在线阶段用上一条错误 SQL 中出现的列与值作锚点，分别从歧义图和离线值相似度索引里检索替代项，整合剪枝后再做歧义检测。在去掉 benchmark 自带 evidence 的 BIRD-dev 上，同等 LLM 成本下执行准确率比最强基线高 11.60%，最终 SQL 的列使用 recall 与 precision 分别提升 5.25% 与 12.37%。</div><div class="insight"><strong>🔍 技术视角：</strong>这是把“歧义知识”从模型记忆搬到数据库侧的可查资产：离线蒸馏一次、在线只做检索。对用户“通过高业务含义 API 查数”的场景尤其对口——宽表 API 的字段同义/近义冲突正是列歧义图要解决的问题。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 458" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="458" fill="#f8fafc"/><rect width="900" height="458" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">离线歧义图 + 在线锚点检索的消歧流程</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Schema/统计信号</text><text x="156.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">库内接地</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">候选列对 + LLM 验证</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">Column Ambiguity Graph</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">错误 SQL 作锚点</text><text x="548.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">列与值</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">歧义图 + 值相似索引</text><text x="744.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">检索替代项</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">剪枝后澄清</text><text x="450.0" y="252" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">迭代协议</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">效果</tspan>　BIRD-dev 无 evidence：EX +11.60%，列 recall +5.25%、precision +12.37%。</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">成本</tspan>　与最强基线 LLM 成本相当。</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>业务问句天然欠定（“利润”“价格”“活跃客户”），直接让模型猜会稳定地猜错且不报错；Bridge 把“哪些列容易混”变成可枚举、可验证的图结构。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>离线：用数据库统计、schema 约束等接地信号生成候选列对，LLM 只做验证，避免自由生成；在线：从上一条错误 SQL 提取列/值锚点，检索歧义图中的替代列与相似值，合并后剪枝，再交给既有迭代协议做澄清。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>关键在于“锚点来自错误预测”而非来自问句——这让检索有明确方向，避免在整张 schema 上做组合爆炸。去掉 benchmark evidence 仍然领先，说明收益不是靠数据集给的提示，而是来自数据库自身的结构信号。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>业务问数的信任问题往往不是“答不出”而是“答错不报错”。把歧义显式化，可以直接变成产品能力：回答附带口径候选与澄清请求，比提高模型参数更能降低静默错误。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>对宽表 API，可先离线挖三类歧义：同义字段（revenue/net_revenue/gmv）、同名不同粒度（amount 含税与否）、跨实体同名列（customer_id vs order_customer_id）；建成图后，把“命中歧义即触发澄清或返回候选口径”写进工具层，而不是交给模型自由决定。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>歧义图是库级离线资产，schema 或口径变更后必须重建；值相似度索引对高基数、脏数据敏感；论文在 BIRD-dev 上评测，多轮澄清在真实用户场景的接受度未量化。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2611.17770" target="_blank" rel="noopener" class="src-link">Bridge: Database-Grounded Interactive Disambiguation for Text-to-SQL</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2611.17770" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2611.17770</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-product">💼 业务线</span></div><h3><a href="https://arxiv.org/abs/2611.18338" target="_blank" rel="noopener">MEM-SQL / HARE：把历史已验证查询当记忆，EX 37.1%→50.0%，token 降 76.6%</a></h3><div class="meta">2026-11-13 · arXiv</div><div class="summary">作者指出主流 benchmark 把每个问题当独立样本，忽略了同一数据库上先前的查询可以为新问题提供 join 与计算。为此构建 HARE：1,600 条请求来自 823 条已验证查询、覆盖四个数据集，逐条标注“保留哪些组件、需要哪些编辑”，区分整查询适配与部分复用。MEM-SQL 存储整查询模板、可复用 SQL 块以及领域概念到 schema 元素的映射，按阈值逐层匹配命中；On-demand Schema Linking 只在无层命中或生成器判断证据不足时才查 schema。六个模型上平均 EX 从 37.1%（无历史直生成）升到 50.0%，平均输入 token 少 76.6%、时延低 68.8%。</div><div class="insight"><strong>🔍 技术视角：</strong>这是“把组织里已经验证过的查询变成资产”的实证版本：收益不只来自检索，而来自分层复用 + 何时查 schema 的决策。它同时暴露了天花板——需要复用多条查询、且组件要放进新结构时，准确率会明显掉。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 458" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="458" fill="#f8fafc"/><rect width="900" height="458" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">分层记忆 + 按需 schema linking</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">新问题</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">自然语言</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">整查询模板层</text><text x="352.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">阈值匹配</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">SQL 块层</text><text x="548.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">部分复用</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">概念→schema 映射</text><text x="744.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">口径对齐</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">OSL 兜底</text><text x="450.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">证据不足才查 schema</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">收益</tspan>　EX 37.1%→50.0%，token -76.6%，时延 -68.8%。</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">天花板</tspan>　多查询复用 56.7%→29.7%，难在结构合成。</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>业务分析天然是连续的：昨天的口径今天还会用。把每次生成都从零开始，既贵又不一致，还会让同一个人两次得到不同数字。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>三层记忆：整查询模板、可复用 SQL 块、领域概念到 schema 的映射；每层有匹配阈值，只有该层所有需求都有足够匹配时才使用；OSL 作为兜底，按需触发 schema 检索以省 token。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>token 降 76.6% 与延迟降 68.8% 说明历史记忆主要是“省上下文”的机制，而准确率提升来自口径一致。失败集中区（多查询复用 56.7%→29.7%）指向真正的难点：结构合成，而不是片段检索。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>这条路线把“数据一致性”变成可交付能力：同一指标永远走同一模板，天然可审计。对多团队共用的指标体系，模板库比提示词工程更接近可治理的资产。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>在自建数据 agent 里可先落“查询模板库 + 口径字典”两件资产：把每次人工确认过的查询按指标/维度打标入库，生成时先做模板匹配，命中后只允许受限编辑（换时间窗、换维度值），并对“需要拼接多个模板”的请求强制走澄清或人工复核。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>HARE 的请求由固定查询池派生，真实问句分布更散；模板复用在 schema 演进后会失效，需要版本化与失效检测；论文未评估跨库迁移。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2611.18338" target="_blank" rel="noopener" class="src-link">MEM-SQL: Memory-Empowered Text-to-SQL</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2611.18338" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2611.18338</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-product">💼 业务线</span></div><h3><a href="https://arxiv.org/abs/2611.17780" target="_blank" rel="noopener">LuthorSQL：7B 单次前向做 System 1 门控，本地答近一半问题、API 成本降 33.3%</a></h3><div class="meta">2026-11-13 · arXiv</div><div class="summary">前沿 LLM agent 走工具查库是当前最准的 text-to-SQL 形态，但每查询调用托管模型既慢又贵、还把敏感查询暴露给外部 API——论文给的量级是 Claude Opus 5.5 每天 1 万次查询、按标价一年超过 7 万美元。LuthorSQL 是一个 7B 非自回归模型：单次前向在有界语法上预测 query plan 的槽位分数，编译并执行最多 32 个候选计划，再由训练过的 validator 选答案。它单独在 BIRD hidden test 上达到 68.03% 执行准确率、单卡 0.84 秒/题，8-bit 量化后 9GB 内保持精度，零样本迁移到 Snowflake、BigQuery、MySQL、PostgreSQL、DuckDB 与原生 SQLite 差距在 3.1 点内；与 Claude Opus 5.5 组成预注册置信级联后，本地回答近一半问题，同精度下 API 成本降 33.3%。</div><div class="insight"><strong>🔍 技术视角：</strong>“小模型门控 + 大模型兜底”在 text-to-SQL 上是可量化的成本结构，而不是玄学：把分布内的高频问题留在本地，只把低置信长尾送出去。更值得注意的是污染探针——公开 benchmark 的分数里混着记忆，自建评测必须私有化。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 458" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="458" fill="#f8fafc"/><rect width="900" height="458" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">System 1 本地门控 + System 2 云端兜底</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">用户问句</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">自然语言</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">7B 非自回归</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">槽位打分 / 单次前向</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">候选计划执行</text><text x="548.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">≤32 个 + validator</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">置信级联</text><text x="744.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">低置信升级</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">托管大模型</text><text x="450.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">仅长尾 / 敏感度分级</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">效率</tspan>　68.03% EX、0.84s/题、8-bit 9GB；跨库 3.1 点内。</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">成本</tspan>　本地答近一半，API 成本 -33.3%；污染探针显示 gold query 逐字复现率 48–92%。</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>企业级问数的主要约束不是峰值准确率，而是单位查询成本、时延与数据主权；把每次查询都送托管模型，三个约束同时恶化。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>非自回归结构避免逐 token 生成：一次前向给出槽位分布，用有界语法约束生成合法计划，执行多个候选并用 validator 打分选择；置信度不足时升级到更强的 System 2 agent，形成级联。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>非自回归 + 执行验证的组合把“生成”转成“排序 + 执行筛选”，天然适合结构化输出；0.84s/题与 9GB 显存意味着可与其他服务共卡。污染探针（Opus 在无 schema 下逐字复现 48–92% gold query，但重命名 schema 与截止后数据库上仍 95.6–97.4%）说明模型能力与记忆可以分离测量。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>这直接给出自建 vs SaaS 的成本论证模板：本地门控 + 少量云端兜底，可以在不牺牲准确率的前提下把 API 账单压下来，同时把敏感查询留在内网——对数据主权敏感的行业是硬需求。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>落地路径：先在私有库上做“本地小模型能否覆盖高频问句”的分布分析，把 40–60% 的查询留在本地；级联阈值用验证集校准并预注册，避免上线后调参污染评估；同时用重命名 schema 与时间切分重建内部评测集。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>68.03% 是 BIRD hidden 上的单模型数字，复杂多表/多轮问句仍依赖 System 2；有界语法限制了非常规 SQL（窗口函数、递归 CTE）的表达；成本测算基于标价，实际受缓存与批量影响。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2611.17780" target="_blank" rel="noopener" class="src-link">LuthorSQL: A One-Pass Text-to-SQL Model as System 1 for a Slower LLM Agent</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2611.17780" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2611.17780</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-product">💼 业务线</span></div><h3><a href="https://arxiv.org/abs/2611.18315" target="_blank" rel="noopener">MoREGT：按列元数据路由专家，并用只读 schema 的 LLM agent 造派生列</a></h3><div class="meta">2026-11-13 · arXiv</div><div class="summary">跨平台迁移关系型预测模型的难点在于 schema 各不相同，而近期 relational foundation model 的进步主要靠扩大预训练语料。作者提出 MoREGT：把行与单元格都表示为 token，把行的 log-age 与外键关系名加入 attention，并按列元数据（而非取值）把单元格与行路由到不同专家。配套一个 label-blind 的 LLM agent 读目标库的 schema 与列统计，生成经过验证的单行派生列，不接触标签或模型分数。在 21 个 RelBench 任务、六个数据库 leave-one-database-out 预训练下，MoREGT 比同数据预训练的 Relational Transformer 高 2.25 点平均 AUROC、低 5.83 点平均 nMAE；agent 派生列把平均 AUROC 从 78.45 提到 79.63、nMAE 从 27.91 降到 26.98，在对比方法中两项均值最高，包括预训练数据库数量约为其 400 倍的 RT-J。</div><div class="insight"><strong>🔍 技术视角：</strong>两条可迁移的经验：一是“列元数据就是语义”，用元数据做路由比堆语料更有效；二是让 LLM 只做有验证的 schema 级特征工程（造派生列），不碰标签，天然可审计。这正好是业务语义层该干的活。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 458" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="458" fill="#f8fafc"/><rect width="900" height="458" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">元数据路由 + schema 级派生列</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">目标库 schema/统计</text><text x="156.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">只读、无标签</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">LLM agent 派生列</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">单行、经验证</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">行/单元格 token 化</text><text x="548.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">+ 时间与 FK 信号</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">按列元数据路由 MoE</text><text x="744.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">语义角色专家</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">跨库迁移预测</text><text x="450.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">21 个 RelBench 任务</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">增益</tspan>　+2.25 AUROC / -5.83 nMAE；派生列 78.45→79.63。</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">对比</tspan>　超过预训练库数量约 400 倍的 RT-J。</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>业务库之间表结构差异大，靠“更多库预训练”成本高且不可控；如果模型能按列语义分流，知识迁移就不再依赖同构 schema。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>cell 与 row 双粒度 token 化；attention 里显式注入时间与 FK 关系信息；MoE 路由键是列元数据（名称/类型/所属表），因此同一语义列在不同库中进入相近专家；LLM agent 在只读 schema 与统计的前提下生成派生列并做验证。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>按元数据路由而不是按取值路由，使专家专精于“语义角色”（如时间戳、金额、用户维度），这解释了为何少量预训练数据也能超过大规模语料基线；派生列带来的增益（+1.18 AUROC）说明 schema 里还有未被利用的语义，只是没人显式写出来。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>这是对“元数据治理”最直接的技术回报论证：元数据不是合规负担，而是模型可迁移性与特征自动化的杠杆；治理投入可以换算成 AUROC 与预训练成本的节省。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>在业务知识库建设中，可把列元数据标准（名称规范、类型、粒度、所属实体、FK 语义）当作第一等资产：它既能喂给模型做路由/检索，也能让 LLM 安全地产出派生指标；派生列必须落库并配验证查询，避免每次现算。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>评测集中在 RelBench 类任务，与“问数/报表”场景不完全同构；agent 派生列依赖列统计质量，脏数据会放大错误；MoE 路由需要为每个库补齐元数据，冷启动有成本。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2611.18315" target="_blank" rel="noopener" class="src-link">Experts Across Schemas: Agent-Guided Mixture-of-Relational-Experts for Cross-Database Generalization</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2611.18315" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2611.18315</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-product">💼 业务线</span></div><h3><a href="https://arxiv.org/abs/2611.13966" target="_blank" rel="noopener">TIGA：把分类法构建变成受限动作空间的迭代决策，结构质量更稳但代价更高</a></h3><div class="meta">2026-11-10 · arXiv</div><div class="summary">分类法（taxonomy）支撑语义搜索、推荐、商品目录与 RAG，但从固定候选实体自动构建时，自由生成容易漏实体、编实体、造出非法层级或前后不一致的组织原则。TIGA 把分类法归纳表述为显式状态 + 受限动作空间上的迭代决策：提供可执行的 taxonomy 编辑工具、记录 tool call/rationale/outcome 的交互记忆、以及在推理过程中自我修订的运行时组织策略，并可选一个全局 reviewer 对照候选集与当前策略检查成品。四个 benchmark taxonomy、两个 LLM backbone 上，TIGA 在多数配置取得最好的结构质量，但并非在每项 precision 指标上都占优，且 token 消耗、API 调用量与推理时间显著更高；消融显示策略与交互记忆稳定有效，全局 review 的收益取决于数据集与可用修订预算。</div><div class="insight"><strong>🔍 技术视角：</strong>这篇的价值在于诚实地量化了“结构化知识构建”的成本曲线：工具接地（tool grounding）能提升结构合法性，但会成倍放大调用量。对自建业务知识库，这意味着本体/分类法构建必须做增量与缓存，而不是每次全量重跑。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 458" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="458" fill="#f8fafc"/><rect width="900" height="458" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">受限动作空间下的分类法迭代构建</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">候选实体集</text><text x="156.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">固定输入</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">显式状态</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">当前树 + 策略</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">受限编辑工具</text><text x="548.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">插入/移动/合并/删除</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">交互记忆</text><text x="744.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">tool call + 理由 + 结果</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">可选全局 reviewer</text><text x="450.0" y="252" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">对照候选集与策略</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">收益</tspan>　多数配置结构质量最优；策略与记忆消融稳定有效。</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">代价</tspan>　token、API 调用、时延显著上升；reviewer 收益依预算。</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>业务知识库的骨架是层级与归属关系；这类结构一旦出错，检索与推理会系统性偏斜，且很难事后发现。自由生成无法保证完整性、合法性与一致性这三个约束同时成立。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>状态显式化（当前分类法 + 候选集 + 策略），动作限定为受控编辑（插入/移动/合并/删除），每次动作记录理由与结果形成记忆，策略在推理中按失败模式调整；reviewer 作为可选的质量闸门。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>把“生成一棵树”改成“在动作空间里搜索”，本质是用可验证的中间状态换取可控性；代价是搜索成本。precision 并非全面占优说明结构合法不等于语义正确，人工抽检仍不可省。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>本体/知识图谱项目最常见的失败是“建得漂亮但维护不起”。TIGA 的成本数据提示：商业化方案应卖“增量维护 + 变更审计”，而不是一次性构建。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>落地时把分类法当代码管理：变更走 diff + 校验规则（唯一父子、无环、覆盖候选集），把 reviewer 放在批量变更而非每步；对稳定层做缓存，只对新增实体做增量归纳，控制 token 成本。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>成本显著高于 prompting 基线；reviewer 效果依数据集与预算，不能默认开启；评测限于四个 benchmark taxonomy，行业本体（含多继承、属性约束）未覆盖。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2611.13966" target="_blank" rel="noopener" class="src-link">Controlled Knowledge Engineering for Taxonomy Induction with Tool-Grounded LLM Agents and Runtime-Adaptive Policies</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2611.13966" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2611.13966</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-github"></span><h2>🔀 交叉线（共享基建）</h2><span class="count">2 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-github">🔀 交叉线</span></div><h3><a href="https://arxiv.org/abs/2611.18533" target="_blank" rel="noopener">ModHarness-RL：把 harness 拆成可学习、可进化的程序</a></h3><div class="meta">2026-11-13 · arXiv</div><div class="summary">agentic RL 越来越依赖 harness——决定模型看到什么交互历史、收到什么引导的脚手架，但多数方法在训练全程使用手写且固定的 harness。作者指出有效 harness 取决于领域、数据和模型，并会随模型训练而变。ModHarness-RL 把交互记录为结构化 State（一组带类型的块），并把 harness 的两个核心部件变成作用在这些块上的程序：Compression 负责把累积历史装配进模型上下文，Steering 在行为偏离时提供引导。训练中从近期轨迹提议候选程序、经执行验证、再在历史轨迹上回放，使 harness 跟随模型行为漂移。CodeSearch 上做了深入研究，另在 ALFWorld 与 BIRD SQL 上分析，模型规模 1.5B–8B，多数设定优于固定 harness 基线。</div><div class="insight"><strong>🔍 技术视角：</strong>这为“上下文工程”提供了可训练的形式化：不是手调提示词，而是把压缩与引导写成程序，用执行验证筛选。对自建 agent 的启示是——harness 应该跟着模型版本一起做回归与再训练，而不是一次写好管半年。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 458" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="458" fill="#f8fafc"/><rect width="900" height="458" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">harness 作为可学习程序的双部件结构</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">交互记录</text><text x="156.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">结构化 State / typed blocks</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Compression 程序</text><text x="352.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">装配上下文</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">Steering 程序</text><text x="548.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">偏离时给引导</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">候选提议 + 执行验证</text><text x="744.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">来自近期轨迹</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">历史轨迹回放</text><text x="450.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">跟随行为漂移</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">覆盖</tspan>　CodeSearch 深入；ALFWorld、BIRD SQL 辅助；1.5B–8B。</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">结论</tspan>　多数设定优于固定 harness 基线。</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>模型升级后旧 harness 常常失配：原来需要的引导变成噪音，原来够用的压缩开始丢关键证据。固定 harness 把这种失配变成隐性性能损失。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>State 用带类型的块表达（工具调用、观察、计划等），Compression 决定哪些块进上下文、以何顺序，Steering 在检测到偏离时注入引导；两者都是可执行程序，候选由近期轨迹生成、执行验证后用历史轨迹回放评估，避免在线试错。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>把 harness 当策略搜索对象，等于承认“上下文是一种动作空间”。与 CarryOn 的差异在于：CarryOn 学的是保留什么证据，ModHarness 学的是如何装配与如何干预，两者可叠加（状态表示 + 选择器 + 引导策略）。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>如果 harness 可学习且需随模型演进，那么“agent 平台”的护城河会从提示词模板转向可回放的轨迹数据与验证流水线——这与研发知识库天然契合，因为轨迹就是最真实的过程资产。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>落地可从“双轨 harness”开始：保留手写基线作对照组，对 Compression 做离线回放评估（用历史成功/失败轨迹），只在回放指标稳定优于基线时替换；Steering 的触发条件应写成可观测判据（重复动作、无进展轮次），避免模型自评。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>研究以 CodeSearch 为主，ALFWorld/BIRD 为辅助验证，泛化到开放域业务 agent 未证；模型规模限于 1.5B–8B，前沿大模型上收益可能不同；程序搜索本身有算力成本。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2611.18533" target="_blank" rel="noopener" class="src-link">ModHarness-RL: Recasting Harnesses as Learnable and Evolving Programs for Agentic RL</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2611.18533" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2611.18533</a></div></div><div class="item item-full"><div class="item-top"><span class="tag tag-github">🔀 交叉线</span></div><h3><a href="https://arxiv.org/abs/2611.17808" target="_blank" rel="noopener">CarryOn：上下文里要留“带来源的证据”，而不是摘要</a></h3><div class="meta">2026-11-13 · arXiv</div><div class="summary">长程 agent 的历史会不断膨胀，而现有压缩手段（摘要、剪枝、历史选择）各有问题：摘要会丢掉后续动作需要的精确细节，全量保留又带入大量无关信息。CarryOn 把“紧凑执行状态”与“细粒度、带来源链接的证据”配对，用学到的选择器与自适应保留策略维持相关证据可用，且上下文管理本身不额外调用 LLM。作者提出两个指标：S_α（以任务成功为先、同时计入资源消耗）与 NCS（每次成功任务的归一化成本）。在 AppWorld、OfficeBench、Tau2 Telecom 三个环境 × 三个 LLM Actor 上，CarryOn 宏平均任务成功率 75.7%，比最强基线高 6.7 个百分点，并在两个指标上都取得最佳平均分。</div><div class="insight"><strong>🔍 技术视角：</strong>“摘要 vs 全量”是伪二选一：真正需要的是可回指的原始证据 + 学出来的选择策略。对业务 agent 尤其重要，因为审计要求每个结论都能指回具体字段与记录，摘要天然不可审计。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 458" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="458" fill="#f8fafc"/><rect width="900" height="458" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">紧凑状态 + 可回指证据的上下文管理</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#f1f5f9" stroke="#64748b" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">工具调用结果</text><text x="156.0" y="124" fill="#64748b" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">原始返回</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">证据切片入库</text><text x="352.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">带 source 链接</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">紧凑执行状态</text><text x="548.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">目标/步骤/假设</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">学习型选择器</text><text x="744.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">按需拉取片段</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">S_α / NCS 评估</text><text x="450.0" y="252" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">成功率 + 资源成本</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">结果</tspan>　75.7% 宏平均成功率，+6.7pp；两指标均最佳。</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">设计要点</tspan>　上下文管理不额外调用 LLM。</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>多步查询与分析的错误往往出在“早期看到的某个精确值被摘要抹掉了”；而审计与复核又要求保留原始出处。两个需求指向同一设计：压缩状态、保留证据、指针化引用。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>执行状态保持紧凑（当前目标、已完成步骤、待验证假设），证据以细粒度片段存储并带 source 链接，选择器决定当前步骤需要拉取哪些片段；保留策略随任务进展自适应，整个过程不调用额外 LLM，因此成本可控。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>S_α 与 NCS 的引入很关键：只报成功率的上下文方法会通过无限扩上下文“作弊”，把资源消耗纳入指标后，比较才有意义。这与生产环境的成本约束一致。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>可审计性是业务 agent 采购的硬门槛。把“证据可回指”做成默认架构，比事后加日志更便宜，也直接支撑“字段级审计/数据主权”这类合规诉求。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>自建业务 agent 可先做“证据账本”：每次工具调用返回的原始结果按字段切片入库（带 API 名、请求参数、时间戳），上下文里只放指针与摘要标签，需要时再取；审计日志与答案溯源复用同一账本，一举两得。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>选择器需要训练数据（可用自身轨迹冷启动），冷启动期可能不如启发式；三个环境偏工具调用型任务，长文档分析场景未覆盖；证据存储会带来额外基础设施成本。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://arxiv.org/abs/2611.17808" target="_blank" rel="noopener" class="src-link">CarryOn: Learning What to Keep in Context for Long-Horizon LLM Agents</a></li></ol></div><div class="modal-foot"><a href="https://arxiv.org/abs/2611.17808" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://arxiv.org/abs/2611.17808</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-github"></span><h2>🐙 开源项目</h2><span class="count">1 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-github">🐙 GitHub</span></div><h3><a href="https://github.com/chiang21fcb/hygieia" target="_blank" rel="noopener">hygieia：给语义层做体检的离线 CLI，核心指标是“静默错误率”</a></h3><div class="meta">2026-11-08 · GitHub</div><div class="summary">hygieia（106★，MIT，Python）不建本体，只检查你已有的语义层：audit 做静态诊断、eval 做两臂评测、rot 做漂移模拟、report 产出 Markdown 健康报告；运行时只依赖 pyyaml 与 sqlglot（AST 级 SQL 解析），全离线、无账号、无 API key，并以 coding-agent skill 形态分发。它在 Apache Ossie 公开的 TPC-DS 语义模型上直接报出三处真实词汇冲突：price、location、profit 三个日常词各自指向两个不同定义。内置 ecom fixture（6 张表、20 个中文问题）的 live run（2026-11-06，deepseek-v4-flash）显示：无语义层 16/20 正确、4/20 静默错误；有语义层 19/20、1/20。</div><div class="insight"><strong>🔍 技术视角：</strong>“静默错误率”是比准确率更适合业务问数的指标：用户无法区分“答错但礼貌”与“答对”。hygieia 把语义层从“建模产物”变成“可体检、可门禁、可回归的工程对象”，这恰好是语义层路线相对知识图谱路线最缺的一环。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 458" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="458" fill="#f8fafc"/><rect width="900" height="458" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">语义层体检的四条命令与两道闸门</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#ede9fe" stroke="#7c3aed" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">metrics.yml / 适配器</text><text x="156.0" y="124" fill="#7c3aed" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">dbt · Ossie</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">audit</text><text x="352.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">R1–R9 静态诊断</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">eval 两臂</text><text x="548.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">entity + relation 打分</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">rot 漂移注入</text><text x="744.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">5 类、差分捕获</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="375.0" y="208" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="450.0" y="234" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">CI 门禁 / Agent 前置</text><text x="450.0" y="252" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">SARIF + --fail-on</text><text x="30" y="306" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="316" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="334" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">核心指标</tspan>　silent-error rate：错但不报错、不澄清。</text><rect x="30" y="358" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="376" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">实测</tspan>　live run 80%→95%，静默错误 20%→5%。</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>语义层的价值主张是口径唯一，但口径会随数据与业务漂移；没有体检手段时，漂移表现为“数字看起来正常但错了”，这正是数据 agent 最难被信任的原因。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>audit 按 R1–R9 规则检查同义词冲突、join 歧义、悬空引用、缺证据等；eval 跑两臂（有/无语义层）对照执行的 gold SQL，并按 entity（表/join 路径）与 relation（口径：聚合 + 过滤）两维打分；rot 注入五类漂移后重跑 audit，用集合差分判断新增捕获。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>manifest 固定 prompt、问题集、语料、语义层哈希与模型版本，哈希不一致时 report 拒绝承认两次运行可比——这是把评测可信度写进工具约束，而不是写在文档里。SARIF 2.1.0 输出与 --fail-on 让它可以作为 CI 门禁，等于把语义层纳入和代码一样的回归流程。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>对“语义层 vs 知识图谱”的路线选择，这类工具提供了裁判标准：能否量化静默错误、能否进 CI、能否审计口径变更。若自建业务 agent 要对客承诺数字可信，体检能力比建模语言选型更能决定成败。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>自建业务语义层可先接这套协议：把指标定义与同义词收进 metrics.yml（或从 dbt/ossie 适配），在 CI 里跑 audit + 少量 eval 问题集；把 silent-error 作为发布门禁指标，并在指标口径变更时用 rot 验证能否捕获。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>项目仅 106★、单人维护，长期支持存疑；内置 demo 数字为手写模拟（README 明确标注 simulated），只有 2026-11-06 那次 live run 是真实模型产出；规则覆盖以指标/维度语义层为主，对宽表 API 字段（无 SQL 可解析）需要自建适配层。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://github.com/chiang21fcb/hygieia" target="_blank" rel="noopener" class="src-link">Hygieia: Inspect, evaluate, and stress-test an existing semantic layer</a></li><li><span class="src-id">[2]</span> <a href="https://github.com/apache/ossie" target="_blank" rel="noopener" class="src-link">Apache Ossie: semantic metadata interchange specification</a></li></ol></div><div class="modal-foot"><a href="https://github.com/chiang21fcb/hygieia" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://github.com/chiang21fcb/hygieia</a></div></div></div>
+<div class="section"><div class="section-head"><span class="bar bar-blog"></span><h2>📝 技术博客</h2><span class="count">1 条</span></div><div class="item item-full"><div class="item-top"><span class="tag tag-blog">📝 技术博客</span></div><h3><a href="https://www.dataengineeringweekly.com/p/data-engineering-weekly-296" target="_blank" rel="noopener">DEW #296：本体标准到底好不好用，以及“该跳过时跳过”也要被测试</a></h3><div class="meta">2026-11-16 · Data Engineering Weekly</div><div class="summary">本期编辑手记把一个问题摆上台面：RDF、OWL2、SHACL、R2RML 这些本体与知识图谱标准，在实际数据工程里到底好不好用——这直接影响“语义层 vs 企业知识图谱”的路线判断。同一期还收了几个与业务 agent 强相关的案例：Pinterest 的分析 agent 有时会跳过关键步骤（不查表结构、不搜相关看板），团队用 loop engineering 建测试环，既验证“该行动时是否行动”，也验证“该跳过时是否跳过”，并拒绝会破坏其他行为的改动；GoDaddy 的数据管道 agent 先追问缺失信息、读源数据，再生成管道文件与 PR，靠的是既有模板与内部命名规范作起点；HuggingFace 上的 Dharma Field Extractor 用专门小模型把单据图像直接抽成结构化 JSON 字段。</div><div class="insight"><strong>🔍 技术视角：</strong>三个可复用的判断：本体标准的问题不在表达力而在使用成本（这是知识图谱路线最现实的阻力）；agent 评测的单元应当是“条件性行为”（何时行动/何时跳过），否则修好一步会悄悄弄坏另一步；文档抽取这类高重复任务，专用小模型往往比通用大模型更划算。</div><div class="modal-sec"><h4>📊 架构示意</h4><div class="diagram-box" data-diagram><div class="diagram-svg"><svg viewBox="0 0 900 330" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block"><defs><marker id="ah" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8"/></marker><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="#e2e8f0" stroke-width="0.5"/></pattern></defs><rect width="900" height="330" fill="#f8fafc"/><rect width="900" height="330" fill="url(#grid)"/><text x="30" y="48" fill="#334155" font-size="14" font-weight="600" font-family="system-ui,sans-serif">条件性行为评测：行动与跳过都要被验证</text><rect x="81.0" y="80" width="150" height="58" rx="8" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/><text x="156.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">分析 agent 流程</text><text x="156.0" y="124" fill="#0284c7" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">查表/搜看板/取数</text><rect x="277.0" y="80" width="150" height="58" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/><text x="352.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">步骤必要性标注</text><text x="352.0" y="124" fill="#dc2626" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">何时必需 / 何时可跳</text><line x1="231.0" y1="109.0" x2="273.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="473.0" y="80" width="150" height="58" rx="8" fill="#d1fae5" stroke="#059669" stroke-width="1.5"/><text x="548.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">循环式测试</text><text x="548.0" y="124" fill="#059669" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">提议改动 → 验证 → 拒绝破坏</text><line x1="427.0" y1="109.0" x2="469.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><rect x="669.0" y="80" width="150" height="58" rx="8" fill="#fef3c7" stroke="#d97706" stroke-width="1.5"/><text x="744.0" y="106" fill="#1e293b" font-size="12" font-weight="600" text-anchor="middle" font-family="system-ui,sans-serif">回归到其他步骤</text><text x="744.0" y="124" fill="#d97706" font-size="10" text-anchor="middle" font-family="system-ui,sans-serif">防止修一处坏一处</text><line x1="623.0" y1="109.0" x2="665.0" y2="109.0" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#ah)"/><text x="30" y="178" fill="#b45309" font-size="12" font-weight="600" font-family="system-ui,sans-serif">▎关键要点</text><rect x="30" y="188" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="206" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">失败形态</tspan>　少做一步但仍返回成功结果，属静默失败。</text><rect x="30" y="230" width="6" height="30" rx="2" fill="#b45309"/><text x="46" y="248" fill="#334155" font-size="11" font-family="system-ui,sans-serif"><tspan font-weight="600" fill="#b45309">对应工具</tspan>　可执行断言 + 反例集（不应行动的场景）。</text></svg></div><button type="button" class="diagram-zoom" onclick="openDiagramZoom(this)" title="点击放大架构图">⛶ 放大</button></div></div>
+<div class="modal-sec"><h4>🎯 为什么值得关注</h4><p>用户要在“语义层”和“企业知识图谱”之间做路线选择，而社区一线反馈比论文更早暴露摩擦点：标准重、工具链散、维护成本高。同时，业务 agent 的失败常是“少做了一步”而不是“做错了一步”，这类失败在只看最终答案的评测里不可见。</p></div>
+<div class="modal-sec"><h4>⚙️ 核心机制</h4><p>Pinterest 的做法是把 agent 的流程图拆成可测的步骤与跳过条件，用循环式测试：提出改动 → 检查该步骤在哪些情形下必要 → 若破坏其他行为则拒绝。GoDaddy 的做法是把“模板 + 命名规范”作为 agent 的确定性骨架，agent 负责追问与读取源数据。Dharma 的做法是把任务收窄为“给定字段列表，从文档图像输出 JSON”。</p></div>
+<div class="modal-sec"><h4>🧠 深度解读</h4><p>这三件事共享同一结构：把开放式生成压缩到有约束的边界内（步骤条件、模板规范、字段清单）。与 ProdPilot 的规则分层、hygieia 的规则体检是同一条工程直觉——先定义“什么算对”，再让模型在其中发挥。</p></div>
+<div class="modal-sec modal-business"><h4>💼 商业启示</h4><p>对做数据平台与 agent 产品的团队，这期的信号是：客户不为“本体”付费，为“口径可维护、步骤可审计”付费；把知识图谱包装成治理与审计能力，比包装成建模方法论更容易落地。</p></div>
+<div class="modal-sec"><h4>🛠️ 落地建议</h4><p>自建业务 agent 的评测集应包含“不应行动”的反例（无数据时应澄清、口径未定义时应拒绝），并把跳过条件写成可执行断言；文档理解先做字段清单与 schema 约定，再选模型，优先试专用小模型 + 规则后处理。</p></div>
+<div class="modal-sec"><h4>⚠️ 局限与风险</h4><p>本期是 newsletter 摘要，Pinterest/GoDaddy 细节需回到原文核实（原文链接在本期正文，抓取时部分站点不可达）；编辑手记对本体的质疑是经验判断而非系统评测；Dharma 的能力边界（版式、语言、字段规模）未在摘要中给出。</p></div>
+<div class="modal-sec modal-sources"><h4>🔗 来源溯源</h4><ol class="sources-list"><li><span class="src-id">[1]</span> <a href="https://www.dataengineeringweekly.com/p/data-engineering-weekly-296" target="_blank" rel="noopener" class="src-link">Data Engineering Weekly #296</a></li><li><span class="src-id">[2]</span> <a href="https://huggingface.co/blog/Dharma-AI/dharma-field-extractor" target="_blank" rel="noopener" class="src-link">Dharma Field Extractor: Any Document In, Structured Fields in JSON Out</a></li></ol></div><div class="modal-foot"><a href="https://www.dataengineeringweekly.com/p/data-engineering-weekly-296" target="_blank" rel="noopener" class="modal-link">🔗 原文链接：https://www.dataengineeringweekly.com/p/data-engineering-weekly-296</a></div></div></div>
+
+  
+
+  <footer>
+    由 Hermes Agent 自动生成 · 点击卡片查看深度详情 · 2026-11-17
+  </footer>
+
+  <!-- ===== 反馈按钮 + 表单弹层 ===== -->
+  <button class="feedback-fab" onclick="openFeedback()" title="提交反馈">💬</button>
+
+  <div class="modal" id="feedback-modal">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeFeedback()" aria-label="关闭">×</button>
+      <span class="tag tag-product">💬 读者反馈</span>
+      <h2>提交意见 / 反馈</h2>
+      <div class="modal-body">
+        <p style="color:var(--muted);font-size:0.9em;margin-bottom:12px;">
+          你的反馈会帮我改进晨报内容。提交后将打开 GitHub Issue 页面，确认后我会在每天 17:00 处理。
+        </p>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">反馈类型</label>
+        <select id="fb-type" style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);margin-bottom:12px;">
+          <option value="内容建议">内容建议（选题/深度/方向）</option>
+          <option value="错误报告">错误报告（链接失效/信息有误）</option>
+          <option value="格式反馈">格式/排版反馈</option>
+          <option value="其他">其他</option>
+        </select>
+        <label style="display:block;margin-bottom:6px;font-size:0.9em;color:var(--accent);">你的反馈内容</label>
+        <textarea id="fb-body" rows="5" placeholder="请描述你的意见、建议或发现的问题…"
+          style="width:100%;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);resize:vertical;margin-bottom:12px;"></textarea>
+        <button class="modal-submit" onclick="submitFeedback()">提交反馈 →</button>
+      </div>
+      <div class="modal-foot" style="color:var(--muted);font-size:0.8em;">提交后请在打开的 GitHub 页面点击确认。</div>
+    </div>
+  </div>
+
+  <!-- ===== 架构图放大 lightbox ===== -->
+  <div class="diagram-lightbox" id="diagram-lightbox" onclick="if(event.target===this)closeDiagramZoom()">
+    <div class="diagram-lightbox-inner">
+      <div class="lb-head">
+        <h3 id="lb-title">📊 架构图</h3>
+        <div class="lb-tools">
+          <button type="button" class="lb-btn" onclick="diagramToggleZoom()">🔍 放大/缩小</button>
+          <button type="button" class="lb-close" onclick="closeDiagramZoom()" aria-label="关闭">×</button>
+        </div>
+      </div>
+      <div class="lb-svg" id="lb-svg"></div>
+      <div class="lb-tip">提示：点击「放大/缩小」切换缩放，缩放后可在图内拖动查看细节 · 按 Esc 关闭</div>
+    </div>
+  </div>
+
+  <script>
+    function openDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.add('show'); document.body.style.overflow = 'hidden'; }
+    }
+    function closeDetail(i) {
+      const m = document.getElementById('modal-' + i);
+      if (m) { m.classList.remove('show'); document.body.style.overflow = ''; }
+    }
+    function openFeedback() {
+      document.getElementById('feedback-modal').classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeFeedback() {
+      document.getElementById('feedback-modal').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function submitFeedback() {
+      const type = document.getElementById('fb-type').value;
+      const body = document.getElementById('fb-body').value.trim();
+      if (!body) { alert('请填写反馈内容'); return; }
+      const date = '2026-11-17';
+      const title = '[网页反馈/' + type + '] ' + date;
+      const full = '反馈类型: ' + type + '\n日期: ' + date + '\n\n' + body;
+      // 生成 GitHub Issue 预填链接（不暴露 token，安全）
+      const url = 'https://github.com/hhao9817/agent-daily/issues/new?title=' + encodeURIComponent(title) + '&body=' + encodeURIComponent(full);
+      window.open(url, '_blank');
+      closeFeedback();
+    }
+    /* ===== 架构图放大 ===== */
+    function openDiagramZoom(btn) {
+      const box = btn.closest('.diagram-box');
+      const svg = box.querySelector('.diagram-svg svg') || box.querySelector('svg');
+      if (!svg) return;
+      const title = box.querySelector('h4') ? box.querySelector('h4').textContent : '📊 架构图';
+      document.getElementById('lb-title').textContent = title;
+      const holder = document.getElementById('lb-svg');
+      holder.innerHTML = '';
+      holder.appendChild(svg.cloneNode(true));
+      const lb = document.getElementById('diagram-lightbox');
+      lb.classList.add('show');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeDiagramZoom() {
+      document.getElementById('diagram-lightbox').classList.remove('show');
+      document.body.style.overflow = '';
+    }
+    function diagramToggleZoom() {
+      const svg = document.querySelector('#lb-svg svg');
+      if (!svg) return;
+      svg.classList.toggle('zoomed');
+    }
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal.show').forEach(function(m) { m.classList.remove('show'); });
+        document.getElementById('diagram-lightbox').classList.remove('show');
+        document.body.style.overflow = '';
+      }
+    });
+  </script>
+</body>
+</html>
