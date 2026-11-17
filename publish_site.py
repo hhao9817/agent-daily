@@ -163,17 +163,35 @@ def main():
         print("ℹ️ 无内容变更，跳过推送")
         return 0
 
-    # 推送（带重试，处理瞬时 SSL 错误）
-    for i in range(3):
-        rc, out = run("git push origin main")
-        if rc == 0:
+    # 推送：先探测 github.com:443 是否可达；不可达时走 REST API（Pages 内容一致）
+    import socket
+    reachable = True
+    try:
+        s = socket.create_connection(("github.com", 443), timeout=5)
+        s.close()
+    except Exception:
+        reachable = False
+
+    if not reachable:
+        print("⚠️ github.com:443 不可达，改用 GitHub REST API 推送")
+        rc, out = run(f'{sys.executable} "{os.path.join(REPO_DIR, "api_push.py")}" "Update briefing {date}"', cwd=REPO_DIR, timeout=300)
+        print(out.strip())
+        if rc == 0 and "✅" in out:
             print("✅ 已推送 GitHub Pages")
-            break
-        print(f"⚠️ 推送失败(第{i+1}次): {out.strip()}")
-        time.sleep(3)
+        else:
+            print(f"❌ 推送失败: {out.strip()}", file=sys.stderr)
+            sys.exit(1)
     else:
-        print("❌ 推送失败", file=sys.stderr)
-        sys.exit(1)
+        for i in range(3):
+            rc, out = run("git push origin main")
+            if rc == 0:
+                print("✅ 已推送 GitHub Pages")
+                break
+            print(f"⚠️ 推送失败(第{i+1}次): {out.strip()}")
+            time.sleep(3)
+        else:
+            print("❌ 推送失败", file=sys.stderr)
+            sys.exit(1)
 
     print(f"🌐 最新: https://hhao9817.github.io/agent-daily/")
     print(f"📚 历史: https://hhao9817.github.io/agent-daily/archive/")
