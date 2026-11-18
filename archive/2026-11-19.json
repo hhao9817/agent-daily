@@ -22,8 +22,7 @@
       ],
       "github": [
         "EGM（google/elephant-goldfish-model，21,130★，Apache-2.0）：Elephant 带上下文起草规格，Goldfish 在无对话历史下复审，`/egm-review` 与 `/egm-drift-report` 可跨 Claude Code / Codex CLI / Antigravity 使用——用上下文隔离换独立评审。",
-        "dsh-superagent（deepseek-ai，23,819★/2,943 fork，MIT）：单仓库常驻 coding agent，GitHub/飞书触发后开 work item、在独立会话与目录执行、回原线程给 PR，面板只列需人决策项；官方标注为研究原型。",
-        "博客：DEW《Thoughts on Verification Engineering》把交付拆成四段，指出 AI 让制造段变成无限流水线、静态评审与 canary 都失效，提出沙箱 + 合成数据 + 自动 harness + 模拟用户四支柱。"
+        "dsh-superagent（deepseek-ai，23,819★/2,943 fork，MIT）：单仓库常驻 coding agent，GitHub/飞书触发后开 work item、在独立会话与目录执行、回原线程给 PR，面板只列需人决策项；官方标注为研究原型。"
       ]
     }
   },
