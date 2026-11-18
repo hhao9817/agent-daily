@@ -11,6 +11,12 @@
 
 ## 已应用的改进（按时间倒序）
 
+### 2026-11-19
+- 修复 `build_site.py` 的速览分组缺口（与 11-03 的 SECTION_META 缺口同源）：`SNAP_META` 此前只有 paper/product/github/blog，而 `snapshot.groups` 实际按 rnd/business/cross/github 写，导致**三条主题线的速览要点在网页端被静默丢弃**——11-18 期 data.json 里有 4 组、页面只剩「开源项目」一组，速览退化为单分组列表。本次在 `SNAP_META` 增加 rnd/business/cross 映射（复用 paper/product/github 的 bar/dot 配色，顺序 rnd→business→cross→github→blog），线上速览恢复「主题线 + 来源」双层结构。教训：新增 JSON 字段后必须回看渲染层的白名单字典，静默丢键不会报错。
+- 发布链路第三次遇到远端分叉，且这次不是网络问题：11-17 用 Git Data API 直推的 a1ac149 与本地 a6e4c6c 同父不同树，`git push` 连续 3 次被拒。处理：`git stash -u` → `git pull --rebase origin main`（自动 skip 等价提交）→ `git stash pop` → 补提交 `build_site.py` → `git push` 成功（a1ac149..0d939a6）。教训：API 直推后必须同步本地 `refs/remotes/origin/main`，否则下次非快进。
+- 学术通道：`export.arxiv.org` 仍不可解析、`api.semanticscholar.org` 返回空体/429（本期未引用任何 citationCount，全部标注待核实）；继续走 `arxiv.org/list/cs.SE|cs.DB|cs.CL|cs.AI|cs.IR/recent` + `/abs/<id>` 抓 `blockquote.abstract`（Googlebot UA），并用自写 `/tmp/arabs.py` 批量取摘要。
+- 去重：17 个候选 arXiv ID 逐条 `grep -rl <id> archive/*.json data.json`，命中 0；`alibaba/UnifiedModel` 命中 2 个文件（11-09 期已收录）弃用、`SocratiCode` 命中 42 个文件弃用。
+
 ### 2026-11-17
 - 发布链路第二次遇到网络层限制且形态不同：本机 `github.com:443` 完全不可达（curl/git 均 000，`api.github.com`、`codeload.github.com`、`hhao9817.github.io` 正常），`git push` 会连续重试 3 次、每次卡 75s 直至整体超时。新增 `api_push.py`：走 Git Data REST API（blobs → tree(base_tree) → commit → PATCH ref），并按 `git hash-object` 与远端 tree 的 blob sha 比对，**只上传有变化的文件**（首版全量上传 60+ 归档文件会挂死）。`publish_site.py` 推送前先做 5s TCP 探测，不可达则自动切 API 通道并仍打印「✅ 已推送 GitHub Pages」。
 - 学术通道变化：`export.arxiv.org` DNS 解析失败（`arxiv.org`、`abs/` 页面正常，`api.semanticscholar.org` 也失败）。改用 `https://arxiv.org/list/<cat>/recent` 列表页解析 ID + 标题，再逐条抓 `/abs/<id>` 取摘要，覆盖 cs.SE / cs.DB / cs.CL / cs.AI / cs.IR，效果等同 API。
@@ -29,6 +35,16 @@
 
 ## 待应用的反馈（由白天会话追加，处理后移入上方"已应用"）
 - （暂无）
+
+## 2026-11-19 运行记录（本次）
+- 读取本档案；「待应用的反馈」为（暂无），无强制方向变更；最低保证满足：tag 计数 rnd 4 / business 5 / cross 3 / github 2 / blog 1，合计 15（另：snapshot 分四组 rnd 3 / business 4 / cross 3 / github 3）。
+- 去重核查：17 个候选 arXiv ID 先按 link/ID grep 全量 archive 与 data.json，命中 0；GitHub 侧 UnifiedModel（11-09 已收）与 SocratiCode（42 处命中）主动弃用，改用 google/elephant-goldfish-model、deepseek-ai/dsh-superagent-prototype 两个新面孔（README 逐条核对）。
+- 学术：`export.arxiv.org` DNS 失败、S2 空响应，改 `arxiv.org/list/{cs.SE,cs.DB,cs.CL,cs.AI,cs.IR}/recent` 解析 ID + `/abs/<id>` 取摘要；本期 11 篇论文全部来自 11/18 公告批次（2611.21614–2611.23216）。数字逐条与摘要原文比对（+1.4pp CI −1.4~+4.3、−0.9pp −1.9~+0.2、2/150、30/30、0.956/0.308/0.803、48.62→82.75、45.76→85.14、22.6–76.4/67.9、23 分、16,892/3,840、394K/321K、<2s/<11GB、11–33%、18–28%、−10pp/+40%/+67pp/−37%、199/284、12,010/24,020、43%→84%/174µs）。
+- 博客：`get_blog_posts.py` 可用，但 OpenAI 与 dbt 正文均被反爬（43 字节 challenge、r.jina.ai 亦失败）；改从 Data Engineering Weekly《Thoughts on Verification Engineering in the Agentic SDLC》（11/18，Ananth Packkildurai）用 Googlebot UA 取全文，四阶段/四支柱/1,500 行 AI PR 橡皮章/canary 失效等论点均来自正文。
+- GitHub：search API 与 releases API 正常，`gh auth token` 有效；研发线头部仍是旧面孔（px0/code-review-graph/SocratiCode），业务线 repo search 噪声大（semantic layer 命中代码智能工具），改按 created:>2026-09-01 + stars:>300 找新项目。
+- 主线判断：研发侧本期由「代理指标失效」三连构成——基准分与交付脱钩（+1.4pp 不显著）、多存储索引拼出从未共存的版本（2/150）、AST 图谱召回不敌向量基线（0.956）；业务侧给出三条可施工路径——用 SQL 解释分歧定位澄清点、用值字典解决三语言不一致（最多 23 分）、用逐条三值裁决做运行时治理（1,000 条准则 <2s）；交叉侧统一收敛到「状态与边界」：技能是缓存（过期即负资产）、召回应带读边界（199/12,010 混版本）、跨组织 agent 要证明配置而不只是身份（43%→84%）。
+- 发布：publish_site.py 首次 push 被拒（远端 a1ac149 分叉），rebase 后本地补提交 build_site.py，`git push` 成功 0d939a6；线上 https://hhao9817.github.io/agent-daily/ 已确认 165,643 字节、含本期标题与「研发线（AI for Engineering）」速览分组（修复前该分组不渲染）。grounded-citations ledger：ledger_2026-11-19.jsonl，15 条来源，全部为 arXiv abs / GitHub repo / 博客正文，无二手转述。
+- 基础设施备忘：①本机 grounded-citations 脚本在 `~/.hermes/hermes-agent/skills/research/`，参数为 `--ledger <path> add <url> --title`；②`read_file` 对 351KB 的长行 markdown 会误判 binary，改用 python 按 utf-8 读；③生成脚本用 write_file 落盘再执行（内联 heredoc 超 2KB 会被拦）。
 
 ## 2026-11-18 运行记录（本次）
 - 读取本档案；「待应用的反馈」为（暂无），无强制方向变更；最低保证满足：tag 计数 rnd 4 / business 5 / cross 4 / github 2 / blog 1，合计 16（业务线内容 8 条 = 5 篇论文 + semantica/OntoPoc + dbt 博客）。
