@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "id": 1,
+      "url": "https://arxiv.org/abs/2611.23216",
+      "title": "Higher-Scoring Coding Models Did Not Get More Work Done (arXiv 2611.23216)",
+      "accessed": "2026-11-19"
+    },
+    {
+      "id": 2,
+      "url": "https://arxiv.org/abs/2611.21616",
+      "title": "Revision-Consistent Code Context for Agents That Edit Their Environment (arXiv 2611.21616)",
+      "accessed": "2026-11-19"
+    },
+    {
+      "id": 3,
+      "url": "https://arxiv.org/abs/2611.21797",
+      "title": "Can Coding Agents Write and Transpile Unit Tests (arXiv 2611.21797)",
+      "accessed": "2026-11-19"
+    },
+    {
+      "id": 4,
+      "url": "https://arxiv.org/abs/2611.21625",
+      "title": "Evaluating AST-Derived Knowledge Graph Retrieval for AIOps Incident Diagnosis in Apache Kafka (arXiv 2611.21625)",
+      "accessed": "2026-11-19"
+    },
+    {
+      "id": 5,
+      "url": "https://arxiv.org/abs/2611.21645",
+      "title": "Asking What Matters: Disagreement-Guided Ambiguity Detection for Interactive Text-to-SQL (arXiv 2611.21645)",
+      "accessed": "2026-11-19"
+    },
+    {
+      "id": 6,
+      "url": "https://arxiv.org/abs/2611.22262",
+      "title": "OfficePrism: Benchmarking Agents on Single-Domain Operations Across Enterprise Business Functions (arXiv 2611.22262)",
+      "accessed": "2026-11-19"
+    },
+    {
+      "id": 7,
+      "url": "https://arxiv.org/abs/2611.22333",
+      "title": "MoL-SQL: A Controlled Benchmark for Mixture-of-Language Text-to-SQL (arXiv 2611.22333)",
+      "accessed": "2026-11-19"
+    },
+    {
+      "id": 8,
+      "url": "https://arxiv.org/abs/2611.23074",
+      "title": "Runtime Verification of Multiple Natural Language Criteria for Agent Governance (arXiv 2611.23074)",
+      "accessed": "2026-11-19"
+    },
+    {
+      "id": 9,
+      "url": "https://arxiv.org/abs/2611.22539",
+      "title": "JET: Just-Enough Exploration Tuning for Efficient Tool-Calling Agents in Repository-Level QA (arXiv 2611.22539)",
+      "accessed": "2026-11-19"
+    },
+    {
+      "id": 10,
+      "url": "https://arxiv.org/abs/2611.22525",
+      "title": "When Agent Skills Go Stale: Runtime Behavior and Selective Maintenance in Evolving Environments (arXiv 2611.22525)",
+      "accessed": "2026-11-19"
+    },
+    {
+      "id": 11,
+      "url": "https://arxiv.org/abs/2611.19264",
+      "title": "Read Boundaries in Agent Memory: Consistency, Completeness, and Repair (arXiv 2611.19264)",
+      "accessed": "2026-11-19"
+    },
+    {
+      "id": 12,
+      "url": "https://arxiv.org/abs/2611.23202",
+      "title": "Agent Trust Infrastructure (ATI): Federated Identity, Trust, Attestation, and Accountability (arXiv 2611.23202)",
+      "accessed": "2026-11-19"
+    },
+    {
+      "id": 13,
+      "url": "https://github.com/google/elephant-goldfish-model",
+      "title": "google/elephant-goldfish-model — EGM design & review plugin for coding agents",
+      "accessed": "2026-11-19"
+    },
+    {
+      "id": 14,
+      "url": "https://github.com/deepseek-ai/dsh-superagent-prototype",
+      "title": "deepseek-ai/dsh-superagent-prototype — proactive coding agent for one repository",
+      "accessed": "2026-11-19"
+    },
+    {
+      "id": 15,
+      "url": "https://www.dataengineeringweekly.com/p/thoughts-on-verification-engineering",
+      "title": "Thoughts on Verification Engineering in the Agentic SDLC — Data Engineering Weekly (2026-11-18)",
+      "accessed": "2026-11-19"
+    }
+  ]
+}

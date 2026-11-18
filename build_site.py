@@ -55,6 +55,10 @@ def esc(s):
 
 
 SNAP_META = {
+    # 主题线优先（与 SECTION_META 同序），保证「按主题线 + 来源」两类分组都能渲染
+    "rnd": ("🧪 研发线（AI for Engineering）", "snap-bar-paper", "dot-paper"),
+    "business": ("💼 业务线（AI for Business）", "snap-bar-product", "dot-product"),
+    "cross": ("🔀 交叉线（共享基建）", "snap-bar-github", "dot-github"),
     "paper": ("📄 学术论文", "snap-bar-paper", "dot-paper"),
     "github": ("🐙 开源项目", "snap-bar-github", "dot-github"),
     "product": ("🏢 业界动态", "snap-bar-product", "dot-product"),
