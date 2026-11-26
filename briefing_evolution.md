@@ -36,7 +36,15 @@
 ## 待应用的反馈（由白天会话追加，处理后移入上方"已应用"）
 - （暂无）
 
-## 2026-11-19 运行记录（本次）
+## 2026-11-27 运行记录（本次）
+- 读取本档案；「待应用的反馈」为（暂无），无强制方向变更；最低保证满足：rnd 4 / business 5 / cross 3 / github 2 / blog 1，合计 15（snapshot 四组 rnd 4 / business 5 / cross 3 / github 2）。
+- 去重：18 个候选 arXiv ID 逐条 `grep -rl <id> archive/*.json data.json`，命中 0；GitHub 侧 closedloop-ai/claude-plugins（10-10、10-14 已收）、code-review-graph、SocratiCode 均已有条目，弃用；改用 openqodex/openqodex（2026-10 创建、1,220★、Apache-2.0）与 Cube v1.8.32-34 release（11/21-24）。
+- 学术通道：`export.arxiv.org/api/query?id_list=` 本次可用（前几期 DNS 失败），一次批量取 12 篇摘要；`api.semanticscholar.org` batch 端点也可用，但新论文 citationCount 全为 0，未写入正文。数字逐条与摘要原文比对（0.887/0.864、61%/13%/58%、89%、67%/46%/36%/66%、−0.59 p=0.01；.45/.67、.49/.65、.51/.78、.018 CI −.065~.108、20%/39%/51%/8%、32/55；1-5pp/3.8x；7,554/1,421/74.6pp/18.7pp/2-3pp/4-7pp/58%；4.2%/44%/16%/486/18.4%→13%；0.899/22.6%/52.4%/9.1%/0.72/0.79；29.5%→16.8%/54.1%→1.9%/2,847/8.4% vs 11.7%/+1.6；604/39/580/412/76/66/10/645/1,197/2,004/617/27；50.5%→12.0%/8.2-17.2/0-200/4-50/50→0/16-50/20-20/17-110；92%/22%→99%/1-(1-p)^M/5(3.4-9.2)/114/89%/9-15）。
+- 博客通道：`get_blog_posts.py` 与 TDS 正文均被 Cloudflare 拦截（返回 4.5KB challenge 页），dbt/Cube 博客为前端渲染或旧文（Okta 10-27、Ramp 10-27、economic-case 11-11 均已收录）；改抓 OpenAI 11/23《Introducing Shirudo》正文（Googlebot UA 可读），作为本期 blog 条目。
+- GitHub：search API + releases API 正常；业务线新 repo 搜索仍是小星数（muh-haris/business-ontology-mcp 2★），改用 Cube release notes——包含参数化 SQL、Databricks Metric View 同步、time-shift 条件掩码修复，与「字段级 RBAC/参数化查询」课题直接相关。
+- 主线判断：研发侧三篇实证把「agent 写代码」从观感拉回测量——补丁大不等于质量差（代码必要性 0.887 vs 人类 0.864）、AI 评审任何 effort 档都不是门禁（≥45% 错补丁被放行）、并行 subagent 的收益可被「先探测参考实现 + 定期重开上下文」廉价替代；业务侧共同结论是「schema 不够，语义要下沉到值和粒度」（grain 18.4%→13%、弃答 52.4%/9.1%、VSL 五类值语义、atlas 省 1/5-1/3 token、多副本一致性检测）；交叉侧聚焦工具治理——「兼容」schema 变更会扩权（412/580）、参数级意图校验（ASR 50.5%→12.0%）、目录级最弱一环（200 工具 99% 暴露面）。
+
+## 2026-11-19 运行记录
 - 读取本档案；「待应用的反馈」为（暂无），无强制方向变更；最低保证满足：tag 计数 rnd 4 / business 5 / cross 3 / github 2 / blog 1，合计 15（另：snapshot 分四组 rnd 3 / business 4 / cross 3 / github 3）。
 - 去重核查：17 个候选 arXiv ID 先按 link/ID grep 全量 archive 与 data.json，命中 0；GitHub 侧 UnifiedModel（11-09 已收）与 SocratiCode（42 处命中）主动弃用，改用 google/elephant-goldfish-model、deepseek-ai/dsh-superagent-prototype 两个新面孔（README 逐条核对）。
 - 学术：`export.arxiv.org` DNS 失败、S2 空响应，改 `arxiv.org/list/{cs.SE,cs.DB,cs.CL,cs.AI,cs.IR}/recent` 解析 ID + `/abs/<id>` 取摘要；本期 11 篇论文全部来自 11/18 公告批次（2611.21614–2611.23216）。数字逐条与摘要原文比对（+1.4pp CI −1.4~+4.3、−0.9pp −1.9~+0.2、2/150、30/30、0.956/0.308/0.803、48.62→82.75、45.76→85.14、22.6–76.4/67.9、23 分、16,892/3,840、394K/321K、<2s/<11GB、11–33%、18–28%、−10pp/+40%/+67pp/−37%、199/284、12,010/24,020、43%→84%/174µs）。
