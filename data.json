@@ -455,7 +455,7 @@
       "title": "OpenAI + Cisco 开源 Shirudo：让 agent 用 eBPF 写「临时护盾」，Codex 生成的补丁在运行中的 Elasticsearch 上挡住 Java4Shell",
       "date": "2026-11-23",
       "source": "OpenAI Blog",
-      "link": "https://openai.com/index/introducing-shirudo",
+      "link": "https://openai.com/index/introducing-shirudo/",
       "summary": "OpenAI 与 Cisco 发布开源项目 Shirudo（日语「盾」，BSD 2-Clause，BPF 程序 BSD/GPL 双许可）：一个帮助运维在补丁窗口期保护运行中 Linux 系统的运行时。核心矛盾是漏洞利用与合法请求可能依赖同一个 Linux 操作，直接封禁会让服务下线。Shirudo 让团队先测试一个临时护盾（shield）是否能挡住暴露漏洞的行为、同时放行合法请求，批准后在服务不重启的情况下部署。实现基于 eBPF，可在系统调用层观测并施加定向保护；护盾在加载前经过加密签名与 eBPF verifier 的内核安全检查，并由内核安全控制限制未授权变更；TPM 提供护盾加载/卸载的可验证记录。受控测试中，Codex 生成的护盾给 Java Base64 解码器加了输入检查并挂到运行中的 Elasticsearch 进程上，无需重启即挡住了 Java4Shell 利用尝试。项目提供 VM quickstart、Isovalent 实验环境与 12 月 15 日技术深潜。",
       "insight": "这条的价值不在「又一个安全产品」，而在它演示了一个完整的 agent 闭环：生成策略 → 对攻击与真实负载双向验证 → 签名 → 部署 → 取证。这与 coding agent 的「写补丁 → 跑测试 → 合并」同构，只是作用层从源码下沉到内核。对自建 agent 平台的启示是：任何「agent 自动生成并生效的规则」（工具权限、数据访问策略、限流规则）都应复刻这套三件套——签名、验证器、可审计的加载记录——否则自动化的策略就是新的攻击面。",
       "detail": {
@@ -466,7 +466,7 @@
         "caveats": "仅 Linux/eBPF，需要内核权限与运维能力；shield 是临时缓解不是根治，仍需正式补丁；eBPF verifier 保证的是内存安全而非逻辑正确；TPM 依赖硬件；agent 生成的护盾仍需人工批准。",
         "business": "「补丁窗口期」是一个被低估的安全市场：企业愿意为「不重启即可缓解」付费。对 agent 厂商，这展示了 agent 在高风险基础设施中的可控落地方式——人在环上批准、机器在环内生成与验证。",
         "sources": [
-          {"url": "https://openai.com/index/introducing-shirudo", "title": "Introducing Shirudo"}
+          {"url": "https://openai.com/index/introducing-shirudo/", "title": "Introducing Shirudo"}
         ],
         "diagram": {
           "title": "Shirudo 的生成-验证-签名-部署闭环",
